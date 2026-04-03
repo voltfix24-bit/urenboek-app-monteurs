@@ -7,6 +7,8 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Medewerkers from "./pages/Medewerkers";
+import Goedkeuring from "./pages/Goedkeuring";
+import Rapportage from "./pages/Rapportage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
