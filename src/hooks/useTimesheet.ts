@@ -80,6 +80,28 @@ export function useTimesheet() {
     [user, fetchEntries]
   );
 
+  const addMultipleEntries = useCallback(
+    async (entries: Omit<TimeEntry, "id" | "status">[]) => {
+      if (!user || entries.length === 0) return;
+      const rows = entries.map((entry) => ({
+        user_id: user.id,
+        date: entry.date,
+        project_number: entry.projectNumber,
+        description: entry.description,
+        hours: entry.hours,
+        status: "ingediend",
+      }));
+      const { error } = await supabase.from("time_entries").insert(rows);
+      if (error) {
+        toast.error("Fout bij toevoegen");
+      } else {
+        toast.success(`${entries.length} dagen toegevoegd`);
+        fetchEntries();
+      }
+    },
+    [user, fetchEntries]
+  );
+
   const removeEntry = useCallback(
     async (id: string) => {
       const { error } = await supabase.from("time_entries").delete().eq("id", id);
@@ -128,6 +150,7 @@ export function useTimesheet() {
     weekDates,
     weekEntries,
     addEntry,
+    addMultipleEntries,
     removeEntry,
     goToPreviousWeek,
     goToNextWeek,
