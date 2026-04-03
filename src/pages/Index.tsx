@@ -5,11 +5,13 @@ import { AddEntryForm } from "@/components/AddEntryForm";
 import { WeekOverview } from "@/components/WeekOverview";
 import { WeekSummary } from "@/components/WeekSummary";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import terrevoltLogo from "@/assets/terrevolt-logo.png";
 
 const Index = () => {
-  const { profile, signOut } = useAuth();
+  const { profile, isManager, signOut } = useAuth();
+  const navigate = useNavigate();
   const {
     currentWeekStart,
     weekDates,
@@ -39,6 +41,12 @@ const Index = () => {
             onToday={goToCurrentWeek}
           />
           <div className="flex items-center gap-3">
+            {isManager && (
+              <Button variant="outline" size="sm" onClick={() => navigate("/medewerkers")} className="gap-1">
+                <Users className="h-4 w-4" />
+                Medewerkers
+              </Button>
+            )}
             <span className="text-sm text-muted-foreground">{profile?.full_name}</span>
             <Button variant="ghost" size="icon" onClick={signOut}>
               <LogOut className="h-4 w-4" />
