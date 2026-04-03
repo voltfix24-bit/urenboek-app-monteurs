@@ -25,7 +25,7 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
   const [hours, setHours] = useState("");
 
   // Week mode
-  const [weekProject, setWeekProject] = useState("");
+  const [weekProjects, setWeekProjects] = useState<string[]>(["", "", "", "", ""]);
   const [weekDescriptions, setWeekDescriptions] = useState<string[]>(["", "", "", "", ""]);
   const [weekHours, setWeekHours] = useState<string[]>(["", "", "", "", "", "", ""]);
 
