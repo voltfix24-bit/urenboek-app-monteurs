@@ -29,7 +29,10 @@ const Index = () => {
             <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
               <Clock className="h-5 w-5 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Urenregistratie</h1>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Terrevolt</h1>
+              <p className="text-xs text-muted-foreground -mt-0.5">Urenregistratie</p>
+            </div>
           </div>
           <WeekNavigation
             weekStart={currentWeekStart}
