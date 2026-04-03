@@ -42,10 +42,20 @@ const Index = () => {
           />
           <div className="flex items-center gap-3">
             {isManager && (
-              <Button variant="outline" size="sm" onClick={() => navigate("/medewerkers")} className="gap-1">
-                <Users className="h-4 w-4" />
-                Medewerkers
-              </Button>
+              <>
+                <Button variant="outline" size="sm" onClick={() => navigate("/goedkeuring")} className="gap-1">
+                  <CheckCircle className="h-4 w-4" />
+                  Goedkeuren
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate("/rapportage")} className="gap-1">
+                  <BarChart3 className="h-4 w-4" />
+                  Rapportage
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate("/medewerkers")} className="gap-1">
+                  <Users className="h-4 w-4" />
+                  Medewerkers
+                </Button>
+              </>
             )}
             <span className="text-sm text-muted-foreground">{profile?.full_name}</span>
             <Button variant="ghost" size="icon" onClick={signOut}>
