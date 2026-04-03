@@ -5,7 +5,8 @@ import { AddEntryForm } from "@/components/AddEntryForm";
 import { WeekOverview } from "@/components/WeekOverview";
 import { WeekSummary } from "@/components/WeekSummary";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import terrevoltLogo from "@/assets/terrevolt-logo.png";
 
 const Index = () => {
