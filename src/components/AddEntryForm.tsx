@@ -26,7 +26,7 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
 
   // Week mode
   const [weekProject, setWeekProject] = useState("");
-  const [weekDescription, setWeekDescription] = useState("");
+  const [weekDescriptions, setWeekDescriptions] = useState<string[]>(["", "", "", "", ""]);
   const [weekHours, setWeekHours] = useState<string[]>(["", "", "", "", "", "", ""]);
 
   const workDays = weekDates.slice(0, 5); // ma t/m vr
@@ -57,7 +57,7 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
         entries.push({
           date: format(d, "yyyy-MM-dd"),
           projectNumber: weekProject.trim(),
-          description: weekDescription.trim(),
+          description: (weekDescriptions[i] || "").trim(),
           hours: h,
         });
       }
@@ -72,7 +72,7 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
     }
 
     setWeekProject("");
-    setWeekDescription("");
+    setWeekDescriptions(["", "", "", "", ""]);
     setWeekHours(["", "", "", "", "", "", ""]);
   };
 
@@ -87,35 +87,25 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
 
       <TabsContent value="week">
         <form onSubmit={handleWeekSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground font-medium">Projectnummer</Label>
-              <Input
-                placeholder="bijv. PRJ-001"
-                value={weekProject}
-                onChange={(e) => setWeekProject(e.target.value)}
-                maxLength={20}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground font-medium">Omschrijving</Label>
-              <Input
-                placeholder="Wat heb je gedaan?"
-                value={weekDescription}
-                onChange={(e) => setWeekDescription(e.target.value)}
-                maxLength={200}
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground font-medium">Projectnummer</Label>
+            <Input
+              placeholder="bijv. PRJ-001"
+              value={weekProject}
+              onChange={(e) => setWeekProject(e.target.value)}
+              maxLength={20}
+              className="max-w-xs"
+            />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground font-medium">Uren per dag</Label>
-            <div className="grid grid-cols-5 gap-2">
+            <Label className="text-xs text-muted-foreground font-medium">Uren & omschrijving per dag</Label>
+            <div className="space-y-2">
               {workDays.map((d, i) => (
-                <div key={i} className="space-y-1">
-                  <div className="text-center">
+                <div key={i} className="grid grid-cols-[4rem_3.5rem_1fr] gap-2 items-center">
+                  <div>
                     <span className="text-xs font-medium text-muted-foreground">{dayLabels[i]}</span>
-                    <span className="text-[10px] text-muted-foreground block">
+                    <span className="text-[10px] text-muted-foreground ml-1">
                       {format(d, "d/M")}
                     </span>
                   </div>
@@ -132,6 +122,16 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
                       setWeekHours(newHours);
                     }}
                     className="text-center"
+                  />
+                  <Input
+                    placeholder="Omschrijving"
+                    value={weekDescriptions[i]}
+                    onChange={(e) => {
+                      const newDescs = [...weekDescriptions];
+                      newDescs[i] = e.target.value;
+                      setWeekDescriptions(newDescs);
+                    }}
+                    maxLength={200}
                   />
                 </div>
               ))}
