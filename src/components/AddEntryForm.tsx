@@ -25,7 +25,7 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
   const [hours, setHours] = useState("");
 
   // Week mode
-  const [weekProject, setWeekProject] = useState("");
+  const [weekProjects, setWeekProjects] = useState<string[]>(["", "", "", "", ""]);
   const [weekDescriptions, setWeekDescriptions] = useState<string[]>(["", "", "", "", ""]);
   const [weekHours, setWeekHours] = useState<string[]>(["", "", "", "", "", "", ""]);
 
@@ -48,15 +48,15 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
 
   const handleWeekSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!weekProject.trim()) return;
 
     const entries: Omit<TimeEntry, "id" | "status">[] = [];
     workDays.forEach((d, i) => {
       const h = Number(weekHours[i]);
-      if (h > 0) {
+      const proj = (weekProjects[i] || "").trim();
+      if (h > 0 && proj) {
         entries.push({
           date: format(d, "yyyy-MM-dd"),
-          projectNumber: weekProject.trim(),
+          projectNumber: proj,
           description: (weekDescriptions[i] || "").trim(),
           hours: h,
         });
@@ -71,7 +71,7 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
       entries.forEach((entry) => onAdd(entry));
     }
 
-    setWeekProject("");
+    setWeekProjects(["", "", "", "", ""]);
     setWeekDescriptions(["", "", "", "", ""]);
     setWeekHours(["", "", "", "", "", "", ""]);
   };
@@ -88,27 +88,26 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
       <TabsContent value="week">
         <form onSubmit={handleWeekSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground font-medium">Projectnummer</Label>
-            <Input
-              placeholder="bijv. PRJ-001"
-              value={weekProject}
-              onChange={(e) => setWeekProject(e.target.value)}
-              maxLength={20}
-              className="max-w-xs"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground font-medium">Uren & omschrijving per dag</Label>
+            <Label className="text-xs text-muted-foreground font-medium">Uren per dag</Label>
             <div className="space-y-2">
               {workDays.map((d, i) => (
-                <div key={i} className="grid grid-cols-[4rem_3.5rem_1fr] gap-2 items-center">
+                <div key={i} className="grid grid-cols-[4rem_7rem_3.5rem_1fr] gap-2 items-center">
                   <div>
                     <span className="text-xs font-medium text-muted-foreground">{dayLabels[i]}</span>
                     <span className="text-[10px] text-muted-foreground ml-1">
                       {format(d, "d/M")}
                     </span>
                   </div>
+                  <Input
+                    placeholder="Projectnr."
+                    value={weekProjects[i]}
+                    onChange={(e) => {
+                      const newProjects = [...weekProjects];
+                      newProjects[i] = e.target.value;
+                      setWeekProjects(newProjects);
+                    }}
+                    maxLength={20}
+                  />
                   <Input
                     type="number"
                     step="0.25"
