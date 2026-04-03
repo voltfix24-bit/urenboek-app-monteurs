@@ -10,7 +10,8 @@ import { useNavigate } from "react-router-dom";
 import terrevoltLogo from "@/assets/terrevolt-logo.png";
 
 const Index = () => {
-  const { profile, signOut } = useAuth();
+  const { profile, isManager, signOut } = useAuth();
+  const navigate = useNavigate();
   const {
     currentWeekStart,
     weekDates,
