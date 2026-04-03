@@ -48,15 +48,15 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
 
   const handleWeekSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!weekProject.trim()) return;
 
     const entries: Omit<TimeEntry, "id" | "status">[] = [];
     workDays.forEach((d, i) => {
       const h = Number(weekHours[i]);
-      if (h > 0) {
+      const proj = (weekProjects[i] || "").trim();
+      if (h > 0 && proj) {
         entries.push({
           date: format(d, "yyyy-MM-dd"),
-          projectNumber: weekProject.trim(),
+          projectNumber: proj,
           description: (weekDescriptions[i] || "").trim(),
           hours: h,
         });
@@ -71,7 +71,7 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
       entries.forEach((entry) => onAdd(entry));
     }
 
-    setWeekProject("");
+    setWeekProjects(["", "", "", "", ""]);
     setWeekDescriptions(["", "", "", "", ""]);
     setWeekHours(["", "", "", "", "", "", ""]);
   };
