@@ -17,6 +17,7 @@ const Index = () => {
     weekDates,
     weekEntries,
     addEntry,
+    addMultipleEntries,
     removeEntry,
     goToPreviousWeek,
     goToNextWeek,
