@@ -1,9 +1,9 @@
-import { Clock } from "lucide-react";
 import { useTimesheet } from "@/hooks/useTimesheet";
 import { WeekNavigation } from "@/components/WeekNavigation";
 import { AddEntryForm } from "@/components/AddEntryForm";
 import { WeekOverview } from "@/components/WeekOverview";
 import { WeekSummary } from "@/components/WeekSummary";
+import terrevoltLogo from "@/assets/terrevolt-logo.png";
 
 const Index = () => {
   const {
@@ -25,14 +25,9 @@ const Index = () => {
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
-              <Clock className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Terrevolt</h1>
-              <p className="text-xs text-muted-foreground -mt-0.5">Urenregistratie</p>
-            </div>
+          <div className="flex items-center gap-3">
+            <img src={terrevoltLogo} alt="TerreVolt BV" className="h-8" />
+            <span className="text-xs text-muted-foreground border-l pl-3">Urenregistratie</span>
           </div>
           <WeekNavigation
             weekStart={currentWeekStart}
