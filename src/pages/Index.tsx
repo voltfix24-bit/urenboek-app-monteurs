@@ -1,11 +1,15 @@
 import { useTimesheet } from "@/hooks/useTimesheet";
+import { useAuth } from "@/hooks/useAuth";
 import { WeekNavigation } from "@/components/WeekNavigation";
 import { AddEntryForm } from "@/components/AddEntryForm";
 import { WeekOverview } from "@/components/WeekOverview";
 import { WeekSummary } from "@/components/WeekSummary";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 import terrevoltLogo from "@/assets/terrevolt-logo.png";
 
 const Index = () => {
+  const { profile, signOut } = useAuth();
   const {
     currentWeekStart,
     weekDates,
@@ -22,7 +26,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b bg-card">
         <div className="container max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -35,17 +38,21 @@ const Index = () => {
             onNext={goToNextWeek}
             onToday={goToCurrentWeek}
           />
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground">{profile?.full_name}</span>
+            <Button variant="ghost" size="icon" onClick={signOut}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="container max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {/* Add entry form */}
         <section className="rounded-xl border bg-card p-5">
           <h2 className="text-sm font-semibold text-foreground mb-4">Uren invoeren</h2>
           <AddEntryForm weekDates={weekDates} onAdd={addEntry} />
         </section>
 
-        {/* Summary */}
         <WeekSummary
           totalHours={totalHours}
           hoursByProject={hoursByProject}
@@ -53,7 +60,6 @@ const Index = () => {
           weekDates={weekDates}
         />
 
-        {/* Entries */}
         <section>
           <h2 className="text-sm font-semibold text-foreground mb-3">Overzicht</h2>
           <WeekOverview

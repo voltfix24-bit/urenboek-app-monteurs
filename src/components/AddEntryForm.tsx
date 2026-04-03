@@ -10,7 +10,7 @@ import { TimeEntry } from "@/types/timesheet";
 
 interface AddEntryFormProps {
   weekDates: Date[];
-  onAdd: (entry: Omit<TimeEntry, "id">) => void;
+  onAdd: (entry: Omit<TimeEntry, "id" | "status">) => void;
 }
 
 export function AddEntryForm({ weekDates, onAdd }: AddEntryFormProps) {
