@@ -150,6 +150,7 @@ export function useTimesheet() {
     weekDates,
     weekEntries,
     addEntry,
+    addMultipleEntries,
     removeEntry,
     goToPreviousWeek,
     goToNextWeek,
