@@ -57,7 +57,7 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
         entries.push({
           date: format(d, "yyyy-MM-dd"),
           projectNumber: weekProject.trim(),
-          description: weekDescription.trim(),
+          description: (weekDescriptions[i] || "").trim(),
           hours: h,
         });
       }
@@ -72,7 +72,7 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
     }
 
     setWeekProject("");
-    setWeekDescription("");
+    setWeekDescriptions(["", "", "", "", ""]);
     setWeekHours(["", "", "", "", "", "", ""]);
   };
 
