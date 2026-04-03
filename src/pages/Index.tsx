@@ -69,7 +69,7 @@ const Index = () => {
       <main className="container max-w-5xl mx-auto px-4 py-6 space-y-6">
         <section className="rounded-xl border bg-card p-5">
           <h2 className="text-sm font-semibold text-foreground mb-4">Uren invoeren</h2>
-          <AddEntryForm weekDates={weekDates} onAdd={addEntry} />
+          <AddEntryForm weekDates={weekDates} onAdd={addEntry} onAddMultiple={addMultipleEntries} />
         </section>
 
         <WeekSummary
