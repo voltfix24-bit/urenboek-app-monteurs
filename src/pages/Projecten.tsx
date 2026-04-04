@@ -157,7 +157,7 @@ export default function Projecten() {
             <div className="space-y-2">
               <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Actief ({activeProjects.length})</p>
               {activeProjects.map((p) => (
-                <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isEditing={editId === p.id} form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} renderOgSelect={renderOgSelect} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} />
+                <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isEditing={editId === p.id} isConfirmingDelete={confirmDeleteId === p.id} form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} renderOgSelect={renderOgSelect} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)} />
               ))}
             </div>
             {inactiveProjects.length > 0 && (
