@@ -2,10 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, startOfISOWeek, addDays, getISOWeek, getISOWeekYear, addWeeks } from "date-fns";
 import { nl } from "date-fns/locale";
+import { BottomNav } from "@/components/BottomNav";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { BottomNav } from "@/components/BottomNav";
 
 interface ReportEntry {
