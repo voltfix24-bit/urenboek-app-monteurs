@@ -18,13 +18,11 @@ interface AddEntryFormProps {
 export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormProps) {
   const [mode, setMode] = useState<"week" | "dag">("week");
 
-  // Per-day mode
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [projectNumber, setProjectNumber] = useState("");
   const [description, setDescription] = useState("");
   const [hours, setHours] = useState("");
 
-  // Week mode
   const [weekProjects, setWeekProjects] = useState<string[]>(["", "", "", "", ""]);
   const [weekDescriptions, setWeekDescriptions] = useState<string[]>(["", "", "", "", ""]);
   const [weekHours, setWeekHours] = useState<string[]>(["", "", "", "", "", "", ""]);
@@ -80,38 +78,38 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
 
   return (
     <Tabs value={mode} onValueChange={(v) => setMode(v as "week" | "dag")}>
-      <TabsList className="mb-3">
-        <TabsTrigger value="week">Hele week</TabsTrigger>
-        <TabsTrigger value="dag">Per dag</TabsTrigger>
+      <TabsList className="mb-4 h-9 rounded-lg bg-secondary/60 p-0.5">
+        <TabsTrigger value="week" className="rounded-md text-xs font-medium h-8 data-[state=active]:shadow-sm">Hele week</TabsTrigger>
+        <TabsTrigger value="dag" className="rounded-md text-xs font-medium h-8 data-[state=active]:shadow-sm">Per dag</TabsTrigger>
       </TabsList>
 
       <TabsContent value="week">
-        <form onSubmit={handleWeekSubmit} className="space-y-3">
-          <div className="space-y-3">
-            {workDays.map((d, i) => (
-              <div key={i} className="rounded-lg border bg-muted/30 p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-foreground">
-                    {dayLabels[i]} {format(d, "d/M")}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Label className="text-[10px] text-muted-foreground">Uren</Label>
-                    <Input
-                      type="number"
-                      step="0.25"
-                      min="0"
-                      max="24"
-                      placeholder="0"
-                      value={weekHours[i]}
-                      onChange={(e) => {
-                        const newHours = [...weekHours];
-                        newHours[i] = e.target.value;
-                        setWeekHours(newHours);
-                      }}
-                      className="w-16 h-8 text-center text-sm"
-                    />
-                  </div>
+        <form onSubmit={handleWeekSubmit} className="space-y-2.5">
+          {workDays.map((d, i) => (
+            <div key={i} className="rounded-xl border bg-secondary/20 p-3 space-y-2 hover:bg-secondary/30 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground">
+                  {dayLabels[i]} <span className="font-normal text-muted-foreground">{format(d, "d/M")}</span>
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-muted-foreground font-medium">Uren</span>
+                  <Input
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    max="24"
+                    placeholder="0"
+                    value={weekHours[i]}
+                    onChange={(e) => {
+                      const newHours = [...weekHours];
+                      newHours[i] = e.target.value;
+                      setWeekHours(newHours);
+                    }}
+                    className="w-16 h-8 text-center text-sm rounded-lg font-semibold"
+                  />
                 </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Input
                   placeholder="Projectnummer"
                   value={weekProjects[i]}
@@ -121,7 +119,7 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
                     setWeekProjects(newProjects);
                   }}
                   maxLength={20}
-                  className="h-8 text-sm"
+                  className="h-8 text-sm rounded-lg"
                 />
                 <Input
                   placeholder="Omschrijving"
@@ -132,17 +130,17 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
                     setWeekDescriptions(newDescs);
                   }}
                   maxLength={200}
-                  className="h-8 text-sm"
+                  className="h-8 text-sm rounded-lg"
                 />
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
 
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-sm text-muted-foreground">
-              Totaal: <span className="font-semibold text-foreground">{weekTotal} uur</span>
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-xs text-muted-foreground font-medium">
+              Totaal: <span className="font-bold text-foreground text-sm">{weekTotal}u</span>
             </span>
-            <Button type="submit" size="sm" className="gap-1.5">
+            <Button type="submit" size="sm" className="gap-1.5 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 font-medium">
               <Plus className="h-4 w-4" />
               Toevoegen
             </Button>
@@ -153,9 +151,9 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
       <TabsContent value="dag">
         <form onSubmit={handleDaySubmit} className="space-y-3">
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground font-medium">Dag</Label>
+            <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Dag</Label>
             <Select value={date} onValueChange={setDate}>
-              <SelectTrigger className="h-9">
+              <SelectTrigger className="h-10 rounded-lg">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -170,17 +168,17 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground font-medium">Projectnummer</Label>
+              <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Projectnummer</Label>
               <Input
                 placeholder="bijv. PRJ-001"
                 value={projectNumber}
                 onChange={(e) => setProjectNumber(e.target.value)}
                 maxLength={20}
-                className="h-9"
+                className="h-10 rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground font-medium">Uren</Label>
+              <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Uren</Label>
               <Input
                 type="number"
                 step="0.25"
@@ -189,23 +187,23 @@ export function AddEntryForm({ weekDates, onAdd, onAddMultiple }: AddEntryFormPr
                 placeholder="0"
                 value={hours}
                 onChange={(e) => setHours(e.target.value)}
-                className="h-9"
+                className="h-10 rounded-lg font-semibold"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground font-medium">Omschrijving</Label>
+            <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Omschrijving</Label>
             <Input
               placeholder="Wat heb je gedaan?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               maxLength={200}
-              className="h-9"
+              className="h-10 rounded-lg"
             />
           </div>
 
-          <Button type="submit" size="sm" className="w-full gap-1.5">
+          <Button type="submit" size="default" className="w-full gap-1.5 rounded-lg gradient-primary text-primary-foreground hover:opacity-90 font-medium h-10">
             <Plus className="h-4 w-4" />
             Toevoegen
           </Button>

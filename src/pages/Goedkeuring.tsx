@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Check, X, Clock } from "lucide-react";
+import { ArrowLeft, Check, X, ChevronLeft, ChevronRight, Calendar, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, startOfWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -85,18 +85,17 @@ export default function Goedkeuring() {
 
   const filteredEntries = entries.filter((e) => filter === "alle" || e.status === filter);
 
-  // Group by employee
   const grouped = filteredEntries.reduce<Record<string, EntryWithProfile[]>>((acc, e) => {
     if (!acc[e.full_name]) acc[e.full_name] = [];
     acc[e.full_name].push(e);
     return acc;
   }, {});
 
-  const statusColor: Record<string, string> = {
-    ingediend: "bg-yellow-100 text-yellow-800",
-    goedgekeurd: "bg-green-100 text-green-800",
-    afgekeurd: "bg-red-100 text-red-800",
-    concept: "bg-muted text-muted-foreground",
+  const statusConfig: Record<string, { bg: string; text: string; dot: string }> = {
+    ingediend: { bg: "bg-warning/10", text: "text-warning", dot: "bg-warning" },
+    goedgekeurd: { bg: "bg-success/10", text: "text-success", dot: "bg-success" },
+    afgekeurd: { bg: "bg-destructive/10", text: "text-destructive", dot: "bg-destructive" },
+    concept: { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground" },
   };
 
   if (!isManager) {
@@ -108,99 +107,135 @@ export default function Goedkeuring() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="container max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={terrevoltLogo} alt="TerreVolt BV" className="h-8" />
-            <span className="text-xs text-muted-foreground border-l pl-3">Uren goedkeuren</span>
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur-md">
+        <div className="px-4 py-3 flex items-center justify-between max-w-5xl mx-auto">
+          <div className="flex items-center gap-2.5">
+            <img src={terrevoltLogo} alt="TerreVolt BV" className="h-7" />
+            <div className="border-l pl-2.5">
+              <span className="text-[11px] text-muted-foreground font-medium tracking-wide uppercase">Goedkeuren</span>
+            </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => navigate("/")}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1.5 text-xs h-8">
+            <ArrowLeft className="h-3.5 w-3.5" />
             Terug
           </Button>
         </div>
       </header>
 
-      <main className="container max-w-5xl mx-auto px-4 py-6 space-y-4">
+      <main className="px-4 py-5 space-y-4 max-w-5xl mx-auto">
         {/* Controls */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" onClick={() => setWeekOffset((w) => w - 1)}>←</Button>
-            <Button variant="outline" size="sm" onClick={() => setWeekOffset(0)}>Vandaag</Button>
-            <Button variant="outline" size="sm" onClick={() => setWeekOffset((w) => w + 1)}>→</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5">
+            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md" onClick={() => setWeekOffset((w) => w - 1)}>
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-7 text-[11px] rounded-md px-2 font-medium" onClick={() => setWeekOffset(0)}>
+              <Calendar className="h-3 w-3 mr-1" />
+              Vandaag
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md" onClick={() => setWeekOffset((w) => w + 1)}>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
           </div>
-          <span className="text-sm font-medium">
+          <span className="text-xs font-semibold tracking-tight">
             {format(weekStart, "d MMM", { locale: nl })} – {format(weekEnd, "d MMM yyyy", { locale: nl })}
           </span>
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="alle">Alle statussen</SelectItem>
-              <SelectItem value="ingediend">Ingediend</SelectItem>
-              <SelectItem value="goedgekeurd">Goedgekeurd</SelectItem>
-              <SelectItem value="afgekeurd">Afgekeurd</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="ml-auto">
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="h-8 text-xs w-auto min-w-[120px] rounded-lg">
+                <Filter className="h-3 w-3 mr-1.5" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="alle">Alle statussen</SelectItem>
+                <SelectItem value="ingediend">Ingediend</SelectItem>
+                <SelectItem value="goedgekeurd">Goedgekeurd</SelectItem>
+                <SelectItem value="afgekeurd">Afgekeurd</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {loading ? (
-          <p className="text-sm text-muted-foreground">Laden...</p>
+          <div className="text-center py-10">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs text-muted-foreground mt-3">Laden...</p>
+          </div>
         ) : Object.keys(grouped).length === 0 ? (
-          <p className="text-sm text-muted-foreground">Geen uren gevonden voor deze week.</p>
+          <div className="text-center py-10 rounded-2xl border bg-card shadow-card">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+              <span className="text-xl">✅</span>
+            </div>
+            <p className="text-sm font-medium">Geen uren gevonden</p>
+            <p className="text-xs text-muted-foreground mt-1">Geen uren met deze filter voor deze week</p>
+          </div>
         ) : (
           Object.entries(grouped).map(([name, userEntries]) => {
             const totalHours = userEntries.reduce((s, e) => s + e.hours, 0);
+            const pendingCount = userEntries.filter(e => e.status === 'ingediend').length;
             return (
-              <Card key={name}>
-                <CardHeader className="py-3">
-                  <CardTitle className="text-sm flex items-center justify-between">
-                    <span>{name}</span>
-                    <span className="text-primary">{totalHours} uur</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="divide-y">
-                    {userEntries.map((entry) => (
-                      <div key={entry.id} className="flex items-center gap-3 px-4 py-2.5">
-                        <span className="text-xs text-muted-foreground min-w-[70px]">
-                          {format(new Date(entry.date), "EEE d/M", { locale: nl })}
+              <div key={name} className="rounded-2xl border bg-card shadow-card overflow-hidden animate-slide-up">
+                <div className="flex items-center justify-between px-4 py-3 bg-secondary/30">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+                      {name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-sm">{name}</span>
+                      {pendingCount > 0 && (
+                        <span className="ml-2 text-[10px] bg-warning/15 text-warning font-semibold px-1.5 py-0.5 rounded-full">
+                          {pendingCount} open
                         </span>
-                        <span className="font-mono text-xs font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded">
-                          {entry.project_number}
-                        </span>
-                        <span className="flex-1 text-sm truncate">{entry.description || "–"}</span>
-                        <span className="text-sm font-semibold">{entry.hours}u</span>
-                        <span className={`text-xs px-2 py-0.5 rounded ${statusColor[entry.status] || ""}`}>
-                          {entry.status}
-                        </span>
-                        {entry.status === "ingediend" && (
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-green-600 hover:bg-green-50"
-                              onClick={() => updateStatus(entry.id, "goedgekeurd")}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-red-600 hover:bg-red-50"
-                              onClick={() => updateStatus(entry.id, "afgekeurd")}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      )}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                  <span className="text-sm font-bold text-primary tabular-nums">{totalHours}u</span>
+                </div>
+                <div className="divide-y divide-border/50">
+                  {userEntries.map((entry) => {
+                    const sc = statusConfig[entry.status] || statusConfig.concept;
+                    return (
+                      <div key={entry.id} className="px-4 py-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[11px] text-muted-foreground font-medium min-w-[60px]">
+                            {format(new Date(entry.date), "EEE d/M", { locale: nl })}
+                          </span>
+                          <span className="font-mono text-[11px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-md">
+                            {entry.project_number}
+                          </span>
+                          <span className="text-xs flex-1 truncate min-w-0">{entry.description || "–"}</span>
+                          <span className="text-xs font-bold tabular-nums">{entry.hours}u</span>
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${sc.bg} ${sc.text}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                            {entry.status}
+                          </span>
+                          {entry.status === "ingediend" && (
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 rounded-lg text-success hover:bg-success/10"
+                                onClick={() => updateStatus(entry.id, "goedgekeurd")}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 rounded-lg text-destructive hover:bg-destructive/10"
+                                onClick={() => updateStatus(entry.id, "afgekeurd")}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })
         )}
