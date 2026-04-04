@@ -22,6 +22,7 @@ export default function Opdrachtgevers() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
   const fetchItems = useCallback(async () => {
