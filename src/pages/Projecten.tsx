@@ -244,6 +244,9 @@ function ProjectRow({ project, isEditing, form, setForm, onEdit, onCancel, onSav
       <button onClick={onToggle} className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: project.active ? "rgba(34,197,94,0.1)" : "rgba(255,255,255,0.06)" }}>
         {project.active ? <ToggleRight className="h-4 w-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="h-4 w-4 text-muted-foreground" />}
       </button>
+      <button onClick={onDelete} className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(239,68,68,0.1)" }}>
+        <X className="h-3.5 w-3.5" style={{ color: "#ef4444" }} />
+      </button>
     </div>
   );
 }
