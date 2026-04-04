@@ -15,6 +15,7 @@ interface EntryCardProps {
   entry: TimeEntry;
   onSubmit?: (id: string) => void;
   onRemove?: (id: string) => void;
+  onRevertToConcept?: (id: string) => void;
   showDate?: boolean;
 }
 
