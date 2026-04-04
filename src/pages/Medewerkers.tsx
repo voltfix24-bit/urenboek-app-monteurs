@@ -275,13 +275,28 @@ export default function Medewerkers() {
                   const isSelf = emp.user_id === user?.id;
                   return (
                     <div key={emp.user_id} className="flex items-center justify-between py-2.5 gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-sm font-medium truncate">{emp.full_name}</span>
-                        <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded shrink-0">
-                          {roleLabels[emp.role] || emp.role}
-                        </span>
-                      </div>
-                      {!isSelf && (
+                      <span className="text-sm font-medium truncate min-w-0">{emp.full_name}</span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {isSelf ? (
+                          <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                            {roleLabels[emp.role] || emp.role}
+                          </span>
+                        ) : (
+                          <Select
+                            value={emp.role}
+                            onValueChange={(val) => handleRoleChange(emp.user_id, val)}
+                            disabled={updatingRoleId === emp.user_id}
+                          >
+                            <SelectTrigger className="h-7 text-[10px] w-auto min-w-[100px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(roleLabels).map(([value, label]) => (
+                                <SelectItem key={value} value={value}>{label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
