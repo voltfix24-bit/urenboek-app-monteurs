@@ -1,22 +1,28 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Clock, CheckCircle, BarChart3, Users, LogOut } from "lucide-react";
+import { Clock, CheckCircle, BarChart3, Users, CalendarDays, Bell, User, LayoutDashboard } from "lucide-react";
 
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isManager, signOut } = useAuth();
+  const { isManager } = useAuth();
 
-  const tabs = [
+  const monteurTabs = [
     { key: "/", icon: Clock, label: "Uren" },
-    ...(isManager
-      ? [
-          { key: "/goedkeuring", icon: CheckCircle, label: "Keuren" },
-          { key: "/rapportage", icon: BarChart3, label: "Rapport" },
-          { key: "/medewerkers", icon: Users, label: "Team" },
-        ]
-      : []),
+    { key: "/planning", icon: CalendarDays, label: "Planning" },
+    { key: "/mededelingen", icon: Bell, label: "Berichten" },
+    { key: "/profiel", icon: User, label: "Profiel" },
   ];
+
+  const managerTabs = [
+    { key: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { key: "/goedkeuring", icon: CheckCircle, label: "Keuren" },
+    { key: "/manager-planning", icon: CalendarDays, label: "Planning" },
+    { key: "/medewerkers", icon: Users, label: "Team" },
+    { key: "/rapportage", icon: BarChart3, label: "Rapport" },
+  ];
+
+  const tabs = isManager ? managerTabs : monteurTabs;
 
   const isActive = (key: string) => {
     if (key === "/") return location.pathname === "/";
@@ -25,7 +31,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full sm:hidden"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full"
       style={{
         maxWidth: 430,
         background: "rgba(10,10,15,0.95)",
@@ -50,14 +56,6 @@ export function BottomNav() {
             </button>
           );
         })}
-        <button
-          onClick={signOut}
-          className="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors"
-          style={{ background: "none", color: "hsl(var(--muted-foreground))" }}
-        >
-          <LogOut className="h-5 w-5" />
-          <span className="text-[10px] font-semibold">Uit</span>
-        </button>
       </div>
     </nav>
   );

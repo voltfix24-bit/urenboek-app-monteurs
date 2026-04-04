@@ -14,6 +14,178 @@ export type Database = {
   }
   public: {
     Tables: {
+      beschikbaarheid: {
+        Row: {
+          behandeld_door: string | null
+          created_at: string
+          datum_tot: string
+          datum_van: string
+          id: string
+          medewerker_id: string
+          reden: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          behandeld_door?: string | null
+          created_at?: string
+          datum_tot: string
+          datum_van: string
+          id?: string
+          medewerker_id: string
+          reden?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          behandeld_door?: string | null
+          created_at?: string
+          datum_tot?: string
+          datum_van?: string
+          id?: string
+          medewerker_id?: string
+          reden?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beschikbaarheid_behandeld_door_fkey"
+            columns: ["behandeld_door"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beschikbaarheid_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certificaten: {
+        Row: {
+          bestand_url: string | null
+          created_at: string
+          id: string
+          medewerker_id: string
+          naam: string
+          type: string
+          updated_at: string
+          vervaldatum: string
+        }
+        Insert: {
+          bestand_url?: string | null
+          created_at?: string
+          id?: string
+          medewerker_id: string
+          naam: string
+          type?: string
+          updated_at?: string
+          vervaldatum: string
+        }
+        Update: {
+          bestand_url?: string | null
+          created_at?: string
+          id?: string
+          medewerker_id?: string
+          naam?: string
+          type?: string
+          updated_at?: string
+          vervaldatum?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificaten_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mededeling_leesstatus: {
+        Row: {
+          gelezen_op: string | null
+          id: string
+          mededeling_id: string
+          medewerker_id: string
+        }
+        Insert: {
+          gelezen_op?: string | null
+          id?: string
+          mededeling_id: string
+          medewerker_id: string
+        }
+        Update: {
+          gelezen_op?: string | null
+          id?: string
+          mededeling_id?: string
+          medewerker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mededeling_leesstatus_mededeling_id_fkey"
+            columns: ["mededeling_id"]
+            isOneToOne: false
+            referencedRelation: "mededelingen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mededeling_leesstatus_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mededelingen: {
+        Row: {
+          created_at: string
+          id: string
+          inhoud: string
+          ontvanger_id: string | null
+          ontvanger_type: string
+          titel: string
+          urgentie: string
+          verzonden_door: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inhoud?: string
+          ontvanger_id?: string | null
+          ontvanger_type?: string
+          titel: string
+          urgentie?: string
+          verzonden_door: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inhoud?: string
+          ontvanger_id?: string | null
+          ontvanger_type?: string
+          titel?: string
+          urgentie?: string
+          verzonden_door?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mededelingen_ontvanger_id_fkey"
+            columns: ["ontvanger_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opdrachtgevers: {
         Row: {
           contactpersoon: string
@@ -44,27 +216,96 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
+      planning: {
         Row: {
           created_at: string
-          full_name: string
+          created_by: string
+          datum: string
+          eindtijd: string
           id: string
+          medewerker_id: string
+          notitie: string
+          project_id: string
+          starttijd: string
           updated_at: string
-          user_id: string
         }
         Insert: {
           created_at?: string
-          full_name: string
+          created_by: string
+          datum: string
+          eindtijd?: string
           id?: string
+          medewerker_id: string
+          notitie?: string
+          project_id: string
+          starttijd?: string
           updated_at?: string
-          user_id: string
         }
         Update: {
           created_at?: string
+          created_by?: string
+          datum?: string
+          eindtijd?: string
+          id?: string
+          medewerker_id?: string
+          notitie?: string
+          project_id?: string
+          starttijd?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planning_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          adres: string
+          avatar_url: string | null
+          created_at: string
+          full_name: string
+          id: string
+          rijbewijs: boolean
+          telefoon: string
+          updated_at: string
+          user_id: string
+          vaste_vrije_dagen: number[]
+        }
+        Insert: {
+          adres?: string
+          avatar_url?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          rijbewijs?: boolean
+          telefoon?: string
+          updated_at?: string
+          user_id: string
+          vaste_vrije_dagen?: number[]
+        }
+        Update: {
+          adres?: string
+          avatar_url?: string | null
+          created_at?: string
           full_name?: string
           id?: string
+          rijbewijs?: boolean
+          telefoon?: string
           updated_at?: string
           user_id?: string
+          vaste_vrije_dagen?: number[]
         }
         Relationships: []
       }
