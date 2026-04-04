@@ -29,9 +29,13 @@ const Index = () => {
     hoursByProject,
     hoursByDay,
   } = useTimesheet();
+  const swipeHandlers = useSwipe({
+    onSwipeLeft: goToNextWeek,
+    onSwipeRight: goToPreviousWeek,
+  });
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-x-hidden" {...swipeHandlers}>
       <header className="border-b bg-card">
         <div className="px-4 py-3">
           {/* Top row: logo + hamburger */}
