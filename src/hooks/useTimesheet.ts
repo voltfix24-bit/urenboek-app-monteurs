@@ -19,6 +19,7 @@ export function useTimesheet() {
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
   const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [allEntries, setAllEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
 
   const weekDates = Array.from({ length: 7 }, (_, i) =>
@@ -56,9 +57,33 @@ export function useTimesheet() {
     setLoading(false);
   }, [user, weekStartStr, weekEndStr]);
 
+  const fetchAllEntries = useCallback(async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("time_entries")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("date", { ascending: false })
+      .limit(100);
+
+    if (!error && data) {
+      setAllEntries(
+        data.map((e) => ({
+          id: e.id,
+          date: e.date,
+          projectNumber: e.project_number,
+          description: e.description,
+          hours: Number(e.hours),
+          status: e.status,
+        }))
+      );
+    }
+  }, [user]);
+
   useEffect(() => {
     fetchEntries();
-  }, [fetchEntries]);
+    fetchAllEntries();
+  }, [fetchEntries, fetchAllEntries]);
 
   const addEntry = useCallback(
     async (entry: Omit<TimeEntry, "id" | "status">) => {
@@ -69,15 +94,17 @@ export function useTimesheet() {
         project_number: entry.projectNumber,
         description: entry.description,
         hours: entry.hours,
-        status: "ingediend",
+        status: "concept",
       });
       if (error) {
         toast.error("Fout bij toevoegen");
       } else {
+        toast.success("Uren opgeslagen als concept");
         fetchEntries();
+        fetchAllEntries();
       }
     },
-    [user, fetchEntries]
+    [user, fetchEntries, fetchAllEntries]
   );
 
   const addMultipleEntries = useCallback(
@@ -89,7 +116,7 @@ export function useTimesheet() {
         project_number: entry.projectNumber,
         description: entry.description,
         hours: entry.hours,
-        status: "ingediend",
+        status: "concept",
       }));
       const { error } = await supabase.from("time_entries").insert(rows);
       if (error) {
@@ -97,9 +124,10 @@ export function useTimesheet() {
       } else {
         toast.success(`${entries.length} dagen toegevoegd`);
         fetchEntries();
+        fetchAllEntries();
       }
     },
-    [user, fetchEntries]
+    [user, fetchEntries, fetchAllEntries]
   );
 
   const removeEntry = useCallback(
@@ -109,9 +137,27 @@ export function useTimesheet() {
         toast.error("Fout bij verwijderen");
       } else {
         fetchEntries();
+        fetchAllEntries();
       }
     },
-    [fetchEntries]
+    [fetchEntries, fetchAllEntries]
+  );
+
+  const submitEntry = useCallback(
+    async (id: string) => {
+      const { error } = await supabase
+        .from("time_entries")
+        .update({ status: "ingediend" })
+        .eq("id", id);
+      if (error) {
+        toast.error("Fout bij indienen");
+      } else {
+        toast.success("Ingediend ter goedkeuring");
+        fetchEntries();
+        fetchAllEntries();
+      }
+    },
+    [fetchEntries, fetchAllEntries]
   );
 
   const goToPreviousWeek = useCallback(() => {
@@ -127,7 +173,6 @@ export function useTimesheet() {
   }, []);
 
   const weekEntries = entries;
-
   const totalHours = weekEntries.reduce((sum, e) => sum + e.hours, 0);
 
   const hoursByProject = weekEntries.reduce<Record<string, number>>(
@@ -149,9 +194,11 @@ export function useTimesheet() {
     currentWeekStart,
     weekDates,
     weekEntries,
+    allEntries,
     addEntry,
     addMultipleEntries,
     removeEntry,
+    submitEntry,
     goToPreviousWeek,
     goToNextWeek,
     goToCurrentWeek,
