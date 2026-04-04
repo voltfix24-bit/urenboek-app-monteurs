@@ -187,7 +187,7 @@ export default function Projecten() {
   );
 }
 
-function ProjectRow({ project, isEditing, form, setForm, onEdit, onCancel, onSave, onToggle }: {
+function ProjectRow({ project, isEditing, form, setForm, onEdit, onCancel, onSave, onToggle, onDelete }: {
   project: Project;
   isEditing: boolean;
   form: { nummer: string; naam: string };
@@ -196,6 +196,7 @@ function ProjectRow({ project, isEditing, form, setForm, onEdit, onCancel, onSav
   onCancel: () => void;
   onSave: () => void;
   onToggle: () => void;
+  onDelete: () => void;
 }) {
   if (isEditing) {
     return (
