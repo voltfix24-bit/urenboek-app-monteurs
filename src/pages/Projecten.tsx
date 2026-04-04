@@ -80,6 +80,17 @@ export default function Projecten() {
     }
   }
 
+  async function handleDelete(project: Project) {
+    if (!confirm(`Weet je zeker dat je "${project.naam}" wilt verwijderen?`)) return;
+    const { error } = await supabase.from("projects").delete().eq("id", project.id);
+    if (error) {
+      toast.error("Fout bij verwijderen — mogelijk zijn er nog uren aan gekoppeld");
+    } else {
+      toast.success("Project verwijderd");
+      fetchProjects();
+    }
+  }
+
   function startEdit(project: Project) {
     setEditId(project.id);
     setForm({ nummer: project.nummer, naam: project.naam });
