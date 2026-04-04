@@ -1,13 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Download, Clock, FolderOpen, Users } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
+import { format, startOfISOWeek, addDays, getISOWeek, getISOWeekYear, addWeeks } from "date-fns";
 import { nl } from "date-fns/locale";
 import { BottomNav } from "@/components/BottomNav";
 
@@ -20,14 +17,23 @@ interface ReportEntry {
   full_name: string;
 }
 
+function getWeekRange(weekStart: Date) {
+  const start = format(weekStart, "yyyy-MM-dd");
+  const end = format(addDays(weekStart, 6), "yyyy-MM-dd");
+  return { start, end };
+}
+
 export default function Rapportage() {
   const { isManager } = useAuth();
   const navigate = useNavigate();
-  const [startDate, setStartDate] = useState(() => format(new Date(new Date().getFullYear(), new Date().getMonth(), 1), "yyyy-MM-dd"));
-  const [endDate, setEndDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [filter, setFilter] = useState<string>("goedgekeurd");
   const [entries, setEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const weekNumber = getISOWeek(currentWeekStart);
+  const weekYear = getISOWeekYear(currentWeekStart);
+  const { start: startDate, end: endDate } = getWeekRange(currentWeekStart);
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
