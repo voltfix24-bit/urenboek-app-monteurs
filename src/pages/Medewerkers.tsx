@@ -329,6 +329,7 @@ export default function Medewerkers() {
                             </AlertDialogContent>
                           </AlertDialog>
                         )}
+                      </div>
                     </div>
                   );
                 })}
