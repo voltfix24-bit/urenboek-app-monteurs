@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTimesheet } from "@/hooks/useTimesheet";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,10 @@ import { useSwipe } from "@/hooks/useSwipe";
 import { EntryCard } from "@/components/EntryCard";
 import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
-import { FolderOpen, Building2 } from "lucide-react";
+import { FolderOpen, Building2, ArrowRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { format, startOfWeek, addDays } from "date-fns";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
@@ -19,12 +22,35 @@ function fmt(date: Date) {
   return `${date.getDate()} ${MAANDEN[date.getMonth()]}`;
 }
 
+function isFridayAfternoon(): boolean {
+  // Check in Europe/Amsterdam timezone
+  try {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Europe/Amsterdam",
+      weekday: "short",
+      hour: "numeric",
+      hour12: false,
+    });
+    const parts = formatter.formatToParts(now);
+    const weekday = parts.find(p => p.type === "weekday")?.value;
+    const hour = parseInt(parts.find(p => p.type === "hour")?.value || "0", 10);
+    return weekday === "Fri" && hour >= 16;
+  } catch {
+    // Fallback: use local time
+    const now = new Date();
+    return now.getDay() === 5 && now.getHours() >= 16;
+  }
+}
+
 const Index = () => {
-  const { profile, isManager } = useAuth();
+  const { user, profile, isManager } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"week" | "overzicht">("week");
   const [showModal, setShowModal] = useState(false);
   const [modalDate, setModalDate] = useState<Date | null>(null);
+  const [showFridayBanner, setShowFridayBanner] = useState(false);
+  const [submittingAll, setSubmittingAll] = useState(false);
 
   const {
     weekDates,
@@ -37,12 +63,47 @@ const Index = () => {
     goToPreviousWeek,
     goToNextWeek,
     totalHours,
+    currentWeekStart,
   } = useTimesheet();
 
   const swipeHandlers = useSwipe({
     onSwipeLeft: goToNextWeek,
     onSwipeRight: goToPreviousWeek,
   });
+
+  // Friday afternoon reminder
+  const conceptEntries = weekEntries.filter(e => e.status === "concept");
+  const conceptHours = conceptEntries.reduce((s, e) => s + e.hours, 0);
+
+  useEffect(() => {
+    // Check if we're viewing the current week
+    const now = new Date();
+    const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const viewingCurrentWeek = format(currentWeekStart, "yyyy-MM-dd") === format(thisWeekStart, "yyyy-MM-dd");
+    
+    setShowFridayBanner(isFridayAfternoon() && viewingCurrentWeek && conceptEntries.length > 0);
+  }, [conceptEntries.length, currentWeekStart]);
+
+  const submitAllConcepts = useCallback(async () => {
+    if (!user || conceptEntries.length === 0) return;
+    setSubmittingAll(true);
+    
+    const ids = conceptEntries.map(e => e.id);
+    const { error } = await supabase
+      .from("time_entries")
+      .update({ status: "ingediend" })
+      .in("id", ids);
+    
+    if (error) {
+      toast.error("Fout bij indienen");
+    } else {
+      toast.success(`${ids.length} uren ingediend!`);
+      setShowFridayBanner(false);
+      // Re-fetch by triggering a small state change
+      window.location.reload();
+    }
+    setSubmittingAll(false);
+  }, [user, conceptEntries]);
 
   const today = dateKey(new Date());
   const weekLabel = `${fmt(weekDates[0])} – ${fmt(weekDates[6])}`;
@@ -83,7 +144,6 @@ const Index = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Prominent uren badge */}
               <div
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
                 style={{
@@ -95,7 +155,6 @@ const Index = () => {
                 <span className="text-[10px] font-semibold text-muted-foreground">uur</span>
               </div>
 
-              {/* Desktop nav for managers */}
               <div className="hidden sm:flex items-center gap-1.5">
                 {isManager && (
                   <>
@@ -127,7 +186,6 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Manager quick links (mobile) */}
           {isManager && (
             <div className="flex gap-1.5 mt-2.5 sm:hidden overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
               <button onClick={() => navigate("/projecten")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground shrink-0" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -159,6 +217,33 @@ const Index = () => {
           </div>
         </div>
       </header>
+
+      {/* Friday afternoon banner */}
+      {showFridayBanner && (
+        <div
+          className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl"
+          style={{
+            background: "rgba(245,158,11,0.1)",
+            border: "1px solid rgba(245,158,11,0.25)",
+          }}
+        >
+          <p className="text-xs font-medium" style={{ color: "#f59e0b" }}>
+            ⚠️ Je hebt nog {conceptHours}u niet ingediend deze week.
+          </p>
+          <button
+            onClick={submitAllConcepts}
+            disabled={submittingAll}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0 transition-colors disabled:opacity-50"
+            style={{
+              background: "rgba(245,158,11,0.15)",
+              border: "1px solid rgba(245,158,11,0.3)",
+              color: "#f59e0b",
+            }}
+          >
+            Alles indienen <ArrowRight className="h-3 w-3" />
+          </button>
+        </div>
+      )}
 
       {/* Week tab */}
       {activeTab === "week" && (
@@ -270,7 +355,6 @@ const Index = () => {
       {/* Overzicht tab */}
       {activeTab === "overzicht" && (
         <div className="px-4 py-4 space-y-4 animate-fade-in">
-          {/* Stats */}
           <div className="flex gap-2">
             {[
               { label: "Goedgekeurd", value: goedgekeurdUren + "u", color: "#22c55e" },
@@ -288,7 +372,6 @@ const Index = () => {
             ))}
           </div>
 
-          {/* All entries */}
           <div className="space-y-2">
             {allEntries.map((entry) => (
               <EntryCard

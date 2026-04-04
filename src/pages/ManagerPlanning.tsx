@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -20,6 +20,7 @@ interface PlanningEntry {
 interface MedewerkerInfo {
   id: string;
   full_name: string;
+  vaste_vrije_dagen: number[];
 }
 
 interface ProjectInfo {
@@ -28,7 +29,84 @@ interface ProjectInfo {
   nummer: string;
 }
 
+interface BeschikbaarheidItem {
+  medewerker_id: string;
+  datum_van: string;
+  datum_tot: string;
+  type: string;
+  status: string;
+}
+
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
+// JS day: 0=zo,1=ma,...6=za → vaste_vrije_dagen uses same
+const DAG_MAP = [1, 2, 3, 4, 5]; // index 0→ma(1), 1→di(2)...
+
+function getConflicts(
+  medId: string,
+  dateStr: string,
+  dayIndex: number,
+  entries: PlanningEntry[],
+  medewerkers: MedewerkerInfo[],
+  beschikbaarheid: BeschikbaarheidItem[],
+  currentEditId: string | null,
+): string[] {
+  const conflicts: string[] = [];
+  const med = medewerkers.find(m => m.id === medId);
+
+  // Check vaste vrije dag
+  const jsDayNum = DAG_MAP[dayIndex]; // 1=ma..5=vr
+  if (med?.vaste_vrije_dagen?.includes(jsDayNum)) {
+    conflicts.push("Vaste vrije dag");
+  }
+
+  // Check dubbele inzet (exclude current edit)
+  const dubbel = entries.filter(e => e.medewerker_id === medId && e.datum === dateStr && e.id !== currentEditId);
+  if (dubbel.length > 0) {
+    conflicts.push("Al ingepland");
+  }
+
+  // Check goedgekeurd verlof
+  const verlof = beschikbaarheid.find(b =>
+    b.medewerker_id === medId &&
+    b.status === "goedgekeurd" &&
+    dateStr >= b.datum_van &&
+    dateStr <= b.datum_tot
+  );
+  if (verlof) {
+    conflicts.push(verlof.type === "ziek" ? "Ziekmelding" : "Op vakantie/verlof");
+  }
+
+  return conflicts;
+}
+
+function getModalStatus(
+  medId: string,
+  dateStr: string,
+  medewerkers: MedewerkerInfo[],
+  beschikbaarheid: BeschikbaarheidItem[],
+  dateObj: Date,
+): { label: string; color: string; bg: string } | null {
+  const med = medewerkers.find(m => m.id === medId);
+  
+  // Check verlof first
+  const verlof = beschikbaarheid.find(b =>
+    b.medewerker_id === medId &&
+    b.status === "goedgekeurd" &&
+    dateStr >= b.datum_van &&
+    dateStr <= b.datum_tot
+  );
+  if (verlof) {
+    return { label: "✕ Op vakantie", color: "#ef4444", bg: "rgba(239,68,68,0.1)" };
+  }
+
+  // Check vaste vrije dag
+  const jsDay = dateObj.getDay(); // 0=zo,1=ma...
+  if (med?.vaste_vrije_dagen?.includes(jsDay)) {
+    return { label: "⚠ Vaste vrije dag", color: "#f59e0b", bg: "rgba(245,158,11,0.1)" };
+  }
+
+  return { label: "✓ Beschikbaar", color: "#22c55e", bg: "rgba(34,197,94,0.1)" };
+}
 
 export default function ManagerPlanning() {
   const { isManager, user } = useAuth();
@@ -36,6 +114,7 @@ export default function ManagerPlanning() {
   const [entries, setEntries] = useState<PlanningEntry[]>([]);
   const [medewerkers, setMedewerkers] = useState<MedewerkerInfo[]>([]);
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
+  const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [modalForm, setModalForm] = useState({
@@ -56,18 +135,23 @@ export default function ManagerPlanning() {
     const startStr = format(weekStart, "yyyy-MM-dd");
     const endStr = format(addDays(weekStart, 4), "yyyy-MM-dd");
 
-    const [{ data: planData }, { data: profData }, { data: projData }] = await Promise.all([
+    const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }] = await Promise.all([
       supabase.from("planning").select("*").gte("datum", startStr).lte("datum", endStr),
-      supabase.from("profiles").select("id, full_name").order("full_name"),
+      supabase.from("profiles").select("id, full_name, vaste_vrije_dagen").order("full_name"),
       supabase.from("projects").select("id, naam, nummer").eq("active", true).order("nummer"),
+      supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status")
+        .eq("status", "goedgekeurd")
+        .lte("datum_van", endStr)
+        .gte("datum_tot", startStr),
     ]);
 
     setEntries((planData ?? []).map((d: any) => ({
       id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id,
       datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "",
     })));
-    setMedewerkers(profData ?? []);
+    setMedewerkers((profData ?? []) as any);
     setProjects((projData ?? []) as any);
+    setBeschikbaarheid((beschData ?? []) as any);
     setLoading(false);
   }, [weekStart]);
 
@@ -136,6 +220,22 @@ export default function ManagerPlanning() {
   const projMap = new Map(projects.map(p => [p.id, p]));
   const medName = (id: string) => medewerkers.find(m => m.id === id)?.full_name || "?";
 
+  // Modal availability status
+  const modalStatus = useMemo(() => {
+    if (!modalForm.medewerker_id || !modalForm.datum) return null;
+    const dateObj = new Date(modalForm.datum + "T12:00:00");
+    return getModalStatus(modalForm.medewerker_id, modalForm.datum, medewerkers, beschikbaarheid, dateObj);
+  }, [modalForm.medewerker_id, modalForm.datum, medewerkers, beschikbaarheid]);
+
+  // Modal conflicts
+  const modalConflicts = useMemo(() => {
+    if (!modalForm.medewerker_id || !modalForm.datum) return [];
+    const dateObj = new Date(modalForm.datum + "T12:00:00");
+    const dayIndex = weekDates.findIndex(d => format(d, "yyyy-MM-dd") === modalForm.datum);
+    if (dayIndex < 0) return [];
+    return getConflicts(modalForm.medewerker_id, modalForm.datum, dayIndex, entries, medewerkers, beschikbaarheid, editId);
+  }, [modalForm.medewerker_id, modalForm.datum, entries, medewerkers, beschikbaarheid, editId, weekDates]);
+
   if (!isManager) {
     return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Alleen managers hebben toegang.</p></div>;
   }
@@ -196,14 +296,21 @@ export default function ManagerPlanning() {
                   const dateStr = format(d, "yyyy-MM-dd");
                   const entry = entries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
                   const proj = entry ? projMap.get(entry.project_id) : null;
+                  const conflicts = getConflicts(med.id, dateStr, i, entries, medewerkers, beschikbaarheid, null);
+                  const hasConflict = conflicts.length > 0;
+
                   return (
                     <button
                       key={i}
                       onClick={() => openAddModal(med.id, dateStr)}
-                      className="flex-1 rounded-xl p-1.5 min-h-[52px] flex flex-col items-center justify-center text-center transition-colors active:scale-95"
+                      className="flex-1 rounded-xl p-1 min-h-[52px] flex flex-col items-center justify-center text-center transition-colors active:scale-95"
                       style={{
-                        background: entry ? "rgba(99,102,241,0.1)" : "rgba(255,255,255,0.02)",
-                        border: entry ? "1px solid rgba(99,102,241,0.2)" : "1px solid rgba(255,255,255,0.04)",
+                        background: hasConflict && !entry
+                          ? "rgba(239,68,68,0.06)"
+                          : entry ? "rgba(99,102,241,0.1)" : "rgba(255,255,255,0.02)",
+                        border: hasConflict
+                          ? "1px solid rgba(239,68,68,0.25)"
+                          : entry ? "1px solid rgba(99,102,241,0.2)" : "1px solid rgba(255,255,255,0.04)",
                       }}
                     >
                       {entry ? (
@@ -211,8 +318,13 @@ export default function ManagerPlanning() {
                           <span className="text-[8px] font-bold text-foreground truncate w-full">{proj?.nummer?.slice(-3) || "?"}</span>
                           <span className="text-[7px] text-muted-foreground">{entry.starttijd}</span>
                         </>
+                      ) : hasConflict ? (
+                        <AlertTriangle className="h-3 w-3" style={{ color: "#ef4444", opacity: 0.6 }} />
                       ) : (
                         <Plus className="h-3 w-3 text-muted-foreground/30" />
+                      )}
+                      {hasConflict && entry && (
+                        <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "#ef4444" }} />
                       )}
                     </button>
                   );
@@ -233,6 +345,25 @@ export default function ManagerPlanning() {
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
             </h2>
             <p className="text-xs text-muted-foreground">{modalForm.datum}</p>
+
+            {/* Beschikbaarheidsstatus */}
+            {modalStatus && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: modalStatus.bg, border: `1px solid ${modalStatus.color}33` }}>
+                <span className="text-xs font-semibold" style={{ color: modalStatus.color }}>{modalStatus.label}</span>
+              </div>
+            )}
+
+            {/* Conflict warnings */}
+            {modalConflicts.length > 0 && (
+              <div className="space-y-1.5">
+                {modalConflicts.map((c, i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#ef4444" }} />
+                    <span className="text-xs font-medium" style={{ color: "#ef4444" }}>⚠ Conflict: {c}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="space-y-3">
               {/* Project select */}
