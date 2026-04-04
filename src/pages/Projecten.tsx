@@ -72,7 +72,11 @@ export default function Projecten() {
   }
 
   async function handleDelete(project: Project) {
-    if (!confirm(`Weet je zeker dat je "${project.naam}" wilt verwijderen?`)) return;
+    if (confirmDeleteId !== project.id) {
+      setConfirmDeleteId(project.id);
+      return;
+    }
+    setConfirmDeleteId(null);
     const { error } = await supabase.from("projects").delete().eq("id", project.id);
     if (error) { toast.error("Fout bij verwijderen"); }
     else { toast.success("Project verwijderd"); fetchData(); }
