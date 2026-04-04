@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Download, FileText } from "lucide-react";
+import { ArrowLeft, Download, FileText, Clock, FolderOpen, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -65,7 +65,6 @@ export default function Rapportage() {
     fetchReport();
   }, [fetchReport]);
 
-  // Group by project
   const byProject = entries.reduce<Record<string, { totalHours: number; employees: Record<string, number> }>>((acc, e) => {
     if (!acc[e.project_number]) acc[e.project_number] = { totalHours: 0, employees: {} };
     acc[e.project_number].totalHours += e.hours;
@@ -100,95 +99,116 @@ export default function Rapportage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="container max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={terrevoltLogo} alt="TerreVolt BV" className="h-8" />
-            <span className="text-xs text-muted-foreground border-l pl-3">Rapportage</span>
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur-md">
+        <div className="px-4 py-3 flex items-center justify-between max-w-5xl mx-auto">
+          <div className="flex items-center gap-2.5">
+            <img src={terrevoltLogo} alt="TerreVolt BV" className="h-7" />
+            <div className="border-l pl-2.5">
+              <span className="text-[11px] text-muted-foreground font-medium tracking-wide uppercase">Rapportage</span>
+            </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => navigate("/")}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1.5 text-xs h-8">
+            <ArrowLeft className="h-3.5 w-3.5" />
             Terug
           </Button>
         </div>
       </header>
 
-      <main className="container max-w-5xl mx-auto px-4 py-6 space-y-6">
+      <main className="px-4 py-5 space-y-4 max-w-5xl mx-auto">
         {/* Filters */}
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Van</Label>
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Tot</Label>
-                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-              </div>
-              <Button variant="outline" onClick={exportCSV} className="gap-1.5">
-                <Download className="h-4 w-4" />
-                CSV exporteren
-              </Button>
+        <div className="rounded-2xl border bg-card shadow-card p-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1.5 flex-1 min-w-[140px]">
+              <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Van</Label>
+              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 text-sm rounded-lg" />
             </div>
-          </CardContent>
-        </Card>
+            <div className="space-y-1.5 flex-1 min-w-[140px]">
+              <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Tot</Label>
+              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 text-sm rounded-lg" />
+            </div>
+            <Button variant="outline" onClick={exportCSV} className="gap-1.5 h-9 text-xs rounded-lg font-medium">
+              <Download className="h-3.5 w-3.5" />
+              CSV exporteren
+            </Button>
+          </div>
+        </div>
 
-        {/* Summary */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Card>
-            <CardContent className="pt-4 text-center">
-              <p className="text-2xl font-bold text-primary">{totalHours}</p>
-              <p className="text-xs text-muted-foreground">Totaal uren</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 text-center">
-              <p className="text-2xl font-bold text-primary">{Object.keys(byProject).length}</p>
-              <p className="text-xs text-muted-foreground">Projecten</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 text-center">
-              <p className="text-2xl font-bold text-primary">{new Set(entries.map((e) => e.full_name)).size}</p>
-              <p className="text-xs text-muted-foreground">Medewerkers</p>
-            </CardContent>
-          </Card>
+        {/* Summary cards */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-2xl border bg-card shadow-card p-4 text-center">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
+              <Clock className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-xl font-extrabold text-foreground">{totalHours}</p>
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">Uren</p>
+          </div>
+          <div className="rounded-2xl border bg-card shadow-card p-4 text-center">
+            <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center mx-auto mb-2">
+              <FolderOpen className="h-4 w-4 text-accent" />
+            </div>
+            <p className="text-xl font-extrabold text-foreground">{Object.keys(byProject).length}</p>
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">Projecten</p>
+          </div>
+          <div className="rounded-2xl border bg-card shadow-card p-4 text-center">
+            <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center mx-auto mb-2">
+              <Users className="h-4 w-4 text-success" />
+            </div>
+            <p className="text-xl font-extrabold text-foreground">{new Set(entries.map((e) => e.full_name)).size}</p>
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">Medewerkers</p>
+          </div>
         </div>
 
         {/* Per project */}
         {loading ? (
-          <p className="text-sm text-muted-foreground">Laden...</p>
+          <div className="text-center py-10">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs text-muted-foreground mt-3">Laden...</p>
+          </div>
         ) : Object.keys(byProject).length === 0 ? (
-          <p className="text-sm text-muted-foreground">Geen goedgekeurde uren in deze periode.</p>
+          <div className="text-center py-10 rounded-2xl border bg-card shadow-card">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+              <span className="text-xl">📊</span>
+            </div>
+            <p className="text-sm font-medium">Geen goedgekeurde uren</p>
+            <p className="text-xs text-muted-foreground mt-1">Geen data in deze periode</p>
+          </div>
         ) : (
           Object.entries(byProject)
             .sort((a, b) => b[1].totalHours - a[1].totalHours)
             .map(([project, data]) => (
-              <Card key={project}>
-                <CardHeader className="py-3">
-                  <CardTitle className="text-sm flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      Project {project}
-                    </span>
-                    <span className="text-primary">{data.totalHours} uur</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="divide-y">
-                    {Object.entries(data.employees)
-                      .sort((a, b) => b[1] - a[1])
-                      .map(([name, hours]) => (
-                        <div key={name} className="flex items-center justify-between py-2">
-                          <span className="text-sm">{name}</span>
-                          <span className="text-sm font-semibold">{hours} uur</span>
-                        </div>
-                      ))}
+              <div key={project} className="rounded-2xl border bg-card shadow-card overflow-hidden animate-slide-up">
+                <div className="flex items-center justify-between px-4 py-3 bg-secondary/30">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <FileText className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="font-semibold text-sm">Project {project}</span>
                   </div>
-                </CardContent>
-              </Card>
+                  <span className="text-sm font-bold text-primary tabular-nums">{data.totalHours}u</span>
+                </div>
+                <div className="divide-y divide-border/50 px-4">
+                  {Object.entries(data.employees)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([name, hours]) => (
+                      <div key={name} className="flex items-center justify-between py-2.5">
+                        <span className="text-sm">{name}</span>
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-20 h-1.5 bg-secondary rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${data.totalHours > 0 ? (hours / data.totalHours) * 100 : 0}%`,
+                                background: 'var(--gradient-primary)',
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs font-bold tabular-nums">{hours}u</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
             ))
         )}
       </main>

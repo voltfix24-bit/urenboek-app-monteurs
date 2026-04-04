@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Copy, UserPlus, ArrowLeft, Eye, EyeOff, Trash2 } from "lucide-react";
@@ -158,43 +157,45 @@ export default function Medewerkers() {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <header className="border-b bg-card">
+      <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur-md">
         <div className="px-4 py-3 flex items-center justify-between max-w-5xl mx-auto">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <img src={terrevoltLogo} alt="TerreVolt BV" className="h-7" />
-            <span className="text-xs text-muted-foreground border-l pl-2">Medewerkers</span>
+            <div className="border-l pl-2.5">
+              <span className="text-[11px] text-muted-foreground font-medium tracking-wide uppercase">Medewerkers</span>
+            </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => navigate("/")}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1.5 text-xs h-8">
+            <ArrowLeft className="h-3.5 w-3.5" />
             Terug
           </Button>
         </div>
       </header>
 
-      <main className="px-4 py-4 space-y-4 max-w-5xl mx-auto">
+      <main className="px-4 py-5 space-y-4 max-w-5xl mx-auto">
         {/* Add employee form */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <UserPlus className="h-4 w-4" />
-              Nieuwe medewerker toevoegen
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="rounded-2xl border bg-card shadow-card overflow-hidden animate-slide-up">
+          <div className="px-4 py-3 bg-secondary/30 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
+              <UserPlus className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="font-semibold text-sm">Nieuwe medewerker</span>
+          </div>
+          <div className="p-4">
             <form onSubmit={handleCreate} className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Naam</Label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jan Jansen" className="h-9" />
+                  <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Naam</Label>
+                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jan Jansen" className="h-9 rounded-lg" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">E-mailadres</Label>
-                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jan@terrevolt.nl" className="h-9" />
+                  <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">E-mailadres</Label>
+                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jan@terrevolt.nl" className="h-9 rounded-lg" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Rol</Label>
+                  <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Rol</Label>
                   <Select value={role} onValueChange={setRole}>
-                    <SelectTrigger className="h-9"><SelectValue placeholder="Kies rol" /></SelectTrigger>
+                    <SelectTrigger className="h-9 rounded-lg"><SelectValue placeholder="Kies rol" /></SelectTrigger>
                     <SelectContent>
                       {Object.entries(roleLabels).map(([value, label]) => (
                         <SelectItem key={value} value={value}>{label}</SelectItem>
@@ -203,140 +204,144 @@ export default function Medewerkers() {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Wachtwoord</Label>
+                  <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Wachtwoord</Label>
                   <div className="flex gap-1">
-                    <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Wachtwoord" className="h-9" />
-                    <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={generatePassword} title="Genereer wachtwoord">
+                    <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Wachtwoord" className="h-9 rounded-lg" />
+                    <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-lg" onClick={generatePassword} title="Genereer wachtwoord">
                       🎲
                     </Button>
                   </div>
                 </div>
               </div>
-              <Button type="submit" disabled={loading} className="w-full sm:w-auto gap-1.5">
+              <Button type="submit" disabled={loading} className="w-full sm:w-auto gap-1.5 gradient-primary text-primary-foreground hover:opacity-90 rounded-lg font-medium">
                 <UserPlus className="h-4 w-4" />
                 {loading ? "Bezig..." : "Toevoegen"}
               </Button>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Recently created */}
         {createdUsers.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Zojuist aangemaakt</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {createdUsers.map((user, i) => (
-                  <div key={i} className="p-3 rounded-lg border bg-secondary/30 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-0.5 min-w-0">
-                        <p className="font-medium text-sm">{user.fullName}</p>
-                        <p className="text-xs text-muted-foreground truncate">{user.email} · {roleLabels[user.role]}</p>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => copyCredentials(user)} className="gap-1 shrink-0">
-                        <Copy className="h-3.5 w-3.5" />
-                        Kopieer
-                      </Button>
+          <div className="rounded-2xl border bg-card shadow-card overflow-hidden animate-slide-up">
+            <div className="px-4 py-3 bg-success/5 border-b">
+              <span className="font-semibold text-sm">Zojuist aangemaakt</span>
+            </div>
+            <div className="p-4 space-y-3">
+              {createdUsers.map((u, i) => (
+                <div key={i} className="p-3 rounded-xl border bg-secondary/20 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-0.5 min-w-0">
+                      <p className="font-semibold text-sm">{u.fullName}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{u.email} · {roleLabels[u.role]}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">Wachtwoord:</span>
-                      <code className="text-xs bg-background px-2 py-0.5 rounded border">
-                        {showPasswords[i] ? user.password : "••••••••••"}
-                      </code>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => setShowPasswords((prev) => ({ ...prev, [i]: !prev[i] }))}
-                      >
-                        {showPasswords[i] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                      </Button>
-                    </div>
+                    <Button variant="outline" size="sm" onClick={() => copyCredentials(u)} className="gap-1 shrink-0 rounded-lg text-xs h-7">
+                      <Copy className="h-3 w-3" />
+                      Kopieer
+                    </Button>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-muted-foreground">Wachtwoord:</span>
+                    <code className="text-[11px] bg-background px-2 py-0.5 rounded-md border font-mono">
+                      {showPasswords[i] ? u.password : "••••••••••"}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => setShowPasswords((prev) => ({ ...prev, [i]: !prev[i] }))}
+                    >
+                      {showPasswords[i] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Employee list */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Alle medewerkers</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="rounded-2xl border bg-card shadow-card overflow-hidden animate-slide-up">
+          <div className="px-4 py-3 bg-secondary/30 flex items-center justify-between">
+            <span className="font-semibold text-sm">Alle medewerkers</span>
+            <span className="text-[11px] text-muted-foreground font-medium">{employees.length} personen</span>
+          </div>
+          <div className="divide-y divide-border/50">
             {employees.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nog geen medewerkers</p>
-            ) : (
-              <div className="divide-y">
-                {employees.map((emp) => {
-                  const isSelf = emp.user_id === user?.id;
-                  return (
-                    <div key={emp.user_id} className="flex items-center justify-between py-2.5 gap-2">
-                      <span className="text-sm font-medium truncate min-w-0">{emp.full_name}</span>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {isSelf ? (
-                          <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                            {roleLabels[emp.role] || emp.role}
-                          </span>
-                        ) : (
-                          <Select
-                            value={emp.role}
-                            onValueChange={(val) => handleRoleChange(emp.user_id, val)}
-                            disabled={updatingRoleId === emp.user_id}
-                          >
-                            <SelectTrigger className="h-7 text-[10px] w-auto min-w-[100px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Object.entries(roleLabels).map(([value, label]) => (
-                                <SelectItem key={value} value={value}>{label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                        {!isSelf && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-                                disabled={deletingId === emp.user_id}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Medewerker verwijderen</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen? 
-                                  Dit verwijdert ook alle urenregistraties van deze medewerker. Dit kan niet ongedaan worden gemaakt.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Annuleren</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDelete(emp.user_id, emp.full_name)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Verwijderen
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="p-6 text-center">
+                <p className="text-sm text-muted-foreground">Nog geen medewerkers</p>
               </div>
+            ) : (
+              employees.map((emp) => {
+                const isSelf = emp.user_id === user?.id;
+                return (
+                  <div key={emp.user_id} className="flex items-center justify-between px-4 py-3 gap-2 hover:bg-muted/20 transition-colors">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
+                        {emp.full_name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-sm font-medium truncate">{emp.full_name}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {isSelf ? (
+                        <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-1 rounded-md">
+                          {roleLabels[emp.role] || emp.role}
+                        </span>
+                      ) : (
+                        <Select
+                          value={emp.role}
+                          onValueChange={(val) => handleRoleChange(emp.user_id, val)}
+                          disabled={updatingRoleId === emp.user_id}
+                        >
+                          <SelectTrigger className="h-7 text-[10px] w-auto min-w-[100px] rounded-md">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(roleLabels).map(([value, label]) => (
+                              <SelectItem key={value} value={value}>{label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {!isSelf && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 rounded-lg text-muted-foreground hover:text-destructive shrink-0"
+                              disabled={deletingId === emp.user_id}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-2xl">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Medewerker verwijderen</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen? 
+                                Dit verwijdert ook alle urenregistraties. Dit kan niet ongedaan worden.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="rounded-lg">Annuleren</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(emp.user_id, emp.full_name)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
+                              >
+                                Verwijderen
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </main>
     </div>
   );
