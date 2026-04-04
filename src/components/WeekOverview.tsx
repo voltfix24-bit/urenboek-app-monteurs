@@ -13,8 +13,12 @@ interface WeekOverviewProps {
 export function WeekOverview({ weekDates, entries, onRemove }: WeekOverviewProps) {
   if (entries.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        <p className="text-sm">Nog geen uren ingevoerd deze week</p>
+      <div className="text-center py-10 text-muted-foreground rounded-2xl border bg-card shadow-card">
+        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+          <span className="text-xl">📋</span>
+        </div>
+        <p className="text-sm font-medium">Nog geen uren deze week</p>
+        <p className="text-xs mt-1">Voeg uren toe via het formulier hierboven</p>
       </div>
     );
   }
@@ -31,39 +35,39 @@ export function WeekOverview({ weekDates, entries, onRemove }: WeekOverviewProps
   return (
     <div className="space-y-3">
       {groupedByDate.map(({ date, dayEntries, dayTotal }) => (
-        <div key={date.toISOString()} className="rounded-lg border bg-card overflow-hidden">
-          <div className="flex items-center justify-between px-3 py-2 bg-secondary/50">
-            <span className="font-medium text-xs capitalize">
-              {format(date, "EEEE d MMM", { locale: nl })}
+        <div key={date.toISOString()} className="rounded-2xl border bg-card shadow-card overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5 bg-secondary/40">
+            <span className="font-semibold text-xs capitalize tracking-tight">
+              {format(date, "EEEE d MMMM", { locale: nl })}
             </span>
-            <span className="text-xs font-semibold text-primary">
+            <span className="text-xs font-bold text-primary tabular-nums">
               {dayTotal}u
             </span>
           </div>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/50">
             {dayEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="px-3 py-2.5 space-y-1"
+                className="px-4 py-3 hover:bg-muted/30 transition-colors group"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                    {entry.projectNumber}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold">{entry.hours}u</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                      onClick={() => onRemove(entry.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="font-mono text-[11px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-md shrink-0">
+                      {entry.projectNumber}
+                    </span>
+                    <span className="text-xs font-bold tabular-nums">{entry.hours}u</span>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity sm:opacity-100"
+                    onClick={() => onRemove(entry.id)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
                 </div>
                 {entry.description && (
-                  <p className="text-xs text-muted-foreground">{entry.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1.5 pl-0">{entry.description}</p>
                 )}
               </div>
             ))}
