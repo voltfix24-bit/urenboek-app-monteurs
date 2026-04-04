@@ -250,6 +250,7 @@ const Index = () => {
                       entry={entry}
                       onSubmit={submitEntry}
                       onRemove={removeEntry}
+                      onRevertToConcept={revertToConcept}
                     />
                   ))}
                 </div>
