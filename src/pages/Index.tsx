@@ -33,6 +33,7 @@ const Index = () => {
     addEntry,
     removeEntry,
     submitEntry,
+    revertToConcept,
     goToPreviousWeek,
     goToNextWeek,
     totalHours,
