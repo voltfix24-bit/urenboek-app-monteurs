@@ -17,15 +17,15 @@ export function WeekSummary({
   const maxHours = Math.max(...hoursByDay, 8);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-3">
       {/* Daily bar chart */}
-      <div className="rounded-lg border bg-card p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Uren per dag</h3>
-        <div className="flex items-end gap-2 h-32">
+      <div className="rounded-lg border bg-card p-3">
+        <h3 className="text-xs font-semibold text-foreground mb-2">Uren per dag</h3>
+        <div className="flex items-end gap-1.5 h-24">
           {weekDates.map((date, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <span className="text-xs font-medium text-muted-foreground">
-                {hoursByDay[i] > 0 ? `${hoursByDay[i]}u` : ""}
+            <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+              <span className="text-[10px] font-medium text-muted-foreground">
+                {hoursByDay[i] > 0 ? `${hoursByDay[i]}` : ""}
               </span>
               <div className="w-full bg-secondary rounded-t relative" style={{ height: "100%" }}>
                 <div
@@ -45,39 +45,35 @@ export function WeekSummary({
       </div>
 
       {/* Project summary */}
-      <div className="rounded-lg border bg-card p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Per project</h3>
+      <div className="rounded-lg border bg-card p-3">
+        <h3 className="text-xs font-semibold text-foreground mb-2">Per project</h3>
         {Object.keys(hoursByProject).length === 0 ? (
-          <p className="text-sm text-muted-foreground">Geen data</p>
+          <p className="text-xs text-muted-foreground">Geen data</p>
         ) : (
           <div className="space-y-2">
             {Object.entries(hoursByProject)
               .sort(([, a], [, b]) => b - a)
               .map(([project, hours]) => (
-                <div key={project} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded">
-                      {project}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
+                <div key={project} className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded shrink-0">
+                    {project}
+                  </span>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary rounded-full transition-all duration-300"
                         style={{ width: `${totalHours > 0 ? (hours / totalHours) * 100 : 0}%` }}
                       />
                     </div>
-                    <span className="text-sm font-semibold min-w-[3rem] text-right">
-                      {hours}u
-                    </span>
+                    <span className="text-xs font-semibold shrink-0">{hours}u</span>
                   </div>
                 </div>
               ))}
           </div>
         )}
-        <div className="mt-4 pt-3 border-t flex justify-between">
-          <span className="text-sm font-medium text-muted-foreground">Totaal</span>
-          <span className="text-lg font-bold text-primary">{totalHours} uur</span>
+        <div className="mt-3 pt-2 border-t flex justify-between">
+          <span className="text-xs font-medium text-muted-foreground">Totaal</span>
+          <span className="text-sm font-bold text-primary">{totalHours} uur</span>
         </div>
       </div>
     </div>
