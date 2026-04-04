@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { format } from "date-fns";
 import { useProjects } from "@/hooks/useProjects";
 
@@ -21,6 +21,30 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
   const [step, setStep] = useState(initialDate ? 2 : 1);
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate || null);
   const [form, setForm] = useState({ projectNummer: null as string | null, werkzaamheden: null as string | null, uren: 8 });
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartY = useRef(0);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    dragStartY.current = e.touches[0].clientY;
+    setIsDragging(true);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const dy = e.touches[0].clientY - dragStartY.current;
+    setDragY(Math.max(0, dy));
+  }, [isDragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+    if (dragY > 120) {
+      onClose();
+    } else {
+      setDragY(0);
+    }
+  }, [dragY, onClose]);
 
   const proj = projects.find((p) => p.nummer === form.projectNummer);
   const today = dateKey(new Date());
@@ -39,10 +63,11 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center animate-fade-in"
-      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+      style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", opacity: isDragging ? Math.max(0.2, 1 - dragY / 300) : 1 }}
       onClick={onClose}
     >
       <div
+        ref={sheetRef}
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-[430px] mx-auto animate-sheet-up"
         style={{
@@ -51,10 +76,17 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
           padding: "20px 20px 40px",
           border: "1px solid rgba(255,255,255,0.08)",
           minHeight: 360,
+          transform: `translateY(${dragY}px)`,
+          transition: isDragging ? "none" : "transform 0.3s ease",
         }}
       >
-        <div className="flex justify-center mb-5">
-          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
+        <div
+          className="flex justify-center mb-5 py-2 cursor-grab active:cursor-grabbing"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.25)" }} />
         </div>
 
         <div className="flex gap-1.5 mb-6">
