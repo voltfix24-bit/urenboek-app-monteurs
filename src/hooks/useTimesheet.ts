@@ -160,7 +160,24 @@ export function useTimesheet() {
     [fetchEntries, fetchAllEntries]
   );
 
-  const goToPreviousWeek = useCallback(() => {
+  const revertToConcept = useCallback(
+    async (id: string) => {
+      const { error } = await supabase
+        .from("time_entries")
+        .update({ status: "concept", approved_by: null })
+        .eq("id", id);
+      if (error) {
+        toast.error("Fout bij terugzetten");
+      } else {
+        toast.success("Teruggezet als concept — pas aan en dien opnieuw in");
+        fetchEntries();
+        fetchAllEntries();
+      }
+    },
+    [fetchEntries, fetchAllEntries]
+  );
+
+
     setCurrentWeekStart((prev) => addDays(prev, -7));
   }, []);
 
