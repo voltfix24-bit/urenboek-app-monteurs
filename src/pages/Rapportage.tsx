@@ -2,15 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Download, FileText, Clock, FolderOpen, Users } from "lucide-react";
+import { Download, Clock, FolderOpen, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
-import terrevoltLogo from "@/assets/terrevolt-logo.png";
+import { BottomNav } from "@/components/BottomNav";
 
 interface ReportEntry {
   date: string;
@@ -26,18 +25,24 @@ export default function Rapportage() {
   const navigate = useNavigate();
   const [startDate, setStartDate] = useState(() => format(new Date(new Date().getFullYear(), new Date().getMonth(), 1), "yyyy-MM-dd"));
   const [endDate, setEndDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
+  const [filter, setFilter] = useState<string>("goedgekeurd");
   const [entries, setEntries] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
-    const { data: timeEntries, error } = await supabase
+    let query = supabase
       .from("time_entries")
       .select("*")
       .gte("date", startDate)
       .lte("date", endDate)
-      .eq("status", "goedgekeurd")
       .order("date");
+
+    if (filter !== "alle") {
+      query = query.eq("status", filter);
+    }
+
+    const { data: timeEntries, error } = await query;
 
     if (error) {
       toast.error("Fout bij ophalen");
@@ -59,20 +64,30 @@ export default function Rapportage() {
       }))
     );
     setLoading(false);
-  }, [startDate, endDate]);
+  }, [startDate, endDate, filter]);
 
   useEffect(() => {
     fetchReport();
   }, [fetchReport]);
 
-  const byProject = entries.reduce<Record<string, { totalHours: number; employees: Record<string, number> }>>((acc, e) => {
-    if (!acc[e.project_number]) acc[e.project_number] = { totalHours: 0, employees: {} };
-    acc[e.project_number].totalHours += e.hours;
-    acc[e.project_number].employees[e.full_name] = (acc[e.project_number].employees[e.full_name] || 0) + e.hours;
+  const totalHours = entries.reduce((s, e) => s + e.hours, 0);
+  const uniqueProjects = new Set(entries.map((e) => e.project_number)).size;
+  const uniqueEmployees = new Set(entries.map((e) => e.full_name)).size;
+
+  // Per medewerker stats for bar chart
+  const perMedewerker = entries.reduce<Record<string, number>>((acc, e) => {
+    acc[e.full_name] = (acc[e.full_name] || 0) + e.hours;
     return acc;
   }, {});
+  const medewerkerStats = Object.entries(perMedewerker).sort((a, b) => b[1] - a[1]);
+  const maxMedUren = Math.max(...medewerkerStats.map((m) => m[1]), 1);
 
-  const totalHours = entries.reduce((s, e) => s + e.hours, 0);
+  // Per project stats
+  const perProject = entries.reduce<Record<string, number>>((acc, e) => {
+    acc[e.project_number] = (acc[e.project_number] || 0) + e.hours;
+    return acc;
+  }, {});
+  const projectStats = Object.entries(perProject).sort((a, b) => b[1] - a[1]);
 
   const exportCSV = () => {
     const rows = [["Datum", "Project", "Medewerker", "Omschrijving", "Uren"]];
@@ -99,119 +114,139 @@ export default function Rapportage() {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur-md">
-        <div className="px-4 py-3 flex items-center justify-between max-w-5xl mx-auto">
+    <div className="min-h-screen bg-background overflow-x-hidden" style={{ maxWidth: 430, margin: "0 auto", paddingBottom: 80 }}>
+      {/* Header */}
+      <header className="sticky top-0 z-30" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(12px)" }}>
+        <div className="px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <img src={terrevoltLogo} alt="TerreVolt BV" className="h-7" />
-            <div className="border-l pl-2.5">
-              <span className="text-[11px] text-muted-foreground font-medium tracking-wide uppercase">Rapportage</span>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
+              ⚡
             </div>
+            <span className="text-base font-bold text-foreground tracking-tight">Rapportage</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1.5 text-xs h-8">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Terug
-          </Button>
         </div>
       </header>
 
-      <main className="px-4 py-5 space-y-4 max-w-5xl mx-auto">
-        {/* Filters */}
-        <div className="rounded-2xl border bg-card shadow-card p-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="space-y-1.5 flex-1 min-w-[140px]">
-              <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Van</Label>
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 text-sm rounded-lg" />
+      <main className="px-4 py-4 space-y-4">
+        {/* Date range */}
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="flex gap-3">
+            <div className="flex-1 space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Van</label>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm text-foreground" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }} />
             </div>
-            <div className="space-y-1.5 flex-1 min-w-[140px]">
-              <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Tot</Label>
-              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 text-sm rounded-lg" />
+            <div className="flex-1 space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Tot</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm text-foreground" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }} />
             </div>
-            <Button variant="outline" onClick={exportCSV} className="gap-1.5 h-9 text-xs rounded-lg font-medium">
-              <Download className="h-3.5 w-3.5" />
-              CSV exporteren
-            </Button>
+          </div>
+
+          {/* Filter chips */}
+          <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {([["goedgekeurd", "Goedgekeurd"], ["ingediend", "Ingediend"], ["alle", "Alle uren"]] as const).map(([k, l]) => (
+              <button
+                key={k}
+                onClick={() => setFilter(k)}
+                className="shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-colors"
+                style={{
+                  background: filter === k ? "rgba(34,197,94,0.1)" : "rgba(255,255,255,0.04)",
+                  border: filter === k ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                  color: filter === k ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                }}
+              >
+                {l}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Summary cards */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-2xl border bg-card shadow-card p-4 text-center">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
-              <Clock className="h-4 w-4 text-primary" />
+        {/* KPI strip */}
+        <div className="flex gap-2">
+          {[
+            { label: "Uren", value: totalHours + "u", icon: "⏱", color: "#22c55e" },
+            { label: "Projecten", value: String(uniqueProjects), icon: "📁", color: "#6366f1" },
+            { label: "Monteurs", value: String(uniqueEmployees), icon: "👷", color: "#f59e0b" },
+          ].map((k, i) => (
+            <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <p className="text-lg mb-0.5">{k.icon}</p>
+              <p className="text-xl font-extrabold" style={{ color: k.color }}>{k.value}</p>
+              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">{k.label}</p>
             </div>
-            <p className="text-xl font-extrabold text-foreground">{totalHours}</p>
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">Uren</p>
-          </div>
-          <div className="rounded-2xl border bg-card shadow-card p-4 text-center">
-            <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center mx-auto mb-2">
-              <FolderOpen className="h-4 w-4 text-accent" />
-            </div>
-            <p className="text-xl font-extrabold text-foreground">{Object.keys(byProject).length}</p>
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">Projecten</p>
-          </div>
-          <div className="rounded-2xl border bg-card shadow-card p-4 text-center">
-            <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center mx-auto mb-2">
-              <Users className="h-4 w-4 text-success" />
-            </div>
-            <p className="text-xl font-extrabold text-foreground">{new Set(entries.map((e) => e.full_name)).size}</p>
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">Medewerkers</p>
-          </div>
+          ))}
         </div>
 
-        {/* Per project */}
         {loading ? (
           <div className="text-center py-10">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-xs text-muted-foreground mt-3">Laden...</p>
           </div>
-        ) : Object.keys(byProject).length === 0 ? (
-          <div className="text-center py-10 rounded-2xl border bg-card shadow-card">
-            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-              <span className="text-xl">📊</span>
-            </div>
-            <p className="text-sm font-medium">Geen goedgekeurde uren</p>
-            <p className="text-xs text-muted-foreground mt-1">Geen data in deze periode</p>
-          </div>
         ) : (
-          Object.entries(byProject)
-            .sort((a, b) => b[1].totalHours - a[1].totalHours)
-            .map(([project, data]) => (
-              <div key={project} className="rounded-2xl border bg-card shadow-card overflow-hidden animate-slide-up">
-                <div className="flex items-center justify-between px-4 py-3 bg-secondary/30">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <FileText className="h-4 w-4 text-primary" />
+          <>
+            {/* Per medewerker bar chart */}
+            {medewerkerStats.length > 0 && (
+              <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Per monteur</p>
+                {medewerkerStats.map(([naam, uren], i) => (
+                  <div key={naam} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">{naam}</span>
+                      <span className="text-xs font-bold tabular-nums" style={{ color: "hsl(var(--primary))" }}>{uren}u</span>
                     </div>
-                    <span className="font-semibold text-sm">Project {project}</span>
+                    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${(uren / maxMedUren) * 100}%`,
+                          background: "linear-gradient(90deg, hsl(var(--primary)), hsl(160 70% 40%))",
+                        }}
+                      />
+                    </div>
                   </div>
-                  <span className="text-sm font-bold text-primary tabular-nums">{data.totalHours}u</span>
-                </div>
-                <div className="divide-y divide-border/50 px-4">
-                  {Object.entries(data.employees)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([name, hours]) => (
-                      <div key={name} className="flex items-center justify-between py-2.5">
-                        <span className="text-sm">{name}</span>
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-20 h-1.5 bg-secondary rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${data.totalHours > 0 ? (hours / data.totalHours) * 100 : 0}%`,
-                                background: 'var(--gradient-primary)',
-                              }}
-                            />
-                          </div>
-                          <span className="text-xs font-bold tabular-nums">{hours}u</span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
+                ))}
               </div>
-            ))
+            )}
+
+            {/* Per project */}
+            {projectStats.length > 0 && (
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Per project</p>
+                {projectStats.map(([project, uren]) => (
+                  <div key={project} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                    <span className="text-sm font-medium text-foreground">{project}</span>
+                    <span className="text-xs font-bold tabular-nums" style={{ color: "hsl(var(--primary))" }}>{uren}u</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {entries.length === 0 && (
+              <div className="text-center py-10 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <p className="text-3xl mb-2">📊</p>
+                <p className="text-sm font-medium text-foreground">Geen data gevonden</p>
+                <p className="text-xs text-muted-foreground mt-1">Geen uren in deze periode</p>
+              </div>
+            )}
+
+            {/* Export */}
+            {entries.length > 0 && (
+              <button
+                onClick={exportCSV}
+                className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "hsl(var(--foreground))",
+                }}
+              >
+                <Download className="h-4 w-4" />
+                CSV exporteren
+              </button>
+            )}
+          </>
         )}
       </main>
+
+      <BottomNav />
     </div>
   );
 }
