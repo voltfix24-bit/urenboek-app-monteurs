@@ -9,7 +9,6 @@ import { nl } from "date-fns/locale";
 import { BottomNav } from "@/components/BottomNav";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { BottomNav } from "@/components/BottomNav";
 
 interface ReportEntry {
   date: string;
