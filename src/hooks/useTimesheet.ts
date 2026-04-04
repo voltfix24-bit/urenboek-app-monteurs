@@ -177,7 +177,7 @@ export function useTimesheet() {
     [fetchEntries, fetchAllEntries]
   );
 
-
+  const goToPreviousWeek = useCallback(() => {
     setCurrentWeekStart((prev) => addDays(prev, -7));
   }, []);
 
