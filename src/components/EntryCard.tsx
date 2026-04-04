@@ -19,7 +19,7 @@ interface EntryCardProps {
   showDate?: boolean;
 }
 
-export function EntryCard({ entry, onSubmit, onRemove, showDate = false }: EntryCardProps) {
+export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDate = false }: EntryCardProps) {
   const { getByNummer } = useProjects();
   const proj = getByNummer(entry.projectNumber);
   const s = STATUS_CONFIG[entry.status] || STATUS_CONFIG.concept;
@@ -55,7 +55,19 @@ export function EntryCard({ entry, onSubmit, onRemove, showDate = false }: Entry
         </button>
       )}
       {entry.status === "afgekeurd" && (
-        <p className="mt-2 text-[11px] text-destructive/70 italic">Neem contact op met je manager voor toelichting.</p>
+        <div className="mt-3 space-y-2">
+          <p className="text-[11px] text-destructive/70 italic">✕ Afgekeurd — pas aan en dien opnieuw in.</p>
+          {onRevertToConcept && (
+            <button onClick={() => onRevertToConcept(entry.id)} className="w-full py-2 rounded-xl text-xs font-semibold transition-colors" style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: "#fbbf24" }}>
+              ✏️ Aanpassen en opnieuw indienen
+            </button>
+          )}
+          {onRemove && (
+            <button onClick={() => onRemove(entry.id)} className="w-full py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-destructive transition-colors">
+              Verwijderen
+            </button>
+          )}
+        </div>
       )}
       {onRemove && entry.status === "concept" && (
         <button onClick={() => onRemove(entry.id)} className="mt-2 w-full py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-destructive transition-colors">
