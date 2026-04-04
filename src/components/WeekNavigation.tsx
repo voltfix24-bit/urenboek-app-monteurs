@@ -20,21 +20,20 @@ export function WeekNavigation({
   weekEnd.setDate(weekEnd.getDate() + 6);
 
   return (
-    <div className="flex items-center gap-3">
-      <Button variant="outline" size="icon" onClick={onPrevious}>
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="icon" className="h-8 w-8" onClick={onPrevious}>
         <ChevronLeft className="h-4 w-4" />
       </Button>
-      <div className="text-center min-w-[220px]">
-        <p className="text-sm font-semibold text-foreground">
-          {format(weekStart, "d MMM", { locale: nl })} –{" "}
-          {format(weekEnd, "d MMM yyyy", { locale: nl })}
+      <div className="text-center">
+        <p className="text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">
+          {format(weekStart, "d MMM", { locale: nl })} – {format(weekEnd, "d MMM", { locale: nl })}
         </p>
       </div>
-      <Button variant="outline" size="icon" onClick={onNext}>
+      <Button variant="outline" size="icon" className="h-8 w-8" onClick={onNext}>
         <ChevronRight className="h-4 w-4" />
       </Button>
-      <Button variant="outline" size="sm" onClick={onToday} className="ml-1">
-        <Calendar className="h-4 w-4 mr-1" />
+      <Button variant="outline" size="sm" className="h-8 text-xs" onClick={onToday}>
+        <Calendar className="h-3.5 w-3.5 mr-1" />
         Vandaag
       </Button>
     </div>
