@@ -62,7 +62,11 @@ export default function Opdrachtgevers() {
   }
 
   async function handleDelete(item: Opdrachtgever) {
-    if (!confirm(`Weet je zeker dat je "${item.naam}" wilt verwijderen?`)) return;
+    if (confirmDeleteId !== item.id) {
+      setConfirmDeleteId(item.id);
+      return;
+    }
+    setConfirmDeleteId(null);
     const { error } = await supabase.from("opdrachtgevers").delete().eq("id", item.id);
     if (error) { toast.error("Fout bij verwijderen — mogelijk zijn er nog projecten aan gekoppeld"); }
     else { toast.success("Opdrachtgever verwijderd"); fetchItems(); }
