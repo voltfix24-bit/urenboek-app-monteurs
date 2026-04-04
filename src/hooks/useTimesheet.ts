@@ -216,6 +216,7 @@ export function useTimesheet() {
     addMultipleEntries,
     removeEntry,
     submitEntry,
+    revertToConcept,
     goToPreviousWeek,
     goToNextWeek,
     goToCurrentWeek,
