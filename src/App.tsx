@@ -10,6 +10,7 @@ import Medewerkers from "./pages/Medewerkers";
 import Goedkeuring from "./pages/Goedkeuring";
 import Rapportage from "./pages/Rapportage";
 import Projecten from "./pages/Projecten";
+import Opdrachtgevers from "./pages/Opdrachtgevers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
