@@ -7,105 +7,34 @@ import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle } from "lucide-react"
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 
-interface PlanningEntry {
-  id: string;
-  medewerker_id: string;
-  project_id: string;
-  datum: string;
-  starttijd: string;
-  eindtijd: string;
-  notitie: string;
-}
-
-interface MedewerkerInfo {
-  id: string;
-  full_name: string;
-  vaste_vrije_dagen: number[];
-}
-
-interface ProjectInfo {
-  id: string;
-  naam: string;
-  nummer: string;
-}
-
-interface BeschikbaarheidItem {
-  medewerker_id: string;
-  datum_van: string;
-  datum_tot: string;
-  type: string;
-  status: string;
-}
+interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; }
+interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; }
+interface ProjectInfo { id: string; naam: string; nummer: string; }
+interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_tot: string; type: string; status: string; }
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
-// JS day: 0=zo,1=ma,...6=za → vaste_vrije_dagen uses same
-const DAG_MAP = [1, 2, 3, 4, 5]; // index 0→ma(1), 1→di(2)...
+const DAG_MAP = [1, 2, 3, 4, 5];
+const AVATAR_COLORS = ['#4A7C2F', '#6B9E4A', '#2D6B8A', '#8B6914', '#5A4A7C'];
 
-function getConflicts(
-  medId: string,
-  dateStr: string,
-  dayIndex: number,
-  entries: PlanningEntry[],
-  medewerkers: MedewerkerInfo[],
-  beschikbaarheid: BeschikbaarheidItem[],
-  currentEditId: string | null,
-): string[] {
+function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null): string[] {
   const conflicts: string[] = [];
   const med = medewerkers.find(m => m.id === medId);
-
-  // Check vaste vrije dag
-  const jsDayNum = DAG_MAP[dayIndex]; // 1=ma..5=vr
-  if (med?.vaste_vrije_dagen?.includes(jsDayNum)) {
-    conflicts.push("Vaste vrije dag");
-  }
-
-  // Check dubbele inzet (exclude current edit)
+  const jsDayNum = DAG_MAP[dayIndex];
+  if (med?.vaste_vrije_dagen?.includes(jsDayNum)) conflicts.push("Vaste vrije dag");
   const dubbel = entries.filter(e => e.medewerker_id === medId && e.datum === dateStr && e.id !== currentEditId);
-  if (dubbel.length > 0) {
-    conflicts.push("Al ingepland");
-  }
-
-  // Check goedgekeurd verlof
-  const verlof = beschikbaarheid.find(b =>
-    b.medewerker_id === medId &&
-    b.status === "goedgekeurd" &&
-    dateStr >= b.datum_van &&
-    dateStr <= b.datum_tot
-  );
-  if (verlof) {
-    conflicts.push(verlof.type === "ziek" ? "Ziekmelding" : "Op vakantie/verlof");
-  }
-
+  if (dubbel.length > 0) conflicts.push("Al ingepland");
+  const verlof = beschikbaarheid.find(b => b.medewerker_id === medId && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
+  if (verlof) conflicts.push(verlof.type === "ziek" ? "Ziekmelding" : "Op vakantie/verlof");
   return conflicts;
 }
 
-function getModalStatus(
-  medId: string,
-  dateStr: string,
-  medewerkers: MedewerkerInfo[],
-  beschikbaarheid: BeschikbaarheidItem[],
-  dateObj: Date,
-): { label: string; color: string; bg: string } | null {
+function getModalStatus(medId: string, dateStr: string, medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], dateObj: Date): { label: string; color: string; bg: string } | null {
   const med = medewerkers.find(m => m.id === medId);
-  
-  // Check verlof first
-  const verlof = beschikbaarheid.find(b =>
-    b.medewerker_id === medId &&
-    b.status === "goedgekeurd" &&
-    dateStr >= b.datum_van &&
-    dateStr <= b.datum_tot
-  );
-  if (verlof) {
-    return { label: "✕ Op vakantie", color: "#ef4444", bg: "rgba(239,68,68,0.1)" };
-  }
-
-  // Check vaste vrije dag
-  const jsDay = dateObj.getDay(); // 0=zo,1=ma...
-  if (med?.vaste_vrije_dagen?.includes(jsDay)) {
-    return { label: "⚠ Vaste vrije dag", color: "#f59e0b", bg: "rgba(245,158,11,0.1)" };
-  }
-
-  return { label: "✓ Beschikbaar", color: "#22c55e", bg: "rgba(34,197,94,0.1)" };
+  const verlof = beschikbaarheid.find(b => b.medewerker_id === medId && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
+  if (verlof) return { label: "✕ Op vakantie", color: "#C0392B", bg: "#FDECEA" };
+  const jsDay = dateObj.getDay();
+  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "⚠ Vaste vrije dag", color: "#8B6914", bg: "#FFF8DC" };
+  return { label: "✓ Beschikbaar", color: "#2D7A3A", bg: "#D4EDD8" };
 }
 
 export default function ManagerPlanning() {
@@ -117,14 +46,7 @@ export default function ManagerPlanning() {
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [modalForm, setModalForm] = useState({
-    medewerker_id: "",
-    project_id: "",
-    datum: "",
-    starttijd: "07:00",
-    eindtijd: "16:00",
-    notitie: "",
-  });
+  const [modalForm, setModalForm] = useState({ medewerker_id: "", project_id: "", datum: "", starttijd: "07:00", eindtijd: "16:00", notitie: "" });
   const [editId, setEditId] = useState<string | null>(null);
 
   const weekNumber = getISOWeek(weekStart);
@@ -134,21 +56,13 @@ export default function ManagerPlanning() {
     setLoading(true);
     const startStr = format(weekStart, "yyyy-MM-dd");
     const endStr = format(addDays(weekStart, 4), "yyyy-MM-dd");
-
     const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }] = await Promise.all([
       supabase.from("planning").select("*").gte("datum", startStr).lte("datum", endStr),
       supabase.from("profiles").select("id, full_name, vaste_vrije_dagen").order("full_name"),
       supabase.from("projects").select("id, naam, nummer").eq("active", true).order("nummer"),
-      supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status")
-        .eq("status", "goedgekeurd")
-        .lte("datum_van", endStr)
-        .gte("datum_tot", startStr),
+      supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
     ]);
-
-    setEntries((planData ?? []).map((d: any) => ({
-      id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id,
-      datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "",
-    })));
+    setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "" })));
     setMedewerkers((profData ?? []) as any);
     setProjects((projData ?? []) as any);
     setBeschikbaarheid((beschData ?? []) as any);
@@ -167,14 +81,7 @@ export default function ManagerPlanning() {
     const existing = entries.find(e => e.medewerker_id === medewerker_id && e.datum === datum);
     if (existing) {
       setEditId(existing.id);
-      setModalForm({
-        medewerker_id: existing.medewerker_id,
-        project_id: existing.project_id,
-        datum: existing.datum,
-        starttijd: existing.starttijd,
-        eindtijd: existing.eindtijd,
-        notitie: existing.notitie,
-      });
+      setModalForm({ medewerker_id: existing.medewerker_id, project_id: existing.project_id, datum: existing.datum, starttijd: existing.starttijd, eindtijd: existing.eindtijd, notitie: existing.notitie });
     } else {
       setEditId(null);
       setModalForm({ medewerker_id, project_id: projects[0]?.id || "", datum, starttijd: "07:00", eindtijd: "16:00", notitie: "" });
@@ -185,26 +92,12 @@ export default function ManagerPlanning() {
   const savePlanning = async () => {
     const profileId = await getProfileId();
     if (!profileId) return;
-
     if (editId) {
-      const { error } = await supabase.from("planning").update({
-        project_id: modalForm.project_id,
-        starttijd: modalForm.starttijd,
-        eindtijd: modalForm.eindtijd,
-        notitie: modalForm.notitie,
-      } as any).eq("id", editId);
+      const { error } = await supabase.from("planning").update({ project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any).eq("id", editId);
       if (error) toast.error("Fout bij bijwerken");
       else { toast.success("Planning bijgewerkt"); setShowModal(false); fetchAll(); }
     } else {
-      const { error } = await supabase.from("planning").insert({
-        medewerker_id: modalForm.medewerker_id,
-        project_id: modalForm.project_id,
-        datum: modalForm.datum,
-        starttijd: modalForm.starttijd,
-        eindtijd: modalForm.eindtijd,
-        notitie: modalForm.notitie,
-        created_by: profileId,
-      } as any);
+      const { error } = await supabase.from("planning").insert({ medewerker_id: modalForm.medewerker_id, project_id: modalForm.project_id, datum: modalForm.datum, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie, created_by: profileId } as any);
       if (error) toast.error("Fout bij aanmaken");
       else { toast.success("Ingepland!"); setShowModal(false); fetchAll(); }
     }
@@ -220,76 +113,70 @@ export default function ManagerPlanning() {
   const projMap = new Map(projects.map(p => [p.id, p]));
   const medName = (id: string) => medewerkers.find(m => m.id === id)?.full_name || "?";
 
-  // Modal availability status
   const modalStatus = useMemo(() => {
     if (!modalForm.medewerker_id || !modalForm.datum) return null;
     const dateObj = new Date(modalForm.datum + "T12:00:00");
     return getModalStatus(modalForm.medewerker_id, modalForm.datum, medewerkers, beschikbaarheid, dateObj);
   }, [modalForm.medewerker_id, modalForm.datum, medewerkers, beschikbaarheid]);
 
-  // Modal conflicts
   const modalConflicts = useMemo(() => {
     if (!modalForm.medewerker_id || !modalForm.datum) return [];
-    const dateObj = new Date(modalForm.datum + "T12:00:00");
     const dayIndex = weekDates.findIndex(d => format(d, "yyyy-MM-dd") === modalForm.datum);
     if (dayIndex < 0) return [];
     return getConflicts(modalForm.medewerker_id, modalForm.datum, dayIndex, entries, medewerkers, beschikbaarheid, editId);
   }, [modalForm.medewerker_id, modalForm.datum, entries, medewerkers, beschikbaarheid, editId, weekDates]);
 
   if (!isManager) {
-    return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted-foreground">Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "#F5F7F0" }}><p style={{ color: "#8AAD6E" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden" style={{ maxWidth: 430, margin: "0 auto", paddingBottom: 80 }}>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(12px)" }}>
+    <div className="min-h-screen overflow-x-hidden" style={{ background: "#F5F7F0", maxWidth: 430, margin: "0 auto", paddingBottom: 80 }}>
+      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3 flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>⚡</div>
-          <span className="text-base font-bold text-foreground tracking-tight">Planning</span>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>⚡</div>
+          <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>Planning</span>
         </div>
       </header>
 
       <main className="px-4 py-4 space-y-4">
-        {/* Week nav */}
-        <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.06)" }}>
-            <ChevronLeft className="h-4 w-4 text-foreground" />
+        <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+          <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+            <ChevronLeft className="h-4 w-4" />
           </button>
           <div className="text-center">
-            <p className="text-lg font-extrabold text-foreground">Week {weekNumber}</p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-lg font-extrabold" style={{ color: "#2D4A1E" }}>Week {weekNumber}</p>
+            <p className="text-[11px]" style={{ color: "#8AAD6E" }}>
               {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 4), "d MMM", { locale: nl })}
             </p>
           </div>
-          <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.06)" }}>
-            <ChevronRight className="h-4 w-4 text-foreground" />
+          <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
 
         {loading ? (
-          <div className="text-center py-10"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>
+          <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
         ) : (
           <>
-            {/* Day headers */}
             <div className="flex gap-1">
               <div className="w-16 shrink-0" />
               {weekDates.map((d, i) => (
                 <div key={i} className="flex-1 text-center">
-                  <p className="text-[10px] font-semibold text-muted-foreground">{DAGEN[i]}</p>
-                  <p className="text-xs font-bold text-foreground">{d.getDate()}</p>
+                  <p className="text-[10px] font-semibold" style={{ color: "#8AAD6E" }}>{DAGEN[i]}</p>
+                  <p className="text-xs font-bold" style={{ color: "#2D4A1E" }}>{d.getDate()}</p>
                 </div>
               ))}
             </div>
 
-            {/* Grid rows per medewerker */}
-            {medewerkers.map(med => (
+            {medewerkers.map((med, mi) => (
               <div key={med.id} className="flex gap-1 items-stretch">
                 <div className="w-16 shrink-0 flex items-center">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "#fff" }}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
                       {med.full_name.charAt(0)}
                     </div>
-                    <span className="text-[10px] font-medium text-foreground truncate max-w-[44px]">{med.full_name.split(" ")[0]}</span>
+                    <span className="text-[10px] font-medium truncate max-w-[44px]" style={{ color: "#2D4A1E" }}>{med.full_name.split(" ")[0]}</span>
                   </div>
                 </div>
                 {weekDates.map((d, i) => {
@@ -300,31 +187,22 @@ export default function ManagerPlanning() {
                   const hasConflict = conflicts.length > 0;
 
                   return (
-                    <button
-                      key={i}
-                      onClick={() => openAddModal(med.id, dateStr)}
-                      className="flex-1 rounded-xl p-1 min-h-[52px] flex flex-col items-center justify-center text-center transition-colors active:scale-95"
-                      style={{
-                        background: hasConflict && !entry
-                          ? "rgba(239,68,68,0.06)"
-                          : entry ? "rgba(99,102,241,0.1)" : "rgba(255,255,255,0.02)",
-                        border: hasConflict
-                          ? "1px solid rgba(239,68,68,0.25)"
-                          : entry ? "1px solid rgba(99,102,241,0.2)" : "1px solid rgba(255,255,255,0.04)",
-                      }}
-                    >
+                    <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] flex flex-col items-center justify-center text-center transition-colors active:scale-95" style={{
+                      background: hasConflict && !entry ? "#FDECEA" : entry ? "#D4E8C2" : "#F5F7F0",
+                      border: hasConflict ? "1px solid #E8A09A" : entry ? "1px solid #9DC87A" : "1px solid #DFE8D6",
+                    }}>
                       {entry ? (
                         <>
-                          <span className="text-[8px] font-bold text-foreground truncate w-full">{proj?.nummer?.slice(-3) || "?"}</span>
-                          <span className="text-[7px] text-muted-foreground">{entry.starttijd}</span>
+                          <span className="text-[8px] font-bold truncate w-full" style={{ color: "#2D4A1E" }}>{proj?.nummer?.slice(-3) || "?"}</span>
+                          <span className="text-[7px]" style={{ color: "#8AAD6E" }}>{entry.starttijd}</span>
                         </>
                       ) : hasConflict ? (
-                        <AlertTriangle className="h-3 w-3" style={{ color: "#ef4444", opacity: 0.6 }} />
+                        <AlertTriangle className="h-3 w-3" style={{ color: "#C0392B", opacity: 0.6 }} />
                       ) : (
-                        <Plus className="h-3 w-3 text-muted-foreground/30" />
+                        <Plus className="h-3 w-3" style={{ color: "#C5D4B2" }} />
                       )}
                       {hasConflict && entry && (
-                        <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "#ef4444" }} />
+                        <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "#C0392B" }} />
                       )}
                     </button>
                   );
@@ -335,65 +213,60 @@ export default function ManagerPlanning() {
         )}
       </main>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "#111118", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "rgba(255,255,255,0.15)" }} />
-            <h2 className="text-base font-bold text-foreground">
+          <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "#EBF0E4", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "#C5D4B2" }} />
+            <h2 className="text-base font-bold" style={{ color: "#2D4A1E" }}>
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
             </h2>
-            <p className="text-xs text-muted-foreground">{modalForm.datum}</p>
+            <p className="text-xs" style={{ color: "#8AAD6E" }}>{modalForm.datum}</p>
 
-            {/* Beschikbaarheidsstatus */}
             {modalStatus && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: modalStatus.bg, border: `1px solid ${modalStatus.color}33` }}>
                 <span className="text-xs font-semibold" style={{ color: modalStatus.color }}>{modalStatus.label}</span>
               </div>
             )}
 
-            {/* Conflict warnings */}
             {modalConflicts.length > 0 && (
               <div className="space-y-1.5">
                 {modalConflicts.map((c, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
-                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#ef4444" }} />
-                    <span className="text-xs font-medium" style={{ color: "#ef4444" }}>⚠ Conflict: {c}</span>
+                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#FDECEA", border: "1px solid #E8A09A" }}>
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#C0392B" }} />
+                    <span className="text-xs font-medium" style={{ color: "#C0392B" }}>⚠ Conflict: {c}</span>
                   </div>
                 ))}
               </div>
             )}
 
             <div className="space-y-3">
-              {/* Project select */}
               <div className="space-y-1">
-                <label className="text-[10px] text-muted-foreground font-medium">Project</label>
-                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <label className="text-[10px] font-medium" style={{ color: "#8AAD6E" }}>Project</label>
+                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }}>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
                 </select>
               </div>
 
-              {/* Times */}
               <div className="flex gap-3">
                 <div className="flex-1 space-y-1">
-                  <label className="text-[10px] text-muted-foreground">Start</label>
-                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm text-foreground" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }} />
+                  <label className="text-[10px]" style={{ color: "#8AAD6E" }}>Start</label>
+                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E", colorScheme: "light" }} />
                 </div>
                 <div className="flex-1 space-y-1">
-                  <label className="text-[10px] text-muted-foreground">Eind</label>
-                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm text-foreground" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }} />
+                  <label className="text-[10px]" style={{ color: "#8AAD6E" }}>Eind</label>
+                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E", colorScheme: "light" }} />
                 </div>
               </div>
 
-              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }} />
+              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
 
-              <button onClick={savePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff" }}>
+              <button onClick={savePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)", color: "#fff" }}>
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>
 
               {editId && (
-                <button onClick={deletePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#ef4444" }}>
+                <button onClick={deletePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "#FDECEA", border: "1px solid #E8A09A", color: "#C0392B" }}>
                   Verwijderen
                 </button>
               )}
