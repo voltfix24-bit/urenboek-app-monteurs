@@ -23,7 +23,6 @@ function fmt(date: Date) {
 }
 
 function isFridayAfternoon(): boolean {
-  // Check in Europe/Amsterdam timezone
   try {
     const now = new Date();
     const formatter = new Intl.DateTimeFormat("en-US", {
@@ -37,11 +36,12 @@ function isFridayAfternoon(): boolean {
     const hour = parseInt(parts.find(p => p.type === "hour")?.value || "0", 10);
     return weekday === "Fri" && hour >= 16;
   } catch {
-    // Fallback: use local time
     const now = new Date();
     return now.getDay() === 5 && now.getHours() >= 16;
   }
 }
+
+const AVATAR_COLORS = ['#4A7C2F', '#6B9E4A', '#2D6B8A', '#8B6914', '#5A4A7C'];
 
 const Index = () => {
   const { user, profile, isManager } = useAuth();
@@ -53,55 +53,29 @@ const Index = () => {
   const [submittingAll, setSubmittingAll] = useState(false);
 
   const {
-    weekDates,
-    weekEntries,
-    allEntries,
-    addEntry,
-    removeEntry,
-    submitEntry,
-    revertToConcept,
-    goToPreviousWeek,
-    goToNextWeek,
-    totalHours,
-    currentWeekStart,
+    weekDates, weekEntries, allEntries, addEntry, removeEntry, submitEntry,
+    revertToConcept, goToPreviousWeek, goToNextWeek, totalHours, currentWeekStart,
   } = useTimesheet();
 
-  const swipeHandlers = useSwipe({
-    onSwipeLeft: goToNextWeek,
-    onSwipeRight: goToPreviousWeek,
-  });
+  const swipeHandlers = useSwipe({ onSwipeLeft: goToNextWeek, onSwipeRight: goToPreviousWeek });
 
-  // Friday afternoon reminder
   const conceptEntries = weekEntries.filter(e => e.status === "concept");
   const conceptHours = conceptEntries.reduce((s, e) => s + e.hours, 0);
 
   useEffect(() => {
-    // Check if we're viewing the current week
     const now = new Date();
     const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
     const viewingCurrentWeek = format(currentWeekStart, "yyyy-MM-dd") === format(thisWeekStart, "yyyy-MM-dd");
-    
     setShowFridayBanner(isFridayAfternoon() && viewingCurrentWeek && conceptEntries.length > 0);
   }, [conceptEntries.length, currentWeekStart]);
 
   const submitAllConcepts = useCallback(async () => {
     if (!user || conceptEntries.length === 0) return;
     setSubmittingAll(true);
-    
     const ids = conceptEntries.map(e => e.id);
-    const { error } = await supabase
-      .from("time_entries")
-      .update({ status: "ingediend" })
-      .in("id", ids);
-    
-    if (error) {
-      toast.error("Fout bij indienen");
-    } else {
-      toast.success(`${ids.length} uren ingediend!`);
-      setShowFridayBanner(false);
-      // Re-fetch by triggering a small state change
-      window.location.reload();
-    }
+    const { error } = await supabase.from("time_entries").update({ status: "ingediend" }).in("id", ids);
+    if (error) { toast.error("Fout bij indienen"); }
+    else { toast.success(`${ids.length} uren ingediend!`); setShowFridayBanner(false); window.location.reload(); }
     setSubmittingAll(false);
   }, [user, conceptEntries]);
 
@@ -120,67 +94,45 @@ const Index = () => {
   return (
     <div
       className="min-h-screen overflow-x-hidden"
-      style={{
-        background: "#0a0a0f",
-        maxWidth: 430,
-        margin: "0 auto",
-        position: "relative",
-        paddingBottom: 80,
-      }}
+      style={{ background: "#F5F7F0", maxWidth: 430, margin: "0 auto", position: "relative", paddingBottom: 80 }}
       {...swipeHandlers}
     >
       {/* Header */}
-      <header className="sticky top-0 z-30" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(12px)" }}>
+      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
-                style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}
-              >
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
                 ⚡
               </div>
-              <span className="text-base font-bold text-foreground tracking-tight">TerreVolt</span>
+              <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>TerreVolt</span>
             </div>
 
             <div className="flex items-center gap-2">
-              <div
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
-                style={{
-                  background: "rgba(34,197,94,0.1)",
-                  border: "1px solid rgba(34,197,94,0.2)",
-                }}
-              >
-                <span className="text-lg font-extrabold" style={{ color: "#22c55e" }}>{totalHours}</span>
-                <span className="text-[10px] font-semibold text-muted-foreground">uur</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "#D4E8C2", border: "1px solid #9DC87A" }}>
+                <span className="text-lg font-extrabold" style={{ color: "#4A7C2F" }}>{totalHours}</span>
+                <span className="text-[10px] font-semibold" style={{ color: "#8AAD6E" }}>uur</span>
               </div>
 
               <div className="hidden sm:flex items-center gap-1.5">
                 {isManager && (
                   <>
-                    <button onClick={() => navigate("/goedkeuring")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
-                      Goedkeuren
-                    </button>
-                    <button onClick={() => navigate("/rapportage")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
-                      Rapportage
-                    </button>
-                    <button onClick={() => navigate("/medewerkers")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
-                      Medewerkers
-                    </button>
-                    <button onClick={() => navigate("/projecten")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
-                      Projecten
-                    </button>
-                    <button onClick={() => navigate("/opdrachtgevers")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
-                      Opdrachtgevers
-                    </button>
+                    {[
+                      { path: "/goedkeuring", label: "Goedkeuren" },
+                      { path: "/rapportage", label: "Rapportage" },
+                      { path: "/medewerkers", label: "Medewerkers" },
+                      { path: "/projecten", label: "Projecten" },
+                      { path: "/opdrachtgevers", label: "Opdrachtgevers" },
+                    ].map(n => (
+                      <button key={n.path} onClick={() => navigate(n.path)} className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+                        {n.label}
+                      </button>
+                    ))}
                   </>
                 )}
               </div>
 
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "#fff" }}
-              >
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: AVATAR_COLORS[0], color: "#fff" }}>
                 {profile?.full_name?.charAt(0)?.toUpperCase() || "U"}
               </div>
             </div>
@@ -188,25 +140,25 @@ const Index = () => {
 
           {isManager && (
             <div className="flex gap-1.5 mt-2.5 sm:hidden overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-              <button onClick={() => navigate("/projecten")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground shrink-0" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <button onClick={() => navigate("/projecten")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
                 <FolderOpen className="h-3 w-3" /> Projecten
               </button>
-              <button onClick={() => navigate("/opdrachtgevers")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground shrink-0" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <button onClick={() => navigate("/opdrachtgevers")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
                 <Building2 className="h-3 w-3" /> Opdrachtgevers
               </button>
             </div>
           )}
 
           {/* Tabs */}
-          <div className="flex mt-2.5 border-b border-border/50">
+          <div className="flex mt-2.5" style={{ borderBottom: "1px solid #C5D4B2" }}>
             {([["week", "Deze week"], ["overzicht", "Overzicht"]] as const).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setActiveTab(key as "week" | "overzicht")}
                 className="flex-1 py-2.5 text-sm font-medium transition-colors"
                 style={{
-                  color: activeTab === key ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                  borderBottom: activeTab === key ? "2px solid hsl(var(--primary))" : "2px solid transparent",
+                  color: activeTab === key ? "#4A7C2F" : "#8AAD6E",
+                  borderBottom: activeTab === key ? "2px solid #4A7C2F" : "2px solid transparent",
                   background: "transparent",
                   marginBottom: -1,
                 }}
@@ -220,25 +172,15 @@ const Index = () => {
 
       {/* Friday afternoon banner */}
       {showFridayBanner && (
-        <div
-          className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl"
-          style={{
-            background: "rgba(245,158,11,0.1)",
-            border: "1px solid rgba(245,158,11,0.25)",
-          }}
-        >
-          <p className="text-xs font-medium" style={{ color: "#f59e0b" }}>
+        <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
+          <p className="text-xs font-medium" style={{ color: "#8B6914" }}>
             ⚠️ Je hebt nog {conceptHours}u niet ingediend deze week.
           </p>
           <button
             onClick={submitAllConcepts}
             disabled={submittingAll}
             className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0 transition-colors disabled:opacity-50"
-            style={{
-              background: "rgba(245,158,11,0.15)",
-              border: "1px solid rgba(245,158,11,0.3)",
-              color: "#f59e0b",
-            }}
+            style={{ background: "#4A7C2F", color: "#fff" }}
           >
             Alles indienen <ArrowRight className="h-3 w-3" />
           </button>
@@ -250,24 +192,16 @@ const Index = () => {
         <div className="px-4 py-4 space-y-4 animate-fade-in">
           {/* Week navigation */}
           <div className="flex items-center justify-between">
-            <button
-              onClick={goToPreviousWeek}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-base text-muted-foreground"
-              style={{ background: "rgba(255,255,255,0.06)" }}
-            >
+            <button onClick={goToPreviousWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
               ‹
             </button>
             <div className="text-center">
-              <p className="text-sm font-semibold text-foreground">{weekLabel}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>{weekLabel}</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "#8AAD6E" }}>
                 {totalHours}u geboekt deze week
               </p>
             </div>
-            <button
-              onClick={goToNextWeek}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-base text-muted-foreground"
-              style={{ background: "rgba(255,255,255,0.06)" }}
-            >
+            <button onClick={goToNextWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
               ›
             </button>
           </div>
@@ -288,12 +222,12 @@ const Index = () => {
                   style={{
                     padding: "10px 0",
                     borderRadius: 12,
-                    background: isToday ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.04)",
-                    border: isToday ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                    background: isToday ? "#D4E8C2" : "#EBF0E4",
+                    border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2",
                   }}
                 >
-                  <span className="text-[10px] font-medium text-muted-foreground">{DAGEN[i]}</span>
-                  <span className={`text-sm font-bold ${isToday ? "text-primary" : "text-foreground"}`}>
+                  <span className="text-[10px] font-medium" style={{ color: "#8AAD6E" }}>{DAGEN[i]}</span>
+                  <span className={`text-sm font-bold`} style={{ color: isToday ? "#4A7C2F" : "#2D4A1E" }}>
                     {d.getDate()}
                   </span>
                   {hasEntries ? (
@@ -302,16 +236,16 @@ const Index = () => {
                         className="w-1.5 h-1.5 rounded-full"
                         style={{
                           background: dayEntries.some((e) => e.status === "afgekeurd")
-                            ? "#ef4444"
+                            ? "#C0392B"
                             : dayEntries.some((e) => e.status === "goedgekeurd")
-                            ? "#22c55e"
-                            : "#f59e0b",
+                            ? "#2D7A3A"
+                            : "#D4A017",
                         }}
                       />
-                      <span className="text-[9px] font-bold text-muted-foreground">{dayHours}u</span>
+                      <span className="text-[9px] font-bold" style={{ color: "#8AAD6E" }}>{dayHours}u</span>
                     </div>
                   ) : (
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }} />
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#C5D4B2" }} />
                   )}
                 </button>
               );
@@ -326,17 +260,11 @@ const Index = () => {
               if (dayEntries.length === 0) return null;
               return (
                 <div key={key} className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                  <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>
                     {DAGEN[i]} {d.getDate()} {MAANDEN[d.getMonth()]}
                   </p>
                   {dayEntries.map((entry) => (
-                    <EntryCard
-                      key={entry.id}
-                      entry={entry}
-                      onSubmit={submitEntry}
-                      onRemove={removeEntry}
-                      onRevertToConcept={revertToConcept}
-                    />
+                    <EntryCard key={entry.id} entry={entry} onSubmit={submitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
                   ))}
                 </div>
               );
@@ -344,8 +272,8 @@ const Index = () => {
             {weekEntries.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-3xl mb-2">📋</p>
-                <p className="text-sm font-medium text-foreground">Geen uren geboekt</p>
-                <p className="text-xs text-muted-foreground mt-1">Druk op + om uren toe te voegen</p>
+                <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen uren geboekt</p>
+                <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Druk op + om uren toe te voegen</p>
               </div>
             )}
           </div>
@@ -357,35 +285,24 @@ const Index = () => {
         <div className="px-4 py-4 space-y-4 animate-fade-in">
           <div className="flex gap-2">
             {[
-              { label: "Goedgekeurd", value: goedgekeurdUren + "u", color: "#22c55e" },
-              { label: "In behandeling", value: String(ingediendCount), color: "#f59e0b" },
-              { label: "Afgekeurd", value: String(afgekeurdCount), color: "#ef4444" },
+              { label: "Goedgekeurd", value: goedgekeurdUren + "u", color: "#2D7A3A" },
+              { label: "In behandeling", value: String(ingediendCount), color: "#D4A017" },
+              { label: "Afgekeurd", value: String(afgekeurdCount), color: "#C0392B" },
             ].map((s, i) => (
-              <div
-                key={i}
-                className="flex-1 rounded-2xl p-3 text-center"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
-              >
+              <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
                 <p className="text-lg font-bold" style={{ color: s.color }}>{s.value}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">{s.label}</p>
+                <p className="text-[10px] mt-0.5 font-medium" style={{ color: "#8AAD6E" }}>{s.label}</p>
               </div>
             ))}
           </div>
 
           <div className="space-y-2">
             {allEntries.map((entry) => (
-              <EntryCard
-                key={entry.id}
-                entry={entry}
-                showDate
-                onSubmit={submitEntry}
-                onRemove={removeEntry}
-                onRevertToConcept={revertToConcept}
-              />
+              <EntryCard key={entry.id} entry={entry} showDate onSubmit={submitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
             ))}
             {allEntries.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-sm text-muted-foreground">Nog geen uren geregistreerd</p>
+                <p className="text-sm" style={{ color: "#8AAD6E" }}>Nog geen uren geregistreerd</p>
               </div>
             )}
           </div>
@@ -399,30 +316,19 @@ const Index = () => {
         style={{
           bottom: 90,
           right: "max(24px, calc(50% - 215px + 24px))",
-          width: 56,
-          height: 56,
-          borderRadius: "50%",
-          background: "linear-gradient(135deg, #22c55e, #16a34a)",
-          color: "#fff",
-          fontSize: 26,
-          fontWeight: 300,
-          boxShadow: "0 8px 32px rgba(34,197,94,0.4), 0 2px 8px rgba(0,0,0,0.4)",
+          width: 56, height: 56, borderRadius: "50%",
+          background: "linear-gradient(135deg, #4A7C2F, #3D6826)",
+          color: "#fff", fontSize: 26, fontWeight: 300,
+          boxShadow: "0 8px 28px rgba(74,124,47,0.35)",
         }}
       >
         +
       </button>
 
-      {/* Bottom Nav */}
       <BottomNav />
 
-      {/* Modal */}
       {showModal && (
-        <AddEntryModal
-          weekDays={weekDates}
-          onClose={() => setShowModal(false)}
-          onSubmit={addEntry}
-          initialDate={modalDate}
-        />
+        <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} onSubmit={addEntry} initialDate={modalDate} />
       )}
     </div>
   );
