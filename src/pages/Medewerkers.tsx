@@ -255,7 +255,7 @@ export default function Medewerkers() {
             ) : (
               <div className="divide-y">
                 {employees.map((emp) => {
-                  const isSelf = emp.user_id === profile?.user_id;
+                  const isSelf = emp.user_id === user?.id;
                   return (
                     <div key={emp.user_id} className="flex items-center justify-between py-2.5 gap-2">
                       <div className="flex items-center gap-2 min-w-0">
