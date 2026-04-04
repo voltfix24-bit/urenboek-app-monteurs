@@ -33,6 +33,7 @@ const Index = () => {
     addEntry,
     removeEntry,
     submitEntry,
+    revertToConcept,
     goToPreviousWeek,
     goToNextWeek,
     totalHours,
@@ -249,6 +250,7 @@ const Index = () => {
                       entry={entry}
                       onSubmit={submitEntry}
                       onRemove={removeEntry}
+                      onRevertToConcept={revertToConcept}
                     />
                   ))}
                 </div>
@@ -295,6 +297,7 @@ const Index = () => {
                 showDate
                 onSubmit={submitEntry}
                 onRemove={removeEntry}
+                onRevertToConcept={revertToConcept}
               />
             ))}
             {allEntries.length === 0 && (
