@@ -80,6 +80,17 @@ export default function Projecten() {
     }
   }
 
+  async function handleDelete(project: Project) {
+    if (!confirm(`Weet je zeker dat je "${project.naam}" wilt verwijderen?`)) return;
+    const { error } = await supabase.from("projects").delete().eq("id", project.id);
+    if (error) {
+      toast.error("Fout bij verwijderen — mogelijk zijn er nog uren aan gekoppeld");
+    } else {
+      toast.success("Project verwijderd");
+      fetchProjects();
+    }
+  }
+
   function startEdit(project: Project) {
     setEditId(project.id);
     setForm({ nummer: project.nummer, naam: project.naam });
@@ -154,7 +165,7 @@ export default function Projecten() {
                 Actief ({activeProjects.length})
               </p>
               {activeProjects.map((p) => (
-                <ProjectRow key={p.id} project={p} isEditing={editId === p.id} form={form} setForm={setForm} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} />
+                <ProjectRow key={p.id} project={p} isEditing={editId === p.id} form={form} setForm={setForm} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} />
               ))}
             </div>
 
@@ -165,7 +176,7 @@ export default function Projecten() {
                   Inactief ({inactiveProjects.length})
                 </p>
                 {inactiveProjects.map((p) => (
-                  <ProjectRow key={p.id} project={p} isEditing={editId === p.id} form={form} setForm={setForm} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} />
+                  <ProjectRow key={p.id} project={p} isEditing={editId === p.id} form={form} setForm={setForm} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} />
                 ))}
               </div>
             )}
@@ -176,7 +187,7 @@ export default function Projecten() {
   );
 }
 
-function ProjectRow({ project, isEditing, form, setForm, onEdit, onCancel, onSave, onToggle }: {
+function ProjectRow({ project, isEditing, form, setForm, onEdit, onCancel, onSave, onToggle, onDelete }: {
   project: Project;
   isEditing: boolean;
   form: { nummer: string; naam: string };
@@ -185,6 +196,7 @@ function ProjectRow({ project, isEditing, form, setForm, onEdit, onCancel, onSav
   onCancel: () => void;
   onSave: () => void;
   onToggle: () => void;
+  onDelete: () => void;
 }) {
   if (isEditing) {
     return (
@@ -231,6 +243,9 @@ function ProjectRow({ project, isEditing, form, setForm, onEdit, onCancel, onSav
       </button>
       <button onClick={onToggle} className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: project.active ? "rgba(34,197,94,0.1)" : "rgba(255,255,255,0.06)" }}>
         {project.active ? <ToggleRight className="h-4 w-4" style={{ color: "#22c55e" }} /> : <ToggleLeft className="h-4 w-4 text-muted-foreground" />}
+      </button>
+      <button onClick={onDelete} className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(239,68,68,0.1)" }}>
+        <X className="h-3.5 w-3.5" style={{ color: "#ef4444" }} />
       </button>
     </div>
   );
