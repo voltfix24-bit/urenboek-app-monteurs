@@ -3,10 +3,10 @@ import { useTimesheet } from "@/hooks/useTimesheet";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useSwipe } from "@/hooks/useSwipe";
-import { format } from "date-fns";
 import { EntryCard } from "@/components/EntryCard";
 import { AddEntryModal } from "@/components/AddEntryModal";
-import { LogOut, Users, CheckCircle, BarChart3, Menu, X, FolderOpen } from "lucide-react";
+import { BottomNav } from "@/components/BottomNav";
+import { FolderOpen, Building2 } from "lucide-react";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
@@ -20,15 +20,13 @@ function fmt(date: Date) {
 }
 
 const Index = () => {
-  const { profile, isManager, signOut } = useAuth();
+  const { profile, isManager } = useAuth();
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"week" | "overzicht">("week");
   const [showModal, setShowModal] = useState(false);
   const [modalDate, setModalDate] = useState<Date | null>(null);
 
   const {
-    currentWeekStart,
     weekDates,
     weekEntries,
     allEntries,
@@ -53,7 +51,6 @@ const Index = () => {
     setShowModal(true);
   }
 
-  // Stats for overzicht
   const goedgekeurdUren = allEntries.filter((e) => e.status === "goedgekeurd").reduce((a, b) => a + b.hours, 0);
   const ingediendCount = allEntries.filter((e) => e.status === "ingediend").length;
   const afgekeurdCount = allEntries.filter((e) => e.status === "afgekeurd").length;
@@ -66,7 +63,7 @@ const Index = () => {
         maxWidth: 430,
         margin: "0 auto",
         position: "relative",
-        paddingBottom: 100,
+        paddingBottom: 80,
       }}
       {...swipeHandlers}
     >
@@ -85,16 +82,19 @@ const Index = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              {isManager && (
-                <button
-                  className="w-8 h-8 rounded-lg flex items-center justify-center sm:hidden"
-                  style={{ background: "rgba(255,255,255,0.06)" }}
-                  onClick={() => setMenuOpen(!menuOpen)}
-                >
-                  {menuOpen ? <X className="h-4 w-4 text-muted-foreground" /> : <Menu className="h-4 w-4 text-muted-foreground" />}
-                </button>
-              )}
-              {/* Desktop nav */}
+              {/* Prominent uren badge */}
+              <div
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+                style={{
+                  background: "rgba(34,197,94,0.1)",
+                  border: "1px solid rgba(34,197,94,0.2)",
+                }}
+              >
+                <span className="text-lg font-extrabold" style={{ color: "#22c55e" }}>{totalHours}</span>
+                <span className="text-[10px] font-semibold text-muted-foreground">uur</span>
+              </div>
+
+              {/* Desktop nav for managers */}
               <div className="hidden sm:flex items-center gap-1.5">
                 {isManager && (
                   <>
@@ -110,9 +110,13 @@ const Index = () => {
                     <button onClick={() => navigate("/projecten")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
                       Projecten
                     </button>
+                    <button onClick={() => navigate("/opdrachtgevers")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
+                      Opdrachtgevers
+                    </button>
                   </>
                 )}
               </div>
+
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
                 style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "#fff" }}
@@ -122,38 +126,28 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Mobile menu */}
-          {menuOpen && isManager && (
-            <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-border/50 sm:hidden animate-fade-in">
-              <span className="text-[11px] text-muted-foreground font-medium px-2 mb-1">{profile?.full_name}</span>
-              <button onClick={() => { navigate("/goedkeuring"); setMenuOpen(false); }} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-foreground" style={{ background: "rgba(255,255,255,0.04)" }}>
-                <CheckCircle className="h-4 w-4 text-primary" /> Uren goedkeuren
+          {/* Manager quick links (mobile) */}
+          {isManager && (
+            <div className="flex gap-1.5 mt-2.5 sm:hidden overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+              <button onClick={() => navigate("/projecten")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground shrink-0" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <FolderOpen className="h-3 w-3" /> Projecten
               </button>
-              <button onClick={() => { navigate("/rapportage"); setMenuOpen(false); }} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-foreground" style={{ background: "rgba(255,255,255,0.04)" }}>
-                <BarChart3 className="h-4 w-4 text-primary" /> Rapportage
-              </button>
-              <button onClick={() => { navigate("/medewerkers"); setMenuOpen(false); }} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-foreground" style={{ background: "rgba(255,255,255,0.04)" }}>
-                <Users className="h-4 w-4 text-primary" /> Medewerkers
-              </button>
-              <button onClick={() => { navigate("/projecten"); setMenuOpen(false); }} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-foreground" style={{ background: "rgba(255,255,255,0.04)" }}>
-                <FolderOpen className="h-4 w-4 text-primary" /> Projecten
-              </button>
-              <button onClick={signOut} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-destructive" style={{ background: "rgba(255,255,255,0.04)" }}>
-                <LogOut className="h-4 w-4" /> Uitloggen
+              <button onClick={() => navigate("/opdrachtgevers")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground shrink-0" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <Building2 className="h-3 w-3" /> Opdrachtgevers
               </button>
             </div>
           )}
 
           {/* Tabs */}
-          <div className="flex mt-3 border-b border-border/50">
+          <div className="flex mt-2.5 border-b border-border/50">
             {([["week", "Deze week"], ["overzicht", "Overzicht"]] as const).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setActiveTab(key as "week" | "overzicht")}
                 className="flex-1 py-2.5 text-sm font-medium transition-colors"
                 style={{
-                  color: activeTab === key ? "#22c55e" : "#64748b",
-                  borderBottom: activeTab === key ? "2px solid #22c55e" : "2px solid transparent",
+                  color: activeTab === key ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                  borderBottom: activeTab === key ? "2px solid hsl(var(--primary))" : "2px solid transparent",
                   background: "transparent",
                   marginBottom: -1,
                 }}
@@ -199,6 +193,7 @@ const Index = () => {
               const dayEntries = weekEntries.filter((e) => e.date === key);
               const isToday = key === today;
               const hasEntries = dayEntries.length > 0;
+              const dayHours = dayEntries.reduce((a, b) => a + b.hours, 0);
               return (
                 <button
                   key={i}
@@ -215,17 +210,22 @@ const Index = () => {
                   <span className={`text-sm font-bold ${isToday ? "text-primary" : "text-foreground"}`}>
                     {d.getDate()}
                   </span>
-                  {hasEntries && (
-                    <div
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{
-                        background: dayEntries.some((e) => e.status === "afgekeurd")
-                          ? "#ef4444"
-                          : dayEntries.some((e) => e.status === "goedgekeurd")
-                          ? "#22c55e"
-                          : "#f59e0b",
-                      }}
-                    />
+                  {hasEntries ? (
+                    <div className="flex items-center gap-1">
+                      <div
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{
+                          background: dayEntries.some((e) => e.status === "afgekeurd")
+                            ? "#ef4444"
+                            : dayEntries.some((e) => e.status === "goedgekeurd")
+                            ? "#22c55e"
+                            : "#f59e0b",
+                        }}
+                      />
+                      <span className="text-[9px] font-bold text-muted-foreground">{dayHours}u</span>
+                    </div>
+                  ) : (
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }} />
                   )}
                 </button>
               );
@@ -309,9 +309,9 @@ const Index = () => {
       {/* FAB */}
       <button
         onClick={() => openModal()}
-        className="fixed z-40 flex items-center justify-center active:scale-[0.93] transition-transform"
+        className="fixed z-40 flex items-center justify-center active:scale-[0.93] transition-transform sm:bottom-8"
         style={{
-          bottom: 32,
+          bottom: 90,
           right: "max(24px, calc(50% - 215px + 24px))",
           width: 56,
           height: 56,
@@ -325,6 +325,9 @@ const Index = () => {
       >
         +
       </button>
+
+      {/* Bottom Nav */}
+      <BottomNav />
 
       {/* Modal */}
       {showModal && (

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Copy, UserPlus, ArrowLeft, Eye, EyeOff, Trash2 } from "lucide-react";
+import { Copy, UserPlus, Eye, EyeOff, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
@@ -19,7 +19,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import terrevoltLogo from "@/assets/terrevolt-logo.png";
+import { BottomNav } from "@/components/BottomNav";
 
 interface CreatedUser {
   email: string;
@@ -55,6 +55,7 @@ export default function Medewerkers() {
   const [createdUsers, setCreatedUsers] = useState<CreatedUser[]>([]);
   const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [showAdd, setShowAdd] = useState(false);
 
   useEffect(() => {
     loadEmployees();
@@ -105,6 +106,7 @@ export default function Medewerkers() {
       setFullName("");
       setRole("");
       setPassword("");
+      setShowAdd(false);
       loadEmployees();
     }
     setLoading(false);
@@ -155,104 +157,136 @@ export default function Medewerkers() {
     );
   }
 
+  const monteurs = employees.filter((e) => e.role !== "manager" && e.role !== "–");
+  const managers = employees.filter((e) => e.role === "manager");
+
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur-md">
-        <div className="px-4 py-3 flex items-center justify-between max-w-5xl mx-auto">
+    <div className="min-h-screen bg-background overflow-x-hidden" style={{ maxWidth: 430, margin: "0 auto", paddingBottom: 80 }}>
+      {/* Header */}
+      <header className="sticky top-0 z-30" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(12px)" }}>
+        <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src={terrevoltLogo} alt="TerreVolt BV" className="h-7" />
-            <div className="border-l pl-2.5">
-              <span className="text-[11px] text-muted-foreground font-medium tracking-wide uppercase">Medewerkers</span>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
+              ⚡
             </div>
+            <span className="text-base font-bold text-foreground tracking-tight">Team</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1.5 text-xs h-8">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Terug
-          </Button>
+          <button
+            onClick={() => { setShowAdd(!showAdd); }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{
+              background: showAdd ? "rgba(248,113,113,0.15)" : "rgba(34,197,94,0.15)",
+              border: showAdd ? "1px solid rgba(248,113,113,0.25)" : "1px solid rgba(34,197,94,0.25)",
+              color: showAdd ? "#f87171" : "#22c55e",
+              fontSize: showAdd ? 18 : 22,
+            }}
+          >
+            {showAdd ? "×" : "+"}
+          </button>
         </div>
       </header>
 
-      <main className="px-4 py-5 space-y-4 max-w-5xl mx-auto">
-        {/* Add employee form */}
-        <div className="rounded-2xl border bg-card shadow-card overflow-hidden animate-slide-up">
-          <div className="px-4 py-3 bg-secondary/30 flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
-              <UserPlus className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-semibold text-sm">Nieuwe medewerker</span>
-          </div>
-          <div className="p-4">
+      <main className="px-4 py-4 space-y-4">
+        {/* Add form */}
+        {showAdd && (
+          <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(34,197,94,0.2)" }}>
+            <p className="text-sm font-semibold text-foreground">Nieuwe medewerker</p>
             <form onSubmit={handleCreate} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Naam</Label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jan Jansen" className="h-9 rounded-lg" />
+              {[
+                { key: "fullName", label: "Naam", placeholder: "Jan Jansen", value: fullName, onChange: setFullName },
+                { key: "email", label: "E-mail", placeholder: "jan@terrevolt.nl", value: email, onChange: setEmail, type: "email" },
+              ].map((f) => (
+                <div key={f.key} className="space-y-1">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{f.label}</label>
+                  <input
+                    type={f.type || "text"}
+                    value={f.value}
+                    onChange={(e) => f.onChange(e.target.value)}
+                    placeholder={f.placeholder}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground placeholder:text-muted-foreground"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+                  />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">E-mailadres</Label>
-                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jan@terrevolt.nl" className="h-9 rounded-lg" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Rol</Label>
-                  <Select value={role} onValueChange={setRole}>
-                    <SelectTrigger className="h-9 rounded-lg"><SelectValue placeholder="Kies rol" /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(roleLabels).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Wachtwoord</Label>
-                  <div className="flex gap-1">
-                    <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Wachtwoord" className="h-9 rounded-lg" />
-                    <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-lg" onClick={generatePassword} title="Genereer wachtwoord">
-                      🎲
-                    </Button>
-                  </div>
+              ))}
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Rol</label>
+                <div className="flex gap-1.5 flex-wrap">
+                  {Object.entries(roleLabels).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setRole(value)}
+                      className="px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                      style={{
+                        background: role === value ? "rgba(34,197,94,0.1)" : "rgba(255,255,255,0.04)",
+                        border: role === value ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                        color: role === value ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <Button type="submit" disabled={loading} className="w-full sm:w-auto gap-1.5 gradient-primary text-primary-foreground hover:opacity-90 rounded-lg font-medium">
-                <UserPlus className="h-4 w-4" />
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Wachtwoord</label>
+                <div className="flex gap-1.5">
+                  <input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Wachtwoord"
+                    className="flex-1 px-3 py-2.5 rounded-xl text-sm text-foreground placeholder:text-muted-foreground"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+                  />
+                  <button type="button" onClick={generatePassword} className="px-3 py-2.5 rounded-xl text-sm shrink-0" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    🎲
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]"
+                style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}
+              >
                 {loading ? "Bezig..." : "Toevoegen"}
-              </Button>
+              </button>
             </form>
           </div>
-        </div>
+        )}
 
         {/* Recently created */}
         {createdUsers.length > 0 && (
-          <div className="rounded-2xl border bg-card shadow-card overflow-hidden animate-slide-up">
-            <div className="px-4 py-3 bg-success/5 border-b">
-              <span className="font-semibold text-sm">Zojuist aangemaakt</span>
+          <div className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(34,197,94,0.15)" }}>
+            <div className="px-4 py-2.5" style={{ background: "rgba(34,197,94,0.05)" }}>
+              <span className="text-xs font-semibold text-foreground">Zojuist aangemaakt</span>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-3 space-y-2">
               {createdUsers.map((u, i) => (
-                <div key={i} className="p-3 rounded-xl border bg-secondary/20 space-y-2">
+                <div key={i} className="p-3 rounded-xl space-y-2" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
                   <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-0.5 min-w-0">
-                      <p className="font-semibold text-sm">{u.fullName}</p>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-foreground">{u.fullName}</p>
                       <p className="text-[11px] text-muted-foreground truncate">{u.email} · {roleLabels[u.role]}</p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => copyCredentials(u)} className="gap-1 shrink-0 rounded-lg text-xs h-7">
-                      <Copy className="h-3 w-3" />
-                      Kopieer
-                    </Button>
+                    <button onClick={() => copyCredentials(u)} className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-muted-foreground" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                      <Copy className="h-3 w-3" /> Kopieer
+                    </button>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] text-muted-foreground">Wachtwoord:</span>
-                    <code className="text-[11px] bg-background px-2 py-0.5 rounded-md border font-mono">
+                    <code className="text-[11px] px-2 py-0.5 rounded-md font-mono text-foreground" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
                       {showPasswords[i] ? u.password : "••••••••••"}
                     </code>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
+                    <button
+                      className="w-6 h-6 flex items-center justify-center text-muted-foreground"
                       onClick={() => setShowPasswords((prev) => ({ ...prev, [i]: !prev[i] }))}
                     >
                       {showPasswords[i] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                    </Button>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -260,89 +294,124 @@ export default function Medewerkers() {
           </div>
         )}
 
-        {/* Employee list */}
-        <div className="rounded-2xl border bg-card shadow-card overflow-hidden animate-slide-up">
-          <div className="px-4 py-3 bg-secondary/30 flex items-center justify-between">
-            <span className="font-semibold text-sm">Alle medewerkers</span>
-            <span className="text-[11px] text-muted-foreground font-medium">{employees.length} personen</span>
+        {/* Managers */}
+        {managers.length > 0 && (
+          <>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Managers ({managers.length})</p>
+            <div className="space-y-1.5">
+              {managers.map((emp) => (
+                <EmployeeRow key={emp.user_id} emp={emp} isSelf={emp.user_id === user?.id} onRoleChange={handleRoleChange} onDelete={handleDelete} updatingRoleId={updatingRoleId} deletingId={deletingId} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Monteurs */}
+        {monteurs.length > 0 && (
+          <>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Medewerkers ({monteurs.length})</p>
+            <div className="space-y-1.5">
+              {monteurs.map((emp) => (
+                <EmployeeRow key={emp.user_id} emp={emp} isSelf={emp.user_id === user?.id} onRoleChange={handleRoleChange} onDelete={handleDelete} updatingRoleId={updatingRoleId} deletingId={deletingId} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {employees.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-3xl mb-2">👥</p>
+            <p className="text-sm font-medium text-foreground">Nog geen medewerkers</p>
           </div>
-          <div className="divide-y divide-border/50">
-            {employees.length === 0 ? (
-              <div className="p-6 text-center">
-                <p className="text-sm text-muted-foreground">Nog geen medewerkers</p>
-              </div>
-            ) : (
-              employees.map((emp) => {
-                const isSelf = emp.user_id === user?.id;
-                return (
-                  <div key={emp.user_id} className="flex items-center justify-between px-4 py-3 gap-2 hover:bg-muted/20 transition-colors">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
-                        {emp.full_name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-sm font-medium truncate">{emp.full_name}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {isSelf ? (
-                        <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-1 rounded-md">
-                          {roleLabels[emp.role] || emp.role}
-                        </span>
-                      ) : (
-                        <Select
-                          value={emp.role}
-                          onValueChange={(val) => handleRoleChange(emp.user_id, val)}
-                          disabled={updatingRoleId === emp.user_id}
-                        >
-                          <SelectTrigger className="h-7 text-[10px] w-auto min-w-[100px] rounded-md">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.entries(roleLabels).map(([value, label]) => (
-                              <SelectItem key={value} value={value}>{label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                      {!isSelf && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 rounded-lg text-muted-foreground hover:text-destructive shrink-0"
-                              disabled={deletingId === emp.user_id}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="rounded-2xl">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Medewerker verwijderen</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen? 
-                                Dit verwijdert ook alle urenregistraties. Dit kan niet ongedaan worden.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel className="rounded-lg">Annuleren</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(emp.user_id, emp.full_name)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
-                              >
-                                Verwijderen
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+        )}
       </main>
+
+      <BottomNav />
+    </div>
+  );
+}
+
+function EmployeeRow({ emp, isSelf, onRoleChange, onDelete, updatingRoleId, deletingId }: {
+  emp: Employee;
+  isSelf: boolean;
+  onRoleChange: (userId: string, role: string) => void;
+  onDelete: (userId: string, name: string) => void;
+  updatingRoleId: string | null;
+  deletingId: string | null;
+}) {
+  const [showRol, setShowRol] = useState(false);
+
+  return (
+    <div className="rounded-2xl p-3.5 transition-transform active:scale-[0.985]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "#fff" }}>
+          {emp.full_name.charAt(0).toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground truncate">{emp.full_name}</p>
+        </div>
+        <button
+          onClick={() => !isSelf && setShowRol(!showRol)}
+          className="px-2 py-1 rounded-lg text-[11px] font-semibold capitalize shrink-0"
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.09)",
+            color: "hsl(var(--muted-foreground))",
+          }}
+          disabled={isSelf}
+        >
+          {roleLabels[emp.role] || emp.role} {!isSelf && "↓"}
+        </button>
+        {!isSelf && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.15)" }}
+                disabled={deletingId === emp.user_id}
+              >
+                <Trash2 className="h-3.5 w-3.5" style={{ color: "#f87171" }} />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="rounded-2xl">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Medewerker verwijderen</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-lg">Annuleren</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => onDelete(emp.user_id, emp.full_name)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg"
+                >
+                  Verwijderen
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </div>
+
+      {showRol && !isSelf && (
+        <div className="flex gap-1.5 mt-2.5 flex-wrap animate-fade-in">
+          {Object.entries(roleLabels).map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => { onRoleChange(emp.user_id, value); setShowRol(false); }}
+              className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors"
+              style={{
+                background: emp.role === value ? "rgba(34,197,94,0.1)" : "rgba(255,255,255,0.04)",
+                border: emp.role === value ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                color: emp.role === value ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
