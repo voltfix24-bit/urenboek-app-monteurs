@@ -107,6 +107,9 @@ const Index = () => {
                     <button onClick={() => navigate("/medewerkers")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
                       Medewerkers
                     </button>
+                    <button onClick={() => navigate("/projecten")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
+                      Projecten
+                    </button>
                   </>
                 )}
               </div>
