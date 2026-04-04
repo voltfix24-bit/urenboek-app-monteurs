@@ -28,6 +28,7 @@ export default function Projecten() {
   const [opdrachtgevers, setOpdrachtgevers] = useState<Opdrachtgever[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
@@ -71,7 +72,11 @@ export default function Projecten() {
   }
 
   async function handleDelete(project: Project) {
-    if (!confirm(`Weet je zeker dat je "${project.naam}" wilt verwijderen?`)) return;
+    if (confirmDeleteId !== project.id) {
+      setConfirmDeleteId(project.id);
+      return;
+    }
+    setConfirmDeleteId(null);
     const { error } = await supabase.from("projects").delete().eq("id", project.id);
     if (error) { toast.error("Fout bij verwijderen"); }
     else { toast.success("Project verwijderd"); fetchData(); }
@@ -152,14 +157,14 @@ export default function Projecten() {
             <div className="space-y-2">
               <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Actief ({activeProjects.length})</p>
               {activeProjects.map((p) => (
-                <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isEditing={editId === p.id} form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} renderOgSelect={renderOgSelect} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} />
+                <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isEditing={editId === p.id} isConfirmingDelete={confirmDeleteId === p.id} form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} renderOgSelect={renderOgSelect} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)} />
               ))}
             </div>
             {inactiveProjects.length > 0 && (
               <div className="space-y-2 pt-2">
                 <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Inactief ({inactiveProjects.length})</p>
-                {inactiveProjects.map((p) => (
-                  <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isEditing={editId === p.id} form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} renderOgSelect={renderOgSelect} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} />
+                  {inactiveProjects.map((p) => (
+                  <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isEditing={editId === p.id} isConfirmingDelete={confirmDeleteId === p.id} form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} renderOgSelect={renderOgSelect} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)} />
                 ))}
               </div>
             )}
@@ -170,10 +175,11 @@ export default function Projecten() {
   );
 }
 
-function ProjectRow({ project, ogNaam, isEditing, form, setForm, opdrachtgevers, renderOgSelect, onEdit, onCancel, onSave, onToggle, onDelete }: {
+function ProjectRow({ project, ogNaam, isEditing, isConfirmingDelete, form, setForm, opdrachtgevers, renderOgSelect, onEdit, onCancel, onSave, onToggle, onDelete, onCancelDelete }: {
   project: Project;
   ogNaam: string | null;
   isEditing: boolean;
+  isConfirmingDelete: boolean;
   form: FormState;
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
   opdrachtgevers: Opdrachtgever[];
@@ -183,6 +189,7 @@ function ProjectRow({ project, ogNaam, isEditing, form, setForm, opdrachtgevers,
   onSave: () => void;
   onToggle: () => void;
   onDelete: () => void;
+  onCancelDelete: () => void;
 }) {
   if (isEditing) {
     return (
@@ -196,6 +203,22 @@ function ProjectRow({ project, ogNaam, isEditing, form, setForm, opdrachtgevers,
           </button>
           <button onClick={onSave} className="flex-1 py-2 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
             <Check className="h-3.5 w-3.5" /> Opslaan
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isConfirmingDelete) {
+    return (
+      <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.3)" }}>
+        <p className="text-sm font-semibold text-foreground">"{project.naam}" verwijderen?</p>
+        <div className="flex gap-2">
+          <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold text-muted-foreground" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            Annuleren
+          </button>
+          <button onClick={onDelete} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "#ef4444" }}>
+            Verwijderen
           </button>
         </div>
       </div>
