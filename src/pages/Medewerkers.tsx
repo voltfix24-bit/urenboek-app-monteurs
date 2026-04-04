@@ -44,7 +44,7 @@ const roleLabels: Record<string, string> = {
 };
 
 export default function Medewerkers() {
-  const { isManager, profile } = useAuth();
+  const { isManager, user } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
