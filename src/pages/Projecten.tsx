@@ -176,7 +176,7 @@ export default function Projecten() {
                   Inactief ({inactiveProjects.length})
                 </p>
                 {inactiveProjects.map((p) => (
-                  <ProjectRow key={p.id} project={p} isEditing={editId === p.id} form={form} setForm={setForm} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} />
+                  <ProjectRow key={p.id} project={p} isEditing={editId === p.id} form={form} setForm={setForm} onEdit={() => startEdit(p)} onCancel={cancelEdit} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} />
                 ))}
               </div>
             )}
