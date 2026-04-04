@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Users, CheckCircle, BarChart3, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useSwipe } from "@/hooks/useSwipe";
 import terrevoltLogo from "@/assets/terrevolt-logo.png";
 
 const Index = () => {
