@@ -227,7 +227,7 @@ export default function ManagerPlanning() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
           <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.6)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "#111118", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none" }} onClick={e => e.stopPropagation()}>
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "#111118", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "rgba(255,255,255,0.15)" }} />
             <h2 className="text-base font-bold text-foreground">
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
