@@ -6,7 +6,7 @@ import { useSwipe } from "@/hooks/useSwipe";
 import { format } from "date-fns";
 import { EntryCard } from "@/components/EntryCard";
 import { AddEntryModal } from "@/components/AddEntryModal";
-import { LogOut, Users, CheckCircle, BarChart3, Menu, X } from "lucide-react";
+import { LogOut, Users, CheckCircle, BarChart3, Menu, X, FolderOpen } from "lucide-react";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
