@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, startOfISOWeek, addDays, getISOWeek, getISOWeekYear, addWeeks } from "date-fns";
 import { nl } from "date-fns/locale";
 import { BottomNav } from "@/components/BottomNav";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface ReportEntry {
   date: string;
@@ -109,6 +111,158 @@ export default function Rapportage() {
     a.click();
     URL.revokeObjectURL(url);
     toast.success("CSV gedownload!");
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pw = doc.internal.pageSize.getWidth();
+    const ph = doc.internal.pageSize.getHeight();
+    const margin = 16;
+
+    // Header bar
+    doc.setFillColor(9, 9, 15);
+    doc.rect(0, 0, pw, 36, "F");
+    doc.setFillColor(34, 197, 94);
+    doc.roundedRect(margin, 8, 20, 20, 3, 3, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.text("\u26A1", margin + 6.5, 21);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("TerreVolt", margin + 24, 17);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(150, 160, 180);
+    doc.text("Urenrapportage", margin + 24, 23);
+
+    // Week info
+    doc.setFontSize(10);
+    doc.setTextColor(180, 190, 200);
+    doc.text(`Week ${weekNumber} \u2022 ${format(currentWeekStart, "d MMM", { locale: nl })} \u2013 ${format(addDays(currentWeekStart, 6), "d MMM yyyy", { locale: nl })}`, pw - margin, 17, { align: "right" });
+    doc.text(`Filter: ${filter === "alle" ? "Alle uren" : filter}`, pw - margin, 23, { align: "right" });
+
+    let y = 44;
+
+    // KPI boxes
+    const boxW = (pw - margin * 2 - 8) / 3;
+    const kpis = [
+      { label: "Totaal uren", value: totalHours + "u", color: [34, 197, 94] },
+      { label: "Projecten", value: String(uniqueProjects), color: [99, 102, 241] },
+      { label: "Monteurs", value: String(uniqueEmployees), color: [245, 158, 11] },
+    ];
+    kpis.forEach((k, i) => {
+      const x = margin + i * (boxW + 4);
+      doc.setFillColor(20, 22, 30);
+      doc.roundedRect(x, y, boxW, 22, 3, 3, "F");
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(k.color[0], k.color[1], k.color[2]);
+      doc.text(k.value, x + boxW / 2, y + 12, { align: "center" });
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(120, 130, 150);
+      doc.text(k.label, x + boxW / 2, y + 19, { align: "center" });
+    });
+    y += 30;
+
+    // Per monteur section
+    if (medewerkerStats.length > 0) {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(120, 130, 150);
+      doc.text("PER MONTEUR", margin, y);
+      y += 6;
+      const maxUren = Math.max(...medewerkerStats.map(m => m[1]), 1);
+      medewerkerStats.forEach(([naam, uren]) => {
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(220, 225, 235);
+        doc.text(naam, margin, y);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(34, 197, 94);
+        doc.text(uren + "u", pw - margin, y, { align: "right" });
+        y += 3;
+        // Bar
+        const barW = pw - margin * 2 - 40;
+        doc.setFillColor(30, 33, 45);
+        doc.roundedRect(margin, y, barW, 3, 1.5, 1.5, "F");
+        const fillW = (uren / maxUren) * barW;
+        doc.setFillColor(34, 197, 94);
+        doc.roundedRect(margin, y, Math.max(fillW, 2), 3, 1.5, 1.5, "F");
+        y += 8;
+      });
+      y += 4;
+    }
+
+    // Per project section
+    if (projectStats.length > 0) {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(120, 130, 150);
+      doc.text("PER PROJECT", margin, y);
+      y += 6;
+      projectStats.forEach(([project, uren]) => {
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(220, 225, 235);
+        doc.text(project, margin, y);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(34, 197, 94);
+        doc.text(uren + "u", pw - margin, y, { align: "right" });
+        y += 6;
+      });
+      y += 6;
+    }
+
+    // Detail table
+    if (entries.length > 0) {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(120, 130, 150);
+      doc.text("DETAIL OVERZICHT", margin, y);
+      y += 4;
+
+      autoTable(doc, {
+        startY: y,
+        margin: { left: margin, right: margin },
+        head: [["Datum", "Project", "Medewerker", "Omschrijving", "Uren"]],
+        body: entries.map(e => [
+          format(new Date(e.date), "EEE d/M", { locale: nl }),
+          e.project_number,
+          e.full_name,
+          e.description || "\u2013",
+          e.hours + "u",
+        ]),
+        styles: {
+          fontSize: 8,
+          cellPadding: 3,
+          textColor: [200, 210, 220],
+          fillColor: [15, 17, 25],
+          lineColor: [40, 45, 60],
+          lineWidth: 0.2,
+        },
+        headStyles: {
+          fillColor: [25, 28, 40],
+          textColor: [34, 197, 94],
+          fontStyle: "bold",
+          fontSize: 8,
+        },
+        alternateRowStyles: {
+          fillColor: [20, 22, 32],
+        },
+      });
+    }
+
+    // Footer
+    const footerY = ph - 10;
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 90, 110);
+    doc.text(`TerreVolt BV \u2022 Gegenereerd op ${format(new Date(), "d MMMM yyyy 'om' HH:mm", { locale: nl })}`, margin, footerY);
+    doc.text("Pagina 1", pw - margin, footerY, { align: "right" });
+
+    doc.save(`terrevolt-week${weekNumber}-${weekYear}.pdf`);
+    toast.success("PDF gedownload!");
   };
 
   if (!isManager) {
@@ -249,18 +403,32 @@ export default function Rapportage() {
 
             {/* Export */}
             {entries.length > 0 && (
-              <button
-                onClick={exportCSV}
-                className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  color: "hsl(var(--foreground))",
-                }}
-              >
-                <Download className="h-4 w-4" />
-                CSV exporteren
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={exportPDF}
+                  className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+                  style={{
+                    background: "rgba(34,197,94,0.1)",
+                    border: "1px solid rgba(34,197,94,0.2)",
+                    color: "hsl(var(--primary))",
+                  }}
+                >
+                  <FileText className="h-4 w-4" />
+                  PDF
+                </button>
+                <button
+                  onClick={exportCSV}
+                  className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "hsl(var(--foreground))",
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                  CSV
+                </button>
+              </div>
             )}
           </>
         )}
