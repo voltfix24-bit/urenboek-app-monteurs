@@ -6,7 +6,7 @@ import { useSwipe } from "@/hooks/useSwipe";
 import { format } from "date-fns";
 import { EntryCard } from "@/components/EntryCard";
 import { AddEntryModal } from "@/components/AddEntryModal";
-import { LogOut, Users, CheckCircle, BarChart3, Menu, X } from "lucide-react";
+import { LogOut, Users, CheckCircle, BarChart3, Menu, X, FolderOpen } from "lucide-react";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
@@ -107,6 +107,9 @@ const Index = () => {
                     <button onClick={() => navigate("/medewerkers")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
                       Medewerkers
                     </button>
+                    <button onClick={() => navigate("/projecten")} className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-primary transition-colors" style={{ background: "rgba(255,255,255,0.04)" }}>
+                      Projecten
+                    </button>
                   </>
                 )}
               </div>
@@ -131,6 +134,9 @@ const Index = () => {
               </button>
               <button onClick={() => { navigate("/medewerkers"); setMenuOpen(false); }} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-foreground" style={{ background: "rgba(255,255,255,0.04)" }}>
                 <Users className="h-4 w-4 text-primary" /> Medewerkers
+              </button>
+              <button onClick={() => { navigate("/projecten"); setMenuOpen(false); }} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-foreground" style={{ background: "rgba(255,255,255,0.04)" }}>
+                <FolderOpen className="h-4 w-4 text-primary" /> Projecten
               </button>
               <button onClick={signOut} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-destructive" style={{ background: "rgba(255,255,255,0.04)" }}>
                 <LogOut className="h-4 w-4" /> Uitloggen

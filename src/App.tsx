@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Medewerkers from "./pages/Medewerkers";
 import Goedkeuring from "./pages/Goedkeuring";
 import Rapportage from "./pages/Rapportage";
+import Projecten from "./pages/Projecten";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/medewerkers" element={<ProtectedRoute><Medewerkers /></ProtectedRoute>} />
             <Route path="/goedkeuring" element={<ProtectedRoute><Goedkeuring /></ProtectedRoute>} />
             <Route path="/rapportage" element={<ProtectedRoute><Rapportage /></ProtectedRoute>} />
+            <Route path="/projecten" element={<ProtectedRoute><Projecten /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
