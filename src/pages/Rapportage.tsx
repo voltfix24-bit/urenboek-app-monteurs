@@ -403,18 +403,32 @@ export default function Rapportage() {
 
             {/* Export */}
             {entries.length > 0 && (
-              <button
-                onClick={exportCSV}
-                className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  color: "hsl(var(--foreground))",
-                }}
-              >
-                <Download className="h-4 w-4" />
-                CSV exporteren
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={exportPDF}
+                  className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+                  style={{
+                    background: "rgba(34,197,94,0.1)",
+                    border: "1px solid rgba(34,197,94,0.2)",
+                    color: "hsl(var(--primary))",
+                  }}
+                >
+                  <FileText className="h-4 w-4" />
+                  PDF
+                </button>
+                <button
+                  onClick={exportCSV}
+                  className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "hsl(var(--foreground))",
+                  }}
+                >
+                  <Download className="h-4 w-4" />
+                  CSV
+                </button>
+              </div>
             )}
           </>
         )}
