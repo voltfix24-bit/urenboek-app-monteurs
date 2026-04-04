@@ -126,6 +126,22 @@ export default function Medewerkers() {
     setDeletingId(null);
   };
 
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    setUpdatingRoleId(userId);
+    const { error } = await supabase
+      .from("user_roles")
+      .update({ role: newRole as any })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast.error("Fout bij wijzigen rol");
+    } else {
+      toast.success("Rol gewijzigd");
+      loadEmployees();
+    }
+    setUpdatingRoleId(null);
+  };
+
   const copyCredentials = (user: CreatedUser) => {
     const text = `Inloggegevens TerreVolt Urenregistratie:\nE-mail: ${user.email}\nWachtwoord: ${user.password}\n\nLog in op: ${window.location.origin}`;
     navigator.clipboard.writeText(text);
