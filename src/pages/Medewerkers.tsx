@@ -52,6 +52,7 @@ export default function Medewerkers() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
   const [createdUsers, setCreatedUsers] = useState<CreatedUser[]>([]);
   const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
   const [employees, setEmployees] = useState<Employee[]>([]);
