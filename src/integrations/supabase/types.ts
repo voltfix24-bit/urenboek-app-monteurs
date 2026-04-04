@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      opdrachtgevers: {
+        Row: {
+          contactpersoon: string
+          created_at: string
+          email: string
+          id: string
+          naam: string
+          telefoon: string
+          updated_at: string
+        }
+        Insert: {
+          contactpersoon?: string
+          created_at?: string
+          email?: string
+          id?: string
+          naam: string
+          telefoon?: string
+          updated_at?: string
+        }
+        Update: {
+          contactpersoon?: string
+          created_at?: string
+          email?: string
+          id?: string
+          naam?: string
+          telefoon?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -45,6 +75,7 @@ export type Database = {
           id: string
           naam: string
           nummer: string
+          opdrachtgever_id: string | null
           updated_at: string
         }
         Insert: {
@@ -53,6 +84,7 @@ export type Database = {
           id?: string
           naam: string
           nummer: string
+          opdrachtgever_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -61,9 +93,18 @@ export type Database = {
           id?: string
           naam?: string
           nummer?: string
+          opdrachtgever_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "projects_opdrachtgever_id_fkey"
+            columns: ["opdrachtgever_id"]
+            isOneToOne: false
+            referencedRelation: "opdrachtgevers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       time_entries: {
         Row: {
