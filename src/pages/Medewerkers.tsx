@@ -296,38 +296,39 @@ export default function Medewerkers() {
                               ))}
                             </SelectContent>
                           </Select>
-                        )
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-                              disabled={deletingId === emp.user_id}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Medewerker verwijderen</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen? 
-                                Dit verwijdert ook alle urenregistraties van deze medewerker. Dit kan niet ongedaan worden gemaakt.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Annuleren</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(emp.user_id, emp.full_name)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        )}
+                        {!isSelf && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                                disabled={deletingId === emp.user_id}
                               >
-                                Verwijderen
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Medewerker verwijderen</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen? 
+                                  Dit verwijdert ook alle urenregistraties van deze medewerker. Dit kan niet ongedaan worden gemaakt.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuleren</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(emp.user_id, emp.full_name)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Verwijderen
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                     </div>
                   );
                 })}
