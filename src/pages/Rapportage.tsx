@@ -136,16 +136,30 @@ export default function Rapportage() {
       <main className="px-4 py-4 space-y-4">
         {/* Date range */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="flex gap-3">
-            <div className="flex-1 space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Van</label>
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm text-foreground" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }} />
+          {/* Week navigation */}
+          <div className="flex items-center justify-between">
+            <button onClick={() => setCurrentWeekStart((p) => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <ChevronLeft className="h-4 w-4 text-foreground" />
+            </button>
+            <div className="text-center">
+              <p className="text-lg font-extrabold text-foreground">Week {weekNumber}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {format(currentWeekStart, "d MMM", { locale: nl })} – {format(addDays(currentWeekStart, 6), "d MMM yyyy", { locale: nl })}
+              </p>
             </div>
-            <div className="flex-1 space-y-1.5">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Tot</label>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm text-foreground" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }} />
-            </div>
+            <button onClick={() => setCurrentWeekStart((p) => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <ChevronRight className="h-4 w-4 text-foreground" />
+            </button>
           </div>
+
+          {/* Today button */}
+          <button
+            onClick={() => setCurrentWeekStart(startOfISOWeek(new Date()))}
+            className="w-full py-1.5 rounded-xl text-[11px] font-semibold text-muted-foreground transition-colors"
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            Deze week
+          </button>
 
           {/* Filter chips */}
           <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
