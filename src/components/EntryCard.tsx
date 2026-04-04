@@ -1,7 +1,5 @@
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
-import { getProjectByNummer } from "@/lib/projects";
-import { TimeEntry } from "@/types/timesheet";
+import { useProjects } from "@/hooks/useProjects";
+import { TimeEntry } from "@/hooks/useTimesheet";
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; dot: string; label: string }> = {
   concept: { bg: "rgba(100,116,139,0.15)", text: "#94a3b8", dot: "#64748b", label: "Concept" },
@@ -21,27 +19,22 @@ interface EntryCardProps {
 }
 
 export function EntryCard({ entry, onSubmit, onRemove, showDate = false }: EntryCardProps) {
-  const proj = getProjectByNummer(entry.projectNumber);
+  const { getByNummer } = useProjects();
+  const proj = getByNummer(entry.projectNumber);
   const s = STATUS_CONFIG[entry.status] || STATUS_CONFIG.concept;
   const dateObj = new Date(entry.date + "T12:00:00");
   const dayIdx = dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1;
 
   return (
-    <div
-      className="rounded-2xl border border-border/60 p-4 transition-transform active:scale-[0.985]"
-      style={{ background: "rgba(255,255,255,0.03)" }}
-    >
+    <div className="rounded-2xl border border-border/60 p-4 transition-transform active:scale-[0.985]" style={{ background: "rgba(255,255,255,0.03)" }}>
       {showDate && (
         <p className="text-xs font-medium text-muted-foreground mb-2">
           {DAGEN[dayIdx]} {dateObj.getDate()} {MAANDEN[dateObj.getMonth()]}
         </p>
       )}
-
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground truncate">
-            {proj?.naam || entry.projectNumber}
-          </p>
+          <p className="text-sm font-semibold text-foreground truncate">{proj?.naam || entry.projectNumber}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
             {proj?.nummer || entry.projectNumber}
             {entry.description && ` · ${entry.description}`}
@@ -49,41 +42,22 @@ export function EntryCard({ entry, onSubmit, onRemove, showDate = false }: Entry
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-sm font-bold text-foreground">{entry.hours}u</span>
-          <span
-            className="text-[11px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1"
-            style={{ background: s.bg, color: s.text }}
-          >
+          <span className="text-[11px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: s.bg, color: s.text }}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.dot }} />
             {s.label}
           </span>
         </div>
       </div>
-
       {entry.status === "concept" && onSubmit && (
-        <button
-          onClick={() => onSubmit(entry.id)}
-          className="mt-3 w-full py-2 rounded-xl text-xs font-semibold transition-colors"
-          style={{
-            background: "rgba(34,197,94,0.1)",
-            border: "1px solid rgba(34,197,94,0.2)",
-            color: "#22c55e",
-          }}
-        >
+        <button onClick={() => onSubmit(entry.id)} className="mt-3 w-full py-2 rounded-xl text-xs font-semibold transition-colors" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", color: "#22c55e" }}>
           Indienen ter goedkeuring →
         </button>
       )}
-
       {entry.status === "afgekeurd" && (
-        <p className="mt-2 text-[11px] text-destructive/70 italic">
-          Neem contact op met je manager voor toelichting.
-        </p>
+        <p className="mt-2 text-[11px] text-destructive/70 italic">Neem contact op met je manager voor toelichting.</p>
       )}
-
       {onRemove && entry.status === "concept" && (
-        <button
-          onClick={() => onRemove(entry.id)}
-          className="mt-2 w-full py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-destructive transition-colors"
-        >
+        <button onClick={() => onRemove(entry.id)} className="mt-2 w-full py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-destructive transition-colors">
           Verwijderen
         </button>
       )}
