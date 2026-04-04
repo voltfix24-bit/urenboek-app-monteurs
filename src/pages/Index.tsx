@@ -135,6 +135,9 @@ const Index = () => {
               <button onClick={() => { navigate("/medewerkers"); setMenuOpen(false); }} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-foreground" style={{ background: "rgba(255,255,255,0.04)" }}>
                 <Users className="h-4 w-4 text-primary" /> Medewerkers
               </button>
+              <button onClick={() => { navigate("/projecten"); setMenuOpen(false); }} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-foreground" style={{ background: "rgba(255,255,255,0.04)" }}>
+                <FolderOpen className="h-4 w-4 text-primary" /> Projecten
+              </button>
               <button onClick={signOut} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium text-destructive" style={{ background: "rgba(255,255,255,0.04)" }}>
                 <LogOut className="h-4 w-4" /> Uitloggen
               </button>
