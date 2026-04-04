@@ -297,6 +297,7 @@ const Index = () => {
                 showDate
                 onSubmit={submitEntry}
                 onRemove={removeEntry}
+                onRevertToConcept={revertToConcept}
               />
             ))}
             {allEntries.length === 0 && (
