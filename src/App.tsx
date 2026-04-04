@@ -11,6 +11,11 @@ import Goedkeuring from "./pages/Goedkeuring";
 import Rapportage from "./pages/Rapportage";
 import Projecten from "./pages/Projecten";
 import Opdrachtgevers from "./pages/Opdrachtgevers";
+import Planning from "./pages/Planning";
+import ManagerPlanning from "./pages/ManagerPlanning";
+import Mededelingen from "./pages/Mededelingen";
+import Profiel from "./pages/Profiel";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +49,11 @@ const App = () => (
             <Route path="/rapportage" element={<ProtectedRoute><Rapportage /></ProtectedRoute>} />
             <Route path="/projecten" element={<ProtectedRoute><Projecten /></ProtectedRoute>} />
             <Route path="/opdrachtgevers" element={<ProtectedRoute><Opdrachtgevers /></ProtectedRoute>} />
+            <Route path="/planning" element={<ProtectedRoute><Planning /></ProtectedRoute>} />
+            <Route path="/manager-planning" element={<ProtectedRoute><ManagerPlanning /></ProtectedRoute>} />
+            <Route path="/mededelingen" element={<ProtectedRoute><Mededelingen /></ProtectedRoute>} />
+            <Route path="/profiel" element={<ProtectedRoute><Profiel /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
