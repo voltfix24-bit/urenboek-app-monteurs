@@ -52,6 +52,7 @@ export default function Medewerkers() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
   const [createdUsers, setCreatedUsers] = useState<CreatedUser[]>([]);
   const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -123,6 +124,22 @@ export default function Medewerkers() {
       loadEmployees();
     }
     setDeletingId(null);
+  };
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    setUpdatingRoleId(userId);
+    const { error } = await supabase
+      .from("user_roles")
+      .update({ role: newRole as any })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast.error("Fout bij wijzigen rol");
+    } else {
+      toast.success("Rol gewijzigd");
+      loadEmployees();
+    }
+    setUpdatingRoleId(null);
   };
 
   const copyCredentials = (user: CreatedUser) => {
@@ -258,44 +275,61 @@ export default function Medewerkers() {
                   const isSelf = emp.user_id === user?.id;
                   return (
                     <div key={emp.user_id} className="flex items-center justify-between py-2.5 gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-sm font-medium truncate">{emp.full_name}</span>
-                        <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded shrink-0">
-                          {roleLabels[emp.role] || emp.role}
-                        </span>
-                      </div>
-                      {!isSelf && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-                              disabled={deletingId === emp.user_id}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Medewerker verwijderen</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen? 
-                                Dit verwijdert ook alle urenregistraties van deze medewerker. Dit kan niet ongedaan worden gemaakt.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Annuleren</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(emp.user_id, emp.full_name)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      <span className="text-sm font-medium truncate min-w-0">{emp.full_name}</span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {isSelf ? (
+                          <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                            {roleLabels[emp.role] || emp.role}
+                          </span>
+                        ) : (
+                          <Select
+                            value={emp.role}
+                            onValueChange={(val) => handleRoleChange(emp.user_id, val)}
+                            disabled={updatingRoleId === emp.user_id}
+                          >
+                            <SelectTrigger className="h-7 text-[10px] w-auto min-w-[100px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(roleLabels).map(([value, label]) => (
+                                <SelectItem key={value} value={value}>{label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                        {!isSelf && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                                disabled={deletingId === emp.user_id}
                               >
-                                Verwijderen
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Medewerker verwijderen</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen? 
+                                  Dit verwijdert ook alle urenregistraties van deze medewerker. Dit kan niet ongedaan worden gemaakt.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuleren</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(emp.user_id, emp.full_name)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Verwijderen
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
