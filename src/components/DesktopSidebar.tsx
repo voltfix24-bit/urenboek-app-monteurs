@@ -107,10 +107,10 @@ export function DesktopSidebar() {
         <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
-              {(profile?.full_name || "?").charAt(0).toUpperCase()}
+              {displayName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>{profile?.full_name || "Gebruiker"}</p>
+              <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>{displayName}</p>
             </div>
           </div>
           <button onClick={signOut} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium" style={{ border: "1px solid #E8A09A", color: "var(--danger)", background: "var(--danger-light)" }}>
