@@ -561,7 +561,10 @@ function DesktopListCard({ project, ogNaam, selected, onClick, marge }: { projec
       }}
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[13px] font-semibold truncate" style={{ color: "var(--text-primary)" }}>{project.naam}</p>
+        <p className="text-[13px] font-semibold truncate" style={{ color: "var(--text-primary)" }}>
+          {project.naam}
+          {(!project.straat || !project.stad) && <span title="Adres onvolledig"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>}
+        </p>
         <div className="flex items-center gap-1.5 shrink-0">
           {marge && (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: margeBg(marge.marge), color: margeColor(marge.marge), fontFamily: "DM Mono, monospace" }}>
