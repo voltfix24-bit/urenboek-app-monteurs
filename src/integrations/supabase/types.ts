@@ -781,10 +781,13 @@ export type Database = {
           contactpersoon_tel: string | null
           created_at: string
           id: string
+          intake_gedaan: boolean
           naam: string
           nummer: string
           opdrachtgever_id: string | null
           postcode: string | null
+          rmu_configuratie_id: string | null
+          rmu_merk: string | null
           stad: string | null
           stationsnaam: string | null
           straat: string | null
@@ -799,10 +802,13 @@ export type Database = {
           contactpersoon_tel?: string | null
           created_at?: string
           id?: string
+          intake_gedaan?: boolean
           naam: string
           nummer: string
           opdrachtgever_id?: string | null
           postcode?: string | null
+          rmu_configuratie_id?: string | null
+          rmu_merk?: string | null
           stad?: string | null
           stationsnaam?: string | null
           straat?: string | null
@@ -817,10 +823,13 @@ export type Database = {
           contactpersoon_tel?: string | null
           created_at?: string
           id?: string
+          intake_gedaan?: boolean
           naam?: string
           nummer?: string
           opdrachtgever_id?: string | null
           postcode?: string | null
+          rmu_configuratie_id?: string | null
+          rmu_merk?: string | null
           stad?: string | null
           stationsnaam?: string | null
           straat?: string | null
@@ -832,6 +841,13 @@ export type Database = {
             columns: ["opdrachtgever_id"]
             isOneToOne: false
             referencedRelation: "opdrachtgevers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_rmu_configuratie_id_fkey"
+            columns: ["rmu_configuratie_id"]
+            isOneToOne: false
+            referencedRelation: "rmu_configuraties"
             referencedColumns: ["id"]
           },
         ]
@@ -854,6 +870,39 @@ export type Database = {
           endpoint?: string
           id?: string
           key?: string
+        }
+        Relationships: []
+      }
+      rmu_configuraties: {
+        Row: {
+          actief: boolean
+          code: string
+          created_at: string
+          id: string
+          label: string
+          merk: string
+          velden: number
+          volgorde: number
+        }
+        Insert: {
+          actief?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          label: string
+          merk: string
+          velden?: number
+          volgorde?: number
+        }
+        Update: {
+          actief?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          label?: string
+          merk?: string
+          velden?: number
+          volgorde?: number
         }
         Relationships: []
       }
