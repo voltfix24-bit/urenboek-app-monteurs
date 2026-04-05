@@ -108,6 +108,7 @@ export default function ProjectPlanning() {
   const footerScrollRef = useRef<HTMLDivElement>(null);
   const scrollLock = useRef(false);
   const myProfileId = useRef<string | null>(null);
+  const syncForecastRef = useRef<((s: MatrixState) => Promise<void>) | null>(null);
 
   const isDef = planningStatus?.is_definitief || false;
 
