@@ -20,7 +20,7 @@ const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
 const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)', 'var(--warn-text)', 'var(--purple)'];
 
-function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null): string[] {
+function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null, weekDateStrings?: string[]): string[] {
   const conflicts: string[] = [];
   const med = medewerkers.find(m => m.id === medId);
   const jsDayNum = DAG_MAP[dayIndex];
@@ -29,7 +29,21 @@ function getConflicts(medId: string, dateStr: string, dayIndex: number, entries:
   if (dubbel.length > 0) conflicts.push("Al ingepland");
   const verlof = beschikbaarheid.find(b => b.medewerker_id === medId && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
   if (verlof) conflicts.push(verlof.type === "ziek" ? "Ziekmelding" : "Op vakantie/verlof");
+  if (weekDateStrings) {
+    const uniqueDays = new Set(entries.filter(e => e.medewerker_id === medId && e.id !== currentEditId && weekDateStrings.includes(e.datum)).map(e => e.datum));
+    uniqueDays.add(dateStr);
+    if (uniqueDays.size > 5) conflicts.push("Meer dan 5 dagen ingepland deze week");
+  }
   return conflicts;
+}
+
+function getOverplannedMedewerkers(entries: PlanningEntry[], medewerkers: MedewerkerInfo[], weekDateStrings: string[]): { id: string; name: string; days: number }[] {
+  const result: { id: string; name: string; days: number }[] = [];
+  for (const med of medewerkers) {
+    const uniqueDays = new Set(entries.filter(e => e.medewerker_id === med.id && weekDateStrings.includes(e.datum)).map(e => e.datum));
+    if (uniqueDays.size > 5) result.push({ id: med.id, name: med.full_name, days: uniqueDays.size });
+  }
+  return result;
 }
 
 function getModalStatus(medId: string, dateStr: string, medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], dateObj: Date): { label: string; color: string; bg: string } | null {
@@ -56,6 +70,8 @@ export default function ManagerPlanning() {
 
   const weekNumber = getISOWeek(weekStart);
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
+  const weekDateStrings = useMemo(() => weekDates.map(d => format(d, "yyyy-MM-dd")), [weekStart]);
+  const overplanned = useMemo(() => getOverplannedMedewerkers(entries, medewerkers, weekDateStrings), [entries, medewerkers, weekDateStrings]);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -120,7 +136,7 @@ export default function ManagerPlanning() {
     if (!modalForm.medewerker_id || !modalForm.datum) return [];
     const dayIndex = weekDates.findIndex(d => format(d, "yyyy-MM-dd") === modalForm.datum);
     if (dayIndex < 0) return [];
-    return getConflicts(modalForm.medewerker_id, modalForm.datum, dayIndex, entries, medewerkers, beschikbaarheid, editId);
+    return getConflicts(modalForm.medewerker_id, modalForm.datum, dayIndex, entries, medewerkers, beschikbaarheid, editId, weekDateStrings);
   }, [modalForm.medewerker_id, modalForm.datum, entries, medewerkers, beschikbaarheid, editId, weekDates]);
 
   if (!isManager) {
@@ -158,6 +174,21 @@ export default function ManagerPlanning() {
             ))}
           </div>
 
+
+          {overplanned.length > 0 && (
+            <div className="rounded-xl px-3 py-2.5 flex items-start gap-2" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070" }}>
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--warn-text)" }} />
+              <div>
+                <p className="text-xs font-semibold" style={{ color: "var(--warn-text)" }}>Overplanning</p>
+                {overplanned.map(m => (
+                  <p key={m.id} className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+                    {m.name}: {m.days} dagen ingepland
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
           {medewerkers.map((med, mi) => (
             <div key={med.id} className="flex gap-1 items-stretch">
               <div className="w-16 shrink-0 flex items-center">
@@ -172,7 +203,7 @@ export default function ManagerPlanning() {
                 const dateStr = format(d, "yyyy-MM-dd");
                 const entry = entries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
                 const proj = entry ? projMap.get(entry.project_id) : null;
-                const conflicts = getConflicts(med.id, dateStr, i, entries, medewerkers, beschikbaarheid, null);
+                const conflicts = getConflicts(med.id, dateStr, i, entries, medewerkers, beschikbaarheid, null, weekDateStrings);
                 const hasConflict = conflicts.length > 0;
 
                 return (
