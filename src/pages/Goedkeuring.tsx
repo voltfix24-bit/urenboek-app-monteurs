@@ -30,6 +30,7 @@ export default function Goedkeuring() {
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
   const [afkeurReden, setAfkeurReden] = useState("");
   const [overurenIds, setOverurenIds] = useState<Set<string>>(new Set());
+  const [selectedMonteur, setSelectedMonteur] = useState<string | null>(null);
 
   const weekStart = startOfWeek(addDays(new Date(), weekOffset * 7), { weekStartsOn: 1 });
   const weekEnd = addDays(weekStart, 6);
