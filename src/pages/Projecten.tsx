@@ -637,7 +637,7 @@ function generateProjectPdf(project: any, ogNaam: string | null, isManager: bool
   if (w) { w.document.write(html); w.document.close(); }
 }
 
-function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate }: any) {
+function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate, onStartIntake }: any) {
   const [activeTab, setActiveTab] = useState<"info" | "forecast" | "planning">("info");
   const tabs = [
     { key: "info" as const, label: "Projectinfo" },
