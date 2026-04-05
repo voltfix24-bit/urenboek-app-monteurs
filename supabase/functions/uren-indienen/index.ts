@@ -5,6 +5,20 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// In-memory rate limiter (per warm instance)
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT = 30;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const timestamps = (rateLimitMap.get(key) ?? []).filter(t => now - t < RATE_WINDOW_MS);
+  if (timestamps.length >= RATE_LIMIT) return false;
+  timestamps.push(now);
+  rateLimitMap.set(key, timestamps);
+  return true;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -37,6 +51,14 @@ Deno.serve(async (req) => {
     }
     const userId = claimsData.claims.sub;
 
+    // Rate limit per user
+    if (!checkRateLimit(userId)) {
+      return new Response(JSON.stringify({ error: "Te veel verzoeken. Probeer het later opnieuw." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+      });
+    }
+
     const { urenIds } = await req.json();
     if (!Array.isArray(urenIds) || urenIds.length === 0) {
       return new Response(JSON.stringify({ error: "urenIds[] is verplicht" }), {
@@ -47,7 +69,6 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get profile id for this user
     const { data: profile } = await adminClient
       .from("profiles")
       .select("id")
@@ -61,7 +82,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Update only own concept/afgekeurd entries to ingediend
     const { data: updated, error: updateError } = await adminClient
       .from("uren_boekingen")
       .update({ status: "ingediend" })
@@ -79,10 +99,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, updated: updated?.length ?? 0 }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
