@@ -621,32 +621,9 @@ function AddEmployeeForm(props: any) {
 
         {/* Sectie 4 — Certificaten */}
         <FormSection title="4. Certificaten">
-          {certificaten.length > 0 && (
-            <div className="space-y-1">
-              {certificaten.map((c: Certificate, i: number) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-lg" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-                  <span className="text-xs" style={{ color: "var(--text-primary)" }}>{c.type} — {c.naam} — {c.vervaldatum}</span>
-                  <button type="button" onClick={() => setCertificaten((prev: Certificate[]) => prev.filter((_, idx) => idx !== i))} style={{ color: "var(--danger)" }}><X className="h-3.5 w-3.5" /></button>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="space-y-2 p-2 rounded-lg" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-            <div className="flex gap-1.5 flex-wrap">
-              {certTypes.map(t => (
-                <button key={t} type="button" onClick={() => setNewCertType(t)} className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{
-                  background: newCertType === t ? "var(--accent-light)" : "var(--bg-surface)",
-                  border: newCertType === t ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                  color: newCertType === t ? "var(--accent)" : "var(--text-muted)",
-                }}>{t}</button>
-              ))}
-            </div>
-            <input value={newCertNaam} onChange={e => setNewCertNaam(e.target.value)} placeholder="Naam certificaat" className="w-full px-2 py-1.5 rounded-lg text-sm" style={inputStyle} />
-            <input type="date" value={newCertDatum} onChange={e => setNewCertDatum(e.target.value)} className="w-full px-2 py-1.5 rounded-lg text-sm" style={inputStyle} />
-            <button type="button" onClick={addCertificate} className="text-xs font-semibold flex items-center gap-1" style={{ color: "var(--accent)" }}>
-              <Plus className="h-3 w-3" /> Certificaat toevoegen
-            </button>
-          </div>
+          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+            Certificaten kun je na het aanmaken beheren via het medewerker detail.
+          </p>
         </FormSection>
 
         {/* Sectie 5 — Account aanmaken */}
