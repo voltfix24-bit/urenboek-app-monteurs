@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
-import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -110,7 +110,7 @@ export default function Planning() {
                       background: besch.type === "ziek" ? "#FDECEA" : "#FFF3CD",
                       border: besch.type === "ziek" ? "1px solid #E8A09A" : "1px solid #E8D070",
                     }}>
-                      <span className="text-xl">{besch.type === "ziek" ? "🤒" : "🏖"}</span>
+                      <span className="text-xl flex items-center justify-center">{besch.type === "ziek" ? <ThermometerSun className="h-5 w-5" style={{ color: "#C0392B" }} /> : <Palmtree className="h-5 w-5" style={{ color: "#8B6914" }} />}</span>
                       <div>
                         <p className="text-sm font-bold" style={{ color: besch.type === "ziek" ? "#C0392B" : "#8B6914" }}>
                           {besch.type === "ziek" ? "Ziekmelding geregistreerd" : "Vakantie goedgekeurd"}
@@ -141,8 +141,8 @@ export default function Planning() {
                         </span>
                       </div>
                       {item.notitie && (
-                        <p className="text-xs" style={{ background: "#FFF8DC", border: "1px solid #E8D070", color: "#8B6914", padding: "6px 10px", borderRadius: 10 }}>
-                          💬 {item.notitie}
+                        <p className="text-xs flex items-center gap-1" style={{ background: "#FFF8DC", border: "1px solid #E8D070", color: "#8B6914", padding: "6px 10px", borderRadius: 10 }}>
+                          <MessageSquare className="h-3 w-3 shrink-0" /> {item.notitie}
                         </p>
                       )}
                     </div>
@@ -153,7 +153,7 @@ export default function Planning() {
 
             {items.length === 0 && beschikbaarheid.length === 0 && (
               <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <p className="text-3xl mb-2">📅</p>
+                <CalendarDays className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
                 <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen planning deze week</p>
                 <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Je bent nog niet ingepland</p>
               </div>

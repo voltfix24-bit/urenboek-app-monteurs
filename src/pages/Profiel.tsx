@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
 import { toast } from "sonner";
-import { LogOut, Plus, Shield, Edit2, Save } from "lucide-react";
+import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun } from "lucide-react";
 
 interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; }
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string; }
@@ -156,8 +156,8 @@ export default function Profiel() {
             <button onClick={() => setShowVerlof(true)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#FFF3CD", border: "1px solid #E8D070", color: "#8B6914" }}>
               Verlof aanvragen
             </button>
-            <button onClick={meldZiek} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#FDECEA", border: "1px solid #E8A09A", color: "#C0392B" }}>
-              🤒 Ziek melden
+            <button onClick={meldZiek} className="flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1" style={{ background: "#FDECEA", border: "1px solid #E8A09A", color: "#C0392B" }}>
+              <ThermometerSun className="h-3.5 w-3.5" /> Ziek melden
             </button>
           </div>
 

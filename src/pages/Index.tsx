@@ -7,7 +7,7 @@ import { EntryCard } from "@/components/EntryCard";
 import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
-import { FolderOpen, Building2, ArrowRight } from "lucide-react";
+import { FolderOpen, Building2, ArrowRight, ClipboardList, AlertTriangle } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -167,8 +167,8 @@ const Index = () => {
       {/* Friday afternoon banner */}
       {showFridayBanner && (
         <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
-          <p className="text-xs font-medium" style={{ color: "#8B6914" }}>
-            ⚠️ Je hebt nog {conceptHours}u niet ingediend deze week.
+          <p className="text-xs font-medium flex items-center gap-1" style={{ color: "#8B6914" }}>
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Je hebt nog {conceptHours}u niet ingediend deze week.
           </p>
           <button
             onClick={submitAllConcepts}
@@ -265,7 +265,7 @@ const Index = () => {
             })}
             {weekEntries.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-3xl mb-2">📋</p>
+                <ClipboardList className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
                 <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen uren geboekt</p>
                 <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Druk op + om uren toe te voegen</p>
               </div>

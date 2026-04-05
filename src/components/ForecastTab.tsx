@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SPEC_CODES, SPEC_CODE_GROEPEN, type SpecCode } from "@/lib/specCodes";
-import { Plus, X, Search, ChevronDown, ChevronUp, Minus } from "lucide-react";
+import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, Check } from "lucide-react";
 
 const mono = "font-mono tracking-tight";
 const fmt = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(n);
@@ -86,7 +86,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       const { error } = await supabase.from("forecast_regels").insert(inserts);
       if (error) { toast.error("Fout bij opslaan"); return; }
     }
-    toast.success("Forecast opgeslagen ✓");
+    toast.success("Forecast opgeslagen");
   }
 
   // Debounced save
@@ -110,11 +110,11 @@ export function ForecastTab({ projectId }: { projectId: string }) {
         <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Hoe wordt dit project vergoed?</p>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { key: "stuksprijzen", icon: "📋", label: "Stuksprijzen", desc: "Vergoeding per spec-code (R320010 etc.)" },
-            { key: "uren", icon: "⏱", label: "Op uren", desc: "Vergoeding per gewerkt uur" },
+            { key: "stuksprijzen", Icon: ClipboardList, label: "Stuksprijzen", desc: "Vergoeding per spec-code (R320010 etc.)" },
+            { key: "uren", Icon: Clock, label: "Op uren", desc: "Vergoeding per gewerkt uur" },
           ].map(o => (
             <button key={o.key} onClick={() => selectMethode(o.key)} className="p-5 rounded-[14px] text-center space-y-2 transition-colors hover:border-[#4A7C2F]" style={{ background: "#EBF0E4", border: "1.5px solid #C5D4B2", cursor: "pointer" }}>
-              <p className="text-2xl">{o.icon}</p>
+              <o.Icon className="h-6 w-6 mx-auto" style={{ color: "#4A7C2F" }} />
               <p className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>{o.label}</p>
               <p className="text-[11px]" style={{ color: "#8AAD6E" }}>{o.desc}</p>
             </button>
@@ -188,7 +188,7 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
               {open && codes.map(sc => (
                 <div key={sc.code} className="flex items-center gap-2 px-3 py-1.5 text-[12px]" style={{ background: "#EBF0E4", borderBottom: "1px solid #C5D4B2" }}>
                   <button onClick={() => addCode(sc)} disabled={selectedCodes.has(sc.code)} className="w-6 h-6 rounded flex items-center justify-center shrink-0 text-xs" style={{ background: selectedCodes.has(sc.code) ? "#C5D4B2" : "#D4E8C2", color: selectedCodes.has(sc.code) ? "#8AAD6E" : "#4A7C2F" }}>
-                    {selectedCodes.has(sc.code) ? "✓" : "+"}
+                    {selectedCodes.has(sc.code) ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
                   </button>
                   <span className={`${mono} w-16 shrink-0`} style={{ color: "#4A7C2F" }}>{sc.code}</span>
                   <span className="flex-1 truncate" style={{ color: "#2D4A1E" }}>{sc.omschrijving}</span>

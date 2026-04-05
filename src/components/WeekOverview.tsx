@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Trash2 } from "lucide-react";
+import { Trash2, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TimeEntry } from "@/types/timesheet";
 
@@ -15,7 +15,7 @@ export function WeekOverview({ weekDates, entries, onRemove }: WeekOverviewProps
     return (
       <div className="text-center py-10 text-muted-foreground rounded-2xl border bg-card shadow-card">
         <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-          <span className="text-xl">📋</span>
+          <ClipboardList className="h-5 w-5" style={{ color: "#8AAD6E" }} />
         </div>
         <p className="text-sm font-medium">Nog geen uren deze week</p>
         <p className="text-xs mt-1">Voeg uren toe via het formulier hierboven</p>

@@ -3,7 +3,7 @@ import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight, FileText, Clock, FolderOpen, Users, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, startOfISOWeek, addDays, getISOWeek, getISOWeekYear, addWeeks } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -221,12 +221,12 @@ export default function Rapportage() {
 
         <div className="flex gap-2">
           {[
-            { label: "Uren", value: totalHours + "u", icon: "⏱", color: "#2D7A3A" },
-            { label: "Projecten", value: String(uniqueProjects), icon: "📁", color: "#2D5A8A" },
-            { label: "Monteurs", value: String(uniqueEmployees), icon: "👷", color: "#D4A017" },
+            { label: "Uren", value: totalHours + "u", Icon: Clock, color: "#2D7A3A" },
+            { label: "Projecten", value: String(uniqueProjects), Icon: FolderOpen, color: "#2D5A8A" },
+            { label: "Monteurs", value: String(uniqueEmployees), Icon: Users, color: "#D4A017" },
           ].map((k, i) => (
             <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-              <p className="text-lg mb-0.5">{k.icon}</p>
+              <k.Icon className="h-5 w-5 mx-auto mb-1" style={{ color: k.color }} />
               <p className="text-xl font-extrabold" style={{ color: k.color }}>{k.value}</p>
               <p className="text-[10px] font-medium mt-0.5" style={{ color: "#8AAD6E" }}>{k.label}</p>
             </div>
@@ -271,7 +271,7 @@ export default function Rapportage() {
 
             {entries.length === 0 && (
               <div className="text-center py-10 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <p className="text-3xl mb-2">📊</p>
+                <BarChart3 className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
                 <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen data gevonden</p>
                 <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Geen uren in deze periode</p>
               </div>

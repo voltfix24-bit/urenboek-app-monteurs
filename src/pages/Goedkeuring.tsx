@@ -163,7 +163,7 @@ export default function Goedkeuring() {
                     <span className="text-sm font-bold tabular-nums" style={{ color: "#4A7C2F" }}>{totalHours}u</span>
                     {pendingCount > 0 && (
                       <button onClick={() => approveAllForUser(name)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-colors active:scale-95" style={{ background: "#D4EDD8", border: "1px solid #8DC99A", color: "#2D7A3A" }}>
-                        <CheckCheck className="h-3.5 w-3.5" /> Alles ✓
+                        <CheckCheck className="h-3.5 w-3.5" /> Alles goedkeuren
                       </button>
                     )}
                   </div>

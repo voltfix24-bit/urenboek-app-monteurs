@@ -33,10 +33,10 @@ function getConflicts(medId: string, dateStr: string, dayIndex: number, entries:
 function getModalStatus(medId: string, dateStr: string, medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], dateObj: Date): { label: string; color: string; bg: string } | null {
   const med = medewerkers.find(m => m.id === medId);
   const verlof = beschikbaarheid.find(b => b.medewerker_id === medId && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
-  if (verlof) return { label: "✕ Op vakantie", color: "#C0392B", bg: "#FDECEA" };
+  if (verlof) return { label: "Op vakantie", color: "#C0392B", bg: "#FDECEA" };
   const jsDay = dateObj.getDay();
-  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "⚠ Vaste vrije dag", color: "#8B6914", bg: "#FFF8DC" };
-  return { label: "✓ Beschikbaar", color: "#2D7A3A", bg: "#D4EDD8" };
+  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "Vaste vrije dag", color: "#8B6914", bg: "#FFF8DC" };
+  return { label: "Beschikbaar", color: "#2D7A3A", bg: "#D4EDD8" };
 }
 
 export default function ManagerPlanning() {
@@ -236,7 +236,7 @@ export default function ManagerPlanning() {
                 {modalConflicts.map((c, i) => (
                   <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#FDECEA", border: "1px solid #E8A09A" }}>
                     <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#C0392B" }} />
-                    <span className="text-xs font-medium" style={{ color: "#C0392B" }}>⚠ Conflict: {c}</span>
+                    <span className="text-xs font-medium" style={{ color: "#C0392B" }}>Conflict: {c}</span>
                   </div>
                 ))}
               </div>
