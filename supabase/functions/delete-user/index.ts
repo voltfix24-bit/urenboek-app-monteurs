@@ -35,14 +35,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!checkRateLimit(caller.id)) {
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: allowed } = await adminClient.rpc("check_rate_limit", {
+      _key: caller.id, _endpoint: "delete-user", _limit: 5, _window_seconds: 60,
+    });
+    if (!allowed) {
       return new Response(JSON.stringify({ error: "Te veel verzoeken. Probeer het later opnieuw." }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
       });
     }
-
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: roleData } = await adminClient
       .from("user_roles")
       .select("role")

@@ -38,14 +38,17 @@ Deno.serve(async (req) => {
     }
     const userId = claimsData.claims.sub;
 
-    if (!checkRateLimit(userId)) {
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: allowed } = await adminClient.rpc("check_rate_limit", {
+      _key: userId, _endpoint: "definitief-maken", _limit: 10, _window_seconds: 60,
+    });
+    if (!allowed) {
       return new Response(JSON.stringify({ error: "Te veel verzoeken. Probeer het later opnieuw." }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
       });
     }
-
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: roleCheck } = await adminClient.rpc("has_role", {
       _user_id: userId,
