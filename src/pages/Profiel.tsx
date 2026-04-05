@@ -316,6 +316,45 @@ export default function Profiel() {
           })}
         </div>
 
+        {/* Instellingen - Weergave */}
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Instellingen</p>
+          <div>
+            <p className="text-[10px] font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Weergave</p>
+            <div className="flex gap-1.5">
+              {([
+                { key: "light", label: "☀ Licht" },
+                { key: "system", label: "Systeem" },
+                { key: "dark", label: "☾ Donker" },
+              ] as const).map(opt => {
+                const current = localStorage.getItem("terrevolt_theme") || "system";
+                const active = current === opt.key;
+                return (
+                  <button key={opt.key} onClick={() => {
+                    localStorage.setItem("terrevolt_theme", opt.key);
+                    if (opt.key === "dark") {
+                      document.documentElement.dataset.theme = "dark";
+                    } else if (opt.key === "light") {
+                      document.documentElement.dataset.theme = "light";
+                    } else {
+                      delete document.documentElement.dataset.theme;
+                      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                      if (prefersDark) document.documentElement.dataset.theme = "dark";
+                    }
+                    // Force re-render
+                    setLoading(l => !l);
+                    setTimeout(() => setLoading(l => !l), 0);
+                  }} className="flex-1 py-2.5 rounded-xl text-[11px] font-semibold" style={{
+                    background: active ? "var(--accent-light)" : "var(--bg-base)",
+                    border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+                    color: active ? "var(--accent)" : "var(--text-muted)",
+                  }}>{opt.label}</button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
         <button onClick={signOut} className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
           <LogOut className="h-4 w-4" /> Uitloggen
         </button>
