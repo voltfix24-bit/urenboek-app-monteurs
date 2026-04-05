@@ -78,10 +78,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "beschikbaarheid_behandeld_door_fkey"
+            columns: ["behandeld_door"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "beschikbaarheid_medewerker_id_fkey"
             columns: ["medewerker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beschikbaarheid_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -129,6 +143,13 @@ export type Database = {
             columns: ["medewerker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificaten_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -194,6 +215,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "forecast_regels_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       mededeling_leesstatus: {
@@ -228,6 +256,13 @@ export type Database = {
             columns: ["medewerker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mededeling_leesstatus_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -269,6 +304,13 @@ export type Database = {
             columns: ["ontvanger_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mededelingen_ontvanger_id_fkey"
+            columns: ["ontvanger_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -355,10 +397,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "overuren_meldingen_behandeld_door_fkey"
+            columns: ["behandeld_door"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "overuren_meldingen_medewerker_id_fkey"
             columns: ["medewerker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overuren_meldingen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -409,10 +465,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "planning_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "planning_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_monteur"
             referencedColumns: ["id"]
           },
           {
@@ -518,6 +588,13 @@ export type Database = {
             foreignKeyName: "project_forecast_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: true
+            referencedRelation: "projects_monteur"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_forecast_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
             referencedRelation: "projects_public"
             referencedColumns: ["id"]
           },
@@ -557,6 +634,13 @@ export type Database = {
             foreignKeyName: "project_planning_matrix_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: true
+            referencedRelation: "projects_monteur"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_planning_matrix_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
             referencedRelation: "projects_public"
             referencedColumns: ["id"]
           },
@@ -565,6 +649,13 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_planning_matrix_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -600,10 +691,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "project_planning_status_definitief_door_fkey"
+            columns: ["definitief_door"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "project_planning_status_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: true
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_planning_status_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects_monteur"
             referencedColumns: ["id"]
           },
           {
@@ -792,6 +897,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "uren_boekingen_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "uren_boekingen_medewerker_id_fkey"
             columns: ["medewerker_id"]
             isOneToOne: false
@@ -799,10 +911,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "uren_boekingen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "uren_boekingen_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uren_boekingen_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_monteur"
             referencedColumns: ["id"]
           },
           {
@@ -834,6 +960,83 @@ export type Database = {
       }
     }
     Views: {
+      profiles_public: {
+        Row: {
+          full_name: string | null
+          id: string | null
+          telefoon: string | null
+          user_id: string | null
+        }
+        Insert: {
+          full_name?: string | null
+          id?: string | null
+          telefoon?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          full_name?: string | null
+          id?: string | null
+          telefoon?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      projects_monteur: {
+        Row: {
+          active: boolean | null
+          adres: string | null
+          case_type: string | null
+          created_at: string | null
+          id: string | null
+          naam: string | null
+          nummer: string | null
+          opdrachtgever_id: string | null
+          postcode: string | null
+          stad: string | null
+          stationsnaam: string | null
+          straat: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          adres?: string | null
+          case_type?: string | null
+          created_at?: string | null
+          id?: string | null
+          naam?: string | null
+          nummer?: string | null
+          opdrachtgever_id?: string | null
+          postcode?: string | null
+          stad?: string | null
+          stationsnaam?: string | null
+          straat?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          adres?: string | null
+          case_type?: string | null
+          created_at?: string | null
+          id?: string | null
+          naam?: string | null
+          nummer?: string | null
+          opdrachtgever_id?: string | null
+          postcode?: string | null
+          stad?: string | null
+          stationsnaam?: string | null
+          straat?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_opdrachtgever_id_fkey"
+            columns: ["opdrachtgever_id"]
+            isOneToOne: false
+            referencedRelation: "opdrachtgevers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects_public: {
         Row: {
           active: boolean | null
