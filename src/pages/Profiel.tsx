@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
+import CertificatenOverzicht from "@/components/CertificatenOverzicht";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
 import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight } from "lucide-react";
@@ -11,7 +12,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths,
 import { nl } from "date-fns/locale";
 
 interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; }
-interface Certificaat { id: string; type: string; naam: string; vervaldatum: string; }
+interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; reden: string | null; status: string; }
 
 const CERT_COLORS: Record<string, string> = { VCA: "var(--success)", NEN3140: "var(--info-dark)", rijbewijs_BE: "var(--warn-text)", overig: "var(--purple)" };
@@ -61,9 +62,7 @@ export default function Profiel() {
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ full_name: "", telefoon: "", adres: "" });
-  const [showAddCert, setShowAddCert] = useState(false);
   const [showVerlof, setShowVerlof] = useState(false);
-  const [certForm, setCertForm] = useState({ type: "VCA", naam: "", vervaldatum: "" });
   const [verlofForm, setVerlofForm] = useState({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" });
   const [loading, setLoading] = useState(true);
   const [calMonth, setCalMonth] = useState(new Date());
@@ -75,7 +74,7 @@ export default function Profiel() {
     setLoading(false);
   }, [user]);
 
-  const fetchCerts = useCallback(async () => { if (!profile) return; const { data } = await supabase.from("certificaten").select("id, type, naam, vervaldatum").eq("medewerker_id", profile.id).order("vervaldatum"); if (data) setCerts(data as any); }, [profile]);
+  const fetchCerts = useCallback(async () => { if (!profile) return; const { data } = await supabase.from("certificaten").select("id, type, naam, vervaldatum, subtype, ggi_gebieden").eq("medewerker_id", profile.id).order("type"); if (data) setCerts(data as any); }, [profile]);
   const fetchBeschikbaarheid = useCallback(async () => { if (!profile) return; const { data } = await supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, reden, status").eq("medewerker_id", profile.id).order("datum_van", { ascending: false }).limit(50); if (data) setBeschikbaarheid(data as any); }, [profile]);
 
   useEffect(() => { fetchProfile(); }, [fetchProfile]);
@@ -96,11 +95,6 @@ export default function Profiel() {
     refetchProfileContext();
   };
 
-  const addCertificaat = async () => {
-    if (!profile || !certForm.naam || !certForm.vervaldatum) return;
-    if (!await mutate(supabase.from("certificaten").insert({ medewerker_id: profile.id, type: certForm.type, naam: certForm.naam, vervaldatum: certForm.vervaldatum } as any))) return;
-    toast.success("Certificaat toegevoegd"); setShowAddCert(false); setCertForm({ type: "VCA", naam: "", vervaldatum: "" }); fetchCerts();
-  };
 
   const requestVerlof = async () => {
     if (!profile || !verlofForm.datum_van || !verlofForm.datum_tot) return;
@@ -318,31 +312,12 @@ export default function Profiel() {
         </div>
 
         {/* Certificaten */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Certificaten</p>
-            <button onClick={() => setShowAddCert(true)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
-              <Plus className="h-3.5 w-3.5" style={{ color: "var(--success)" }} />
-            </button>
-          </div>
-          {certs.length === 0 ? (
-            <p className="text-xs text-center py-4" style={{ color: "var(--text-muted)" }}>Geen certificaten</p>
-          ) : certs.map(c => {
-            const s = certStatus(c.vervaldatum);
-            return (
-              <div key={c.id} className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" style={{ color: CERT_COLORS[c.type] || "var(--purple)" }} />
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{c.naam}</p>
-                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{c.type} · Verloopt {format(parseISO(c.vervaldatum), "d MMM yyyy", { locale: nl })}</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold" style={{ color: s.color }}>{s.label}</span>
-              </div>
-            );
-          })}
-        </div>
+        <CertificatenOverzicht
+          certificaten={certs}
+          toonToevoegen={true}
+          medewerker_id={profile?.id}
+          onRefresh={fetchCerts}
+        />
 
         {/* Noodcontact */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "#FFF8DC", border: "1px solid var(--warn-border)", borderRadius: 12 }}>
@@ -438,35 +413,6 @@ export default function Profiel() {
         </div>
       )}
 
-      {/* Cert modal */}
-      {showAddCert && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowAddCert(false)}>
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
-            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Certificaat toevoegen</h2>
-            <div className="space-y-3">
-              <div className="flex gap-1.5 flex-wrap">
-                {(["VCA", "NEN3140", "rijbewijs_BE", "overig"] as const).map(t => (
-                  <button key={t} onClick={() => setCertForm({ ...certForm, type: t })} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold" style={{
-                    background: certForm.type === t ? "var(--accent-light)" : "var(--bg-base)",
-                    border: certForm.type === t ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                    color: certForm.type === t ? "var(--accent)" : "var(--text-muted)",
-                  }}>{t}</button>
-                ))}
-              </div>
-              <input value={certForm.naam} onChange={e => setCertForm({ ...certForm, naam: e.target.value })} placeholder="Naam certificaat" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-              <div className="space-y-1">
-                <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Vervaldatum</label>
-                <input type="date" value={certForm.vervaldatum} onChange={e => setCertForm({ ...certForm, vervaldatum: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
-              </div>
-              <button onClick={addCertificaat} disabled={!certForm.naam || !certForm.vervaldatum} className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
-                Toevoegen
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </PageShell>
   );
