@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
