@@ -7,6 +7,7 @@ import { EntryCard } from "@/components/EntryCard";
 import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
 import { FolderOpen, Building2, ArrowRight } from "lucide-react";
+import { HeaderLogo } from "@/components/HeaderLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, addDays } from "date-fns";

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { format, startOfISOWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Check, X, ChevronRight, AlertTriangle, Shield } from "lucide-react";
+import { HeaderLogo } from "@/components/HeaderLogo";
 
 export default function Dashboard() {
   const { isManager, user } = useAuth();
