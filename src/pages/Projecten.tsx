@@ -516,7 +516,9 @@ function DetailLine({ label, value }: { label: string; value: string }) {
 
 /* ===== Desktop-only components ===== */
 
-function DesktopListCard({ project, ogNaam, selected, onClick }: { project: any; ogNaam: string | null; selected: boolean; onClick: () => void }) {
+function DesktopListCard({ project, ogNaam, selected, onClick, marge }: { project: any; ogNaam: string | null; selected: boolean; onClick: () => void; marge?: { omzet: number; kosten: number; marge: number } }) {
+  const margeColor = (m: number) => m >= 30 ? "#2D7A3A" : m >= 15 ? "#D4A017" : "#C0392B";
+  const margeBg = (m: number) => m >= 30 ? "#D4EDD8" : m >= 15 ? "#FFF3CD" : "#FDECEA";
   return (
     <button
       onClick={onClick}
@@ -528,7 +530,14 @@ function DesktopListCard({ project, ogNaam, selected, onClick }: { project: any;
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-[13px] font-semibold truncate" style={{ color: "#2D4A1E" }}>{project.naam}</p>
-        <CaseTypeBadge type={project.case_type} />
+        <div className="flex items-center gap-1.5 shrink-0">
+          {marge && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: margeBg(marge.marge), color: margeColor(marge.marge), fontFamily: "DM Mono, monospace" }}>
+              {marge.marge.toFixed(1)}%
+            </span>
+          )}
+          <CaseTypeBadge type={project.case_type} />
+        </div>
       </div>
       <div className="flex items-center justify-between gap-2 mt-0.5">
         <span className="text-[11px] font-mono" style={{ color: "#4A7C2F" }}>{project.nummer}</span>
