@@ -10,6 +10,10 @@ interface NavBadges {
   afgekeurdeUren: number;
 }
 
+// Module-level unique ID to prevent channel name collisions
+// when multiple components mount this hook simultaneously
+let globalCounter = 0;
+
 export function useNavBadges() {
   const { user, isManager } = useAuth();
   const { profileId } = useProfile();
@@ -38,23 +42,34 @@ export function useNavBadges() {
   }, [user, profileId, isManager]);
 
   useEffect(() => { fetchBadges(); }, [fetchBadges]);
+
   useEffect(() => {
-    const interval = setInterval(fetchBadges, 60000);
+    const interval = setInterval(fetchBadges, 60_000);
     return () => clearInterval(interval);
   }, [fetchBadges]);
 
-  const subId = useRef(0);
+  // Realtime subscriptions — each hook instance gets a guaranteed-unique channel name
+  const instanceId = useRef(`${++globalCounter}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+
   useEffect(() => {
     if (!user) return;
-    const id = ++subId.current;
-    const ch1 = supabase.channel(`badge-ub-${id}-${Date.now()}`);
-    const ch2 = supabase.channel(`badge-ls-${id}-${Date.now()}`);
-    ch1.on("postgres_changes", { event: "*", schema: "public", table: "uren_boekingen" }, fetchBadges);
-    ch2.on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges);
-    ch1.subscribe();
-    ch2.subscribe();
-    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
-  }, [fetchBadges]);
+
+    const uid = instanceId.current;
+    const chUb = supabase
+      .channel(`nb-ub-${uid}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "uren_boekingen" }, fetchBadges)
+      .subscribe();
+
+    const chLs = supabase
+      .channel(`nb-ls-${uid}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(chUb);
+      supabase.removeChannel(chLs);
+    };
+  }, [user, fetchBadges]);
 
   return { badges, isManager, profileId };
 }
