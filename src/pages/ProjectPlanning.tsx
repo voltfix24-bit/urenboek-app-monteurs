@@ -967,44 +967,229 @@ function InfoField({ label, value, onChange, readonly }: { label: string; value:
 }
 
 function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (acts: string[]) => void }) {
-  const [selected, setSelected] = useState<number | null>(null);
+  const { isManager } = useAuth();
+  const { profileId } = useProfile();
+  interface Tpl { id: string; naam: string; omschrijving: string | null; activiteiten: string[]; is_default: boolean; volgorde: number; }
+  const [templates, setTemplates] = useState<Tpl[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
   const [confirmLoad, setConfirmLoad] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [creatingNew, setCreatingNew] = useState(false);
+  const [editNaam, setEditNaam] = useState("");
+  const [editOmschrijving, setEditOmschrijving] = useState("");
+  const [editActiviteiten, setEditActiviteiten] = useState<string[]>([]);
+  const [manageMode, setManageMode] = useState(false);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  const fetchTemplates = useCallback(async () => {
+    const { data } = await supabase.from("planning_templates" as any).select("*").order("volgorde");
+    if (data) setTemplates(data as any);
+  }, []);
+
+  useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
+
+  const startEdit = (t: Tpl) => {
+    setEditingId(t.id);
+    setEditNaam(t.naam);
+    setEditOmschrijving(t.omschrijving || "");
+    setEditActiviteiten([...t.activiteiten]);
+    setCreatingNew(false);
+  };
+
+  const startCreate = () => {
+    setCreatingNew(true);
+    setEditingId("__new__");
+    setEditNaam("");
+    setEditOmschrijving("");
+    setEditActiviteiten([""]);
+    setTimeout(() => nameRef.current?.focus(), 50);
+  };
+
+  const cancelEdit = () => { setEditingId(null); setCreatingNew(false); };
+
+  const saveEdit = async () => {
+    const acts = editActiviteiten.filter(a => a.trim());
+    if (!editNaam.trim()) { toast.error("Vul een naam in"); return; }
+    if (acts.length === 0) { toast.error("Voeg minimaal één activiteit toe"); return; }
+    setSaving(true);
+    if (creatingNew) {
+      const maxV = templates.reduce((m, t) => Math.max(m, t.volgorde), 0);
+      const { error } = await supabase.from("planning_templates" as any).insert({ naam: editNaam.trim(), omschrijving: editOmschrijving.trim() || null, activiteiten: acts, volgorde: maxV + 1, created_by: profileId } as any);
+      if (error) { toast.error("Fout bij aanmaken"); setSaving(false); return; }
+      toast.success("Template aangemaakt ✓");
+    } else {
+      const { error } = await supabase.from("planning_templates" as any).update({ naam: editNaam.trim(), omschrijving: editOmschrijving.trim() || null, activiteiten: acts } as any).eq("id", editingId);
+      if (error) { toast.error("Fout bij opslaan"); setSaving(false); return; }
+      toast.success("Template opgeslagen ✓");
+    }
+    setSaving(false);
+    cancelEdit();
+    fetchTemplates();
+  };
+
+  const deleteTemplate = async (id: string) => {
+    await supabase.from("planning_templates" as any).delete().eq("id", id);
+    toast.success("Template verwijderd");
+    setDeleteConfirm(null);
+    fetchTemplates();
+  };
+
+  const saveOrder = async () => {
+    for (let i = 0; i < templates.length; i++) {
+      await supabase.from("planning_templates" as any).update({ volgorde: i } as any).eq("id", templates[i].id);
+    }
+    toast.success("Volgorde opgeslagen ✓");
+    setManageMode(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === idx) return;
+    const reordered = [...templates];
+    const [moved] = reordered.splice(dragIdx, 1);
+    reordered.splice(idx, 0, moved);
+    setTemplates(reordered);
+    setDragIdx(idx);
+  };
+
+  const selectedTpl = templates.find(t => t.id === selected);
+
+  const renderEditCard = (isNew: boolean) => (
+    <div className="p-4 rounded-2xl space-y-3" style={{ background: "var(--accent-light)", border: "1.5px solid var(--accent-border)" }}>
+      <input ref={isNew ? nameRef : undefined} value={editNaam} onChange={e => setEditNaam(e.target.value)} placeholder="Template naam"
+        className="w-full text-sm font-bold rounded-lg px-3 py-2" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+      <input value={editOmschrijving} onChange={e => setEditOmschrijving(e.target.value)} placeholder="Korte omschrijving"
+        className="w-full text-xs rounded-lg px-3 py-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }} />
+      <div>
+        <p className="text-[11px] font-semibold mb-1.5" style={{ color: "var(--text-muted)" }}>Activiteiten</p>
+        {editActiviteiten.map((a, i) => (
+          <div key={i} className="flex items-center gap-2 mb-1.5"
+            draggable onDragStart={() => setDragIdx(i)}
+            onDragOver={(e) => { e.preventDefault(); if (dragIdx !== null && dragIdx !== i) { const arr = [...editActiviteiten]; const [m] = arr.splice(dragIdx, 1); arr.splice(i, 0, m); setEditActiviteiten(arr); setDragIdx(i); } }}
+            onDragEnd={() => setDragIdx(null)}>
+            <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab" style={{ color: "var(--text-muted)" }} />
+            <input value={a} onChange={e => { const arr = [...editActiviteiten]; arr[i] = e.target.value; setEditActiviteiten(arr); }}
+              className="flex-1 text-[13px] rounded-lg px-2.5 py-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} placeholder="Activiteit naam" />
+            <button onClick={() => setEditActiviteiten(editActiviteiten.filter((_, j) => j !== i))}
+              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: "var(--danger-light)", color: "var(--danger)" }}>
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ))}
+        <button onClick={() => setEditActiviteiten([...editActiviteiten, ""])}
+          className="text-xs font-semibold mt-1" style={{ color: "var(--accent)", background: "none", border: "none", cursor: "pointer" }}>
+          + Activiteit toevoegen
+        </button>
+      </div>
+      <div className="flex gap-2 pt-1">
+        <button onClick={cancelEdit} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
+        {!isNew && editingId && !templates.find(t => t.id === editingId)?.is_default && (
+          <button onClick={() => setDeleteConfirm(editingId)} className="py-1.5 px-3 rounded-lg text-xs" style={{ border: "1px solid var(--danger)", color: "var(--danger)" }}>
+            <Trash2 className="h-3 w-3 inline mr-1" />Verwijderen
+          </button>
+        )}
+        <button onClick={saveEdit} disabled={saving} className="flex-1 py-1.5 rounded-lg text-xs text-white disabled:opacity-50" style={{ background: "var(--accent)" }}>
+          {saving ? "Opslaan..." : isNew ? "Aanmaken" : "Opslaan"}
+        </button>
+      </div>
+      {!isNew && editingId && templates.find(t => t.id === editingId)?.is_default && (
+        <p className="text-[10px] italic text-right" style={{ color: "var(--text-muted)" }}>Standaard template</p>
+      )}
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-      <div className="rounded-2xl p-6 w-full max-w-lg space-y-4" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-        <div className="flex items-center justify-between">
+      <div className="rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
+        <div className="flex items-center justify-between gap-2">
           <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Planning templates</h3>
-          <button onClick={onClose}><X className="h-4 w-4" style={{ color: "var(--text-secondary)" }} /></button>
+          <div className="flex items-center gap-2">
+            {isManager && !manageMode && !editingId && (
+              <>
+                <button onClick={startCreate} className="px-2.5 py-1 rounded-lg text-[11px] font-medium" style={{ border: "1px solid var(--accent)", color: "var(--accent)" }}>
+                  <Plus className="h-3 w-3 inline mr-0.5" />Nieuw
+                </button>
+                <button onClick={() => setManageMode(true)} className="px-2.5 py-1 rounded-lg text-[11px] font-medium" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+                  <Pencil className="h-3 w-3 inline mr-0.5" />Beheren
+                </button>
+              </>
+            )}
+            {manageMode && (
+              <button onClick={saveOrder} className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-white" style={{ background: "var(--accent)" }}>Klaar</button>
+            )}
+            <button onClick={onClose}><X className="h-4 w-4" style={{ color: "var(--text-secondary)" }} /></button>
+          </div>
         </div>
+
+        {manageMode && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Sleep om volgorde te wijzigen</p>}
 
         <div className="space-y-3">
-          {TEMPLATES.map((t, i) => (
-            <button key={i} onClick={() => setSelected(i)} className="w-full text-left p-4 rounded-xl transition-all"
-              style={{ background: selected === i ? "var(--accent-light)" : "var(--bg-surface)", border: selected === i ? "1.5px solid var(--accent)" : "1px solid var(--border)" }}>
-              <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{t.name}</p>
-              <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{t.desc}</p>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {t.activities.map((a, j) => (
-                  <span key={j} className="px-2 py-0.5 rounded-full text-[9px]" style={{ background: "var(--bg-base)", color: "var(--text-secondary)" }}>{a}</span>
-                ))}
+          {creatingNew && editingId === "__new__" && renderEditCard(true)}
+
+          {templates.map((t, i) => {
+            if (editingId === t.id) return <div key={t.id}>{renderEditCard(false)}</div>;
+
+            return (
+              <div key={t.id}
+                draggable={manageMode}
+                onDragStart={() => manageMode && setDragIdx(i)}
+                onDragOver={(e) => manageMode && handleDragOver(e, i)}
+                onDragEnd={() => setDragIdx(null)}
+                className="relative group">
+                <button onClick={() => !manageMode && !editingId && setSelected(t.id)} className="w-full text-left p-4 rounded-xl transition-all"
+                  style={{ background: selected === t.id ? "var(--accent-light)" : "var(--bg-surface)", border: selected === t.id ? "1.5px solid var(--accent)" : "1px solid var(--border)", cursor: manageMode ? "grab" : "pointer" }}>
+                  <div className="flex items-start gap-2">
+                    {manageMode && <GripVertical className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "var(--text-muted)" }} />}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{t.naam}</p>
+                      {t.omschrijving && <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{t.omschrijving}</p>}
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {t.activiteiten.map((a, j) => (
+                          <span key={j} className="px-2 py-0.5 rounded-full text-[9px]" style={{ background: "var(--bg-base)", color: "var(--text-secondary)" }}>{a}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+                {isManager && !manageMode && !editingId && (
+                  <button onClick={() => startEdit(t)}
+                    className="absolute top-3 right-3 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
+                    <Pencil className="h-3 w-3" style={{ color: "var(--text-muted)" }} />
+                  </button>
+                )}
               </div>
-            </button>
-          ))}
+            );
+          })}
         </div>
 
-        {confirmLoad ? (
-          <div className="p-3 rounded-xl" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-            <p className="text-xs font-medium mb-2" style={{ color: "var(--warn-text)" }}>Huidige activiteiten worden vervangen. Doorgaan?</p>
-            <div className="flex gap-2">
-              <button onClick={() => setConfirmLoad(false)} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
-              <button onClick={() => selected !== null && onApply(TEMPLATES[selected].activities)} className="flex-1 py-1.5 rounded-lg text-xs text-white" style={{ background: "var(--accent)" }}>Laden</button>
+        {!manageMode && !editingId && (
+          confirmLoad && selectedTpl ? (
+            <div className="p-3 rounded-xl" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+              <p className="text-xs font-medium mb-2" style={{ color: "var(--warn-text)" }}>Huidige activiteiten worden vervangen. Doorgaan?</p>
+              <div className="flex gap-2">
+                <button onClick={() => setConfirmLoad(false)} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
+                <button onClick={() => onApply(selectedTpl.activiteiten)} className="flex-1 py-1.5 rounded-lg text-xs text-white" style={{ background: "var(--accent)" }}>Laden</button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <button onClick={onClose} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
-            <button disabled={selected === null} onClick={() => setConfirmLoad(true)} className="flex-1 py-2 rounded-lg text-xs text-white disabled:opacity-40" style={{ background: "var(--accent)" }}>Template laden</button>
+          ) : (
+            <div className="flex gap-2">
+              <button onClick={onClose} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
+              <button disabled={!selected} onClick={() => setConfirmLoad(true)} className="flex-1 py-2 rounded-lg text-xs text-white disabled:opacity-40" style={{ background: "var(--accent)" }}>Template laden</button>
+            </div>
+          )
+        )}
+
+        {deleteConfirm && (
+          <div className="p-3 rounded-xl" style={{ background: "var(--danger-light)", border: "1px solid var(--danger)" }}>
+            <p className="text-xs font-medium mb-2" style={{ color: "var(--danger)" }}>Template '{templates.find(t => t.id === deleteConfirm)?.naam}' verwijderen? Dit kan niet ongedaan worden gemaakt.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
+              <button onClick={() => deleteTemplate(deleteConfirm)} className="flex-1 py-1.5 rounded-lg text-xs text-white" style={{ background: "var(--danger)" }}>Verwijderen</button>
+            </div>
           </div>
         )}
       </div>
