@@ -376,6 +376,7 @@ export default function Projecten() {
                 onDelete={() => handleDelete(selectedProject)}
                 onCancelDelete={() => setConfirmDeleteId(null)}
                 navigate={navigate}
+                onStartIntake={() => setIntakeProjectId(selectedProject.id)}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full" style={{ color: "var(--text-muted)" }}>
