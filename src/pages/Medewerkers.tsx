@@ -195,13 +195,22 @@ export default function Medewerkers() {
   );
 }
 
-function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId, deletingId }: {
+function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId, deletingId, onTariefChange }: {
   emp: Employee; idx: number; isSelf: boolean;
   onRoleChange: (userId: string, role: string) => void;
   onDelete: (userId: string, name: string) => void;
   updatingRoleId: string | null; deletingId: string | null;
+  onTariefChange: (userId: string, tarief: number | null) => void;
 }) {
   const [showRol, setShowRol] = useState(false);
+  const [editTarief, setEditTarief] = useState(false);
+  const [tariefVal, setTariefVal] = useState(emp.uurtarief?.toString() || "");
+
+  function saveTarief() {
+    const val = tariefVal.trim() ? parseFloat(tariefVal) : null;
+    onTariefChange(emp.user_id, val);
+    setEditTarief(false);
+  }
 
   return (
     <div className="rounded-2xl p-3.5 transition-transform active:scale-[0.985]" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
@@ -247,6 +256,29 @@ function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId,
           ))}
         </div>
       )}
+
+      {/* Tariefinformatie - only managers */}
+      <div className="mt-2 rounded-xl p-3 space-y-1.5" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
+        <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "#8B6914" }}>
+          🔒 Tariefinformatie (alleen managers)
+        </p>
+        {editTarief ? (
+          <div className="flex items-center gap-2">
+            <span className="text-sm" style={{ color: "#8B6914" }}>€</span>
+            <input type="number" step="0.50" min="0" value={tariefVal} onChange={e => setTariefVal(e.target.value)} placeholder="bijv. 75.00" className="flex-1 px-2 py-1.5 rounded-lg text-sm font-mono" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
+            <span className="text-sm" style={{ color: "#8B6914" }}>/ uur</span>
+            <button onClick={saveTarief} className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{ background: "#D4E8C2", color: "#4A7C2F" }}>✓</button>
+            <button onClick={() => setEditTarief(false)} className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{ background: "#F5F7F0", color: "#8AAD6E" }}>✕</button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-mono" style={{ color: "#2D4A1E" }}>
+              {emp.uurtarief != null ? `Uurtarief: € ${emp.uurtarief.toFixed(2)} / uur` : "Uurtarief: niet ingesteld"}
+            </p>
+            <button onClick={() => { setTariefVal(emp.uurtarief?.toString() || ""); setEditTarief(true); }} className="text-[11px] font-semibold" style={{ color: "#8B6914" }}>✏ Bewerken</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
