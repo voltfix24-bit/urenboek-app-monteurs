@@ -26,7 +26,7 @@ const AuthContext = createContext<AuthContextType>({
 // DEV MODE: set to true to skip real auth
 // and use a role-picker instead of login
 // ============================================
-export const DEV_MODE = true;
+export const DEV_MODE = false;
 
 export interface DevUser {
   id: string;
