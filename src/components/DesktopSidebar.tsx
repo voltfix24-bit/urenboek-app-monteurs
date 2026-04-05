@@ -33,6 +33,7 @@ export function DesktopSidebar() {
   const { isManager, signOut } = useAuth();
   const { profile: profileCtx } = useProfile();
   const { badges } = useNavBadges();
+  const [showSearch, setShowSearch] = useState(false);
   const displayName = profileCtx?.full_name || "Gebruiker";
 
   const items = isManager ? managerItems : monteurItems;
