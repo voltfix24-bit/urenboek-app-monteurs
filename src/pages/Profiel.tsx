@@ -5,6 +5,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { toast } from "sonner";
+import { query, mutate } from "@/lib/supabaseHelpers";
 import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -53,35 +54,35 @@ export default function Profiel() {
 
   const saveProfile = async () => {
     if (!profile) return;
-    const { error } = await supabase.from("profiles").update({ full_name: editForm.full_name, telefoon: editForm.telefoon, adres: editForm.adres } as any).eq("id", profile.id);
-    if (error) toast.error("Fout bij opslaan"); else { toast.success("Profiel opgeslagen"); setEditing(false); fetchProfile(); }
+    if (!await mutate(supabase.from("profiles").update({ full_name: editForm.full_name, telefoon: editForm.telefoon, adres: editForm.adres } as any).eq("id", profile.id))) return;
+    toast.success("Profiel opgeslagen"); setEditing(false); fetchProfile();
   };
 
   const toggleVrijeDag = async (dag: number) => {
     if (!profile) return;
     const current = profile.vaste_vrije_dagen || [];
     const next = current.includes(dag) ? current.filter(d => d !== dag) : [...current, dag];
-    await supabase.from("profiles").update({ vaste_vrije_dagen: next } as any).eq("id", profile.id);
+    await mutate(supabase.from("profiles").update({ vaste_vrije_dagen: next } as any).eq("id", profile.id));
     setProfile({ ...profile, vaste_vrije_dagen: next });
   };
 
   const addCertificaat = async () => {
     if (!profile || !certForm.naam || !certForm.vervaldatum) return;
-    const { error } = await supabase.from("certificaten").insert({ medewerker_id: profile.id, type: certForm.type, naam: certForm.naam, vervaldatum: certForm.vervaldatum } as any);
-    if (error) toast.error("Fout"); else { toast.success("Certificaat toegevoegd"); setShowAddCert(false); setCertForm({ type: "VCA", naam: "", vervaldatum: "" }); fetchCerts(); }
+    if (!await mutate(supabase.from("certificaten").insert({ medewerker_id: profile.id, type: certForm.type, naam: certForm.naam, vervaldatum: certForm.vervaldatum } as any))) return;
+    toast.success("Certificaat toegevoegd"); setShowAddCert(false); setCertForm({ type: "VCA", naam: "", vervaldatum: "" }); fetchCerts();
   };
 
   const requestVerlof = async () => {
     if (!profile || !verlofForm.datum_van || !verlofForm.datum_tot) return;
-    const { error } = await supabase.from("beschikbaarheid").insert({ medewerker_id: profile.id, type: verlofForm.type, datum_van: verlofForm.datum_van, datum_tot: verlofForm.datum_tot, reden: verlofForm.reden || null, status: "aangevraagd" } as any);
-    if (error) toast.error("Fout"); else { toast.success("Verlof aangevraagd"); setShowVerlof(false); setVerlofForm({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" }); fetchBeschikbaarheid(); }
+    if (!await mutate(supabase.from("beschikbaarheid").insert({ medewerker_id: profile.id, type: verlofForm.type, datum_van: verlofForm.datum_van, datum_tot: verlofForm.datum_tot, reden: verlofForm.reden || null, status: "aangevraagd" } as any))) return;
+    toast.success("Verlof aangevraagd"); setShowVerlof(false); setVerlofForm({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" }); fetchBeschikbaarheid();
   };
 
   const meldZiek = async () => {
     if (!profile) return;
     const today = new Date().toISOString().split("T")[0];
-    const { error } = await supabase.from("beschikbaarheid").insert({ medewerker_id: profile.id, type: "ziek", datum_van: today, datum_tot: today, status: "goedgekeurd" } as any);
-    if (error) toast.error("Fout"); else toast.success("Ziekmelding ingediend");
+    if (!await mutate(supabase.from("beschikbaarheid").insert({ medewerker_id: profile.id, type: "ziek", datum_van: today, datum_tot: today, status: "goedgekeurd" } as any))) return;
+    toast.success("Ziekmelding ingediend");
     fetchBeschikbaarheid();
   };
 
