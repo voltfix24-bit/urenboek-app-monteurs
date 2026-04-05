@@ -4,10 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
-import { ChevronLeft, Check, Plus, X } from "lucide-react";
+import { ChevronLeft, Check } from "lucide-react";
 import terrevoltLogo from "@/assets/terrevolt-logo.svg";
-
-interface Certificaat { type: string; naam: string; vervaldatum: string; }
+import CertificatenForm from "@/components/CertificatenForm";
 
 const DAGEN = [
   { key: 1, label: "Ma" }, { key: 2, label: "Di" }, { key: 3, label: "Wo" },
@@ -21,11 +20,8 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState<any>(null);
-  const [certs, setCerts] = useState<any[]>([]);
+  
   const [form, setForm] = useState({ telefoon: "", adres: "", rijbewijs: false, noodcontact_naam: "", noodcontact_tel: "" });
-  const [newCerts, setNewCerts] = useState<Certificaat[]>([]);
-  const [certForm, setCertForm] = useState({ type: "VCA", naam: "", vervaldatum: "" });
-  const [showAddCert, setShowAddCert] = useState(false);
   const [vrijeDagen, setVrijeDagen] = useState<number[]>([]);
 
   useEffect(() => {
@@ -46,10 +42,6 @@ export default function Onboarding() {
         noodcontact_tel: (profile as any).noodcontact_tel || "",
       });
       setVrijeDagen((profile as any).vaste_vrije_dagen || []);
-
-      // Load existing certs
-      const { data: certData } = await supabase.from("certificaten").select("*").eq("medewerker_id", profile.id);
-      if (certData) setCerts(certData);
     }
     setLoading(false);
   };
@@ -64,20 +56,6 @@ export default function Onboarding() {
       noodcontact_tel: form.noodcontact_tel || null,
     } as any).eq("id", profileData.id);
     setStep(3);
-  };
-
-  const saveStep3 = async () => {
-    if (newCerts.length > 0 && profileData) {
-      for (const c of newCerts) {
-        await supabase.from("certificaten").insert({
-          medewerker_id: profileData.id,
-          type: c.type,
-          naam: c.naam,
-          vervaldatum: c.vervaldatum,
-        } as any);
-      }
-    }
-    setStep(4);
   };
 
   const finish = async () => {
@@ -95,12 +73,6 @@ export default function Onboarding() {
     navigate("/");
   };
 
-  const addCert = () => {
-    if (!certForm.naam || !certForm.vervaldatum) return;
-    setNewCerts([...newCerts, { ...certForm }]);
-    setCertForm({ type: "VCA", naam: "", vervaldatum: "" });
-    setShowAddCert(false);
-  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
@@ -143,7 +115,6 @@ export default function Onboarding() {
               <div className="flex items-center gap-2"><Check className="h-4 w-4" style={{ color: "var(--success)" }} /><span className="text-sm" style={{ color: "var(--text-primary)" }}>E-mail: {user?.email}</span></div>
               <div className="flex items-center gap-2"><Check className="h-4 w-4" style={{ color: "var(--success)" }} /><span className="text-sm" style={{ color: "var(--text-primary)" }}>Rol: {roles[0] || "medewerker"}</span></div>
               {profileData?.telefoon && <div className="flex items-center gap-2"><Check className="h-4 w-4" style={{ color: "var(--success)" }} /><span className="text-sm" style={{ color: "var(--text-primary)" }}>Telefoon: {profileData.telefoon}</span></div>}
-              {certs.length > 0 && <div className="flex items-center gap-2"><Check className="h-4 w-4" style={{ color: "var(--success)" }} /><span className="text-sm" style={{ color: "var(--text-primary)" }}>{certs.length} certificaten</span></div>}
             </div>
             <button onClick={() => setStep(2)} className="w-full py-3 rounded-xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
               Starten →
@@ -184,51 +155,17 @@ export default function Onboarding() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 3 && profileData && (
           <div className="w-full space-y-4 mt-6">
-            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Certificaten</p>
-            {certs.length > 0 && (
-              <div className="space-y-2">
-                {certs.map((c: any) => (
-                  <div key={c.id} className="flex items-center gap-2 p-3 rounded-xl" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
-                    <Check className="h-4 w-4" style={{ color: "var(--success)" }} />
-                    <span className="text-sm" style={{ color: "var(--text-primary)" }}>{c.type} — {c.naam} — geldig t/m {c.vervaldatum}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {newCerts.map((c, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-                <span className="text-sm" style={{ color: "var(--text-primary)" }}>{c.type} — {c.naam}</span>
-                <button onClick={() => setNewCerts(newCerts.filter((_, j) => j !== i))}><X className="h-4 w-4" style={{ color: "var(--danger)" }} /></button>
-              </div>
-            ))}
-            {showAddCert ? (
-              <div className="rounded-xl p-3 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-                <div className="flex gap-1.5 flex-wrap">
-                  {["VCA", "NEN3140", "rijbewijs_BE", "overig"].map(t => (
-                    <button key={t} onClick={() => setCertForm({ ...certForm, type: t })} className="px-3 py-1.5 rounded-lg text-[11px] font-semibold" style={{
-                      background: certForm.type === t ? "var(--accent-light)" : "var(--bg-base)",
-                      border: certForm.type === t ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                      color: certForm.type === t ? "var(--accent)" : "var(--text-muted)",
-                    }}>{t}</button>
-                  ))}
-                </div>
-                <input value={certForm.naam} onChange={e => setCertForm({ ...certForm, naam: e.target.value })} placeholder="Naam" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-                <input type="date" value={certForm.vervaldatum} onChange={e => setCertForm({ ...certForm, vervaldatum: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-                <div className="flex gap-2">
-                  <button onClick={() => setShowAddCert(false)} className="flex-1 py-2 rounded-xl text-xs" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>Annuleren</button>
-                  <button onClick={addCert} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)" }}>Toevoegen</button>
-                </div>
-              </div>
-            ) : (
-              <button onClick={() => setShowAddCert(true)} className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1" style={{ background: "var(--bg-surface)", border: "1px dashed var(--border)", color: "var(--text-secondary)" }}>
-                <Plus className="h-3.5 w-3.5" /> Certificaat toevoegen
-              </button>
-            )}
-            <button onClick={saveStep3} className="w-full py-3 rounded-xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
-              Volgende →
-            </button>
+            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Jouw certificaten</p>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              Vink aan welke certificaten je hebt en voeg de geldigheidsdata toe.
+            </p>
+            <CertificatenForm
+              medewerker_id={profileData.id}
+              onSaved={() => setStep(4)}
+              onCancel={() => setStep(4)}
+            />
           </div>
         )}
 

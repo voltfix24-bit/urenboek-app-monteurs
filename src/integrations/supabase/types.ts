@@ -90,9 +90,11 @@ export type Database = {
         Row: {
           bestand_url: string | null
           created_at: string
+          ggi_gebieden: string[] | null
           id: string
           medewerker_id: string
           naam: string
+          subtype: string | null
           type: string
           updated_at: string
           vervaldatum: string
@@ -100,9 +102,11 @@ export type Database = {
         Insert: {
           bestand_url?: string | null
           created_at?: string
+          ggi_gebieden?: string[] | null
           id?: string
           medewerker_id: string
           naam: string
+          subtype?: string | null
           type?: string
           updated_at?: string
           vervaldatum: string
@@ -110,9 +114,11 @@ export type Database = {
         Update: {
           bestand_url?: string | null
           created_at?: string
+          ggi_gebieden?: string[] | null
           id?: string
           medewerker_id?: string
           naam?: string
+          subtype?: string | null
           type?: string
           updated_at?: string
           vervaldatum?: string
