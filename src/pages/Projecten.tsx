@@ -55,7 +55,7 @@ export default function Projecten() {
 
   const fetchData = useCallback(async () => {
     const [p, o] = await Promise.all([
-      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad").order("nummer"),
+      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id").order("nummer"),
       supabase.from("opdrachtgevers").select("id, naam").order("naam"),
     ]);
     if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data);
