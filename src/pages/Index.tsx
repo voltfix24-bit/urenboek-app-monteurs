@@ -254,7 +254,6 @@ const Index = () => {
           await addEntry(entry);
         }} initialDate={modalDate} />
       )}
-      )}
     </div>
     </PageShell>
   );
