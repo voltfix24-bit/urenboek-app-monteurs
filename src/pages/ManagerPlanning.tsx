@@ -277,25 +277,19 @@ export default function ManagerPlanning() {
         {gridContent}
       </div>
 
-      {showModal && (
-        <>
-        {/* Mobile: bottom sheet */}
-        <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
+      {showModal && (() => {
+        const modalBody = (
+          <>
+            <div className="w-10 h-1 rounded-full mx-auto lg:hidden" style={{ background: "var(--border)" }} />
             <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
             </h2>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>{modalForm.datum}</p>
-
             {modalStatus && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: modalStatus.bg, border: `1px solid ${modalStatus.color}33` }}>
                 <span className="text-xs font-semibold" style={{ color: modalStatus.color }}>{modalStatus.label}</span>
               </div>
             )}
-
             {modalConflicts.length > 0 && (
               <div className="space-y-1.5">
                 {modalConflicts.map((c, i) => (
@@ -306,7 +300,6 @@ export default function ManagerPlanning() {
                 ))}
               </div>
             )}
-
             <div className="space-y-3">
               <div className="space-y-1">
                 <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Project</label>
@@ -314,7 +307,6 @@ export default function ManagerPlanning() {
                   {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
                 </select>
               </div>
-
               <div className="flex gap-3">
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Start</label>
@@ -325,22 +317,35 @@ export default function ManagerPlanning() {
                   <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
                 </div>
               </div>
-
               <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-
               <button onClick={savePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>
-
               {editId && (
                 <button onClick={deletePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
                   Verwijderen
                 </button>
               )}
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        );
+        return (
+          <>
+            <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
+              <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+              <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+                {modalBody}
+              </div>
+            </div>
+            <div className="hidden lg:flex fixed inset-0 z-50 items-center justify-center" onClick={() => setShowModal(false)}>
+              <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+              <div className="relative w-full max-w-md rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }} onClick={e => e.stopPropagation()}>
+                {modalBody}
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
     </PageShell>
   );
