@@ -104,11 +104,11 @@ export default function Dashboard() {
       const projIds = [...new Set(plan.map((p: any) => p.project_id))];
       const [{ data: profs }, { data: projs }] = await Promise.all([
         profIds.length > 0 ? supabase.from("profiles").select("id, full_name").in("id", profIds) : { data: [] },
-        projIds.length > 0 ? supabase.from("projects").select("id, naam").in("id", projIds) : { data: [] },
+        projIds.length > 0 ? supabase.from("projects").select("id, naam, straat, postcode, stad, adres").in("id", projIds) : { data: [] },
       ]);
       const profMap = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
-      const projMap = new Map((projs ?? []).map((p: any) => [p.id, p.naam]));
-      setTodayPlanning(plan.map((p: any) => ({ ...p, naam: profMap.get(p.medewerker_id) || "Onbekend", project: projMap.get(p.project_id) || "Onbekend", starttijd: p.starttijd?.slice(0, 5), eindtijd: p.eindtijd?.slice(0, 5) })));
+      const projMap = new Map((projs ?? []).map((p: any) => [p.id, p]));
+      setTodayPlanning(plan.map((p: any) => { const proj = projMap.get(p.project_id) || {}; return { ...p, naam: profMap.get(p.medewerker_id) || "Onbekend", project: (proj as any).naam || "Onbekend", projectAdres: volledigAdres(proj as any), starttijd: p.starttijd?.slice(0, 5), eindtijd: p.eindtijd?.slice(0, 5) }; }));
     }
 
     // Projects with marge from forecast
@@ -251,6 +251,7 @@ export default function Dashboard() {
                       <div>
                         <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{p.naam}</p>
                         <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{p.project}</p>
+                        {p.projectAdres && <p className="text-[10px] flex items-center gap-0.5" style={{ color: "var(--text-muted)" }}><MapPin className="h-3 w-3 inline" /> {p.projectAdres}</p>}
                       </div>
                     </div>
                     <span className="text-[11px] font-medium" style={{ color: "var(--accent)", fontFamily: "DM Mono, monospace" }}>{p.starttijd}–{p.eindtijd}</span>
