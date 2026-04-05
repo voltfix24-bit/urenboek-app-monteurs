@@ -445,6 +445,19 @@ export default function Projecten() {
         </div>
         <BottomNav badges={badges} />
       </div>
+
+      {/* Intake Wizard */}
+      {intakeProjectId && (() => {
+        const p = projects.find(pr => pr.id === intakeProjectId);
+        return p ? (
+          <ForecastIntakeWizard
+            projectId={intakeProjectId}
+            project={{ nummer: p.nummer, naam: p.naam, case_type: p.case_type }}
+            onClose={() => setIntakeProjectId(null)}
+            onComplete={() => { setIntakeProjectId(null); fetchData(); toast.success("Forecast aangemaakt op basis van intake ✓"); }}
+          />
+        ) : null;
+      })()}
     </>
   );
 }
