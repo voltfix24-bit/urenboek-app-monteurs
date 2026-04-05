@@ -76,6 +76,21 @@ export default function Planning() {
   const weekDates = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const today = format(new Date(), "yyyy-MM-dd");
 
+  function openNavigatie(adres: string) {
+    const encoded = encodeURIComponent(adres);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    if (isIOS) {
+      window.location.href = `maps://maps.apple.com/?daddr=${encoded}`;
+      setTimeout(() => { window.open(`https://maps.google.com/?daddr=${encoded}`, "_blank"); }, 500);
+    } else if (isAndroid) {
+      window.location.href = `google.navigation:q=${encoded}`;
+      setTimeout(() => { window.open(`https://maps.google.com/?daddr=${encoded}`, "_blank"); }, 500);
+    } else {
+      window.open(`https://maps.google.com/?daddr=${encoded}`, "_blank");
+    }
+  }
+
   function getBeschikbaarheidForDate(dateStr: string): BeschikbaarheidItem | null {
     return beschikbaarheid.find(b => dateStr >= b.datum_van && dateStr <= b.datum_tot) || null;
   }
