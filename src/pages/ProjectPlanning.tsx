@@ -738,14 +738,34 @@ export default function ProjectPlanning() {
       </div>
 
       {/* Cost estimate */}
-      {planningCostEstimate > 0 && (
-        <div className="mx-4 mb-20 lg:mb-4 rounded-xl px-4 py-3 flex items-center justify-between" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
-          <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
-            Geschatte kosten op basis van huidige planning
-          </span>
-          <span className="text-sm font-bold font-mono" style={{ color: "var(--accent)" }}>
-            € {planningCostEstimate.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-          </span>
+      {planningCostBreakdown.total > 0 && (
+        <div className="mx-4 mb-20 lg:mb-4 rounded-xl overflow-hidden" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
+          <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid var(--accent-border)" }}>
+            <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+              Geschatte kosten op basis van huidige planning
+            </span>
+            <span className="text-sm font-bold font-mono" style={{ color: "var(--accent)" }}>
+              € {planningCostBreakdown.total.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </span>
+          </div>
+          <div className="px-4 py-2 space-y-1">
+            <div className="flex text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+              <span className="flex-1">Monteur</span>
+              <span className="w-16 text-right">Dagen</span>
+              <span className="w-20 text-right">Tarief</span>
+              <span className="w-24 text-right">Subtotaal</span>
+            </div>
+            {planningCostBreakdown.rows.map((row, i) => (
+              <div key={i} className="flex items-center text-xs py-1" style={{ borderTop: i > 0 ? "1px solid color-mix(in srgb, var(--accent-border) 50%, transparent)" : "none" }}>
+                <span className="flex-1 font-medium truncate" style={{ color: "var(--text-primary)" }}>{row.name}</span>
+                <span className="w-16 text-right font-mono" style={{ color: "var(--text-secondary)" }}>{row.days}d</span>
+                <span className="w-20 text-right font-mono" style={{ color: "var(--text-secondary)" }}>€{row.tarief}</span>
+                <span className="w-24 text-right font-mono font-semibold" style={{ color: "var(--accent)" }}>
+                  € {row.subtotal.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
