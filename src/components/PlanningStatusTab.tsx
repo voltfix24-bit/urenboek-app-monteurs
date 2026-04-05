@@ -6,7 +6,6 @@ import { CalendarDays, ArrowRight, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export function PlanningStatusTab({ projectId, profileId }: { projectId: string; profileId?: string }) {
-  const { profile } = useAuth();
   const navigate = useNavigate();
   const [status, setStatus] = useState<{ is_definitief: boolean; definitief_op: string | null; definitief_door_naam: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +29,6 @@ export function PlanningStatusTab({ projectId, profileId }: { projectId: string;
   useEffect(() => { load(); }, [load]);
 
   async function toggleDefinitief(val: boolean) {
-    const profileId = profile?.id || null;
     // Upsert
     const { error } = await supabase.from("project_planning_status").upsert({
       project_id: projectId,
