@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ProfileProvider } from "@/hooks/useProfile";
+import { NavBadgesProvider } from "@/hooks/useNavBadges";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Medewerkers from "./pages/Medewerkers";
@@ -48,6 +49,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <ProfileProvider>
+          <NavBadgesProvider>
           <Routes>
             <Route path="/login" element={<PublicRoute><Auth /></PublicRoute>} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
@@ -64,6 +66,7 @@ const App = () => (
             <Route path="/projecten/:projectId/planning" element={<ProtectedRoute><ProjectPlanning /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </NavBadgesProvider>
           </ProfileProvider>
         </AuthProvider>
       </BrowserRouter>
