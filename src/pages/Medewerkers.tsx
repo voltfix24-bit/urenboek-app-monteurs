@@ -353,11 +353,7 @@ export default function Medewerkers() {
             {selectedEmployee ? (
               <EmployeeDetail
                 emp={selectedEmployee} certs={employeeCerts}
-                onDeleteCert={handleDeleteCert}
-                newCertType={newCertType} setNewCertType={setNewCertType}
-                newCertNaam={newCertNaam} setNewCertNaam={setNewCertNaam}
-                newCertDatum={newCertDatum} setNewCertDatum={setNewCertDatum}
-                onAddCert={handleAddCertForEmployee}
+                onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)}
               />
             ) : (
               <div className="flex items-center justify-center h-full" style={{ color: "var(--text-muted)" }}>
@@ -375,11 +371,7 @@ export default function Medewerkers() {
               </button>
               <EmployeeDetail
                 emp={selectedEmployee} certs={employeeCerts}
-                onDeleteCert={handleDeleteCert}
-                newCertType={newCertType} setNewCertType={setNewCertType}
-                newCertNaam={newCertNaam} setNewCertNaam={setNewCertNaam}
-                newCertDatum={newCertDatum} setNewCertDatum={setNewCertDatum}
-                onAddCert={handleAddCertForEmployee}
+                onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)}
               />
             </main>
           ) : (
