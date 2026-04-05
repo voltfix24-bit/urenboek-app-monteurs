@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { format, startOfISOWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Check, X, ChevronRight, AlertTriangle, Shield } from "lucide-react";
+import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 
 export default function Dashboard() {
@@ -105,12 +105,12 @@ export default function Dashboard() {
             {/* KPI strip */}
             <div className="flex gap-2">
               {[
-                { label: "Open keuring", value: String(pendingCount), color: "#D4A017", icon: "⏳" },
-                { label: "Uren (week)", value: weekHours + "u", color: "#2D7A3A", icon: "⏱" },
-                { label: "Projecten", value: String(activeProjects), color: "#2D5A8A", icon: "📁" },
+                { label: "Open keuring", value: String(pendingCount), color: "#D4A017", Icon: Hourglass },
+                { label: "Uren (week)", value: weekHours + "u", color: "#2D7A3A", Icon: Clock },
+                { label: "Projecten", value: String(activeProjects), color: "#2D5A8A", Icon: FolderOpen },
               ].map((k, i) => (
                 <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                  <p className="text-lg mb-0.5">{k.icon}</p>
+                  <k.Icon className="h-5 w-5 mx-auto mb-1" style={{ color: k.color }} />
                   <p className="text-xl font-extrabold" style={{ color: k.color }}>{k.value}</p>
                   <p className="text-[10px] font-medium mt-0.5" style={{ color: "#8AAD6E" }}>{k.label}</p>
                 </div>

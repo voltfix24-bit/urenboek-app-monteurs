@@ -247,7 +247,7 @@ export default function ProjectPlanning() {
 
     setPlanningStatus({ is_definitief: true, definitief_op: new Date().toISOString() });
     setShowDefinitiefDialog(false);
-    toast.success("Planning gepubliceerd ✓ Monteurs kunnen hun planning nu inzien.");
+    toast.success("Planning gepubliceerd — Monteurs kunnen hun planning nu inzien.");
   };
 
   const makeConcept = async () => {

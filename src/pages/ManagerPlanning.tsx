@@ -33,10 +33,10 @@ function getConflicts(medId: string, dateStr: string, dayIndex: number, entries:
 function getModalStatus(medId: string, dateStr: string, medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], dateObj: Date): { label: string; color: string; bg: string } | null {
   const med = medewerkers.find(m => m.id === medId);
   const verlof = beschikbaarheid.find(b => b.medewerker_id === medId && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
-  if (verlof) return { label: "✕ Op vakantie", color: "#C0392B", bg: "#FDECEA" };
+  if (verlof) return { label: "Op vakantie", color: "#C0392B", bg: "#FDECEA" };
   const jsDay = dateObj.getDay();
-  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "⚠ Vaste vrije dag", color: "#8B6914", bg: "#FFF8DC" };
-  return { label: "✓ Beschikbaar", color: "#2D7A3A", bg: "#D4EDD8" };
+  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "Vaste vrije dag", color: "#8B6914", bg: "#FFF8DC" };
+  return { label: "Beschikbaar", color: "#2D7A3A", bg: "#D4EDD8" };
 }
 
 export default function ManagerPlanning() {
