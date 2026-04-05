@@ -133,7 +133,10 @@ export function useTimesheet() {
 
   const submitEntry = useCallback(
     async (id: string) => {
-      if (!await mutate(supabase.from("uren_boekingen").update({ status: "ingediend" }).eq("id", id))) return;
+      const { data, error } = await supabase.functions.invoke("uren-indienen", {
+        body: { urenIds: [id] },
+      });
+      if (error || !data?.success) { toast.error("Er ging iets mis. Probeer opnieuw."); return; }
       toast.success("Ingediend ter goedkeuring");
       fetchEntries();
       fetchAllEntries();
