@@ -24,15 +24,26 @@ const AuthContext = createContext<AuthContextType>({
 
 // DEV BYPASS: set devBypass to false to re-enable real auth
 const devBypass = true;
+const mockUser = devBypass ? ({ id: "dev-manager-user", email: "dev@terrevolt.local" } as User) : null;
+const mockSession = devBypass ? ({ user: mockUser } as Session) : null;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(mockSession);
+  const [user, setUser] = useState<User | null>(mockUser);
   const [profile, setProfile] = useState<{ full_name: string } | null>(devBypass ? { full_name: "Dev Manager" } : null);
   const [roles, setRoles] = useState<string[]>(devBypass ? ["manager"] : []);
   const [loading, setLoading] = useState(!devBypass);
 
   useEffect(() => {
+    if (devBypass) {
+      setSession(mockSession);
+      setUser(mockUser);
+      setProfile({ full_name: "Dev Manager" });
+      setRoles(["manager"]);
+      setLoading(false);
+      return;
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
@@ -71,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    if (devBypass) return;
     await supabase.auth.signOut();
   };
 
