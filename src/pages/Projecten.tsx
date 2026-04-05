@@ -17,13 +17,14 @@ interface Project {
   id: string; nummer: string; naam: string; active: boolean; opdrachtgever_id: string | null;
   stationsnaam: string | null; adres: string | null; case_type: string | null;
   contactpersoon_naam: string | null; contactpersoon_tel: string | null; contactpersoon_email: string | null;
+  straat: string | null; postcode: string | null; stad: string | null;
 }
 type FormState = {
   nummer: string; naam: string; opdrachtgever_id: string | null;
-  stationsnaam: string; adres: string; case_type: string;
+  stationsnaam: string; straat: string; postcode: string; stad: string; case_type: string;
   contactpersoon_naam: string; contactpersoon_tel: string; contactpersoon_email: string;
 };
-const emptyForm: FormState = { nummer: "", naam: "", opdrachtgever_id: null, stationsnaam: "", adres: "", case_type: "", contactpersoon_naam: "", contactpersoon_tel: "", contactpersoon_email: "" };
+const emptyForm: FormState = { nummer: "", naam: "", opdrachtgever_id: null, stationsnaam: "", straat: "", postcode: "", stad: "", case_type: "", contactpersoon_naam: "", contactpersoon_tel: "", contactpersoon_email: "" };
 
 const inputStyle = { background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" };
 
