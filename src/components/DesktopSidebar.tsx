@@ -30,9 +30,10 @@ const monteurItems = [
 export function DesktopSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isManager, profile, signOut } = useAuth();
+  const { isManager, signOut } = useAuth();
+  const { profile: profileCtx } = useProfile();
   const { badges } = useNavBadges();
-  const [showSearch, setShowSearch] = useState(false);
+  const displayName = profileCtx?.full_name || "Gebruiker";
 
   const items = isManager ? managerItems : monteurItems;
 
