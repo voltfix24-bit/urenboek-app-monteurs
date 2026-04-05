@@ -5,13 +5,9 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 
 interface AppLayoutProps {
   children: ReactNode;
-  /** Title shown in desktop page header */
   title?: string;
-  /** Subtitle shown in desktop page header */
   subtitle?: string;
-  /** Extra actions (buttons) for desktop header right side */
   headerActions?: ReactNode;
-  /** Hide the default mobile wrapper (maxWidth etc) - for pages that handle their own layout */
   rawDesktop?: boolean;
 }
 

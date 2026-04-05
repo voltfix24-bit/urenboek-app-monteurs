@@ -5,7 +5,6 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 
 interface PageShellProps {
   children: ReactNode;
-  /** On mobile, applies maxWidth 430px and centers. Default true. */
   mobileConstrained?: boolean;
 }
 
