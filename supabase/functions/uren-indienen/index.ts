@@ -5,19 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// In-memory rate limiter (per warm instance)
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT = 30;
-const RATE_WINDOW_MS = 60_000;
-
-function checkRateLimit(key: string): boolean {
-  const now = Date.now();
-  const timestamps = (rateLimitMap.get(key) ?? []).filter(t => now - t < RATE_WINDOW_MS);
-  if (timestamps.length >= RATE_LIMIT) return false;
-  timestamps.push(now);
-  rateLimitMap.set(key, timestamps);
-  return true;
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
