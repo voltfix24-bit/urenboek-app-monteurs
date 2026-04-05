@@ -86,6 +86,7 @@ export default function ProjectPlanning() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { isManager, user } = useAuth();
+  const { profileId: profileIdFromContext } = useProfile();
 
   const [project, setProject] = useState<Project | null>(null);
   const [state, setState] = useState<MatrixState>(getDefaultState());
