@@ -60,6 +60,11 @@ export default function Medewerkers() {
     setUpdatingRoleId(null);
   };
 
+  const handleTariefChange = async (userId: string, tarief: number | null) => {
+    const { error } = await supabase.from("profiles").update({ uurtarief: tarief } as any).eq("user_id", userId);
+    if (error) toast.error("Fout bij opslaan tarief"); else { toast.success("Uurtarief opgeslagen"); loadEmployees(); }
+  };
+
   const copyCredentials = (user: CreatedUser) => {
     navigator.clipboard.writeText(`Inloggegevens TerreVolt Urenregistratie:\nE-mail: ${user.email}\nWachtwoord: ${user.password}\n\nLog in op: ${window.location.origin}`);
     toast.success("Inloggegevens gekopieerd!");
