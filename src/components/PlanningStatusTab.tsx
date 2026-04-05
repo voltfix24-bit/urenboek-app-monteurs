@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { CalendarDays, ArrowRight, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export function PlanningStatusTab({ projectId }: { projectId: string }) {
+export function PlanningStatusTab({ projectId, profileId }: { projectId: string; profileId?: string }) {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [status, setStatus] = useState<{ is_definitief: boolean; definitief_op: string | null; definitief_door_naam: string | null } | null>(null);

@@ -48,7 +48,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       setRegels([]);
     }
     // Load monteurs for uren method
-    const { data: profiles } = await supabase.from("profiles").select("id, full_name, uurtarief");
+    const { data: profiles } = await supabase.from("profiles").select("id, user_id, full_name, uurtarief");
     const { data: roles } = await supabase.from("user_roles").select("user_id, role");
     if (profiles && roles) {
       const monteurUserIds = new Set(roles.filter(r => r.role === "monteur" || r.role === "schakelmonteur").map(r => r.user_id));
