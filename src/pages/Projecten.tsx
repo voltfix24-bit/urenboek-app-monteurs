@@ -473,7 +473,7 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>
               {project.naam}
-              {(!project.straat || !project.stad) && <AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} title="Adres onvolledig — monteurs kunnen niet navigeren" />}
+              {(!project.straat || !project.stad) && <span title="Adres onvolledig — monteurs kunnen niet navigeren"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>}
             </p>
             <CaseTypeBadge type={project.case_type} />
           </div>
