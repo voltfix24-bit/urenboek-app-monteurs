@@ -494,6 +494,57 @@ export type Database = {
           },
         ]
       }
+      planning_templates: {
+        Row: {
+          activiteiten: string[]
+          created_at: string
+          created_by: string | null
+          id: string
+          is_default: boolean
+          naam: string
+          omschrijving: string | null
+          updated_at: string
+          volgorde: number
+        }
+        Insert: {
+          activiteiten: string[]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_default?: boolean
+          naam: string
+          omschrijving?: string | null
+          updated_at?: string
+          volgorde?: number
+        }
+        Update: {
+          activiteiten?: string[]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_default?: boolean
+          naam?: string
+          omschrijving?: string | null
+          updated_at?: string
+          volgorde?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planning_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_status: string
