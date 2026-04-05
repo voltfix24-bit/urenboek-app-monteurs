@@ -57,6 +57,24 @@ const Index = () => {
   const [submittingAll, setSubmittingAll] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [pendingOffline, setPendingOffline] = useState(0);
+
+  // Track online/offline status
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => {
+      setIsOffline(false);
+      syncOfflineEntries().then(() => getPendingCount().then(setPendingOffline));
+    };
+    window.addEventListener("offline", goOffline);
+    window.addEventListener("online", goOnline);
+    getPendingCount().then(setPendingOffline);
+    return () => {
+      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("online", goOnline);
+    };
+  }, []);
 
   const {
     weekDates, weekEntries, allEntries, addEntry, removeEntry, submitEntry,
