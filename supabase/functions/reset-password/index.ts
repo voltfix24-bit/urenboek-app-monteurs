@@ -17,7 +17,8 @@ Deno.serve(async (req) => {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     // Database-backed rate limit by IP
-    const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown";
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    const clientIp = (forwardedFor ? forwardedFor.split(",")[0].trim() : null) || req.headers.get("cf-connecting-ip") || "unknown";
     const { data: allowed } = await adminClient.rpc("check_rate_limit", {
       _key: clientIp, _endpoint: "reset-password", _limit: 5, _window_seconds: 60,
     });
