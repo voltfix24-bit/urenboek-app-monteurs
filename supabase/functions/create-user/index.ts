@@ -5,7 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -15,8 +14,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Niet geautoriseerd" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -30,8 +28,7 @@ Deno.serve(async (req) => {
     const { data: { user: caller } } = await callerClient.auth.getUser();
     if (!caller) {
       return new Response(JSON.stringify({ error: "Niet geautoriseerd" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -42,50 +39,113 @@ Deno.serve(async (req) => {
     });
     if (!allowed) {
       return new Response(JSON.stringify({ error: "Te veel verzoeken. Probeer het later opnieuw." }), {
-        status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
       });
     }
-    const { data: roleData } = await adminClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", caller.id)
-      .eq("role", "manager");
 
+    const { data: roleData } = await adminClient
+      .from("user_roles").select("role").eq("user_id", caller.id).eq("role", "manager");
     if (!roleData || roleData.length === 0) {
       return new Response(JSON.stringify({ error: "Alleen managers mogen gebruikers aanmaken" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { email, password, fullName, role } = await req.json();
+    const {
+      email, password, fullName, role,
+      telefoon, adres, rijbewijs,
+      noodcontact_naam, noodcontact_tel,
+      contract_einddatum, uurtarief,
+      invite_only, certificaten,
+    } = await req.json();
 
-    if (!email || !password || !fullName || !role) {
-      return new Response(JSON.stringify({ error: "Alle velden zijn verplicht" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (!email || !fullName || !role) {
+      return new Response(JSON.stringify({ error: "Email, naam en rol zijn verplicht" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { full_name: fullName },
-    });
-
-    if (createError) {
-      return new Response(JSON.stringify({ error: createError.message }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (!invite_only && !password) {
+      return new Response(JSON.stringify({ error: "Wachtwoord is verplicht" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    await adminClient.from("user_roles").insert({
-      user_id: newUser.user.id,
-      role,
-    });
+    let newUser;
+    if (invite_only) {
+      const { data, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+        data: { full_name: fullName },
+      });
+      if (inviteError) {
+        return new Response(JSON.stringify({ error: inviteError.message }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      newUser = data;
+    } else {
+      const { data, error: createError } = await adminClient.auth.admin.createUser({
+        email, password, email_confirm: true,
+        user_metadata: { full_name: fullName },
+      });
+      if (createError) {
+        return new Response(JSON.stringify({ error: createError.message }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      newUser = data;
+    }
+
+    // Create profile if not exists (trigger may have created it)
+    const { data: existingProfile } = await adminClient
+      .from("profiles").select("id").eq("user_id", newUser.user.id).maybeSingle();
+
+    let profileId: string;
+    if (!existingProfile) {
+      const { data: newProfile } = await adminClient.from("profiles").insert({
+        user_id: newUser.user.id,
+        full_name: fullName,
+        telefoon: telefoon || "",
+        adres: adres || "",
+        rijbewijs: rijbewijs || false,
+        vaste_vrije_dagen: [],
+        uurtarief: uurtarief || null,
+        noodcontact_naam: noodcontact_naam || null,
+        noodcontact_tel: noodcontact_tel || null,
+        contract_einddatum: contract_einddatum || null,
+        account_status: invite_only ? "invited" : "active",
+        invited_at: new Date().toISOString(),
+      }).select("id").single();
+      profileId = newProfile!.id;
+    } else {
+      // Update existing profile with additional data
+      await adminClient.from("profiles").update({
+        full_name: fullName,
+        telefoon: telefoon || "",
+        adres: adres || "",
+        rijbewijs: rijbewijs || false,
+        uurtarief: uurtarief || null,
+        noodcontact_naam: noodcontact_naam || null,
+        noodcontact_tel: noodcontact_tel || null,
+        contract_einddatum: contract_einddatum || null,
+        account_status: invite_only ? "invited" : "active",
+        invited_at: new Date().toISOString(),
+      }).eq("id", existingProfile.id);
+      profileId = existingProfile.id;
+    }
+
+    // Assign role
+    await adminClient.from("user_roles").insert({ user_id: newUser.user.id, role });
+
+    // Add certificates if provided
+    if (certificaten && Array.isArray(certificaten) && certificaten.length > 0) {
+      const certRows = certificaten.map((c: any) => ({
+        medewerker_id: profileId,
+        type: c.type || "overig",
+        naam: c.naam,
+        vervaldatum: c.vervaldatum,
+      }));
+      await adminClient.from("certificaten").insert(certRows);
+    }
 
     return new Response(
       JSON.stringify({ success: true, user: { id: newUser.user.id, email, fullName, role } }),
@@ -93,8 +153,7 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
