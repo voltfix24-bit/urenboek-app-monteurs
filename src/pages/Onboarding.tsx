@@ -4,10 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
-import { ChevronLeft, Check, Plus, X } from "lucide-react";
+import { ChevronLeft, Check } from "lucide-react";
 import terrevoltLogo from "@/assets/terrevolt-logo.svg";
-
-interface Certificaat { type: string; naam: string; vervaldatum: string; }
+import CertificatenForm from "@/components/CertificatenForm";
 
 const DAGEN = [
   { key: 1, label: "Ma" }, { key: 2, label: "Di" }, { key: 3, label: "Wo" },
@@ -23,9 +22,6 @@ export default function Onboarding() {
   const [profileData, setProfileData] = useState<any>(null);
   const [certs, setCerts] = useState<any[]>([]);
   const [form, setForm] = useState({ telefoon: "", adres: "", rijbewijs: false, noodcontact_naam: "", noodcontact_tel: "" });
-  const [newCerts, setNewCerts] = useState<Certificaat[]>([]);
-  const [certForm, setCertForm] = useState({ type: "VCA", naam: "", vervaldatum: "" });
-  const [showAddCert, setShowAddCert] = useState(false);
   const [vrijeDagen, setVrijeDagen] = useState<number[]>([]);
 
   useEffect(() => {
@@ -47,10 +43,6 @@ export default function Onboarding() {
       });
       setVrijeDagen((profile as any).vaste_vrije_dagen || []);
 
-      // Load existing certs
-      const { data: certData } = await supabase.from("certificaten").select("*").eq("medewerker_id", profile.id);
-      if (certData) setCerts(certData);
-    }
     setLoading(false);
   };
 
@@ -64,20 +56,6 @@ export default function Onboarding() {
       noodcontact_tel: form.noodcontact_tel || null,
     } as any).eq("id", profileData.id);
     setStep(3);
-  };
-
-  const saveStep3 = async () => {
-    if (newCerts.length > 0 && profileData) {
-      for (const c of newCerts) {
-        await supabase.from("certificaten").insert({
-          medewerker_id: profileData.id,
-          type: c.type,
-          naam: c.naam,
-          vervaldatum: c.vervaldatum,
-        } as any);
-      }
-    }
-    setStep(4);
   };
 
   const finish = async () => {
@@ -95,12 +73,6 @@ export default function Onboarding() {
     navigate("/");
   };
 
-  const addCert = () => {
-    if (!certForm.naam || !certForm.vervaldatum) return;
-    setNewCerts([...newCerts, { ...certForm }]);
-    setCertForm({ type: "VCA", naam: "", vervaldatum: "" });
-    setShowAddCert(false);
-  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
@@ -143,7 +115,6 @@ export default function Onboarding() {
               <div className="flex items-center gap-2"><Check className="h-4 w-4" style={{ color: "var(--success)" }} /><span className="text-sm" style={{ color: "var(--text-primary)" }}>E-mail: {user?.email}</span></div>
               <div className="flex items-center gap-2"><Check className="h-4 w-4" style={{ color: "var(--success)" }} /><span className="text-sm" style={{ color: "var(--text-primary)" }}>Rol: {roles[0] || "medewerker"}</span></div>
               {profileData?.telefoon && <div className="flex items-center gap-2"><Check className="h-4 w-4" style={{ color: "var(--success)" }} /><span className="text-sm" style={{ color: "var(--text-primary)" }}>Telefoon: {profileData.telefoon}</span></div>}
-              {certs.length > 0 && <div className="flex items-center gap-2"><Check className="h-4 w-4" style={{ color: "var(--success)" }} /><span className="text-sm" style={{ color: "var(--text-primary)" }}>{certs.length} certificaten</span></div>}
             </div>
             <button onClick={() => setStep(2)} className="w-full py-3 rounded-xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
               Starten →
