@@ -11,3 +11,15 @@ export async function query<T>(
   }
   return data;
 }
+
+export async function mutate(
+  promise: Promise<{ error: any }>
+): Promise<boolean> {
+  const { error } = await promise;
+  if (error) {
+    toast.error("Er ging iets mis. Probeer opnieuw.");
+    console.error(error);
+    return false;
+  }
+  return true;
+}
