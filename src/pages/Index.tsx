@@ -234,7 +234,26 @@ const Index = () => {
       </button>
 
       {showModal && (
-        <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} onSubmit={addEntry} initialDate={modalDate} />
+        <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} onSubmit={async (entry) => {
+          if (!navigator.onLine && profileId) {
+            await queueOfflineEntry({
+              id: crypto.randomUUID(),
+              medewerker_id: profileId,
+              datum: entry.date,
+              project_id: entry.projectId,
+              beschrijving: entry.description,
+              type: entry.description || "monteren",
+              uren: entry.hours,
+              status: "concept",
+              created_at: new Date().toISOString(),
+            });
+            toast.success("Offline opgeslagen — wordt gesynchroniseerd bij verbinding");
+            getPendingCount().then(setPendingOffline);
+            return;
+          }
+          await addEntry(entry);
+        }} initialDate={modalDate} />
+      )}
       )}
     </div>
     </PageShell>
