@@ -107,6 +107,7 @@ function RealLoginForm() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,6 +126,25 @@ function RealLoginForm() {
       else toast.success("Controleer je e-mail om je account te bevestigen");
     }
     setLoading(false);
+  };
+
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("apple", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast.error("Inloggen met Apple mislukt");
+        setAppleLoading(false);
+        return;
+      }
+      if (result.redirected) return;
+      navigate("/");
+    } catch {
+      toast.error("Inloggen met Apple mislukt");
+    }
+    setAppleLoading(false);
   };
 
   return (
