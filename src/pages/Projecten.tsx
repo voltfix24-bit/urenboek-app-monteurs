@@ -102,8 +102,10 @@ export default function Projecten() {
       if (form.contactpersoon_tel.trim()) insert.contactpersoon_tel = form.contactpersoon_tel.trim();
       if (form.contactpersoon_email.trim()) insert.contactpersoon_email = form.contactpersoon_email.trim();
     }
-    if (!await mutate(supabase.from("projects").insert(insert))) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); return; }
+    const { data: newP, error } = await supabase.from("projects").insert(insert).select("id").single();
+    if (error) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); else toast.error("Fout bij aanmaken"); return; }
     toast.success("Project toegevoegd"); setForm(emptyForm); setShowAdd(false); fetchData();
+    if (newP) setIntakeProjectId(newP.id);
   }
 
   async function handleUpdate(id: string) {
