@@ -234,7 +234,16 @@ export default function Projecten() {
           <input value={form.naam} onChange={e => setForm(f => ({ ...f, naam: e.target.value }))} placeholder="Casenaam" className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
         </div>
         <input value={form.stationsnaam} onChange={e => setForm(f => ({ ...f, stationsnaam: e.target.value }))} placeholder="Stationsnaam bijv. KOPPOELLN" className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
-        <input value={form.adres} onChange={e => setForm(f => ({ ...f, adres: e.target.value }))} placeholder="Adres: Straat, Stad" className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
+        <p className="text-[11px] font-semibold uppercase tracking-wider mt-2" style={{ color: "var(--text-muted)" }}>Adres werklocatie *</p>
+        <input value={form.straat} onChange={e => setForm(f => ({ ...f, straat: e.target.value }))} placeholder="Burgemeester Fletzlaan 12" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ ...inputStyle, borderColor: !form.straat.trim() && form.nummer.trim() ? "var(--danger-border)" : undefined }} />
+        <div className="grid grid-cols-2 gap-2">
+          <input value={form.postcode} onChange={e => {
+            let v = e.target.value;
+            if (v.length === 4 && /^\d{4}$/.test(v) && form.postcode.length < 4) v += " ";
+            setForm(f => ({ ...f, postcode: v }));
+          }} placeholder="1234 AB" maxLength={7} className="px-3 py-2.5 rounded-xl text-sm" style={{ ...inputStyle, borderColor: !form.postcode.trim() && form.nummer.trim() ? "var(--danger-border)" : undefined }} />
+          <input value={form.stad} onChange={e => setForm(f => ({ ...f, stad: e.target.value }))} placeholder="Amsterdam" className="px-3 py-2.5 rounded-xl text-sm" style={{ ...inputStyle, borderColor: !form.stad.trim() && form.nummer.trim() ? "var(--danger-border)" : undefined }} />
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <select value={form.opdrachtgever_id || ""} onChange={e => setForm(f => ({ ...f, opdrachtgever_id: e.target.value || null }))} className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle}>
             <option value="">Geen opdrachtgever</option>
