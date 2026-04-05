@@ -217,7 +217,7 @@ export default function Goedkeuring() {
                         <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
                           {entry.uren}u
                           {hasOveruren && (
-                            <AlertTriangle className="h-3 w-3 inline ml-1 cursor-pointer" style={{ color: "var(--warn-text)" }} title="Overuren melding aanwezig" onClick={() => navigate("/overuren")} />
+                            <span onClick={() => navigate("/overuren")} className="inline cursor-pointer"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>
                           )}
                         </span>
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>
