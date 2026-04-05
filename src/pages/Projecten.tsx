@@ -99,7 +99,7 @@ export default function Projecten() {
     if (confirmDeleteId !== p.id) { setConfirmDeleteId(p.id); return; }
     setConfirmDeleteId(null);
     const { error } = await supabase.from("projects").delete().eq("id", p.id);
-    if (error) toast.error("Fout bij verwijderen"); else { toast.success("Verwijderd"); fetchData(); }
+    if (error) toast.error("Fout bij verwijderen"); else { toast.success("Verwijderd"); setSearchQuery(""); setSelectedId(null); setDesktopMode("view"); fetchData(); }
   }
 
   function startEdit(p: Project) {
@@ -264,13 +264,18 @@ export default function Projecten() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Zoek op naam of casenummer..."
-                className="w-full pl-9 pr-3 py-2 rounded-[10px] text-sm"
+                className="w-full pl-9 pr-9 py-2 rounded-[10px] text-sm"
                 style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#2D4A1E" }}
               />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: "#8AAD6E", background: "none", border: "none", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
             {loading ? (
-              <p className="text-sm text-center py-8" style={{ color: "#8AAD6E" }}>Laden...</p>
+              <div className="text-center py-8"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
             ) : (
               <>
                 {filteredActive.length > 0 && (
@@ -357,7 +362,7 @@ export default function Projecten() {
                 </div>
               </div>
             )}
-            {loading ? <p className="text-sm text-center py-8" style={{ color: "#8AAD6E" }}>Laden...</p> : (
+            {loading ? <div className="text-center py-8"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div> : (
               <>
                 <div className="space-y-2">
                   <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>Actief ({activeProjects.length})</p>

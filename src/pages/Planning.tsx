@@ -63,6 +63,10 @@ export default function Planning() {
     return beschikbaarheid.find(b => dateStr >= b.datum_van && dateStr <= b.datum_tot) || null;
   }
 
+  // Determine empty state type
+  const definitiefItems = items.filter(it => it.is_definitief);
+  const allConcept = items.length > 0 && definitiefItems.length === 0;
+
   return (
     <PageShell>
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
@@ -151,11 +155,21 @@ export default function Planning() {
               );
             })}
 
+            {/* Empty state: no items at all */}
             {items.length === 0 && beschikbaarheid.length === 0 && (
               <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <CalendarDays className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-                <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen planning deze week</p>
-                <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Je bent nog niet ingepland</p>
+                <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
+                <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen bevestigde planning deze week</p>
+                <p className="text-xs mt-1 px-6" style={{ color: "#8AAD6E" }}>Je manager heeft de planning nog niet gepubliceerd voor deze week.</p>
+              </div>
+            )}
+
+            {/* Empty state: items exist but all concept */}
+            {allConcept && beschikbaarheid.length === 0 && (
+              <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+                <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
+                <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Planning in voorbereiding</p>
+                <p className="text-xs mt-1 px-6" style={{ color: "#8AAD6E" }}>Je manager werkt nog aan de planning voor deze week. Je ziet hem zodra deze definitief is gemaakt.</p>
               </div>
             )}
           </>

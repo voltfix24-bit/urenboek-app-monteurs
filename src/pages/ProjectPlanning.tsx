@@ -3,8 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft, X, Save, Check, Plus, Minus, GripVertical, FileText, Trash2 } from "lucide-react";
+import { ArrowLeft, X, Save, Check, Plus, Minus, GripVertical, FileText, Trash2, Loader2 } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
+import { BottomNav } from "@/components/BottomNav";
 import { getISOWeek, startOfISOWeek, addDays, format, getISOWeekYear } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -65,7 +66,6 @@ function getDefaultState(): MatrixState {
 }
 
 function dateFromWeek(year: number, weekNr: number, dayIdx: number): Date {
-  // dayIdx: 0=Mon ... 4=Fri
   const jan4 = new Date(year, 0, 4);
   const start = startOfISOWeek(jan4);
   const weekStart = addDays(start, (weekNr - 1) * 7);
@@ -84,7 +84,7 @@ function contrastText(hex: string) {
 export default function ProjectPlanning() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const { isManager } = useAuth();
+  const { isManager, user } = useAuth();
 
   const [project, setProject] = useState<Project | null>(null);
   const [state, setState] = useState<MatrixState>(getDefaultState());
@@ -104,6 +104,7 @@ export default function ProjectPlanning() {
   const bodyScrollRef = useRef<HTMLDivElement>(null);
   const footerScrollRef = useRef<HTMLDivElement>(null);
   const scrollLock = useRef(false);
+  const myProfileId = useRef<string | null>(null);
 
   const isDef = planningStatus?.is_definitief || false;
 
@@ -116,9 +117,16 @@ export default function ProjectPlanning() {
         supabase.from("projects").select("id, nummer, naam, stationsnaam, case_type").eq("id", projectId).single(),
         supabase.from("project_planning_matrix").select("*").eq("project_id", projectId).maybeSingle(),
         supabase.from("project_planning_status").select("*").eq("project_id", projectId).maybeSingle(),
-        supabase.from("profiles").select("id, full_name, uurtarief"),
+        supabase.from("profiles").select("id, user_id, full_name, uurtarief"),
         supabase.from("user_roles").select("user_id, role"),
       ]);
+
+      // Get my profile id
+      if (user) {
+        const { data: myProfile } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
+        myProfileId.current = myProfile?.id || null;
+      }
+
       if (projRes.data) setProject(projRes.data as any);
       if (matrixRes.data?.state_json) {
         setState(matrixRes.data.state_json as unknown as MatrixState);
@@ -133,7 +141,7 @@ export default function ProjectPlanning() {
       setMonteurs(allProfiles.filter((p: any) => monteurUserIds.has(p.user_id)).map((p: any) => ({ id: p.id, full_name: p.full_name, uurtarief: p.uurtarief })));
       setLoading(false);
     })();
-  }, [projectId]);
+  }, [projectId, user]);
 
   // ── Auto-save with debounce ──
   const saveState = useCallback(async (s: MatrixState) => {
@@ -143,6 +151,7 @@ export default function ProjectPlanning() {
       project_id: projectId,
       state_json: s as any,
       updated_at: new Date().toISOString(),
+      updated_by: myProfileId.current,
     }, { onConflict: "project_id" });
     if (error) { toast.error("Opslaan mislukt"); setSaveStatus("idle"); return; }
     setSaveStatus("saved");
@@ -206,10 +215,11 @@ export default function ProjectPlanning() {
       project_id: projectId,
       is_definitief: true,
       definitief_op: new Date().toISOString(),
+      definitief_door: myProfileId.current,
     }, { onConflict: "project_id" });
 
-    // Create planning entries for cells with medewerker
-    const entries: any[] = [];
+    // Create planning entries for cells with medewerker — with dedup check
+    const cellEntries: { key: string; cell: CellData; datumStr: string; actIdx: number }[] = [];
     for (const [key, cell] of Object.entries(state.cells)) {
       if (!cell.medewerker_id) continue;
       const [actIdx, weekIdx, dayIdx] = key.split("-").map(Number);
@@ -217,29 +227,41 @@ export default function ProjectPlanning() {
       if (weekNr === undefined) continue;
       const datum = dateFromWeek(state.year, weekNr, dayIdx);
       const datumStr = format(datum, "yyyy-MM-dd");
-      entries.push({
-        medewerker_id: cell.medewerker_id,
+      cellEntries.push({ key, cell, datumStr, actIdx });
+    }
+
+    let newCount = 0;
+    if (cellEntries.length > 0) {
+      // Deduplicate by medewerker_id + datum within our entries
+      const seen = new Set<string>();
+      const unique = cellEntries.filter(e => {
+        const k = `${e.cell.medewerker_id}-${e.datumStr}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+
+      // Check existing entries in DB in parallel
+      const results = await Promise.all(unique.map(async (e) => {
+        const { data } = await supabase.from("planning").select("id")
+          .eq("medewerker_id", e.cell.medewerker_id!)
+          .eq("datum", e.datumStr)
+          .eq("project_id", projectId)
+          .limit(1);
+        return { entry: e, exists: (data && data.length > 0) };
+      }));
+
+      const toInsert = results.filter(r => !r.exists).map(r => ({
+        medewerker_id: r.entry.cell.medewerker_id!,
         project_id: projectId,
-        datum: datumStr,
+        datum: r.entry.datumStr,
         starttijd: "07:00",
         eindtijd: "16:00",
-        notitie: cell.note || state.activities[actIdx] || "",
-        created_by: cell.medewerker_id, // Will be overwritten
-      });
-    }
-    // Deduplicate by medewerker_id + datum
-    const seen = new Set<string>();
-    const unique = entries.filter(e => {
-      const k = `${e.medewerker_id}-${e.datum}`;
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-    if (unique.length > 0) {
-      // Check existing
-      const { data: existing } = await supabase.from("planning").select("medewerker_id, datum").eq("project_id", projectId);
-      const existingKeys = new Set((existing || []).map((e: any) => `${e.medewerker_id}-${e.datum}`));
-      const toInsert = unique.filter(e => !existingKeys.has(`${e.medewerker_id}-${e.datum}`));
+        notitie: r.entry.cell.note || state.activities[r.entry.actIdx] || "",
+        created_by: myProfileId.current || r.entry.cell.medewerker_id!,
+      }));
+
+      newCount = toInsert.length;
       if (toInsert.length > 0) {
         await supabase.from("planning").insert(toInsert);
       }
@@ -247,7 +269,7 @@ export default function ProjectPlanning() {
 
     setPlanningStatus({ is_definitief: true, definitief_op: new Date().toISOString() });
     setShowDefinitiefDialog(false);
-    toast.success("Planning gepubliceerd — Monteurs kunnen hun planning nu inzien.");
+    toast.success(`Planning gepubliceerd — ${newCount} nieuwe dagen ingepland voor monteurs.`);
   };
 
   const makeConcept = async () => {
@@ -271,12 +293,6 @@ export default function ProjectPlanning() {
       const acts = [...s.activities];
       const [moved] = acts.splice(dragIdx, 1);
       acts.splice(targetIdx, 0, moved);
-      // Remap cells
-      const oldToNew = new Map<number, number>();
-      s.activities.forEach((_, i) => {
-        const newIdx = i === dragIdx ? targetIdx : i < Math.min(dragIdx, targetIdx) ? i : i > Math.max(dragIdx, targetIdx) ? i : dragIdx < targetIdx ? i - 1 : i + 1;
-      });
-      // Simplified: just remap by rebuilding
       const newCells: Record<string, CellData> = {};
       const mapping: number[] = [];
       s.activities.forEach((_, i) => mapping.push(i));
@@ -382,7 +398,6 @@ export default function ProjectPlanning() {
   // ── Templates modal ──
   const renderTemplatesModal = () => {
     if (!showTemplates) return null;
-    const [selected, setSelected] = useState<number | null>(null);
     return <TemplateModal onClose={() => setShowTemplates(false)} onApply={(acts) => {
       updateState(s => ({ ...s, activities: acts, cells: {} }));
       setShowTemplates(false);
@@ -501,10 +516,10 @@ export default function ProjectPlanning() {
                   </div>
                   <div className="flex">
                     {DAY_LABELS.map((d, di) => {
-                      const dt = dateFromWeek(state.year, wn, di);
+                      const date = dateFromWeek(state.year, wn, di);
                       return (
-                        <div key={di} className="text-center py-0.5 text-[8px]" style={{ width: CELL_SIZE, color: "#8AAD6E", borderRight: "1px solid rgba(197,212,178,0.3)" }}>
-                          {d}<br />{format(dt, "d/M")}
+                        <div key={di} className="text-center py-0.5 text-[8px]" style={{ width: CELL_SIZE, color: "#8AAD6E", borderRight: di < 4 ? "1px solid rgba(197,212,178,0.3)" : "none" }}>
+                          {d} {format(date, "d/M")}
                         </div>
                       );
                     })}
@@ -519,66 +534,79 @@ export default function ProjectPlanning() {
         <div className="flex">
           {/* Activities sidebar */}
           <div className="flex-shrink-0" style={{ width: SIDEBAR_W, borderRight: "1px solid #C5D4B2" }}>
+            <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "hsl(120,25%,90%)", color: "#5A7A42", height: 30, display: "flex", alignItems: "center" }}>
+              Activiteiten
+            </div>
             {state.activities.map((act, ai) => (
               <div key={ai} draggable onDragStart={() => handleDragStart(ai)} onDragOver={e => handleDragOver(e, ai)} onDrop={() => handleDrop(ai)}
-                className="flex items-center gap-1 px-2 group" style={{ height: CELL_SIZE, borderBottom: "1px solid rgba(197,212,178,0.3)", opacity: dragIdx === ai ? 0.5 : 1 }}>
-                <GripVertical className="h-3 w-3 cursor-grab opacity-30 group-hover:opacity-70 flex-shrink-0" style={{ color: "#8AAD6E" }} />
+                className="flex items-center gap-1.5 px-2 group" style={{ height: CELL_SIZE, borderBottom: "1px solid #C5D4B2", cursor: "grab", opacity: dragIdx === ai ? 0.5 : 1 }}>
+                <GripVertical className="h-3 w-3 shrink-0" style={{ color: "#C5D4B2" }} />
                 <input value={act} onChange={e => updateState(s => {
                   const acts = [...s.activities];
                   acts[ai] = e.target.value;
                   return { ...s, activities: acts };
-                })} className="flex-1 bg-transparent text-xs outline-none min-w-0" style={{ color: "#2D4A1E" }} />
+                })} className="flex-1 bg-transparent text-[11px] font-medium outline-none min-w-0" style={{ color: "#2D4A1E" }} />
                 <button onClick={() => updateState(s => {
                   const acts = s.activities.filter((_, i) => i !== ai);
                   const cells: Record<string, CellData> = {};
-                  for (const [k, v] of Object.entries(s.cells)) {
-                    const idx = Number(k.split("-")[0]);
+                  for (const [key, val] of Object.entries(s.cells)) {
+                    const [aIdx, ...rest] = key.split("-");
+                    const idx = Number(aIdx);
                     if (idx === ai) continue;
-                    const newIdx = idx > ai ? idx - 1 : idx;
-                    cells[`${newIdx}-${k.split("-").slice(1).join("-")}`] = v;
+                    cells[`${idx > ai ? idx - 1 : idx}-${rest.join("-")}`] = val;
                   }
                   return { ...s, activities: acts, cells };
-                })} className="opacity-0 group-hover:opacity-70 flex-shrink-0" style={{ color: "#C0392B" }}>
-                  <X className="h-3 w-3" />
+                })} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Trash2 className="h-3 w-3" style={{ color: "#C0392B" }} />
                 </button>
               </div>
             ))}
             <button onClick={() => updateState(s => ({ ...s, activities: [...s.activities, ""] }))}
-              className="w-full py-2 text-[11px] font-medium flex items-center justify-center gap-1" style={{ color: "#4A7C2F", borderBottom: "1px solid rgba(197,212,178,0.3)" }}>
-              <Plus className="h-3 w-3" /> Activiteit toevoegen
+              className="w-full text-center py-2 text-[11px] font-medium" style={{ color: "#4A7C2F", borderBottom: "1px dashed #C5D4B2" }}>
+              <Plus className="h-3 w-3 inline mr-1" />Activiteit toevoegen
             </button>
           </div>
 
-          {/* Grid */}
-          <div ref={bodyScrollRef} className="flex-1 overflow-x-auto" onScroll={() => syncScroll("body")}>
+          {/* Grid body */}
+          <div ref={bodyScrollRef} className="flex-1 overflow-x-auto" onScroll={() => syncScroll("body")}
+            style={{ scrollbarWidth: "thin", scrollbarColor: "#C5D4B2 #EBF0E4" }}>
             <div style={{ width: totalW }}>
+              {/* Spacer for activity header */}
+              <div style={{ height: 30 }} />
               {state.activities.map((_, ai) => (
                 <div key={ai} className="flex" style={{ height: CELL_SIZE }}>
-                  {state.weekNrs.map((_, wi) =>
+                  {state.weekNrs.map((wn, wi) =>
                     DAY_LABELS.map((_, di) => {
                       const key = `${ai}-${wi}-${di}`;
                       const cell = getCell(key);
                       const monteur = cell?.medewerker_id ? monteurMap.get(cell.medewerker_id) : null;
                       return (
-                        <div key={key} className="relative cursor-pointer transition-opacity hover:opacity-85"
+                        <div key={key} className="relative transition-opacity"
                           style={{
                             width: CELL_SIZE, height: CELL_SIZE,
-                            background: cell?.color || "transparent",
+                            background: cell ? cell.color : "transparent",
                             borderRight: "1px solid rgba(197,212,178,0.2)",
-                            borderBottom: "1px solid rgba(197,212,178,0.2)",
+                            borderBottom: "1px solid #C5D4B2",
+                            cursor: "pointer",
                           }}
                           onClick={() => {
                             if (!cell) setCell(key, { color: COLORS[0].hex });
                             setSelectedCell(key);
                           }}
-                          onContextMenu={e => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, key }); }}
+                          onContextMenu={e => {
+                            e.preventDefault();
+                            setContextMenu({ x: Math.min(e.clientX, window.innerWidth - 200), y: Math.min(e.clientY, window.innerHeight - 300), key });
+                          }}
                         >
                           {monteur && (
-                            <span className="absolute top-0.5 left-0.5 text-[8px] font-bold rounded px-0.5" style={{ color: contrastText(cell?.color || "#4A7C2F") }}>
+                            <span className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold"
+                              style={{ background: "rgba(255,255,255,0.9)", color: cell?.color || "#2D4A1E" }}>
                               {getInitials(monteur.full_name)}
                             </span>
                           )}
-                          {cell?.note && <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-white" />}
+                          {cell?.note && (
+                            <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full" style={{ background: "white" }} />
+                          )}
                         </div>
                       );
                     })
@@ -591,7 +619,7 @@ export default function ProjectPlanning() {
 
         {/* Comments strip */}
         <div className="flex" style={{ borderTop: "1px solid #C5D4B2" }}>
-          <div className="flex-shrink-0 px-3 flex items-center text-[10px] uppercase font-semibold tracking-wider" style={{ width: SIDEBAR_W, color: "#8AAD6E", borderRight: "1px solid #C5D4B2", height: 48 }}>
+          <div className="flex-shrink-0 px-3 flex items-center text-[10px] font-semibold uppercase tracking-wider" style={{ width: SIDEBAR_W, color: "#8AAD6E", borderRight: "1px solid #C5D4B2", height: 44 }}>
             Opmerkingen
           </div>
           <div ref={footerScrollRef} className="flex-1 overflow-x-auto" onScroll={() => syncScroll("footer")} style={{ scrollbarWidth: "none" }}>
@@ -599,8 +627,8 @@ export default function ProjectPlanning() {
               {state.weekNrs.map((wn, wi) => (
                 <div key={wi} style={{ width: 5 * CELL_SIZE }}>
                   <textarea value={state.weekComments[wi] || ""} onChange={e => updateState(s => ({ ...s, weekComments: { ...s.weekComments, [wi]: e.target.value } }))}
-                    placeholder={`Week ${wn}...`} className="w-full h-12 text-[10px] px-2 py-1 resize-none outline-none bg-transparent"
-                    style={{ color: "#2D4A1E", borderRight: "1px solid rgba(197,212,178,0.3)" }} />
+                    placeholder={`Opmerking week ${wn}...`}
+                    className="w-full bg-transparent text-[10px] px-2 py-1 resize-none outline-none" style={{ height: 44, color: "#2D4A1E", borderRight: "1px solid #C5D4B2" }} />
                 </div>
               ))}
             </div>
@@ -609,88 +637,72 @@ export default function ProjectPlanning() {
       </div>
 
       {/* Legend + controls */}
-      <div className="px-4 pb-4 flex items-center justify-between flex-wrap gap-2">
+      <div className="mx-4 mb-20 lg:mb-4 flex items-center justify-between flex-wrap gap-3">
         <div className="flex flex-wrap gap-3">
           {COLORS.map(c => (
-            <span key={c.id} className="flex items-center gap-1 text-[9px]" style={{ color: "#5A7A42" }}>
-              <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: c.hex }} />{c.name}
-            </span>
+            <div key={c.id} className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: c.hex }} />
+              <span className="text-[9px]" style={{ color: "#5A7A42" }}>{c.name}</span>
+            </div>
           ))}
         </div>
         <div className="flex gap-2">
           <button onClick={() => updateState(s => {
-            const newWeek = (s.weekNrs[s.weekNrs.length - 1] || 1) + 1;
-            return { ...s, weekNrs: [...s.weekNrs, newWeek > 52 ? newWeek - 52 : newWeek], numWeeks: s.numWeeks + 1 };
-          })} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid #4A7C2F", color: "#4A7C2F" }}>
-            <Plus className="h-3 w-3 inline mr-1" />Week toevoegen
+            const lastWn = s.weekNrs[s.weekNrs.length - 1] || 1;
+            const nextWn = lastWn >= 52 ? 1 : lastWn + 1;
+            return { ...s, weekNrs: [...s.weekNrs, nextWn], numWeeks: s.numWeeks + 1 };
+          })} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid #4A7C2F", color: "#4A7C2F" }}>
+            <Plus className="h-3 w-3" /> Week toevoegen
           </button>
           <button disabled={state.numWeeks <= 1} onClick={() => updateState(s => ({
             ...s, weekNrs: s.weekNrs.slice(0, -1), numWeeks: s.numWeeks - 1,
-          }))} className="px-3 py-1.5 rounded-lg text-xs font-medium disabled:opacity-40" style={{ border: "1px solid #C5D4B2", color: "#5A7A42" }}>
-            <Minus className="h-3 w-3 inline mr-1" />Week verwijderen
+          }))} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 disabled:opacity-30" style={{ border: "1px solid #8AAD6E", color: "#8AAD6E" }}>
+            <Minus className="h-3 w-3" /> Week verwijderen
           </button>
         </div>
       </div>
 
-      {/* Cell panel */}
+      {/* Panels & modals */}
       {renderCellPanel()}
+      {renderTemplatesModal()}
 
       {/* Context menu */}
       {contextMenu && (
-        <div className="fixed z-50 rounded-xl p-3 space-y-3 shadow-lg" style={{
-          left: Math.min(contextMenu.x, window.innerWidth - 260), top: Math.min(contextMenu.y, window.innerHeight - 300),
-          width: 240, background: "#EBF0E4", border: "1px solid #C5D4B2",
-        }} onMouseDown={e => e.stopPropagation()}>
+        <div className="fixed z-50 rounded-xl p-3 space-y-3 shadow-lg" style={{ left: contextMenu.x, top: contextMenu.y, background: "#F5F7F0", border: "1px solid #C5D4B2", width: 200 }}
+          onMouseDown={e => e.stopPropagation()}>
           <p className="text-[10px] font-bold" style={{ color: "#2D4A1E" }}>
-            {state.activities[Number(contextMenu.key.split("-")[0])] || "Cel"} — {DAY_LABELS[Number(contextMenu.key.split("-")[2])]}
+            {state.activities[Number(contextMenu.key.split("-")[0])] || "Activiteit"} — {DAY_LABELS[Number(contextMenu.key.split("-")[2])]}
           </p>
           <div className="grid grid-cols-4 gap-1.5">
             {COLORS.map(c => (
               <button key={c.id} title={c.name} onClick={() => { setCell(contextMenu.key, { color: c.hex }); setContextMenu(null); }}
-                className="w-6 h-6 rounded-md" style={{ background: c.hex }} />
+                className="w-7 h-7 rounded-lg" style={{ background: c.hex }} />
             ))}
           </div>
-          <textarea value={getCell(contextMenu.key)?.note || ""} rows={2}
+          <textarea placeholder="Notitie..." value={getCell(contextMenu.key)?.note || ""}
             onChange={e => setCell(contextMenu.key, { note: e.target.value })}
-            placeholder="Notitie..." className="w-full rounded-lg px-2 py-1 text-[10px] resize-none"
-            style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
-          <button onClick={() => { clearCell(contextMenu.key); setContextMenu(null); }}
-            className="text-[10px] font-medium" style={{ color: "#C0392B" }}>Cel leegmaken</button>
+            className="w-full rounded-lg px-2 py-1 text-[10px] resize-none" rows={2}
+            style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
+          <button onClick={() => { clearCell(contextMenu.key); setContextMenu(null); }} className="w-full text-center text-[10px] font-medium py-1 rounded-lg" style={{ color: "#C0392B", border: "1px solid #E8A09A" }}>
+            Cel leegmaken
+          </button>
         </div>
-      )}
-
-      {/* Templates modal */}
-      {showTemplates && (
-        <TemplateModal onClose={() => setShowTemplates(false)} onApply={acts => {
-          updateState(s => ({ ...s, activities: acts, cells: {} }));
-          setShowTemplates(false);
-          toast.success("Template geladen");
-        }} />
       )}
 
       {/* Definitief dialog */}
       {showDefinitiefDialog && (
-        <ConfirmDialog
-          title="Planning definitief maken?"
-          text="Monteurs kunnen de planning inzien zodra je dit bevestigt. Je kunt dit later ongedaan maken."
-          confirmLabel="Definitief maken →"
-          confirmColor="#2D5A8A"
-          onCancel={() => setShowDefinitiefDialog(false)}
-          onConfirm={makeDefinitief}
-        />
+        <ConfirmDialog title="Planning definitief maken?" text="Monteurs kunnen de planning inzien zodra je dit bevestigt. Je kunt dit later ongedaan maken."
+          confirmLabel="Definitief maken" confirmColor="#2D5A8A" onCancel={() => setShowDefinitiefDialog(false)} onConfirm={makeDefinitief} />
+      )}
+      {showConceptDialog && (
+        <ConfirmDialog title="Terug naar concept?" text="Monteurs kunnen de planning dan niet meer inzien."
+          confirmLabel="Terug naar concept" confirmColor="#C0392B" onCancel={() => setShowConceptDialog(false)} onConfirm={makeConcept} />
       )}
 
-      {/* Concept dialog */}
-      {showConceptDialog && (
-        <ConfirmDialog
-          title="Terug naar concept?"
-          text="Monteurs kunnen de planning dan niet meer inzien."
-          confirmLabel="Terug naar concept"
-          confirmColor="#C0392B"
-          onCancel={() => setShowConceptDialog(false)}
-          onConfirm={makeConcept}
-        />
-      )}
+      {/* Mobile bottom nav */}
+      <div className="lg:hidden">
+        <BottomNav />
+      </div>
 
       <style>{`
         @keyframes slideInRight {
