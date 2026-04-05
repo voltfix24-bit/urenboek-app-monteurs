@@ -313,21 +313,25 @@ export default function ProjectPlanning() {
 
   const monteurMap = useMemo(() => new Map(monteurs.map(m => [m.id, m])), [monteurs]);
 
-  // ── Cost estimate from current planning cells ──
-  const planningCostEstimate = useMemo(() => {
+  // ── Cost estimate breakdown per monteur ──
+  const planningCostBreakdown = useMemo(() => {
     const cellsPerMonteur: Record<string, number> = {};
     for (const cell of Object.values(state.cells)) {
       if (cell.medewerker_id) {
         cellsPerMonteur[cell.medewerker_id] = (cellsPerMonteur[cell.medewerker_id] || 0) + 1;
       }
     }
+    const rows: { name: string; days: number; tarief: number; subtotal: number }[] = [];
     let total = 0;
     for (const [mId, count] of Object.entries(cellsPerMonteur)) {
       const m = monteurMap.get(mId);
       const tarief = m?.uurtarief ?? 0;
-      total += count * 8 * tarief;
+      const subtotal = count * 8 * tarief;
+      rows.push({ name: m?.full_name ?? "Onbekend", days: count, tarief, subtotal });
+      total += subtotal;
     }
-    return total;
+    rows.sort((a, b) => b.subtotal - a.subtotal);
+    return { rows, total };
   }, [state.cells, monteurMap]);
 
   // ── Sync forecast_regels when saving ──
