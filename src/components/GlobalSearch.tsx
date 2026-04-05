@@ -18,10 +18,9 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => { inputRef.current?.focus(); }, []);
-
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handleEsc);
@@ -31,30 +30,20 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
   const doSearch = useCallback(async (q: string) => {
     if (!q.trim()) { setResults([]); return; }
     const searchTerm = `%${q}%`;
-    const promises: Promise<SearchResult[]>[] = [];
 
-    // Projects
-    promises.push(
-      supabase.from("projects").select("id, naam, nummer, case_type").or(`naam.ilike.${searchTerm},nummer.ilike.${searchTerm}`).limit(4)
-        .then(({ data }) => (data || []).map((p: any) => ({ type: "project" as const, id: p.id, title: p.naam, subtitle: p.nummer + (p.case_type ? ` · ${p.case_type}` : "") })))
-    );
+    const { data: projects } = await supabase.from("projects").select("id, naam, nummer, case_type").or(`naam.ilike.${searchTerm},nummer.ilike.${searchTerm}`).limit(4);
+    const projectResults: SearchResult[] = (projects || []).map((p: any) => ({ type: "project", id: p.id, title: p.naam, subtitle: p.nummer + (p.case_type ? ` · ${p.case_type}` : "") }));
 
-    // Medewerkers (managers only)
+    let medResults: SearchResult[] = [];
     if (isManager) {
-      promises.push(
-        supabase.from("profiles").select("id, full_name").ilike("full_name", searchTerm).limit(3)
-          .then(({ data }) => (data || []).map((p: any) => ({ type: "medewerker" as const, id: p.id, title: p.full_name, subtitle: "" })))
-      );
+      const { data: profiles } = await supabase.from("profiles").select("id, full_name").ilike("full_name", searchTerm).limit(3);
+      medResults = (profiles || []).map((p: any) => ({ type: "medewerker", id: p.id, title: p.full_name, subtitle: "" }));
     }
 
-    // Mededelingen
-    promises.push(
-      supabase.from("mededelingen").select("id, titel, created_at").or(`titel.ilike.${searchTerm},inhoud.ilike.${searchTerm}`).limit(3)
-        .then(({ data }) => (data || []).map((m: any) => ({ type: "mededeling" as const, id: m.id, title: m.titel, subtitle: new Date(m.created_at).toLocaleDateString("nl-NL") })))
-    );
+    const { data: mededelingen } = await supabase.from("mededelingen").select("id, titel, created_at").or(`titel.ilike.${searchTerm},inhoud.ilike.${searchTerm}`).limit(3);
+    const mededelingResults: SearchResult[] = (mededelingen || []).map((m: any) => ({ type: "mededeling", id: m.id, title: m.titel, subtitle: new Date(m.created_at).toLocaleDateString("nl-NL") }));
 
-    const all = (await Promise.all(promises)).flat();
-    setResults(all);
+    setResults([...projectResults, ...medResults, ...mededelingResults]);
     setActiveIndex(-1);
   }, [isManager]);
 
@@ -79,32 +68,17 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
 
   const iconMap = { project: FolderOpen, medewerker: Users, mededeling: Bell };
   const sectionOrder = ["project", "medewerker", "mededeling"] as const;
-  const sectionLabels = { project: "Projecten", medewerker: "Medewerkers", mededeling: "Mededelingen" };
+  const sectionLabels: Record<string, string> = { project: "Projecten", medewerker: "Medewerkers", mededeling: "Mededelingen" };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh]" onClick={onClose}>
       <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.4)", backdropFilter: "blur(8px)" }} />
-      <div
-        className="relative w-full rounded-2xl overflow-hidden"
-        style={{ maxWidth: 560, maxHeight: "70vh", background: "#EBF0E4", border: "1px solid #C5D4B2" }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Search input */}
+      <div className="relative w-full rounded-2xl overflow-hidden" style={{ maxWidth: 560, maxHeight: "70vh", background: "#EBF0E4", border: "1px solid #C5D4B2" }} onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid #C5D4B2" }}>
           <Search className="h-5 w-5 shrink-0" style={{ color: "#8AAD6E" }} />
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Zoek projecten, medewerkers, mededelingen..."
-            className="flex-1 text-base bg-transparent outline-none"
-            style={{ color: "#2D4A1E" }}
-          />
+          <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} onKeyDown={handleKeyDown} placeholder="Zoek projecten, medewerkers, mededelingen..." className="flex-1 text-base bg-transparent outline-none" style={{ color: "#2D4A1E" }} />
           <button onClick={onClose}><X className="h-5 w-5" style={{ color: "#8AAD6E" }} /></button>
         </div>
-
-        {/* Results */}
         <div className="overflow-y-auto" style={{ maxHeight: "calc(70vh - 56px)" }}>
           {!query.trim() ? (
             <p className="text-center py-8 text-sm" style={{ color: "#8AAD6E" }}>Typ om te zoeken...</p>
@@ -117,18 +91,11 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
               const Icon = iconMap[type];
               return (
                 <div key={type}>
-                  <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>
-                    {sectionLabels[type]}
-                  </p>
-                  {items.map((r, i) => {
-                    const globalIndex = results.indexOf(r);
+                  <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>{sectionLabels[type]}</p>
+                  {items.map(r => {
+                    const gi = results.indexOf(r);
                     return (
-                      <button
-                        key={r.id}
-                        onClick={() => handleSelect(r)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors"
-                        style={{ background: activeIndex === globalIndex ? "#D4E8C2" : "transparent" }}
-                      >
+                      <button key={r.id} onClick={() => handleSelect(r)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors" style={{ background: activeIndex === gi ? "#D4E8C2" : "transparent" }}>
                         <Icon className="h-4 w-4 shrink-0" style={{ color: "#5A7A42" }} />
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium truncate" style={{ color: "#2D4A1E" }}>{r.title}</p>

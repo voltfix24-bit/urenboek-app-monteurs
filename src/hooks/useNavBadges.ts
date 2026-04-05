@@ -16,68 +16,44 @@ export function useNavBadges() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("id").eq("user_id", user.id).single().then(({ data }) => {
+    (async () => {
+      const { data } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
       if (data) setProfileId(data.id);
-    });
+    })();
   }, [user]);
 
   const fetchBadges = useCallback(async () => {
     if (!user || !profileId) return;
-    const promises: Promise<any>[] = [];
+    const next: Partial<NavBadges> = {};
 
     if (isManager) {
-      // Open goedkeuringen
-      promises.push(
-        supabase.from("time_entries").select("id", { count: "exact", head: true }).eq("status", "ingediend")
-          .then(({ count }) => ({ openGoedkeuringen: count || 0 }))
-      );
-      // Verlofaanvragen
-      promises.push(
-        supabase.from("beschikbaarheid").select("id", { count: "exact", head: true }).eq("status", "aangevraagd")
-          .then(({ count }) => ({ verlofAanvragen: count || 0 }))
-      );
+      const [{ count: c1 }, { count: c2 }] = await Promise.all([
+        supabase.from("time_entries").select("id", { count: "exact", head: true }).eq("status", "ingediend"),
+        supabase.from("beschikbaarheid").select("id", { count: "exact", head: true }).eq("status", "aangevraagd"),
+      ]);
+      next.openGoedkeuringen = c1 || 0;
+      next.verlofAanvragen = c2 || 0;
     } else {
-      // Afgekeurde uren voor monteur
-      promises.push(
-        supabase.from("time_entries").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "afgekeurd")
-          .then(({ count }) => ({ afgekeurdeUren: count || 0 }))
-      );
+      const { count } = await supabase.from("time_entries").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "afgekeurd");
+      next.afgekeurdeUren = count || 0;
     }
 
-    // Ongelezen mededelingen
-    promises.push(
-      supabase.from("mededeling_leesstatus").select("id", { count: "exact", head: true }).eq("medewerker_id", profileId).is("gelezen_op", null)
-        .then(({ count }) => ({ ongelezen: count || 0 }))
-    );
+    const { count: unread } = await supabase.from("mededeling_leesstatus").select("id", { count: "exact", head: true }).eq("medewerker_id", profileId).is("gelezen_op", null);
+    next.ongelezen = unread || 0;
 
-    const results = await Promise.all(promises);
-    const merged = results.reduce((acc, r) => ({ ...acc, ...r }), {});
-    setBadges(prev => ({ ...prev, ...merged }));
+    setBadges(prev => ({ ...prev, ...next }));
   }, [user, profileId, isManager]);
 
   useEffect(() => { fetchBadges(); }, [fetchBadges]);
-
-  // Poll every 60s
   useEffect(() => {
     const interval = setInterval(fetchBadges, 60000);
     return () => clearInterval(interval);
   }, [fetchBadges]);
 
-  // Realtime subscriptions
   useEffect(() => {
-    const channels: any[] = [];
-    
-    const ch1 = supabase.channel("badge-time-entries")
-      .on("postgres_changes", { event: "*", schema: "public", table: "time_entries" }, fetchBadges)
-      .subscribe();
-    channels.push(ch1);
-
-    const ch2 = supabase.channel("badge-leesstatus")
-      .on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges)
-      .subscribe();
-    channels.push(ch2);
-
-    return () => { channels.forEach(c => supabase.removeChannel(c)); };
+    const ch1 = supabase.channel("badge-te").on("postgres_changes", { event: "*", schema: "public", table: "time_entries" }, fetchBadges).subscribe();
+    const ch2 = supabase.channel("badge-ls").on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges).subscribe();
+    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
   }, [fetchBadges]);
 
   return { badges, isManager, profileId };
