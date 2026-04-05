@@ -8,6 +8,10 @@ import { ProfileProvider } from "@/hooks/useProfile";
 import { NavBadgesProvider } from "@/hooks/useNavBadges";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Setup from "./pages/Setup";
+import ResetPassword from "./pages/ResetPassword";
+import AuthCallback from "./pages/AuthCallback";
+import Onboarding from "./pages/Onboarding";
 import Medewerkers from "./pages/Medewerkers";
 import Goedkeuring from "./pages/Goedkeuring";
 import Rapportage from "./pages/Rapportage";
@@ -53,6 +57,10 @@ const App = () => (
           <NavBadgesProvider>
           <Routes>
             <Route path="/login" element={<PublicRoute><Auth /></PublicRoute>} />
+            <Route path="/setup" element={<Setup />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/medewerkers" element={<ProtectedRoute><Medewerkers /></ProtectedRoute>} />
             <Route path="/goedkeuring" element={<ProtectedRoute><Goedkeuring /></ProtectedRoute>} />
