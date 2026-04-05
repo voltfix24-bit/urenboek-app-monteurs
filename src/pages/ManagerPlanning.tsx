@@ -187,7 +187,7 @@ export default function ManagerPlanning() {
           })()}
 
           <div className="flex gap-1">
-            <div className="w-16 shrink-0" />
+            <div className="w-16 lg:w-40 shrink-0" />
             {weekDates.map((d, i) => (
               <div key={i} className="flex-1 text-center">
                 <p className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>{DAGEN[i]}</p>
@@ -270,7 +270,7 @@ export default function ManagerPlanning() {
           {gridContent}
         </PullToRefresh>
       </div>
-      <div className="hidden lg:block">
+      <div className="hidden lg:block" style={{ maxWidth: "none" }}>
         {gridContent}
       </div>
 

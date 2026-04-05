@@ -72,8 +72,8 @@ export default function Rapportage() {
   const projectStats = Object.entries(perProject).sort((a, b) => b[1] - a[1]);
 
   const exportCSV = () => {
-    const rows = [["Datum", "Project", "Medewerker", "Omschrijving", "Uren"]];
-    entries.forEach((e) => rows.push([e.datum, e.project_nummer, e.full_name, e.beschrijving, String(e.uren)]));
+    const rows = [["Datum", "Project", "Medewerker", "Omschrijving", "Uren", "Status"]];
+    entries.forEach((e) => rows.push([e.datum, e.project_nummer, e.full_name, e.beschrijving, String(e.uren), e.status]));
     const csv = rows.map((r) => r.map((c) => `"${c}"`).join(";")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
