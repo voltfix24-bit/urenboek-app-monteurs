@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays } from "lucide-react";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
+import { ForecastTab } from "@/components/ForecastTab";
+import { PlanningStatusTab } from "@/components/PlanningStatusTab";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
@@ -505,8 +507,15 @@ function DesktopListCard({ project, ogNaam, selected, onClick }: { project: any;
 }
 
 function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate }: any) {
+  const [activeTab, setActiveTab] = useState<"info" | "forecast" | "planning">("info");
+  const tabs = [
+    { key: "info" as const, label: "Projectinfo" },
+    ...(isManager ? [{ key: "forecast" as const, label: "Forecast" }] : []),
+    { key: "planning" as const, label: "Planning" },
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -528,69 +537,96 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
         </div>
       </div>
 
-      {/* Info grid */}
-      <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-        <InfoField label="Casenummer" value={project.nummer} mono />
-        <InfoField label="Case type" value={project.case_type} badge />
-        <InfoField label="Casenaam" value={project.naam} />
-        <InfoField label="Opdrachtgever" value={ogNaam} />
-        <InfoField label="Stationsnaam" value={project.stationsnaam} />
-        <InfoField label="Adres" value={project.adres} />
+      {/* Tabs */}
+      <div className="flex gap-0" style={{ borderBottom: "1px solid #C5D4B2" }}>
+        {tabs.map(t => (
+          <button key={t.key} onClick={() => setActiveTab(t.key)} className="px-4 py-2 text-sm transition-colors" style={{
+            color: activeTab === t.key ? "#4A7C2F" : "#8AAD6E",
+            fontWeight: activeTab === t.key ? 500 : 400,
+            borderBottom: activeTab === t.key ? "2px solid #4A7C2F" : "2px solid transparent",
+            marginBottom: -1,
+          }}>
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* Contact section (manager only) */}
-      {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
-        <div className="rounded-xl p-4 space-y-3" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
-          <p className="text-xs font-semibold flex items-center gap-1" style={{ color: "#8B6914" }}>
-            <Lock className="h-3 w-3" /> Contactpersoon opdrachtgever
-          </p>
-          <div className="grid grid-cols-3 gap-4">
-            {project.contactpersoon_naam && (
-              <div>
-                <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "#8B6914" }}>Naam</p>
-                <p className="text-sm" style={{ color: "#2D4A1E" }}>{project.contactpersoon_naam}</p>
+      {/* Tab content */}
+      {activeTab === "info" && (
+        <>
+          {/* Info grid */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+            <InfoField label="Casenummer" value={project.nummer} mono />
+            <InfoField label="Case type" value={project.case_type} badge />
+            <InfoField label="Casenaam" value={project.naam} />
+            <InfoField label="Opdrachtgever" value={ogNaam} />
+            <InfoField label="Stationsnaam" value={project.stationsnaam} />
+            <InfoField label="Adres" value={project.adres} />
+          </div>
+
+          {/* Contact section (manager only) */}
+          {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
+            <div className="rounded-xl p-4 space-y-3" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
+              <p className="text-xs font-semibold flex items-center gap-1" style={{ color: "#8B6914" }}>
+                <Lock className="h-3 w-3" /> Contactpersoon opdrachtgever
+              </p>
+              <div className="grid grid-cols-3 gap-4">
+                {project.contactpersoon_naam && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "#8B6914" }}>Naam</p>
+                    <p className="text-sm" style={{ color: "#2D4A1E" }}>{project.contactpersoon_naam}</p>
+                  </div>
+                )}
+                {project.contactpersoon_tel && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "#8B6914" }}>Telefoon</p>
+                    <a href={`tel:${project.contactpersoon_tel}`} className="text-sm flex items-center gap-1" style={{ color: "#4A7C2F" }}>
+                      <Phone className="h-3 w-3" /> {project.contactpersoon_tel}
+                    </a>
+                  </div>
+                )}
+                {project.contactpersoon_email && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "#8B6914" }}>Email</p>
+                    <a href={`mailto:${project.contactpersoon_email}`} className="text-sm flex items-center gap-1" style={{ color: "#4A7C2F" }}>
+                      <Mail className="h-3 w-3" /> {project.contactpersoon_email}
+                    </a>
+                  </div>
+                )}
               </div>
-            )}
-            {project.contactpersoon_tel && (
-              <div>
-                <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "#8B6914" }}>Telefoon</p>
-                <a href={`tel:${project.contactpersoon_tel}`} className="text-sm flex items-center gap-1" style={{ color: "#4A7C2F" }}>
-                  <Phone className="h-3 w-3" /> {project.contactpersoon_tel}
-                </a>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="space-y-2 pt-2">
+            <button onClick={onEdit} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+              <Pencil className="h-3.5 w-3.5" /> Project bewerken
+            </button>
+            <button onClick={onToggle} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+              {project.active ? <ToggleRight className="h-3.5 w-3.5" /> : <ToggleLeft className="h-3.5 w-3.5" />}
+              {project.active ? "Deactiveren" : "Activeren"}
+            </button>
+            {confirmDeleteId === project.id ? (
+              <div className="flex gap-2">
+                <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#5A7A42" }}>Annuleren</button>
+                <button onClick={onDelete} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "#C0392B" }}>Definitief verwijderen</button>
               </div>
-            )}
-            {project.contactpersoon_email && (
-              <div>
-                <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "#8B6914" }}>Email</p>
-                <a href={`mailto:${project.contactpersoon_email}`} className="text-sm flex items-center gap-1" style={{ color: "#4A7C2F" }}>
-                  <Mail className="h-3 w-3" /> {project.contactpersoon_email}
-                </a>
-              </div>
+            ) : (
+              <button onClick={onDelete} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #E8A09A", color: "#C0392B" }}>
+                <Trash2 className="h-3.5 w-3.5" /> Verwijderen
+              </button>
             )}
           </div>
-        </div>
+        </>
       )}
 
-      {/* Actions */}
-      <div className="space-y-2 pt-2">
-        <button onClick={onEdit} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #C5D4B2", color: "#5A7A42" }}>
-          <Pencil className="h-3.5 w-3.5" /> Project bewerken
-        </button>
-        <button onClick={onToggle} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #C5D4B2", color: "#5A7A42" }}>
-          {project.active ? <ToggleRight className="h-3.5 w-3.5" /> : <ToggleLeft className="h-3.5 w-3.5" />}
-          {project.active ? "Deactiveren" : "Activeren"}
-        </button>
-        {confirmDeleteId === project.id ? (
-          <div className="flex gap-2">
-            <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#5A7A42" }}>Annuleren</button>
-            <button onClick={onDelete} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "#C0392B" }}>Definitief verwijderen</button>
-          </div>
-        ) : (
-          <button onClick={onDelete} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #E8A09A", color: "#C0392B" }}>
-            <Trash2 className="h-3.5 w-3.5" /> Verwijderen
-          </button>
-        )}
-      </div>
+      {activeTab === "forecast" && isManager && (
+        <ForecastTab projectId={project.id} />
+      )}
+
+      {activeTab === "planning" && (
+        <PlanningStatusTab projectId={project.id} profileId={undefined} />
+      )}
     </div>
   );
 }

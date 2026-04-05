@@ -109,6 +109,69 @@ export type Database = {
           },
         ]
       }
+      forecast_regels: {
+        Row: {
+          aantal: number | null
+          created_at: string
+          forecast_id: string
+          geplande_uren: number | null
+          id: string
+          medewerker_id: string | null
+          spec_code: string | null
+          spec_omschrijving: string | null
+          tarief_inkoop: number | null
+          tarief_terrevolt: number | null
+          type: string
+          updated_at: string
+          uurtarief_snap: number | null
+        }
+        Insert: {
+          aantal?: number | null
+          created_at?: string
+          forecast_id: string
+          geplande_uren?: number | null
+          id?: string
+          medewerker_id?: string | null
+          spec_code?: string | null
+          spec_omschrijving?: string | null
+          tarief_inkoop?: number | null
+          tarief_terrevolt?: number | null
+          type: string
+          updated_at?: string
+          uurtarief_snap?: number | null
+        }
+        Update: {
+          aantal?: number | null
+          created_at?: string
+          forecast_id?: string
+          geplande_uren?: number | null
+          id?: string
+          medewerker_id?: string | null
+          spec_code?: string | null
+          spec_omschrijving?: string | null
+          tarief_inkoop?: number | null
+          tarief_terrevolt?: number | null
+          type?: string
+          updated_at?: string
+          uurtarief_snap?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_regels_forecast_id_fkey"
+            columns: ["forecast_id"]
+            isOneToOne: false
+            referencedRelation: "project_forecast"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_regels_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mededeling_leesstatus: {
         Row: {
           gelezen_op: string | null
@@ -288,6 +351,7 @@ export type Database = {
           telefoon: string
           updated_at: string
           user_id: string
+          uurtarief: number | null
           vaste_vrije_dagen: number[]
         }
         Insert: {
@@ -300,6 +364,7 @@ export type Database = {
           telefoon?: string
           updated_at?: string
           user_id: string
+          uurtarief?: number | null
           vaste_vrije_dagen?: number[]
         }
         Update: {
@@ -312,9 +377,95 @@ export type Database = {
           telefoon?: string
           updated_at?: string
           user_id?: string
+          uurtarief?: number | null
           vaste_vrije_dagen?: number[]
         }
         Relationships: []
+      }
+      project_forecast: {
+        Row: {
+          created_at: string
+          id: string
+          methode: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          methode: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          methode?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_forecast_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_forecast_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_planning_status: {
+        Row: {
+          definitief_door: string | null
+          definitief_op: string | null
+          id: string
+          is_definitief: boolean
+          project_id: string
+        }
+        Insert: {
+          definitief_door?: string | null
+          definitief_op?: string | null
+          id?: string
+          is_definitief?: boolean
+          project_id: string
+        }
+        Update: {
+          definitief_door?: string | null
+          definitief_op?: string | null
+          id?: string
+          is_definitief?: boolean
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_planning_status_definitief_door_fkey"
+            columns: ["definitief_door"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_planning_status_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_planning_status_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projects: {
         Row: {
