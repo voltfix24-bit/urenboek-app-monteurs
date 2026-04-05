@@ -3,6 +3,7 @@ import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
+import { PageShell } from "@/components/PageShell";
 import { toast } from "sonner";
 import { LogOut, Plus, Shield, Edit2, Save } from "lucide-react";
 
@@ -90,7 +91,7 @@ export default function Profiel() {
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#F5F7F0" }}><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>;
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: "#F5F7F0", maxWidth: 430, margin: "0 auto", paddingBottom: 80 }}>
+    <PageShell>
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3 flex items-center gap-2.5">
           <HeaderLogo />
@@ -273,7 +274,6 @@ export default function Profiel() {
         </div>
       )}
 
-      <BottomNav />
-    </div>
+    </PageShell>
   );
 }

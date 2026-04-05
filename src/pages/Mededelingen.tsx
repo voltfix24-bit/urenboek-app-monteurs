@@ -3,6 +3,7 @@ import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
+import { PageShell } from "@/components/PageShell";
 import { toast } from "sonner";
 import { Send, ArrowLeft, AlertTriangle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -72,7 +73,7 @@ export default function Mededelingen() {
 
   if (selected) {
     return (
-      <div className="min-h-screen" style={{ background: "#F5F7F0", maxWidth: 430, margin: "0 auto", paddingBottom: 80 }}>
+      <PageShell>
         <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
           <button onClick={() => setSelected(null)} className="flex items-center gap-2 text-sm font-medium" style={{ color: "#5A7A42" }}>
             <ArrowLeft className="h-4 w-4" /> Terug
@@ -91,13 +92,12 @@ export default function Mededelingen() {
             {selected.inhoud || "Geen inhoud"}
           </div>
         </div>
-        <BottomNav />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: "#F5F7F0", maxWidth: 430, margin: "0 auto", paddingBottom: 80 }}>
+    <PageShell>
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -194,7 +194,6 @@ export default function Mededelingen() {
         </div>
       )}
 
-      <BottomNav />
-    </div>
+    </PageShell>
   );
 }
