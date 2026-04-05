@@ -124,7 +124,7 @@ export default function ProjectPlanning() {
         supabase.from("projects").select("id, nummer, naam, stationsnaam, case_type").eq("id", projectId).single(),
         supabase.from("project_planning_matrix").select("*").eq("project_id", projectId).maybeSingle(),
         supabase.from("project_planning_status").select("*").eq("project_id", projectId).maybeSingle(),
-        supabase.from("profiles").select("id, user_id, full_name, uurtarief"),
+        supabase.from("profiles").select("id, user_id, full_name"),
         supabase.from("user_roles").select("user_id, role"),
       ]);
 

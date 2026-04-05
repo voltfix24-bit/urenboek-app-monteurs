@@ -15,7 +15,7 @@ export function PlanningStatusTab({ projectId, profileId }: { projectId: string;
     if (data) {
       let naam: string | null = null;
       if (data.definitief_door) {
-        const { data: p } = await supabase.from("profiles").select("full_name").eq("id", data.definitief_door).single();
+        const { data: p } = await supabase.from("profiles_public" as any).select("full_name").eq("id", data.definitief_door).single();
         naam = p?.full_name || null;
       }
       setStatus({ is_definitief: data.is_definitief, definitief_op: data.definitief_op, definitief_door_naam: naam });
