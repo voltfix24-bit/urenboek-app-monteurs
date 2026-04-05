@@ -7,6 +7,7 @@ import { EntryCard } from "@/components/EntryCard";
 import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
 import { FolderOpen, Building2, ArrowRight } from "lucide-react";
+import { HeaderLogo } from "@/components/HeaderLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, addDays } from "date-fns";
@@ -101,12 +102,7 @@ const Index = () => {
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
-                ⚡
-              </div>
-              <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>TerreVolt</span>
-            </div>
+            <HeaderLogo />
 
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "#D4E8C2", border: "1px solid #9DC87A" }}>
