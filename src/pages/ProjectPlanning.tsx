@@ -733,7 +733,18 @@ export default function ProjectPlanning() {
         </div>
       </div>
 
-      {/* Panels & modals */}
+      {/* Cost estimate */}
+      {planningCostEstimate > 0 && (
+        <div className="mx-4 mb-20 lg:mb-4 rounded-xl px-4 py-3 flex items-center justify-between" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
+          <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+            Geschatte kosten op basis van huidige planning
+          </span>
+          <span className="text-sm font-bold font-mono" style={{ color: "var(--accent)" }}>
+            € {planningCostEstimate.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+          </span>
+        </div>
+      )}
+
       {renderCellPanel()}
       {renderTemplatesModal()}
 
