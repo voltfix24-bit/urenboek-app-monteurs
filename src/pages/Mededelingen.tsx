@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
 import { toast } from "sonner";
-import { Send, ArrowLeft, AlertTriangle } from "lucide-react";
+import { Send, ArrowLeft, AlertTriangle, Bell } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -117,7 +117,7 @@ export default function Mededelingen() {
           <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
         ) : items.length === 0 ? (
           <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-            <p className="text-3xl mb-2">🔔</p>
+            <Bell className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
             <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen mededelingen</p>
           </div>
         ) : (

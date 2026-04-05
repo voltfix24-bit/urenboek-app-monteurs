@@ -265,7 +265,7 @@ const Index = () => {
             })}
             {weekEntries.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-3xl mb-2">📋</p>
+                <ClipboardList className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
                 <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen uren geboekt</p>
                 <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Druk op + om uren toe te voegen</p>
               </div>

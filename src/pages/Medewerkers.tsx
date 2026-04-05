@@ -87,9 +87,8 @@ export default function Medewerkers() {
             background: showAdd ? "#FDECEA" : "#D4EDD8",
             border: showAdd ? "1px solid #E8A09A" : "1px solid #8DC99A",
             color: showAdd ? "#C0392B" : "#2D7A3A",
-            fontSize: showAdd ? 18 : 22,
           }}>
-            {showAdd ? "×" : "+"}
+            {showAdd ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           </button>
         </div>
       </header>
@@ -191,7 +190,7 @@ export default function Medewerkers() {
 
         {employees.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-3xl mb-2">👥</p>
+            <Users className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
             <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Nog geen medewerkers</p>
           </div>
         )}
@@ -265,22 +264,22 @@ function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId,
       {/* Tariefinformatie - only managers */}
       <div className="mt-2 rounded-xl p-3 space-y-1.5" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
         <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "#8B6914" }}>
-          🔒 Tariefinformatie (alleen managers)
+          <Lock className="h-3 w-3" /> Tariefinformatie (alleen managers)
         </p>
         {editTarief ? (
           <div className="flex items-center gap-2">
             <span className="text-sm" style={{ color: "#8B6914" }}>€</span>
             <input type="number" step="0.50" min="0" value={tariefVal} onChange={e => setTariefVal(e.target.value)} placeholder="bijv. 75.00" className="flex-1 px-2 py-1.5 rounded-lg text-sm font-mono" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
             <span className="text-sm" style={{ color: "#8B6914" }}>/ uur</span>
-            <button onClick={saveTarief} className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{ background: "#D4E8C2", color: "#4A7C2F" }}>✓</button>
-            <button onClick={() => setEditTarief(false)} className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{ background: "#F5F7F0", color: "#8AAD6E" }}>✕</button>
+            <button onClick={saveTarief} className="px-2 py-1 rounded-lg flex items-center justify-center" style={{ background: "#D4E8C2", color: "#4A7C2F" }}><Check className="h-3.5 w-3.5" /></button>
+            <button onClick={() => setEditTarief(false)} className="px-2 py-1 rounded-lg flex items-center justify-center" style={{ background: "#F5F7F0", color: "#8AAD6E" }}><X className="h-3.5 w-3.5" /></button>
           </div>
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm font-mono" style={{ color: "#2D4A1E" }}>
               {emp.uurtarief != null ? `Uurtarief: € ${emp.uurtarief.toFixed(2)} / uur` : "Uurtarief: niet ingesteld"}
             </p>
-            <button onClick={() => { setTariefVal(emp.uurtarief?.toString() || ""); setEditTarief(true); }} className="text-[11px] font-semibold" style={{ color: "#8B6914" }}>✏ Bewerken</button>
+            <button onClick={() => { setTariefVal(emp.uurtarief?.toString() || ""); setEditTarief(true); }} className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "#8B6914" }}><Pencil className="h-3 w-3" /> Bewerken</button>
           </div>
         )}
       </div>

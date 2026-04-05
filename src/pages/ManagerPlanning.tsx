@@ -236,7 +236,7 @@ export default function ManagerPlanning() {
                 {modalConflicts.map((c, i) => (
                   <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#FDECEA", border: "1px solid #E8A09A" }}>
                     <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#C0392B" }} />
-                    <span className="text-xs font-medium" style={{ color: "#C0392B" }}>⚠ Conflict: {c}</span>
+                    <span className="text-xs font-medium" style={{ color: "#C0392B" }}>Conflict: {c}</span>
                   </div>
                 ))}
               </div>

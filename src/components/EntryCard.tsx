@@ -56,10 +56,10 @@ export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDa
       )}
       {entry.status === "afgekeurd" && (
         <div className="mt-3 space-y-2">
-          <p className="text-[11px] italic" style={{ color: "#C0392B" }}>✕ Afgekeurd — pas aan en dien opnieuw in.</p>
+          <p className="text-[11px] italic flex items-center gap-1" style={{ color: "#C0392B" }}><X className="h-3 w-3" /> Afgekeurd — pas aan en dien opnieuw in.</p>
           {onRevertToConcept && (
-            <button onClick={() => onRevertToConcept(entry.id)} className="w-full py-2 rounded-xl text-xs font-semibold transition-colors" style={{ background: "#FFF3CD", border: "1px solid #E8D070", color: "#8B6914" }}>
-              ✏️ Aanpassen en opnieuw indienen
+            <button onClick={() => onRevertToConcept(entry.id)} className="w-full py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1" style={{ background: "#FFF3CD", border: "1px solid #E8D070", color: "#8B6914" }}>
+              <Pencil className="h-3 w-3" /> Aanpassen en opnieuw indienen
             </button>
           )}
           {onRemove && (
