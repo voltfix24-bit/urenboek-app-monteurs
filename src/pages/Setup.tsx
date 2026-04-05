@@ -18,14 +18,14 @@ export default function Setup() {
   }, []);
 
   const checkSetup = async () => {
-    // Check if managers exist
-    const { data: roles } = await supabase.from("user_roles").select("id").eq("role", "manager" as any).limit(1);
-    if (roles && roles.length > 0) {
-      setSetupDone(true);
-    }
-    // Check app_setup
+    // app_setup is readable by anon - check setup_done
     const { data: setup } = await supabase.from("app_setup" as any).select("setup_done").limit(1).maybeSingle() as any;
     if (setup?.setup_done) {
+      setSetupDone(true);
+    }
+    // Also try to check user_roles (only works if authenticated)
+    const { data: roles } = await supabase.from("user_roles").select("id").eq("role", "manager" as any).limit(1);
+    if (roles && roles.length > 0) {
       setSetupDone(true);
     }
     setLoading(false);
@@ -55,11 +55,15 @@ export default function Setup() {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("setup-first-manager", {
+      const res = await supabase.functions.invoke("setup-first-manager", {
         body: { email: form.email, password: form.password, fullName },
       });
+      const data = res.data;
+      const error = res.error;
+      // When edge function returns non-2xx, data may contain the error message
+      const errorMsg = data?.error || error?.message || "Fout bij setup";
       if (error || data?.error) {
-        toast.error(data?.error || error?.message || "Fout bij setup");
+        toast.error(errorMsg);
         setSubmitting(false);
         return;
       }

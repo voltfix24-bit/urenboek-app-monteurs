@@ -82,7 +82,9 @@ Deno.serve(async (req) => {
 
     // Upsert app_setup (setup_done stays false until lockdown)
     if (!setup) {
-      await adminClient.from("app_setup").insert({ setup_done: false });
+      await adminClient.from("app_setup").insert({ setup_done: true });
+    } else {
+      await adminClient.from("app_setup").update({ setup_done: true }).eq("id", setup.id);
     }
 
     return new Response(
