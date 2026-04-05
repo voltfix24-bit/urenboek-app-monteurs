@@ -5,12 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 import { volledigAdres } from "@/lib/utils";
-import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays, Download, MapPin, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays, Download, MapPin, AlertTriangle, Zap } from "lucide-react";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
 import { ForecastTab } from "@/components/ForecastTab";
 import { PlanningStatusTab } from "@/components/PlanningStatusTab";
 import { useNavBadges } from "@/hooks/useNavBadges";
+import { ForecastIntakeWizard } from "@/components/ForecastIntakeWizard";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
@@ -18,6 +19,7 @@ interface Project {
   stationsnaam: string | null; adres: string | null; case_type: string | null;
   contactpersoon_naam: string | null; contactpersoon_tel: string | null; contactpersoon_email: string | null;
   straat: string | null; postcode: string | null; stad: string | null;
+  intake_gedaan: boolean; rmu_merk: string | null; rmu_configuratie_id: string | null;
 }
 type FormState = {
   nummer: string; naam: string; opdrachtgever_id: string | null;
@@ -46,6 +48,7 @@ export default function Projecten() {
   const [loading, setLoading] = useState(true); const [showAdd, setShowAdd] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
+  const [intakeProjectId, setIntakeProjectId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
@@ -53,7 +56,7 @@ export default function Projecten() {
 
   const fetchData = useCallback(async () => {
     const [p, o] = await Promise.all([
-      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad").order("nummer"),
+      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id").order("nummer"),
       supabase.from("opdrachtgevers").select("id, naam").order("naam"),
     ]);
     if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data);
@@ -99,8 +102,10 @@ export default function Projecten() {
       if (form.contactpersoon_tel.trim()) insert.contactpersoon_tel = form.contactpersoon_tel.trim();
       if (form.contactpersoon_email.trim()) insert.contactpersoon_email = form.contactpersoon_email.trim();
     }
-    if (!await mutate(supabase.from("projects").insert(insert))) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); return; }
+    const { data: newP, error } = await supabase.from("projects").insert(insert).select("id").single();
+    if (error) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); else toast.error("Fout bij aanmaken"); return; }
     toast.success("Project toegevoegd"); setForm(emptyForm); setShowAdd(false); fetchData();
+    if (newP) setIntakeProjectId(newP.id);
   }
 
   async function handleUpdate(id: string) {
@@ -201,8 +206,10 @@ export default function Projecten() {
       if (form.contactpersoon_tel.trim()) insert.contactpersoon_tel = form.contactpersoon_tel.trim();
       if (form.contactpersoon_email.trim()) insert.contactpersoon_email = form.contactpersoon_email.trim();
     }
-    if (!await mutate(supabase.from("projects").insert(insert))) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); return; }
+    const { data: newP, error } = await supabase.from("projects").insert(insert).select("id").single();
+    if (error) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); else toast.error("Fout bij aanmaken"); return; }
     toast.success("Project toegevoegd"); setForm(emptyForm); setDesktopMode("view"); fetchData();
+    if (newP) setIntakeProjectId(newP.id);
   }
 
   async function handleDesktopUpdate() {
@@ -369,6 +376,7 @@ export default function Projecten() {
                 onDelete={() => handleDelete(selectedProject)}
                 onCancelDelete={() => setConfirmDeleteId(null)}
                 navigate={navigate}
+                onStartIntake={() => setIntakeProjectId(selectedProject.id)}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full" style={{ color: "var(--text-muted)" }}>
@@ -438,6 +446,19 @@ export default function Projecten() {
         </div>
         <BottomNav badges={badges} />
       </div>
+
+      {/* Intake Wizard */}
+      {intakeProjectId && (() => {
+        const p = projects.find(pr => pr.id === intakeProjectId);
+        return p ? (
+          <ForecastIntakeWizard
+            projectId={intakeProjectId}
+            project={{ nummer: p.nummer, naam: p.naam, case_type: p.case_type }}
+            onClose={() => setIntakeProjectId(null)}
+            onComplete={() => { setIntakeProjectId(null); fetchData(); toast.success("Forecast aangemaakt op basis van intake ✓"); }}
+          />
+        ) : null;
+      })()}
     </>
   );
 }
@@ -616,7 +637,7 @@ function generateProjectPdf(project: any, ogNaam: string | null, isManager: bool
   if (w) { w.document.write(html); w.document.close(); }
 }
 
-function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate }: any) {
+function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate, onStartIntake }: any) {
   const [activeTab, setActiveTab] = useState<"info" | "forecast" | "planning">("info");
   const tabs = [
     { key: "info" as const, label: "Projectinfo" },
@@ -683,6 +704,25 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
               className="inline-flex items-center gap-1 text-xs mt-2" style={{ color: "var(--accent)" }}>
               <MapPin className="h-3 w-3" /> Bekijk op kaart ↗
             </a>
+          )}
+
+          {/* Intake status */}
+          {isManager && !project.intake_gedaan && (
+            <div className="rounded-xl p-3 flex items-center justify-between" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4" style={{ color: "var(--warn-text)" }} />
+                <span className="text-xs font-semibold" style={{ color: "var(--warn-text)" }}>Forecast intake nog niet gedaan</span>
+              </div>
+              <button onClick={onStartIntake} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+                Intake starten →
+              </button>
+            </div>
+          )}
+          {isManager && project.intake_gedaan && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "var(--success-light)", color: "var(--success)" }}>✓ Intake voltooid</span>
+              <button onClick={onStartIntake} className="text-[11px]" style={{ color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>Opnieuw doen</button>
+            </div>
           )}
 
           {/* Contact section (manager only) */}
