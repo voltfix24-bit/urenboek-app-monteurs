@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { NavBadge } from "./NavBadge";
 import { GlobalSearch } from "./GlobalSearch";
