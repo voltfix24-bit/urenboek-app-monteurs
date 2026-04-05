@@ -20,7 +20,7 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState<any>(null);
-  const [certs, setCerts] = useState<any[]>([]);
+  
   const [form, setForm] = useState({ telefoon: "", adres: "", rijbewijs: false, noodcontact_naam: "", noodcontact_tel: "" });
   const [vrijeDagen, setVrijeDagen] = useState<number[]>([]);
 
