@@ -25,6 +25,34 @@ const TYPE_COLORS: Record<string, { bg: string; border: string; dot: string }> =
   anders: { bg: "var(--bg-surface)", border: "var(--border)", dot: "var(--text-muted)" },
 };
 
+function PasswordChange() {
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleChange = async () => {
+    if (newPw.length < 8) { toast.error("Min. 8 tekens"); return; }
+    if (newPw !== confirmPw) { toast.error("Wachtwoorden komen niet overeen"); return; }
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: newPw });
+    if (error) toast.error(error.message);
+    else { toast.success("Wachtwoord gewijzigd ✓"); setCurrentPw(""); setNewPw(""); setConfirmPw(""); }
+    setSaving(false);
+  };
+
+  return (
+    <div className="pt-2 space-y-2">
+      <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Wachtwoord wijzigen</p>
+      <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+      <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Herhaal nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+      <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} className="w-full py-2.5 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)" }}>
+        {saving ? "Bezig..." : "Wachtwoord wijzigen"}
+      </button>
+    </div>
+  );
+}
+
 export default function Profiel() {
   const { user, roles, signOut } = useAuth();
   const { refetch: refetchProfileContext } = useProfile();
@@ -316,6 +344,15 @@ export default function Profiel() {
           })}
         </div>
 
+        {/* Noodcontact */}
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "#FFF8DC", border: "1px solid var(--warn-border)", borderRadius: 12 }}>
+          <p className="text-xs font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>🚨 Noodcontact</p>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Naam</span><span style={{ color: "var(--text-primary)" }}>{(profile as any)?.noodcontact_naam || "–"}</span></div>
+            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Telefoon</span><span style={{ color: "var(--text-primary)" }}>{(profile as any)?.noodcontact_tel || "–"}</span></div>
+          </div>
+        </div>
+
         {/* Instellingen - Weergave */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Instellingen</p>
@@ -341,7 +378,6 @@ export default function Profiel() {
                       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
                       if (prefersDark) document.documentElement.dataset.theme = "dark";
                     }
-                    // Force re-render
                     setLoading(l => !l);
                     setTimeout(() => setLoading(l => !l), 0);
                   }} className="flex-1 py-2.5 rounded-xl text-[11px] font-semibold" style={{
@@ -353,6 +389,9 @@ export default function Profiel() {
               })}
             </div>
           </div>
+
+          {/* Wachtwoord wijzigen */}
+          <PasswordChange />
         </div>
 
         <button onClick={signOut} className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>

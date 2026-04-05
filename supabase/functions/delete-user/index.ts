@@ -75,9 +75,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    await adminClient.from("uren_boekingen").delete().eq("medewerker_id", userId);
+    await adminClient.from("planning").delete().eq("medewerker_id", userId);
+    await adminClient.from("overuren_meldingen").delete().eq("medewerker_id", userId);
+    await adminClient.from("beschikbaarheid").delete().eq("medewerker_id", userId);
+    await adminClient.from("certificaten").delete().eq("medewerker_id", userId);
+    await adminClient.from("mededeling_leesstatus").delete().eq("medewerker_id", userId);
     await adminClient.from("user_roles").delete().eq("user_id", userId);
     await adminClient.from("profiles").delete().eq("user_id", userId);
-    await adminClient.from("time_entries").delete().eq("user_id", userId);
 
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
     if (deleteError) {
