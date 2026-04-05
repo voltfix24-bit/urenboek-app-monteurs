@@ -8,11 +8,12 @@ import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
-import { FolderOpen, Building2, ArrowRight, ClipboardList, AlertTriangle } from "lucide-react";
+import { FolderOpen, Building2, ArrowRight, ClipboardList, AlertTriangle, WifiOff } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, addDays } from "date-fns";
+import { queueOfflineEntry, syncOfflineEntries, getPendingCount } from "@/lib/offlineQueue";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
