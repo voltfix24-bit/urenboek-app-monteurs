@@ -21,9 +21,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Laden...</div>;
-  if (!session) return <Navigate to="/login" replace />;
+  // Auth bypass: skip login during development
   return <>{children}</>;
 }
 
