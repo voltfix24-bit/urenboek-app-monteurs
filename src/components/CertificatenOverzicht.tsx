@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { CERT_CONFIG } from "@/lib/certificaten";
 import { differenceInDays, parseISO, format } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Pencil, Award } from "lucide-react";
+import { Pencil, Award, Paperclip } from "lucide-react";
 import CertificatenForm from "./CertificatenForm";
 
 interface Certificaat {
@@ -12,6 +13,7 @@ interface Certificaat {
   subtype?: string | null;
   vervaldatum: string | null;
   ggi_gebieden?: string[] | null;
+  bestand_url?: string | null;
 }
 
 interface Props {
@@ -32,6 +34,11 @@ function vervaldatumStatus(verval: string | null) {
 export default function CertificatenOverzicht({ certificaten, toonToevoegen, medewerker_id, onRefresh }: Props) {
   const [showForm, setShowForm] = useState(false);
 
+  const openFile = async (path: string) => {
+    const { data } = await supabase.storage.from("certificaten").createSignedUrl(path, 3600);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  };
+
   if (showForm && medewerker_id) {
     return (
       <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
@@ -45,7 +52,6 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
     );
   }
 
-  // Group by type
   const grouped: Record<string, Certificaat[]> = {};
   for (const c of certificaten) {
     if (!grouped[c.type]) grouped[c.type] = [];
@@ -82,13 +88,14 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
             const items = grouped[cfg.type];
             if (!items || items.length === 0) return null;
 
+            const hasFile = items.some(c => c.bestand_url);
+
             return (
               <div key={cfg.type} className="p-3 rounded-xl" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
                 <p className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
                   {cfg.kortLabel || cfg.label}
                 </p>
 
-                {/* BEI niveaus as badges */}
                 {cfg.heeftNiveau && (
                   <div className="flex flex-wrap gap-1 mb-1">
                     {items.map(c => c.subtype && (
@@ -100,7 +107,6 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                   </div>
                 )}
 
-                {/* GGI gebieden as pills */}
                 {cfg.heeftGebieden && items[0]?.ggi_gebieden && (
                   <div className="flex flex-wrap gap-1 mb-1">
                     {items[0].ggi_gebieden.map(g => (
@@ -112,7 +118,6 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                   </div>
                 )}
 
-                {/* POORT badge */}
                 {cfg.type === "POORT" && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
                     style={{ background: "var(--success-light)", color: "var(--success)" }}>
@@ -120,7 +125,6 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                   </span>
                 )}
 
-                {/* Vervaldatum */}
                 {cfg.heeftVervaldatum && items[0]?.vervaldatum && (() => {
                   const status = vervaldatumStatus(items[0].vervaldatum);
                   return (
@@ -132,6 +136,23 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                     </div>
                   );
                 })()}
+
+                {/* File indicator */}
+                <div className="mt-1.5">
+                  {hasFile ? (
+                    <button onClick={() => {
+                      const fileItem = items.find(c => c.bestand_url);
+                      if (fileItem?.bestand_url) openFile(fileItem.bestand_url);
+                    }}
+                      className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "var(--success)" }}>
+                      <Paperclip className="h-3 w-3" /> Bewijs aanwezig
+                    </button>
+                  ) : (
+                    <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                      <Paperclip className="h-3 w-3" /> Geen bewijs
+                    </span>
+                  )}
+                </div>
               </div>
             );
           })}
