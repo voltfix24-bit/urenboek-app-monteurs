@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, addDays } from "date-fns";
 import { queueOfflineEntry, syncOfflineEntries, getPendingCount } from "@/lib/offlineQueue";
+import { checkOveruren } from "@/lib/overurenCheck";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
