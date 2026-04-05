@@ -3,6 +3,7 @@ import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { mutate } from "@/lib/supabaseHelpers";
 import { Copy, Eye, EyeOff, Trash2, Plus, X, Check, Lock, Pencil, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -55,14 +56,14 @@ export default function Medewerkers() {
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     setUpdatingRoleId(userId);
-    const { error } = await supabase.from("user_roles").update({ role: newRole as any }).eq("user_id", userId);
-    if (error) toast.error("Fout bij wijzigen rol"); else { toast.success("Rol gewijzigd"); loadEmployees(); }
+    if (!await mutate(supabase.from("user_roles").update({ role: newRole as any }).eq("user_id", userId))) { setUpdatingRoleId(null); return; }
+    toast.success("Rol gewijzigd"); loadEmployees();
     setUpdatingRoleId(null);
   };
 
   const handleTariefChange = async (userId: string, tarief: number | null) => {
-    const { error } = await supabase.from("profiles").update({ uurtarief: tarief } as any).eq("user_id", userId);
-    if (error) toast.error("Fout bij opslaan tarief"); else { toast.success("Uurtarief opgeslagen"); loadEmployees(); }
+    if (!await mutate(supabase.from("profiles").update({ uurtarief: tarief } as any).eq("user_id", userId))) return;
+    toast.success("Uurtarief opgeslagen"); loadEmployees();
   };
 
   const copyCredentials = (user: CreatedUser) => {
