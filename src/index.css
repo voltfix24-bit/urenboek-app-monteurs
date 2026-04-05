@@ -94,11 +94,11 @@
   }
 
   .gradient-primary {
-    background: linear-gradient(135deg, #4A7C2F, #3D6826);
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   }
 
   .gradient-accent {
-    background: linear-gradient(135deg, #4A7C2F, #3D6826);
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   }
 
   .shadow-card {
