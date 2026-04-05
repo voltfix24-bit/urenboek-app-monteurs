@@ -17,6 +17,7 @@ import {
   AlertDialogTitle, AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { PageShell } from "@/components/PageShell";
+import CertificatenOverzicht from "@/components/CertificatenOverzicht";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -36,7 +37,7 @@ const roleLabels: Record<string, string> = {
   uitvoerder: "Uitvoerder", wv: "WV", manager: "Manager"
 };
 const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)', 'var(--warn-text)', 'var(--purple)'];
-const certTypes = ["VCA", "NEN3140", "rijbewijs BE", "overig"];
+
 
 export default function Medewerkers() {
   const { isManager, user } = useAuth();
@@ -449,13 +450,9 @@ function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId,
 }
 
 // ─── Employee Detail ────────────────────────────────
-function EmployeeDetail({ emp, certs, onDeleteCert, newCertType, setNewCertType, newCertNaam, setNewCertNaam, newCertDatum, setNewCertDatum, onAddCert }: {
+function EmployeeDetail({ emp, certs, onRefreshCerts }: {
   emp: Employee; certs: any[];
-  onDeleteCert: (id: string) => void;
-  newCertType: string; setNewCertType: (v: string) => void;
-  newCertNaam: string; setNewCertNaam: (v: string) => void;
-  newCertDatum: string; setNewCertDatum: (v: string) => void;
-  onAddCert: () => void;
+  onRefreshCerts: () => void;
 }) {
   const contractDays = emp.contract_einddatum ? differenceInDays(parseISO(emp.contract_einddatum), new Date()) : null;
 
@@ -520,61 +517,12 @@ function EmployeeDetail({ emp, certs, onDeleteCert, newCertType, setNewCertType,
       )}
 
       {/* Certificaten */}
-      <Section title="Certificaten">
-        {certs.length > 0 ? (
-          <div className="space-y-1.5">
-            {certs.map(c => {
-              const days = differenceInDays(parseISO(c.vervaldatum), new Date());
-              return (
-                <div key={c.id} className="flex items-center justify-between p-2 rounded-lg" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{c.naam}</p>
-                    <p className="text-[11px]" style={{ color: days < 0 ? "var(--danger)" : days <= 30 ? "var(--warn-text)" : "var(--text-muted)" }}>
-                      {c.type} · {format(parseISO(c.vervaldatum), "d MMM yyyy", { locale: nl })}
-                      {days < 0 && " (verlopen)"}
-                      {days >= 0 && days <= 30 && " (verloopt binnenkort)"}
-                    </p>
-                  </div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button className="w-6 h-6 rounded flex items-center justify-center" style={{ color: "var(--danger)" }}><X className="h-3.5 w-3.5" /></button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="rounded-2xl">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Certificaat verwijderen</AlertDialogTitle>
-                        <AlertDialogDescription>Weet je zeker dat je "{c.naam}" wilt verwijderen?</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="rounded-lg">Annuleren</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => onDeleteCert(c.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg">Verwijderen</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Geen certificaten</p>
-        )}
-        <div className="mt-2 space-y-2 p-2 rounded-lg" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-          <p className="text-[11px] font-semibold" style={{ color: "var(--text-muted)" }}>Certificaat toevoegen</p>
-          <div className="flex gap-1.5 flex-wrap">
-            {certTypes.map(t => (
-              <button key={t} type="button" onClick={() => setNewCertType(t)} className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{
-                background: newCertType === t ? "var(--accent-light)" : "var(--bg-surface)",
-                border: newCertType === t ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                color: newCertType === t ? "var(--accent)" : "var(--text-muted)",
-              }}>{t}</button>
-            ))}
-          </div>
-          <input value={newCertNaam} onChange={e => setNewCertNaam(e.target.value)} placeholder="Naam" className="w-full px-2 py-1.5 rounded-lg text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-          <input type="date" value={newCertDatum} onChange={e => setNewCertDatum(e.target.value)} className="w-full px-2 py-1.5 rounded-lg text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-          <button onClick={onAddCert} className="w-full py-2 rounded-lg text-xs font-semibold" style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
-            <Plus className="h-3 w-3 inline mr-1" /> Toevoegen
-          </button>
-        </div>
-      </Section>
+      <CertificatenOverzicht
+        certificaten={certs}
+        toonToevoegen={true}
+        medewerker_id={emp.id}
+        onRefresh={onRefreshCerts}
+      />
 
       {/* Account info */}
       <Section title="Account info">
