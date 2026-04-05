@@ -164,6 +164,28 @@ export default function ManagerPlanning() {
         <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
       ) : (
         <>
+          {/* Project legend strip */}
+          {(() => {
+            const projectDays = new Map<string, { name: string; days: number }>();
+            entries.forEach(e => {
+              const p = projMap.get(e.project_id);
+              if (!p) return;
+              const cur = projectDays.get(e.project_id) || { name: p.naam, days: 0 };
+              cur.days++;
+              projectDays.set(e.project_id, cur);
+            });
+            if (projectDays.size === 0) return null;
+            return (
+              <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+                {Array.from(projectDays.entries()).map(([id, { name, days }]) => (
+                  <span key={id} className="shrink-0 px-2.5 py-1 rounded-full whitespace-nowrap" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", fontSize: 11, fontWeight: 500 }}>
+                    {name.length > 12 ? name.slice(0, 12) + "…" : name} · {days}d
+                  </span>
+                ))}
+              </div>
+            );
+          })()}
+
           <div className="flex gap-1">
             <div className="w-16 shrink-0" />
             {weekDates.map((d, i) => (

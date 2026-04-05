@@ -498,6 +498,9 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
               )}
             </div>
           )}
+          <button onClick={() => generateProjectPdf(project, ogNaam, isManager)} className="w-full mt-2 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+            <Download className="h-3.5 w-3.5" /> PDF downloaden
+          </button>
         </div>
       )}
     </div>
