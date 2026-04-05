@@ -152,6 +152,8 @@ export default function ProjectPlanning() {
       updated_at: new Date().toISOString(),
       updated_by: myProfileId.current,
     }, { onConflict: "project_id" }))) { setSaveStatus("idle"); return; }
+    // Sync forecast in background
+    syncForecastRef.current?.(s);
     setSaveStatus("saved");
     setTimeout(() => setSaveStatus("idle"), 2000);
   }, [projectId]);
