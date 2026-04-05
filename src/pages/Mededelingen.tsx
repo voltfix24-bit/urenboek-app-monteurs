@@ -100,7 +100,7 @@ export default function Mededelingen() {
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>⚡</div>
+            <HeaderLogo />
             <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>Mededelingen</span>
           </div>
           {unreadCount > 0 && (
