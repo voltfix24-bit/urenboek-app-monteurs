@@ -24,6 +24,7 @@ import Profiel from "./pages/Profiel";
 import Dashboard from "./pages/Dashboard";
 import ProjectPlanning from "./pages/ProjectPlanning";
 import Overuren from "./pages/Overuren";
+import IntakeRegelBeheer from "./pages/IntakeRegelBeheer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -74,6 +75,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/projecten/:projectId/planning" element={<ProtectedRoute><ProjectPlanning /></ProtectedRoute>} />
             <Route path="/overuren" element={<ProtectedRoute><Overuren /></ProtectedRoute>} />
+            <Route path="/beheer/intake-regels" element={<ProtectedRoute><IntakeRegelBeheer /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </NavBadgesProvider>
