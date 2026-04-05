@@ -126,7 +126,7 @@ export default function Goedkeuring() {
     return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
   }
 
-  const [selectedMonteur, setSelectedMonteur] = useState<string | null>(null);
+
 
   const mainContent = (
     <main className="px-4 py-4 space-y-4">
