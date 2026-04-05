@@ -8,6 +8,8 @@ interface AuthContextType {
   profile: { full_name: string } | null;
   roles: string[];
   isManager: boolean;
+  isUitvoerder: boolean;
+  canManagePlanning: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -18,6 +20,8 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   roles: [],
   isManager: false,
+  isUitvoerder: false,
+  canManagePlanning: false,
   loading: true,
   signOut: async () => {},
 });
@@ -138,6 +142,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         roles,
         isManager: roles.includes("manager"),
+        isUitvoerder: roles.includes("uitvoerder") || roles.includes("wv"),
+        canManagePlanning: roles.includes("manager") || roles.includes("uitvoerder"),
         loading,
         signOut,
       }}

@@ -64,7 +64,7 @@ export async function checkOveruren(
   if (weekTotaal > 40) {
     const { data: existing } = await supabase
       .from("overuren_meldingen")
-      .select("id")
+      .select("id, geboekte_uren")
       .eq("medewerker_id", medewerker_id)
       .eq("datum", maandagStr)
       .eq("type", "week_overschrijding")
@@ -79,6 +79,11 @@ export async function checkOveruren(
         limiet_uren: 40,
         status: "open",
       });
+    } else if (Number(existing[0].geboekte_uren) !== weekTotaal) {
+      await supabase
+        .from("overuren_meldingen")
+        .update({ geboekte_uren: weekTotaal })
+        .eq("id", existing[0].id);
     }
   }
 
