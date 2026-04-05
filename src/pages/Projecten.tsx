@@ -5,12 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 import { volledigAdres } from "@/lib/utils";
-import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays, Download, MapPin, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays, Download, MapPin, AlertTriangle, Zap } from "lucide-react";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
 import { ForecastTab } from "@/components/ForecastTab";
 import { PlanningStatusTab } from "@/components/PlanningStatusTab";
 import { useNavBadges } from "@/hooks/useNavBadges";
+import { ForecastIntakeWizard } from "@/components/ForecastIntakeWizard";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
