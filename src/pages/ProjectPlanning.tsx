@@ -310,6 +310,73 @@ export default function ProjectPlanning() {
 
   const monteurMap = useMemo(() => new Map(monteurs.map(m => [m.id, m])), [monteurs]);
 
+  // ── Cost estimate from current planning cells ──
+  const planningCostEstimate = useMemo(() => {
+    const cellsPerMonteur: Record<string, number> = {};
+    for (const cell of Object.values(state.cells)) {
+      if (cell.medewerker_id) {
+        cellsPerMonteur[cell.medewerker_id] = (cellsPerMonteur[cell.medewerker_id] || 0) + 1;
+      }
+    }
+    let total = 0;
+    for (const [mId, count] of Object.entries(cellsPerMonteur)) {
+      const m = monteurMap.get(mId);
+      const tarief = m?.uurtarief ?? 0;
+      total += count * 8 * tarief;
+    }
+    return total;
+  }, [state.cells, monteurMap]);
+
+  // ── Sync forecast_regels when saving ──
+  const syncForecast = useCallback(async (s: MatrixState) => {
+    if (!projectId) return;
+    // Check if forecast exists with methode='uren'
+    const { data: forecast } = await supabase
+      .from("project_forecast")
+      .select("id")
+      .eq("project_id", projectId)
+      .eq("methode", "uren")
+      .maybeSingle();
+    if (!forecast) return;
+
+    // Count cells per monteur
+    const cellsPerMonteur: Record<string, number> = {};
+    for (const cell of Object.values(s.cells)) {
+      if (cell.medewerker_id) {
+        cellsPerMonteur[cell.medewerker_id] = (cellsPerMonteur[cell.medewerker_id] || 0) + 1;
+      }
+    }
+
+    // Upsert forecast_regels for each monteur
+    for (const [mId, count] of Object.entries(cellsPerMonteur)) {
+      const m = monteurMap.get(mId);
+      const uren = count * 8;
+      // Try to find existing regel
+      const { data: existing } = await supabase
+        .from("forecast_regels")
+        .select("id")
+        .eq("forecast_id", forecast.id)
+        .eq("medewerker_id", mId)
+        .eq("type", "monteur")
+        .maybeSingle();
+
+      if (existing) {
+        await supabase.from("forecast_regels").update({
+          geplande_uren: uren,
+          uurtarief_snap: m?.uurtarief ?? null,
+        }).eq("id", existing.id);
+      } else {
+        await supabase.from("forecast_regels").insert({
+          forecast_id: forecast.id,
+          medewerker_id: mId,
+          type: "monteur",
+          geplande_uren: uren,
+          uurtarief_snap: m?.uurtarief ?? null,
+        });
+      }
+    }
+  }, [projectId, monteurMap]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
