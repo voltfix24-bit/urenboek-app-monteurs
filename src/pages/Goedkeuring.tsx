@@ -2,17 +2,17 @@ import { useState, useEffect, useCallback } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { BottomNav } from "@/components/BottomNav";
+import { PageShell } from "@/components/PageShell";
 import { toast } from "sonner";
 import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, startOfWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
-import { BottomNav } from "@/components/BottomNav";
-import { PageShell } from "@/components/PageShell";
 
 interface EntryWithProfile {
-  id: string; date: string; project_number: string; description: string;
-  hours: number; status: string; user_id: string; full_name: string;
+  id: string; datum: string; project_naam: string; project_nummer: string; beschrijving: string;
+  uren: number; status: string; medewerker_id: string; full_name: string; afkeur_reden: string | null;
 }
 
 export default function Goedkeuring() {
@@ -22,37 +22,71 @@ export default function Goedkeuring() {
   const [filter, setFilter] = useState<string>("ingediend");
   const [weekOffset, setWeekOffset] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [afkeurId, setAfkeurId] = useState<string | null>(null);
+  const [afkeurReden, setAfkeurReden] = useState("");
 
   const weekStart = startOfWeek(addDays(new Date(), weekOffset * 7), { weekStartsOn: 1 });
   const weekEnd = addDays(weekStart, 6);
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
-    const { data: timeEntries, error } = await supabase.from("time_entries").select("*").gte("date", format(weekStart, "yyyy-MM-dd")).lte("date", format(weekEnd, "yyyy-MM-dd")).order("date");
+    const { data: boekingen, error } = await supabase
+      .from("uren_boekingen")
+      .select("*")
+      .gte("datum", format(weekStart, "yyyy-MM-dd"))
+      .lte("datum", format(weekEnd, "yyyy-MM-dd"))
+      .order("datum");
     if (error) { toast.error("Fout bij ophalen uren"); setLoading(false); return; }
-    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name");
-    const profileMap = new Map(profiles?.map((p) => [p.user_id, p.full_name]) ?? []);
-    const merged: EntryWithProfile[] = (timeEntries ?? []).map((e) => ({
-      id: e.id, date: e.date, project_number: e.project_number, description: e.description,
-      hours: Number(e.hours), status: e.status, user_id: e.user_id, full_name: profileMap.get(e.user_id) || "Onbekend",
-    }));
+
+    // Get profiles and projects
+    const medIds = [...new Set((boekingen ?? []).map((b: any) => b.medewerker_id))];
+    const projIds = [...new Set((boekingen ?? []).map((b: any) => b.project_id))];
+
+    const [{ data: profiles }, { data: projects }] = await Promise.all([
+      medIds.length > 0 ? supabase.from("profiles").select("id, full_name").in("id", medIds) : { data: [] },
+      projIds.length > 0 ? supabase.from("projects").select("id, naam, nummer").in("id", projIds) : { data: [] },
+    ]);
+    const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p.full_name]));
+    const projMap = new Map((projects ?? []).map((p: any) => [p.id, p]));
+
+    const merged: EntryWithProfile[] = (boekingen ?? []).map((e: any) => {
+      const proj = projMap.get(e.project_id) || { naam: "Onbekend", nummer: "" };
+      return {
+        id: e.id, datum: e.datum, project_naam: proj.naam, project_nummer: proj.nummer,
+        beschrijving: e.beschrijving || e.type || "", uren: Number(e.uren), status: e.status,
+        medewerker_id: e.medewerker_id, full_name: profileMap.get(e.medewerker_id) || "Onbekend",
+        afkeur_reden: e.afkeur_reden,
+      };
+    });
     setEntries(merged);
     setLoading(false);
   }, [weekOffset]);
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
-  const updateStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("time_entries").update({ status, approved_by: user?.id }).eq("id", id);
+  const getMyProfileId = useCallback(async () => {
+    if (!user) return null;
+    const { data } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
+    return data?.id || null;
+  }, [user]);
+
+  const updateStatus = async (id: string, status: string, reden?: string) => {
+    const profileId = await getMyProfileId();
+    const update: any = { status, approved_by: profileId };
+    if (reden) update.afkeur_reden = reden;
+    const { error } = await supabase.from("uren_boekingen").update(update).eq("id", id);
     if (error) toast.error("Fout bij bijwerken");
     else { toast.success(status === "goedgekeurd" ? "Goedgekeurd!" : "Afgekeurd"); fetchEntries(); }
+    setAfkeurId(null);
+    setAfkeurReden("");
   };
 
   const approveAllForUser = async (userName: string) => {
+    const profileId = await getMyProfileId();
     const userEntries = entries.filter((e) => e.full_name === userName && e.status === "ingediend");
     if (userEntries.length === 0) return;
     const ids = userEntries.map((e) => e.id);
-    const { error } = await supabase.from("time_entries").update({ status: "goedgekeurd", approved_by: user?.id }).in("id", ids);
+    const { error } = await supabase.from("uren_boekingen").update({ status: "goedgekeurd", approved_by: profileId }).in("id", ids);
     if (error) toast.error("Fout bij bulk-goedkeuring");
     else { toast.success(`${userEntries.length} uren goedgekeurd voor ${userName}`); fetchEntries(); }
   };
@@ -138,7 +172,7 @@ export default function Goedkeuring() {
           </div>
         ) : (
           Object.entries(grouped).map(([name, userEntries]) => {
-            const totalHours = userEntries.reduce((s, e) => s + e.hours, 0);
+            const totalHours = userEntries.reduce((s, e) => s + e.uren, 0);
             const pendingCount = userEntries.filter((e) => e.status === "ingediend").length;
             return (
               <div key={name} className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
@@ -176,13 +210,13 @@ export default function Goedkeuring() {
                       <div key={entry.id} className="px-4 py-3">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[11px] font-medium min-w-[60px]" style={{ color: "#8AAD6E" }}>
-                            {format(new Date(entry.date), "EEE d/M", { locale: nl })}
+                            {format(new Date(entry.datum), "EEE d/M", { locale: nl })}
                           </span>
                           <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md" style={{ background: "#D4E8C2", color: "#4A7C2F" }}>
-                            {entry.project_number}
+                            {entry.project_nummer}
                           </span>
-                          <span className="text-xs flex-1 truncate min-w-0" style={{ color: "#2D4A1E" }}>{entry.description || "–"}</span>
-                          <span className="text-xs font-bold tabular-nums" style={{ color: "#2D4A1E" }}>{entry.hours}u</span>
+                          <span className="text-xs flex-1 truncate min-w-0" style={{ color: "#2D4A1E" }}>{entry.project_naam} {entry.beschrijving ? `· ${entry.beschrijving}` : ""}</span>
+                          <span className="text-xs font-bold tabular-nums" style={{ color: "#2D4A1E" }}>{entry.uren}u</span>
                           <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>
                             <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
                             {entry.status}
@@ -192,12 +226,15 @@ export default function Goedkeuring() {
                               <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "#D4EDD8", border: "1px solid #8DC99A" }} onClick={() => updateStatus(entry.id, "goedgekeurd")}>
                                 <Check className="h-4 w-4" style={{ color: "#2D7A3A" }} />
                               </button>
-                              <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "#FDECEA", border: "1px solid #E8A09A" }} onClick={() => updateStatus(entry.id, "afgekeurd")}>
+                              <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "#FDECEA", border: "1px solid #E8A09A" }} onClick={() => setAfkeurId(entry.id)}>
                                 <X className="h-4 w-4" style={{ color: "#C0392B" }} />
                               </button>
                             </div>
                           )}
                         </div>
+                        {entry.status === "afgekeurd" && entry.afkeur_reden && (
+                          <p className="text-[10px] italic mt-1" style={{ color: "#C0392B" }}>Reden: {entry.afkeur_reden}</p>
+                        )}
                       </div>
                     );
                   })}
@@ -207,6 +244,21 @@ export default function Goedkeuring() {
           })
         )}
       </main>
+
+      {/* Afkeur sheet */}
+      {afkeurId && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setAfkeurId(null)}>
+          <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "#EBF0E4", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "#C5D4B2" }} />
+            <h2 className="text-base font-bold" style={{ color: "#2D4A1E" }}>Uren afkeuren</h2>
+            <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={3} className="w-full px-3 py-2.5 rounded-xl text-sm resize-none" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
+            <button onClick={() => afkeurReden.trim() ? updateStatus(afkeurId, "afgekeurd", afkeurReden.trim()) : toast.error("Vul een reden in")} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "#C0392B", color: "#fff" }}>
+              Afkeuren
+            </button>
+          </div>
+        </div>
+      )}
     </PageShell>
   );
 }

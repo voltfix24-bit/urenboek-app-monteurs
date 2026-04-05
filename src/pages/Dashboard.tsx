@@ -29,16 +29,37 @@ export default function Dashboard() {
     const weekEnd = addDays(weekStart, 6);
     const today = format(new Date(), "yyyy-MM-dd");
 
-    const { data: pending } = await supabase.from("time_entries").select("id, date, project_number, hours, user_id").eq("status", "ingediend").order("date").limit(5);
+    // Pending approvals from uren_boekingen
+    const { data: pending } = await supabase
+      .from("uren_boekingen")
+      .select("id, datum, project_id, uren, medewerker_id")
+      .eq("status", "ingediend")
+      .order("datum")
+      .limit(5);
     if (pending) {
-      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name");
-      const nameMap = new Map(profiles?.map((p: any) => [p.user_id, p.full_name]) ?? []);
-      setPendingEntries(pending.map(e => ({ ...e, full_name: nameMap.get(e.user_id) || "Onbekend" })));
+      const medIds = [...new Set(pending.map((p: any) => p.medewerker_id))];
+      const projIds = [...new Set(pending.map((p: any) => p.project_id))];
+      const [{ data: profiles }, { data: projects }] = await Promise.all([
+        medIds.length > 0 ? supabase.from("profiles").select("id, full_name").in("id", medIds) : { data: [] },
+        projIds.length > 0 ? supabase.from("projects").select("id, naam, nummer").in("id", projIds) : { data: [] },
+      ]);
+      const nameMap = new Map((profiles ?? []).map((p: any) => [p.id, p.full_name]));
+      const projMap = new Map((projects ?? []).map((p: any) => [p.id, p]));
+      setPendingEntries(pending.map(e => {
+        const proj = projMap.get(e.project_id) || { naam: "", nummer: "" };
+        return { ...e, full_name: nameMap.get(e.medewerker_id) || "Onbekend", project_naam: proj.naam, project_nummer: proj.nummer };
+      }));
       setPendingCount(pending.length);
     }
 
-    const { data: weekData } = await supabase.from("time_entries").select("hours").eq("status", "goedgekeurd").gte("date", format(weekStart, "yyyy-MM-dd")).lte("date", format(weekEnd, "yyyy-MM-dd"));
-    setWeekHours(weekData?.reduce((s: number, e: any) => s + Number(e.hours), 0) || 0);
+    // Week hours from uren_boekingen
+    const { data: weekData } = await supabase
+      .from("uren_boekingen")
+      .select("uren")
+      .eq("status", "goedgekeurd")
+      .gte("datum", format(weekStart, "yyyy-MM-dd"))
+      .lte("datum", format(weekEnd, "yyyy-MM-dd"));
+    setWeekHours(weekData?.reduce((s: number, e: any) => s + Number(e.uren), 0) || 0);
 
     const { count } = await supabase.from("projects").select("id", { count: "exact", head: true }).eq("active", true);
     setActiveProjects(count || 0);
@@ -46,8 +67,8 @@ export default function Dashboard() {
     const { data: verlof } = await supabase.from("beschikbaarheid").select("id, medewerker_id, type, datum_van, datum_tot, reden, status").eq("status", "aangevraagd").order("datum_van").limit(5);
     if (verlof) {
       const profIds = [...new Set(verlof.map((v: any) => v.medewerker_id))];
-      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", profIds);
-      const profMap = new Map(profs?.map((p: any) => [p.id, p.full_name]) ?? []);
+      const { data: profs } = profIds.length > 0 ? await supabase.from("profiles").select("id, full_name").in("id", profIds) : { data: [] };
+      const profMap = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
       setVerlofAanvragen(verlof.map((v: any) => ({ ...v, naam: profMap.get(v.medewerker_id) || "Onbekend" })));
     }
 
@@ -55,8 +76,8 @@ export default function Dashboard() {
     const { data: certs } = await supabase.from("certificaten").select("id, medewerker_id, naam, type, vervaldatum").lte("vervaldatum", thirtyDays).order("vervaldatum").limit(5);
     if (certs) {
       const profIds = [...new Set(certs.map((c: any) => c.medewerker_id))];
-      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", profIds);
-      const profMap = new Map(profs?.map((p: any) => [p.id, p.full_name]) ?? []);
+      const { data: profs } = profIds.length > 0 ? await supabase.from("profiles").select("id, full_name").in("id", profIds) : { data: [] };
+      const profMap = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
       setExpiringCerts(certs.map((c: any) => ({ ...c, medewerker: profMap.get(c.medewerker_id) || "Onbekend" })));
     }
 
@@ -64,10 +85,12 @@ export default function Dashboard() {
     if (plan) {
       const profIds = [...new Set(plan.map((p: any) => p.medewerker_id))];
       const projIds = [...new Set(plan.map((p: any) => p.project_id))];
-      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", profIds);
-      const { data: projs } = await supabase.from("projects").select("id, naam").in("id", projIds);
-      const profMap = new Map(profs?.map((p: any) => [p.id, p.full_name]) ?? []);
-      const projMap = new Map(projs?.map((p: any) => [p.id, p.naam]) ?? []);
+      const [{ data: profs }, { data: projs }] = await Promise.all([
+        profIds.length > 0 ? supabase.from("profiles").select("id, full_name").in("id", profIds) : { data: [] },
+        projIds.length > 0 ? supabase.from("projects").select("id, naam").in("id", projIds) : { data: [] },
+      ]);
+      const profMap = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
+      const projMap = new Map((projs ?? []).map((p: any) => [p.id, p.naam]));
       setTodayPlanning(plan.map((p: any) => ({ ...p, naam: profMap.get(p.medewerker_id) || "Onbekend", project: projMap.get(p.project_id) || "Onbekend", starttijd: p.starttijd?.slice(0, 5), eindtijd: p.eindtijd?.slice(0, 5) })));
     }
     setLoading(false);
@@ -105,11 +128,11 @@ export default function Dashboard() {
             {/* KPI strip */}
             <div className="flex gap-2">
               {[
-                { label: "Open keuring", value: String(pendingCount), color: "#D4A017", Icon: Hourglass },
+                { label: "Open keuring", value: String(pendingCount), color: "#D4A017", Icon: Hourglass, onClick: () => navigate("/goedkeuring") },
                 { label: "Uren (week)", value: weekHours + "u", color: "#2D7A3A", Icon: Clock },
-                { label: "Projecten", value: String(activeProjects), color: "#2D5A8A", Icon: FolderOpen },
+                { label: "Projecten", value: String(activeProjects), color: "#2D5A8A", Icon: FolderOpen, onClick: () => navigate("/projecten") },
               ].map((k, i) => (
-                <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+                <div key={i} onClick={k.onClick} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", cursor: k.onClick ? "pointer" : "default" }}>
                   <k.Icon className="h-5 w-5 mx-auto mb-1" style={{ color: k.color }} />
                   <p className="text-xl font-extrabold" style={{ color: k.color }}>{k.value}</p>
                   <p className="text-[10px] font-medium mt-0.5" style={{ color: "#8AAD6E" }}>{k.label}</p>
@@ -156,7 +179,7 @@ export default function Dashboard() {
                   <div key={e.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
                     <div>
                       <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>{e.full_name}</p>
-                      <p className="text-[10px]" style={{ color: "#8AAD6E" }}>{e.project_number} · {e.hours}u · {format(new Date(e.date), "d MMM", { locale: nl })}</p>
+                      <p className="text-[10px]" style={{ color: "#8AAD6E" }}>{e.project_nummer} · {e.uren}u · {format(new Date(e.datum), "d MMM", { locale: nl })}</p>
                     </div>
                   </div>
                 ))}
@@ -171,7 +194,7 @@ export default function Dashboard() {
                   <div key={v.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
                     <div>
                       <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>{v.naam}</p>
-                      <p className="text-[10px] capitalize" style={{ color: "#8AAD6E" }}>{v.type} · {v.datum_van} → {v.datum_tot}</p>
+                      <p className="text-[10px] capitalize" style={{ color: "#8AAD6E" }}>{v.type} · {format(new Date(v.datum_van), "d MMM", { locale: nl })} → {format(new Date(v.datum_tot), "d MMM", { locale: nl })}</p>
                     </div>
                     <div className="flex gap-1">
                       <button onClick={() => handleVerlof(v.id, "goedgekeurd")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#D4EDD8", border: "1px solid #8DC99A" }}>
@@ -204,7 +227,9 @@ export default function Dashboard() {
                           <p className="text-[10px]" style={{ color: "#8AAD6E" }}>{c.naam} ({c.type})</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold" style={{ color: expired ? "#C0392B" : "#D4A017" }}>{c.vervaldatum}</span>
+                      <span className="text-[10px] font-bold" style={{ color: expired ? "#C0392B" : "#D4A017" }}>
+                        {format(new Date(c.vervaldatum), "d MMM yyyy", { locale: nl })}
+                      </span>
                     </div>
                   );
                 })}
