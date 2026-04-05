@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Pencil, X, Phone, Mail, User } from "lucide-react";
+import { PageShell } from "@/components/PageShell";
 
 interface Opdrachtgever { id: string; naam: string; contactpersoon: string; telefoon: string; email: string; }
 const emptyForm = { naam: "", contactpersoon: "", telefoon: "", email: "" };
@@ -23,7 +24,7 @@ export default function Opdrachtgevers() {
   async function handleDelete(item: Opdrachtgever) { if (confirmDeleteId !== item.id) { setConfirmDeleteId(item.id); return; } setConfirmDeleteId(null); const { error } = await supabase.from("opdrachtgevers").delete().eq("id", item.id); if (error) toast.error("Fout — mogelijk zijn er nog projecten aan gekoppeld"); else { toast.success("Verwijderd"); fetchItems(); } }
 
   return (
-    <div className="min-h-screen" style={{ background: "#F5F7F0", maxWidth: 430, margin: "0 auto" }}>
+    <PageShell>
       <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="flex items-center gap-3">
           <button onClick={() => navigate("/")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}><ArrowLeft className="h-4 w-4" /></button>
@@ -76,6 +77,6 @@ export default function Opdrachtgevers() {
           </div>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

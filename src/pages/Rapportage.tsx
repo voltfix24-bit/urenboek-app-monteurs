@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { format, startOfISOWeek, addDays, getISOWeek, getISOWeekYear, addWeeks } from "date-fns";
 import { nl } from "date-fns/locale";
 import { BottomNav } from "@/components/BottomNav";
+import { PageShell } from "@/components/PageShell";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -174,7 +175,7 @@ export default function Rapportage() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: "#F5F7F0", maxWidth: 430, margin: "0 auto", paddingBottom: 80 }}>
+    <PageShell>
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3">
           <div className="flex items-center gap-2.5">
@@ -289,8 +290,6 @@ export default function Rapportage() {
           </>
         )}
       </main>
-
-      <BottomNav />
-    </div>
+    </PageShell>
   );
 }

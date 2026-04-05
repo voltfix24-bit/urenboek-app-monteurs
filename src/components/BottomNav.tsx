@@ -31,7 +31,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full lg:hidden"
       style={{
         maxWidth: 430,
         background: "rgba(235,240,228,0.97)",
