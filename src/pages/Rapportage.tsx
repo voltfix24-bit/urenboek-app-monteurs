@@ -3,7 +3,7 @@ import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Download, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { Download, ChevronLeft, ChevronRight, FileText, Clock, FolderOpen, Users, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, startOfISOWeek, addDays, getISOWeek, getISOWeekYear, addWeeks } from "date-fns";
 import { nl } from "date-fns/locale";

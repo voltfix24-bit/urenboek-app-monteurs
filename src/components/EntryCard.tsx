@@ -1,5 +1,6 @@
 import { useProjects } from "@/hooks/useProjects";
 import { TimeEntry } from "@/hooks/useTimesheet";
+import { X, Pencil } from "lucide-react";
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; dot: string; label: string }> = {
   concept: { bg: "#DFE8D6", text: "#5A7A42", dot: "#8AAD6E", label: "Concept" },
