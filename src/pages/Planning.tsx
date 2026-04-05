@@ -12,7 +12,7 @@ import { nl } from "date-fns/locale";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 
-interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; }
+interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
 interface ExistingBoeking { id: string; uren: number; status: string; }
 
