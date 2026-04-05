@@ -7,6 +7,7 @@ import { Copy, Eye, EyeOff, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { BottomNav } from "@/components/BottomNav";
+import { PageShell } from "@/components/PageShell";
 
 interface CreatedUser { email: string; fullName: string; role: string; password: string; }
 interface Employee { user_id: string; full_name: string; role: string; }
@@ -70,7 +71,7 @@ export default function Medewerkers() {
   const managers = employees.filter((e) => e.role === "manager");
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: "#F5F7F0", maxWidth: 430, margin: "0 auto", paddingBottom: 80 }}>
+    <PageShell>
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -190,9 +191,7 @@ export default function Medewerkers() {
           </div>
         )}
       </main>
-
-      <BottomNav />
-    </div>
+    </PageShell>
   );
 }
 
