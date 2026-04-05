@@ -3,35 +3,152 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail } from "lucide-react";
 
 interface Opdrachtgever { id: string; naam: string; }
-interface Project { id: string; nummer: string; naam: string; active: boolean; opdrachtgever_id: string | null; }
-type FormState = { nummer: string; naam: string; opdrachtgever_id: string | null };
-const emptyForm: FormState = { nummer: "", naam: "", opdrachtgever_id: null };
+interface Project {
+  id: string; nummer: string; naam: string; active: boolean; opdrachtgever_id: string | null;
+  stationsnaam: string | null; adres: string | null; case_type: string | null;
+  contactpersoon_naam: string | null; contactpersoon_tel: string | null; contactpersoon_email: string | null;
+}
+type FormState = {
+  nummer: string; naam: string; opdrachtgever_id: string | null;
+  stationsnaam: string; adres: string; case_type: string;
+  contactpersoon_naam: string; contactpersoon_tel: string; contactpersoon_email: string;
+};
+const emptyForm: FormState = { nummer: "", naam: "", opdrachtgever_id: null, stationsnaam: "", adres: "", case_type: "", contactpersoon_naam: "", contactpersoon_tel: "", contactpersoon_email: "" };
+
+const inputStyle = { background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" };
+
+function CaseTypeBadge({ type }: { type: string | null }) {
+  if (!type) return null;
+  const styles: Record<string, { bg: string; color: string }> = {
+    "NSA-case": { bg: "#D4E8F5", color: "#2D5A8A" },
+    "Compactstation": { bg: "#D4E8C2", color: "#2D4A1E" },
+    "Provisorium": { bg: "#FFF3CD", color: "#8B6914" },
+  };
+  const s = styles[type] || { bg: "#EBF0E4", color: "#5A7A42" };
+  return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: s.bg, color: s.color }}>{type}</span>;
+}
 
 export default function Projecten() {
   const { isManager } = useAuth(); const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]); const [opdrachtgevers, setOpdrachtgevers] = useState<Opdrachtgever[]>([]);
   const [loading, setLoading] = useState(true); const [showAdd, setShowAdd] = useState(false);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null); const [editId, setEditId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
-  const fetchData = useCallback(async () => { const [p, o] = await Promise.all([supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id").order("nummer"), supabase.from("opdrachtgevers").select("id, naam").order("naam")]); if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data); setLoading(false); }, []);
+  const fetchData = useCallback(async () => {
+    const [p, o] = await Promise.all([
+      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email").order("nummer"),
+      supabase.from("opdrachtgevers").select("id, naam").order("naam"),
+    ]);
+    if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data); setLoading(false);
+  }, []);
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => { if (!isManager) navigate("/"); }, [isManager, navigate]);
 
-  async function handleAdd() { if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul projectnummer en naam in"); return; } const insert: any = { nummer: form.nummer.trim(), naam: form.naam.trim() }; if (form.opdrachtgever_id) insert.opdrachtgever_id = form.opdrachtgever_id; const { error } = await supabase.from("projects").insert(insert); if (error) toast.error(error.message.includes("duplicate") ? "Projectnummer bestaat al" : "Fout bij toevoegen"); else { toast.success("Project toegevoegd"); setForm(emptyForm); setShowAdd(false); fetchData(); } }
-  async function handleUpdate(id: string) { if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul projectnummer en naam in"); return; } const { error } = await supabase.from("projects").update({ nummer: form.nummer.trim(), naam: form.naam.trim(), opdrachtgever_id: form.opdrachtgever_id || null }).eq("id", id); if (error) toast.error("Fout bij wijzigen"); else { toast.success("Project gewijzigd"); setEditId(null); setForm(emptyForm); fetchData(); } }
-  async function toggleActive(p: Project) { const { error } = await supabase.from("projects").update({ active: !p.active }).eq("id", p.id); if (error) toast.error("Fout"); else { toast.success(p.active ? "Gedeactiveerd" : "Geactiveerd"); fetchData(); } }
-  async function handleDelete(p: Project) { if (confirmDeleteId !== p.id) { setConfirmDeleteId(p.id); return; } setConfirmDeleteId(null); const { error } = await supabase.from("projects").delete().eq("id", p.id); if (error) toast.error("Fout bij verwijderen"); else { toast.success("Verwijderd"); fetchData(); } }
-  function startEdit(p: Project) { setEditId(p.id); setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id }); setShowAdd(false); }
+  async function handleAdd() {
+    if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
+    const insert: any = { nummer: form.nummer.trim(), naam: form.naam.trim() };
+    if (form.opdrachtgever_id) insert.opdrachtgever_id = form.opdrachtgever_id;
+    if (form.stationsnaam.trim()) insert.stationsnaam = form.stationsnaam.trim();
+    if (form.adres.trim()) insert.adres = form.adres.trim();
+    if (form.case_type) insert.case_type = form.case_type;
+    if (isManager) {
+      if (form.contactpersoon_naam.trim()) insert.contactpersoon_naam = form.contactpersoon_naam.trim();
+      if (form.contactpersoon_tel.trim()) insert.contactpersoon_tel = form.contactpersoon_tel.trim();
+      if (form.contactpersoon_email.trim()) insert.contactpersoon_email = form.contactpersoon_email.trim();
+    }
+    const { error } = await supabase.from("projects").insert(insert);
+    if (error) toast.error(error.message.includes("duplicate") ? "Casenummer bestaat al" : "Fout bij toevoegen");
+    else { toast.success("Project toegevoegd"); setForm(emptyForm); setShowAdd(false); fetchData(); }
+  }
+
+  async function handleUpdate(id: string) {
+    if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
+    const update: any = {
+      nummer: form.nummer.trim(), naam: form.naam.trim(),
+      opdrachtgever_id: form.opdrachtgever_id || null,
+      stationsnaam: form.stationsnaam.trim() || null,
+      adres: form.adres.trim() || null,
+      case_type: form.case_type || null,
+    };
+    if (isManager) {
+      update.contactpersoon_naam = form.contactpersoon_naam.trim() || null;
+      update.contactpersoon_tel = form.contactpersoon_tel.trim() || null;
+      update.contactpersoon_email = form.contactpersoon_email.trim() || null;
+    }
+    const { error } = await supabase.from("projects").update(update).eq("id", id);
+    if (error) toast.error("Fout bij wijzigen");
+    else { toast.success("Project gewijzigd"); setEditId(null); setForm(emptyForm); fetchData(); }
+  }
+
+  async function toggleActive(p: Project) {
+    const { error } = await supabase.from("projects").update({ active: !p.active }).eq("id", p.id);
+    if (error) toast.error("Fout"); else { toast.success(p.active ? "Gedeactiveerd" : "Geactiveerd"); fetchData(); }
+  }
+
+  async function handleDelete(p: Project) {
+    if (confirmDeleteId !== p.id) { setConfirmDeleteId(p.id); return; }
+    setConfirmDeleteId(null);
+    const { error } = await supabase.from("projects").delete().eq("id", p.id);
+    if (error) toast.error("Fout bij verwijderen"); else { toast.success("Verwijderd"); fetchData(); }
+  }
+
+  function startEdit(p: Project) {
+    setEditId(p.id); setExpandedId(null); setShowAdd(false);
+    setForm({
+      nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id,
+      stationsnaam: p.stationsnaam || "", adres: p.adres || "", case_type: p.case_type || "",
+      contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "",
+      contactpersoon_email: p.contactpersoon_email || "",
+    });
+  }
+
   function getOgNaam(id: string | null) { return id ? opdrachtgevers.find(o => o.id === id)?.naam || null : null; }
 
-  const activeProjects = projects.filter(p => p.active); const inactiveProjects = projects.filter(p => !p.active);
+  const activeProjects = projects.filter(p => p.active);
+  const inactiveProjects = projects.filter(p => !p.active);
 
-  function renderOgSelect() {
-    return (<select value={form.opdrachtgever_id || ""} onChange={e => setForm(f => ({ ...f, opdrachtgever_id: e.target.value || null }))} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }}><option value="">Geen opdrachtgever</option>{opdrachtgevers.map(og => <option key={og.id} value={og.id}>{og.naam}</option>)}</select>);
+  function renderFormFields() {
+    return (
+      <>
+        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Projectgegevens</p>
+        <div className="grid grid-cols-2 gap-2">
+          <input value={form.nummer} onChange={e => setForm(f => ({ ...f, nummer: e.target.value }))} placeholder="Casenummer bijv. 0311927" className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
+          <input value={form.naam} onChange={e => setForm(f => ({ ...f, naam: e.target.value }))} placeholder="Casenaam" className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
+        </div>
+        <input value={form.stationsnaam} onChange={e => setForm(f => ({ ...f, stationsnaam: e.target.value }))} placeholder="Stationsnaam bijv. KOPPOELLN" className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
+        <input value={form.adres} onChange={e => setForm(f => ({ ...f, adres: e.target.value }))} placeholder="Adres: Straat, Stad" className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
+        <div className="grid grid-cols-2 gap-2">
+          <select value={form.opdrachtgever_id || ""} onChange={e => setForm(f => ({ ...f, opdrachtgever_id: e.target.value || null }))} className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle}>
+            <option value="">Geen opdrachtgever</option>
+            {opdrachtgevers.map(og => <option key={og.id} value={og.id}>{og.naam}</option>)}
+          </select>
+          <select value={form.case_type} onChange={e => setForm(f => ({ ...f, case_type: e.target.value }))} className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle}>
+            <option value="">Case type</option>
+            <option value="NSA-case">NSA-case</option>
+            <option value="Compactstation">Compactstation</option>
+            <option value="Provisorium">Provisorium</option>
+          </select>
+        </div>
+        {isManager && (
+          <div className="rounded-xl p-3 space-y-2 mt-1" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
+            <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "#8B6914" }}>
+              <Lock className="h-3 w-3" /> Contactpersoon (alleen zichtbaar voor managers)
+            </p>
+            <input value={form.contactpersoon_naam} onChange={e => setForm(f => ({ ...f, contactpersoon_naam: e.target.value }))} placeholder="Naam contactpersoon" className="w-full px-3 py-2 rounded-xl text-sm" style={inputStyle} />
+            <div className="grid grid-cols-2 gap-2">
+              <input type="tel" value={form.contactpersoon_tel} onChange={e => setForm(f => ({ ...f, contactpersoon_tel: e.target.value }))} placeholder="Telefoonnummer" className="px-3 py-2 rounded-xl text-sm" style={inputStyle} />
+              <input type="email" value={form.contactpersoon_email} onChange={e => setForm(f => ({ ...f, contactpersoon_email: e.target.value }))} placeholder="E-mailadres" className="px-3 py-2 rounded-xl text-sm" style={inputStyle} />
+            </div>
+          </div>
+        )}
+      </>
+    );
   }
 
   return (
@@ -42,17 +159,15 @@ export default function Projecten() {
           <h1 className="text-base font-bold" style={{ color: "#2D4A1E" }}>Projecten</h1>
           <div className="flex-1" />
           <button onClick={() => navigate("/opdrachtgevers")} className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1" style={{ background: "#DFE8D6", color: "#5A7A42" }}><Building2 className="h-3.5 w-3.5" /> Opdrachtgevers</button>
-          <button onClick={() => { setShowAdd(true); setEditId(null); setForm(emptyForm); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#D4EDD8", border: "1px solid #8DC99A" }}><Plus className="h-4 w-4" style={{ color: "#2D7A3A" }} /></button>
+          <button onClick={() => { setShowAdd(true); setEditId(null); setExpandedId(null); setForm(emptyForm); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#D4EDD8", border: "1px solid #8DC99A" }}><Plus className="h-4 w-4" style={{ color: "#2D7A3A" }} /></button>
         </div>
       </header>
-      <div className="px-4 py-4 space-y-4">
+      <div className="px-4 py-4 space-y-4 pb-8">
         {showAdd && (
           <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "#EBF0E4", border: "1px solid #9DC87A" }}>
             <h3 className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>Nieuw project</h3>
-            <input value={form.nummer} onChange={e => setForm(f => ({ ...f, nummer: e.target.value }))} placeholder="Projectnummer" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
-            <input value={form.naam} onChange={e => setForm(f => ({ ...f, naam: e.target.value }))} placeholder="Projectnaam" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
-            {renderOgSelect()}
-            <div className="flex gap-2">
+            {renderFormFields()}
+            <div className="flex gap-2 pt-1">
               <button onClick={() => setShowAdd(false)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#5A7A42" }}>Annuleren</button>
               <button onClick={handleAdd} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>Toevoegen</button>
             </div>
@@ -62,12 +177,28 @@ export default function Projecten() {
           <>
             <div className="space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>Actief ({activeProjects.length})</p>
-              {activeProjects.map(p => <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isEditing={editId === p.id} isConfirmingDelete={confirmDeleteId === p.id} form={form} setForm={setForm} renderOgSelect={renderOgSelect} onEdit={() => startEdit(p)} onCancel={() => { setEditId(null); setForm(emptyForm); }} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)} />)}
+              {activeProjects.map(p => (
+                <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isManager={isManager}
+                  isEditing={editId === p.id} isExpanded={expandedId === p.id} isConfirmingDelete={confirmDeleteId === p.id}
+                  form={form} setForm={setForm} renderFormFields={renderFormFields}
+                  onEdit={() => startEdit(p)} onCancel={() => { setEditId(null); setForm(emptyForm); }}
+                  onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)}
+                  onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)}
+                  onToggleExpand={() => setExpandedId(expandedId === p.id ? null : p.id)} />
+              ))}
             </div>
             {inactiveProjects.length > 0 && (
               <div className="space-y-2 pt-2">
                 <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>Inactief ({inactiveProjects.length})</p>
-                {inactiveProjects.map(p => <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isEditing={editId === p.id} isConfirmingDelete={confirmDeleteId === p.id} form={form} setForm={setForm} renderOgSelect={renderOgSelect} onEdit={() => startEdit(p)} onCancel={() => { setEditId(null); setForm(emptyForm); }} onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)} onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)} />)}
+                {inactiveProjects.map(p => (
+                  <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isManager={isManager}
+                    isEditing={editId === p.id} isExpanded={expandedId === p.id} isConfirmingDelete={confirmDeleteId === p.id}
+                    form={form} setForm={setForm} renderFormFields={renderFormFields}
+                    onEdit={() => startEdit(p)} onCancel={() => { setEditId(null); setForm(emptyForm); }}
+                    onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)}
+                    onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)}
+                    onToggleExpand={() => setExpandedId(expandedId === p.id ? null : p.id)} />
+                ))}
               </div>
             )}
           </>
@@ -77,14 +208,13 @@ export default function Projecten() {
   );
 }
 
-function ProjectRow({ project, ogNaam, isEditing, isConfirmingDelete, form, setForm, renderOgSelect, onEdit, onCancel, onSave, onToggle, onDelete, onCancelDelete }: any) {
+function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfirmingDelete, form, setForm, renderFormFields, onEdit, onCancel, onSave, onToggle, onDelete, onCancelDelete, onToggleExpand }: any) {
   if (isEditing) {
     return (
       <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "#EBF0E4", border: "1px solid #7AAADE" }}>
-        <input value={form.nummer} onChange={e => setForm((f: any) => ({ ...f, nummer: e.target.value }))} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
-        <input value={form.naam} onChange={e => setForm((f: any) => ({ ...f, naam: e.target.value }))} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
-        {renderOgSelect()}
-        <div className="flex gap-2">
+        <h3 className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>Project bewerken</h3>
+        {renderFormFields()}
+        <div className="flex gap-2 pt-1">
           <button onClick={onCancel} className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1" style={{ background: "#F5F7F0", color: "#5A7A42" }}><X className="h-3.5 w-3.5" /> Annuleren</button>
           <button onClick={onSave} className="flex-1 py-2 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}><Check className="h-3.5 w-3.5" /> Opslaan</button>
         </div>
@@ -103,17 +233,63 @@ function ProjectRow({ project, ogNaam, isEditing, isConfirmingDelete, form, setF
     );
   }
   return (
-    <div className="rounded-2xl p-4 flex items-center gap-3 transition-transform active:scale-[0.985]" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", opacity: project.active ? 1 : 0.5 }}>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold truncate" style={{ color: "#2D4A1E" }}>{project.naam}</p>
-        <p className="text-xs mt-0.5" style={{ color: "#8AAD6E" }}>{project.nummer}</p>
-        {ogNaam && <p className="text-[11px] mt-0.5 flex items-center gap-1" style={{ color: "#8AAD6E" }}><Building2 className="h-3 w-3 shrink-0" /> {ogNaam}</p>}
+    <div className="rounded-2xl overflow-hidden transition-transform active:scale-[0.985]" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", opacity: project.active ? 1 : 0.5 }}>
+      <div className="p-4 flex items-center gap-3 cursor-pointer" onClick={onToggleExpand}>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-semibold truncate" style={{ color: "#2D4A1E" }}>{project.naam}</p>
+            <CaseTypeBadge type={project.case_type} />
+          </div>
+          <p className="text-xs mt-0.5 font-mono" style={{ color: "#4A7C2F" }}>{project.nummer}</p>
+          {project.stationsnaam && <p className="text-[11px] mt-0.5" style={{ color: "#8AAD6E" }}>{project.stationsnaam}</p>}
+          {ogNaam && <p className="text-[11px] mt-0.5 flex items-center gap-1" style={{ color: "#8AAD6E" }}><Building2 className="h-3 w-3 shrink-0" /> {ogNaam}</p>}
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
+          <button onClick={onEdit} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#DFE8D6" }}><Pencil className="h-3.5 w-3.5" style={{ color: "#5A7A42" }} /></button>
+          <button onClick={onToggle} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: project.active ? "#D4EDD8" : "#DFE8D6" }}>
+            {project.active ? <ToggleRight className="h-4 w-4" style={{ color: "#2D7A3A" }} /> : <ToggleLeft className="h-4 w-4" style={{ color: "#8AAD6E" }} />}
+          </button>
+          <button onClick={onDelete} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#FDECEA" }}><X className="h-3.5 w-3.5" style={{ color: "#C0392B" }} /></button>
+        </div>
+        {isExpanded ? <ChevronUp className="h-4 w-4 shrink-0" style={{ color: "#8AAD6E" }} /> : <ChevronDown className="h-4 w-4 shrink-0" style={{ color: "#8AAD6E" }} />}
       </div>
-      <button onClick={onEdit} className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#DFE8D6" }}><Pencil className="h-3.5 w-3.5" style={{ color: "#5A7A42" }} /></button>
-      <button onClick={onToggle} className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: project.active ? "#D4EDD8" : "#DFE8D6" }}>
-        {project.active ? <ToggleRight className="h-4 w-4" style={{ color: "#2D7A3A" }} /> : <ToggleLeft className="h-4 w-4" style={{ color: "#8AAD6E" }} />}
-      </button>
-      <button onClick={onDelete} className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#FDECEA" }}><X className="h-3.5 w-3.5" style={{ color: "#C0392B" }} /></button>
+      {isExpanded && (
+        <div className="px-4 pb-4 space-y-2 animate-fade-in" style={{ borderTop: "1px solid #C5D4B2" }}>
+          <div className="pt-3 space-y-1.5">
+            {project.adres && <DetailLine label="Adres" value={project.adres} />}
+            {project.case_type && <DetailLine label="Case type" value={project.case_type} />}
+            {project.stationsnaam && <DetailLine label="Station" value={project.stationsnaam} />}
+            {ogNaam && <DetailLine label="Opdrachtgever" value={ogNaam} />}
+          </div>
+          {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
+            <div className="rounded-xl p-3 space-y-1.5 mt-2" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
+              <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "#8B6914" }}>
+                <Lock className="h-3 w-3" /> Contactpersoon opdrachtgever
+              </p>
+              {project.contactpersoon_naam && <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>{project.contactpersoon_naam}</p>}
+              {project.contactpersoon_tel && (
+                <a href={`tel:${project.contactpersoon_tel}`} className="text-xs flex items-center gap-1.5" style={{ color: "#4A7C2F" }}>
+                  <Phone className="h-3 w-3" /> {project.contactpersoon_tel}
+                </a>
+              )}
+              {project.contactpersoon_email && (
+                <a href={`mailto:${project.contactpersoon_email}`} className="text-xs flex items-center gap-1.5" style={{ color: "#4A7C2F" }}>
+                  <Mail className="h-3 w-3" /> {project.contactpersoon_email}
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DetailLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="text-[11px] font-medium w-24 shrink-0" style={{ color: "#8AAD6E" }}>{label}</span>
+      <span className="text-xs" style={{ color: "#2D4A1E" }}>{value}</span>
     </div>
   );
 }
