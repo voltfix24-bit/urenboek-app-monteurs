@@ -6,6 +6,7 @@ import { useSwipe } from "@/hooks/useSwipe";
 import { EntryCard } from "@/components/EntryCard";
 import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
+import { PageShell } from "@/components/PageShell";
 import { FolderOpen, Building2, ArrowRight } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { supabase } from "@/integrations/supabase/client";
@@ -93,11 +94,8 @@ const Index = () => {
   const afgekeurdCount = allEntries.filter((e) => e.status === "afgekeurd").length;
 
   return (
-    <div
-      className="min-h-screen overflow-x-hidden"
-      style={{ background: "#F5F7F0", maxWidth: 430, margin: "0 auto", position: "relative", paddingBottom: 80 }}
-      {...swipeHandlers}
-    >
+    <PageShell>
+    <div {...swipeHandlers} style={{ position: "relative" }}>
       {/* Header */}
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3">
@@ -321,12 +319,11 @@ const Index = () => {
         +
       </button>
 
-      <BottomNav />
-
       {showModal && (
         <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} onSubmit={addEntry} initialDate={modalDate} />
       )}
     </div>
+    </PageShell>
   );
 };
 
