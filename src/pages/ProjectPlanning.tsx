@@ -350,6 +350,48 @@ export default function ProjectPlanning() {
     return warnings;
   }, [state.cells, state.weekNrs, monteurMap]);
 
+  // ── Cross-project conflict warnings ──
+  const crossProjectConflicts = useMemo(() => {
+    // Build set of (medewerker_id, year, weekNr, dayIdx) for current project
+    const currentAssignments: Record<string, Set<string>> = {}; // mId -> Set<"year-week-day">
+    for (const [key, cell] of Object.entries(state.cells)) {
+      if (!cell.medewerker_id) continue;
+      const [, weekIdx, dayIdx] = key.split("-").map(Number);
+      const weekNr = state.weekNrs[weekIdx];
+      if (weekNr == null) continue;
+      const dateKey = `${state.year}-${weekNr}-${dayIdx}`;
+      if (!currentAssignments[cell.medewerker_id]) currentAssignments[cell.medewerker_id] = new Set();
+      currentAssignments[cell.medewerker_id].add(dateKey);
+    }
+
+    const conflicts: { name: string; datum: string; otherProject: string }[] = [];
+    for (const other of otherMatrices) {
+      for (const [key, cell] of Object.entries(other.cells)) {
+        if (!cell.medewerker_id) continue;
+        const myDates = currentAssignments[cell.medewerker_id];
+        if (!myDates) continue;
+        const [, weekIdx, dayIdx] = key.split("-").map(Number);
+        const weekNr = other.weekNrs[weekIdx];
+        if (weekNr == null) continue;
+        const dateKey = `${other.year}-${weekNr}-${dayIdx}`;
+        if (myDates.has(dateKey)) {
+          const m = monteurMap.get(cell.medewerker_id);
+          const d = dateFromWeek(other.year, weekNr, dayIdx);
+          const datumStr = format(d, "EEE d MMM", { locale: nl });
+          conflicts.push({ name: m?.full_name ?? "Onbekend", datum: datumStr, otherProject: `${other.projectNummer} ${other.projectNaam}` });
+        }
+      }
+    }
+    // Deduplicate
+    const seen = new Set<string>();
+    return conflicts.filter(c => {
+      const k = `${c.name}-${c.datum}-${c.otherProject}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [state.cells, state.year, state.weekNrs, otherMatrices, monteurMap]);
+
   // ── Cost estimate breakdown per monteur ──
   const planningCostBreakdown = useMemo(() => {
     const cellsPerMonteur: Record<string, number> = {};
