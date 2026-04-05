@@ -22,24 +22,62 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
-// DEV BYPASS: set devBypass to false to re-enable real auth
-const devBypass = false;
-const mockUser = devBypass ? ({ id: "dev-manager-user", email: "dev@terrevolt.local" } as User) : null;
-const mockSession = devBypass ? ({ user: mockUser } as Session) : null;
+// ============================================
+// DEV MODE: set to true to skip real auth
+// and use a role-picker instead of login
+// ============================================
+export const DEV_MODE = true;
+
+export interface DevUser {
+  id: string;
+  label: string;
+  role: string;
+  fullName: string;
+}
+
+export const DEV_USERS: DevUser[] = [
+  { id: "dev-manager", label: "Manager", role: "manager", fullName: "Dev Manager" },
+  { id: "dev-uitvoerder", label: "Uitvoerder", role: "uitvoerder", fullName: "Dev Uitvoerder" },
+  { id: "dev-monteur", label: "Monteur", role: "monteur", fullName: "Dev Monteur" },
+  { id: "dev-schakelmonteur", label: "Schakelmonteur", role: "schakelmonteur", fullName: "Dev Schakelmonteur" },
+  { id: "dev-wv", label: "Werkvoorbereider", role: "wv", fullName: "Dev Werkvoorbereider" },
+];
+
+function getStoredDevUser(): DevUser | null {
+  if (!DEV_MODE) return null;
+  const stored = localStorage.getItem("dev_active_user");
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+export function setDevUser(user: DevUser | null) {
+  if (user) {
+    localStorage.setItem("dev_active_user", JSON.stringify(user));
+  } else {
+    localStorage.removeItem("dev_active_user");
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(mockSession);
-  const [user, setUser] = useState<User | null>(mockUser);
-  const [profile, setProfile] = useState<{ full_name: string } | null>(devBypass ? { full_name: "Dev Manager" } : null);
-  const [roles, setRoles] = useState<string[]>(devBypass ? ["manager"] : []);
-  const [loading, setLoading] = useState(!devBypass);
+  const storedDev = getStoredDevUser();
+  const [session, setSession] = useState<Session | null>(
+    storedDev ? ({ user: { id: storedDev.id, email: `${storedDev.id}@dev.local` } } as Session) : null
+  );
+  const [user, setUser] = useState<User | null>(
+    storedDev ? ({ id: storedDev.id, email: `${storedDev.id}@dev.local` } as User) : null
+  );
+  const [profile, setProfile] = useState<{ full_name: string } | null>(
+    storedDev ? { full_name: storedDev.fullName } : null
+  );
+  const [roles, setRoles] = useState<string[]>(storedDev ? [storedDev.role] : []);
+  const [loading, setLoading] = useState(!DEV_MODE);
 
   useEffect(() => {
-    if (devBypass) {
-      setSession(mockSession);
-      setUser(mockUser);
-      setProfile({ full_name: "Dev Manager" });
-      setRoles(["manager"]);
+    if (DEV_MODE) {
       setLoading(false);
       return;
     }
@@ -50,7 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Use setTimeout to avoid potential deadlock with Supabase auth
           setTimeout(async () => {
             const { data: profileData } = await supabase
               .from("profiles")
@@ -82,7 +119,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
-    if (devBypass) return;
+    if (DEV_MODE) {
+      setDevUser(null);
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setRoles([]);
+      return;
+    }
     await supabase.auth.signOut();
   };
 
