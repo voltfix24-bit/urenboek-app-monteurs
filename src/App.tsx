@@ -16,6 +16,7 @@ import ManagerPlanning from "./pages/ManagerPlanning";
 import Mededelingen from "./pages/Mededelingen";
 import Profiel from "./pages/Profiel";
 import Dashboard from "./pages/Dashboard";
+import ProjectPlanning from "./pages/ProjectPlanning";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/mededelingen" element={<ProtectedRoute><Mededelingen /></ProtectedRoute>} />
             <Route path="/profiel" element={<ProtectedRoute><Profiel /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/projecten/:projectId/planning" element={<ProtectedRoute><ProjectPlanning /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

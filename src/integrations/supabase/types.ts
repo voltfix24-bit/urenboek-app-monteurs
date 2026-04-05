@@ -421,6 +421,52 @@ export type Database = {
           },
         ]
       }
+      project_planning_matrix: {
+        Row: {
+          id: string
+          project_id: string
+          state_json: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          state_json?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          state_json?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_planning_matrix_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_planning_matrix_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_planning_matrix_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_planning_status: {
         Row: {
           definitief_door: string | null

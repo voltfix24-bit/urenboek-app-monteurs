@@ -60,7 +60,7 @@ export function PlanningStatusTab({ projectId, profileId }: { projectId: string;
               Gepubliceerd op {status?.definitief_op ? new Date(status.definitief_op).toLocaleDateString("nl-NL") : "–"}{" "}
               {status?.definitief_door_naam && <>door {status.definitief_door_naam}</>}
             </p>
-            <button onClick={() => navigate(`/manager-planning`)} className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
+            <button onClick={() => navigate(`/projecten/${projectId}/planning`)} className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
               <CalendarDays className="h-4 w-4" /> Planning bekijken <ArrowRight className="h-3.5 w-3.5" />
             </button>
             <button onClick={() => toggleDefinitief(false)} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #E8A09A", color: "#C0392B" }}>
@@ -70,7 +70,7 @@ export function PlanningStatusTab({ projectId, profileId }: { projectId: string;
         ) : (
           <>
             <p className="text-sm" style={{ color: "#5A7A42" }}>Planning nog niet gepubliceerd. Monteurs kunnen de planning nog niet inzien.</p>
-            <button onClick={() => navigate(`/manager-planning`)} className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
+            <button onClick={() => navigate(`/projecten/${projectId}/planning`)} className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
               <CalendarDays className="h-4 w-4" /> Naar uitvoeringsplanning <ArrowRight className="h-3.5 w-3.5" />
             </button>
             <button onClick={() => toggleDefinitief(true)} className="w-full py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #C5D4B2", color: "#5A7A42" }}>
