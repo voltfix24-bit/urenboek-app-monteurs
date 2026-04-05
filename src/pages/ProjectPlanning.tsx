@@ -140,6 +140,19 @@ export default function ProjectPlanning() {
       const monteurUserIds = new Set((rolesRes.data || []).filter((r: any) => r.role === "monteur").map((r: any) => r.user_id));
       const allProfiles = profilesRes.data || [];
       setMonteurs(allProfiles.filter((p: any) => monteurUserIds.has(p.user_id)).map((p: any) => ({ id: p.id, full_name: p.full_name, uurtarief: p.uurtarief })));
+
+      // Fetch other project matrices for cross-project conflict detection
+      const { data: otherData } = await supabase
+        .from("project_planning_matrix")
+        .select("project_id, state_json, projects!project_planning_matrix_project_id_fkey(naam, nummer)")
+        .neq("project_id", projectId);
+      if (otherData) {
+        setOtherMatrices(otherData.filter((d: any) => d.state_json).map((d: any) => {
+          const s = d.state_json as unknown as MatrixState;
+          return { projectNaam: d.projects?.naam ?? "", projectNummer: d.projects?.nummer ?? "", year: s.year, weekNrs: s.weekNrs, cells: s.cells };
+        }));
+      }
+
       setLoading(false);
     })();
   }, [projectId, user]);
