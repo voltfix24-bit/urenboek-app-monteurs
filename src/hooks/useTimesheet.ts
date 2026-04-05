@@ -144,6 +144,23 @@ export function useTimesheet() {
     [fetchEntries, fetchAllEntries]
   );
 
+  const submitAll = useCallback(
+    async () => {
+      const conceptIds = entries.filter(e => e.status === "concept").map(e => e.id);
+      if (conceptIds.length === 0) { toast.info("Geen concept-uren om in te dienen"); return 0; }
+      const { data, error } = await supabase.functions.invoke("uren-indienen", {
+        body: { urenIds: conceptIds },
+      });
+      if (error || !data?.success) { toast.error("Er ging iets mis. Probeer opnieuw."); return 0; }
+      const count = data.updated ?? conceptIds.length;
+      toast.success(`${count} uren ingediend ter goedkeuring`);
+      fetchEntries();
+      fetchAllEntries();
+      return count;
+    },
+    [entries, fetchEntries, fetchAllEntries]
+  );
+
   const revertToConcept = useCallback(
     async (id: string) => {
       if (!await mutate(supabase.from("uren_boekingen").update({ status: "concept", approved_by: null, afkeur_reden: null }).eq("id", id))) return;
@@ -193,6 +210,7 @@ export function useTimesheet() {
     addEntry,
     removeEntry,
     submitEntry,
+    submitAll,
     revertToConcept,
     goToPreviousWeek,
     goToNextWeek,
