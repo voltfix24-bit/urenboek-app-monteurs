@@ -22,12 +22,15 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
+// DEV BYPASS: set devBypass to false to re-enable real auth
+const devBypass = true;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<{ full_name: string } | null>(null);
-  const [roles, setRoles] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<{ full_name: string } | null>(devBypass ? { full_name: "Dev Manager" } : null);
+  const [roles, setRoles] = useState<string[]>(devBypass ? ["manager"] : []);
+  const [loading, setLoading] = useState(!devBypass);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
