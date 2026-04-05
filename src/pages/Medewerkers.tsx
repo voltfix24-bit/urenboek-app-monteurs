@@ -66,6 +66,8 @@ export default function Medewerkers() {
   const handleTariefChange = async (userId: string, tarief: number | null) => {
     if (!await mutate(supabase.from("profiles").update({ uurtarief: tarief } as any).eq("user_id", userId))) return;
     toast.success("Uurtarief opgeslagen"); loadEmployees();
+    // Refetch profile context so cached data stays in sync
+    refetchProfile();
   };
 
   const copyCredentials = (user: CreatedUser) => {
