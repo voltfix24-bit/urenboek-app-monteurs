@@ -8,11 +8,12 @@ import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
-import { FolderOpen, Building2, ArrowRight, ClipboardList, AlertTriangle } from "lucide-react";
+import { FolderOpen, Building2, ArrowRight, ClipboardList, AlertTriangle, WifiOff } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, addDays } from "date-fns";
+import { queueOfflineEntry, syncOfflineEntries, getPendingCount } from "@/lib/offlineQueue";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
@@ -56,6 +57,24 @@ const Index = () => {
   const [submittingAll, setSubmittingAll] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [pendingOffline, setPendingOffline] = useState(0);
+
+  // Track online/offline status
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => {
+      setIsOffline(false);
+      syncOfflineEntries().then(() => getPendingCount().then(setPendingOffline));
+    };
+    window.addEventListener("offline", goOffline);
+    window.addEventListener("online", goOnline);
+    getPendingCount().then(setPendingOffline);
+    return () => {
+      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("online", goOnline);
+    };
+  }, []);
 
   const {
     weekDates, weekEntries, allEntries, addEntry, removeEntry, submitEntry,
@@ -215,7 +234,25 @@ const Index = () => {
       </button>
 
       {showModal && (
-        <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} onSubmit={addEntry} initialDate={modalDate} />
+        <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} onSubmit={async (entry) => {
+          if (!navigator.onLine && profileId) {
+            await queueOfflineEntry({
+              id: crypto.randomUUID(),
+              medewerker_id: profileId,
+              datum: entry.date,
+              project_id: entry.projectId,
+              beschrijving: entry.description,
+              type: entry.description || "monteren",
+              uren: entry.hours,
+              status: "concept",
+              created_at: new Date().toISOString(),
+            });
+            toast.success("Offline opgeslagen — wordt gesynchroniseerd bij verbinding");
+            getPendingCount().then(setPendingOffline);
+            return;
+          }
+          await addEntry(entry);
+        }} initialDate={modalDate} />
       )}
     </div>
     </PageShell>
@@ -224,7 +261,16 @@ const Index = () => {
   function renderContent() {
     return (
       <>
-        {/* Onboarding banner */}
+        {/* Offline banner */}
+        {isOffline && (
+          <div className="mx-4 mt-3 flex items-center gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
+            <WifiOff className="h-4 w-4 shrink-0" style={{ color: "var(--warn-text)" }} />
+            <p className="text-xs font-medium" style={{ color: "var(--warn-text)" }}>
+              📡 Geen verbinding — je kunt nog wel uren boeken. Ze worden ingediend als je weer online bent.
+              {pendingOffline > 0 && ` (${pendingOffline} wachtend)`}
+            </p>
+          </div>
+        )}
         {showOnboarding && !isManager && (
           <div className="mx-4 mt-3 rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: "var(--accent-light)" }}>👋</div>
