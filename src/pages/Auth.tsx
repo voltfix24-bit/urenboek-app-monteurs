@@ -112,8 +112,11 @@ function RealLoginForm() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if setup is needed
     const checkManagers = async () => {
+      // Check app_setup (readable by anon)
+      const { data: setup } = await supabase.from("app_setup" as any).select("setup_done").limit(1).maybeSingle() as any;
+      if (setup?.setup_done) return; // Setup already done, don't show banner
+      // Also check user_roles (only works if authenticated)
       const { data } = await supabase.from("user_roles").select("id").eq("role", "manager" as any).limit(1);
       if (!data || data.length === 0) setNoManagers(true);
     };
