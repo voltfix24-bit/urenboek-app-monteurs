@@ -57,15 +57,15 @@ export default function Planning() {
       let statusMap = new Map<string, boolean>();
       if (projectIds.length > 0) {
         const [{ data: projects }, { data: statuses }] = await Promise.all([
-          supabase.from("projects").select("id, naam, nummer").in("id", projectIds),
+          supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").in("id", projectIds),
           supabase.from("project_planning_status").select("project_id, is_definitief").in("project_id", projectIds),
         ]);
         projMap = new Map(projects?.map((p: any) => [p.id, p]) ?? []);
         (statuses || []).forEach((s: any) => statusMap.set(s.project_id, s.is_definitief));
       }
       setItems(data.map((d: any) => {
-        const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "" };
-        return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false };
+        const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "", straat: null, postcode: null, stad: null, adres: null };
+        return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false, project_straat: (proj as any).straat, project_postcode: (proj as any).postcode, project_stad: (proj as any).stad, project_adres: (proj as any).adres };
       }));
     }
     setLoading(false);
