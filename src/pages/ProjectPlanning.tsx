@@ -108,6 +108,7 @@ export default function ProjectPlanning() {
   const footerScrollRef = useRef<HTMLDivElement>(null);
   const scrollLock = useRef(false);
   const myProfileId = useRef<string | null>(null);
+  const syncForecastRef = useRef<((s: MatrixState) => Promise<void>) | null>(null);
 
   const isDef = planningStatus?.is_definitief || false;
 
@@ -152,6 +153,8 @@ export default function ProjectPlanning() {
       updated_at: new Date().toISOString(),
       updated_by: myProfileId.current,
     }, { onConflict: "project_id" }))) { setSaveStatus("idle"); return; }
+    // Sync forecast in background
+    syncForecastRef.current?.(s);
     setSaveStatus("saved");
     setTimeout(() => setSaveStatus("idle"), 2000);
   }, [projectId]);
@@ -309,6 +312,76 @@ export default function ProjectPlanning() {
   };
 
   const monteurMap = useMemo(() => new Map(monteurs.map(m => [m.id, m])), [monteurs]);
+
+  // ── Cost estimate from current planning cells ──
+  const planningCostEstimate = useMemo(() => {
+    const cellsPerMonteur: Record<string, number> = {};
+    for (const cell of Object.values(state.cells)) {
+      if (cell.medewerker_id) {
+        cellsPerMonteur[cell.medewerker_id] = (cellsPerMonteur[cell.medewerker_id] || 0) + 1;
+      }
+    }
+    let total = 0;
+    for (const [mId, count] of Object.entries(cellsPerMonteur)) {
+      const m = monteurMap.get(mId);
+      const tarief = m?.uurtarief ?? 0;
+      total += count * 8 * tarief;
+    }
+    return total;
+  }, [state.cells, monteurMap]);
+
+  // ── Sync forecast_regels when saving ──
+  const syncForecast = useCallback(async (s: MatrixState) => {
+    if (!projectId) return;
+    // Check if forecast exists with methode='uren'
+    const { data: forecast } = await supabase
+      .from("project_forecast")
+      .select("id")
+      .eq("project_id", projectId)
+      .eq("methode", "uren")
+      .maybeSingle();
+    if (!forecast) return;
+
+    // Count cells per monteur
+    const cellsPerMonteur: Record<string, number> = {};
+    for (const cell of Object.values(s.cells)) {
+      if (cell.medewerker_id) {
+        cellsPerMonteur[cell.medewerker_id] = (cellsPerMonteur[cell.medewerker_id] || 0) + 1;
+      }
+    }
+
+    // Upsert forecast_regels for each monteur
+    for (const [mId, count] of Object.entries(cellsPerMonteur)) {
+      const m = monteurMap.get(mId);
+      const uren = count * 8;
+      // Try to find existing regel
+      const { data: existing } = await supabase
+        .from("forecast_regels")
+        .select("id")
+        .eq("forecast_id", forecast.id)
+        .eq("medewerker_id", mId)
+        .eq("type", "monteur")
+        .maybeSingle();
+
+      if (existing) {
+        await supabase.from("forecast_regels").update({
+          geplande_uren: uren,
+          uurtarief_snap: m?.uurtarief ?? null,
+        }).eq("id", existing.id);
+      } else {
+        await supabase.from("forecast_regels").insert({
+          forecast_id: forecast.id,
+          medewerker_id: mId,
+          type: "monteur",
+          geplande_uren: uren,
+          uurtarief_snap: m?.uurtarief ?? null,
+        });
+      }
+    }
+  }, [projectId, monteurMap]);
+
+  // Keep ref updated for use in saveState callback
+  syncForecastRef.current = syncForecast;
 
   if (loading) {
     return (
@@ -660,7 +733,18 @@ export default function ProjectPlanning() {
         </div>
       </div>
 
-      {/* Panels & modals */}
+      {/* Cost estimate */}
+      {planningCostEstimate > 0 && (
+        <div className="mx-4 mb-20 lg:mb-4 rounded-xl px-4 py-3 flex items-center justify-between" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
+          <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+            Geschatte kosten op basis van huidige planning
+          </span>
+          <span className="text-sm font-bold font-mono" style={{ color: "var(--accent)" }}>
+            € {planningCostEstimate.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+          </span>
+        </div>
+      )}
+
       {renderCellPanel()}
       {renderTemplatesModal()}
 
