@@ -830,7 +830,25 @@ export default function ProjectPlanning() {
         </div>
       )}
 
-      {/* Cost estimate */}
+      {/* Cross-project conflict warnings */}
+      {crossProjectConflicts.length > 0 && (
+        <div className="mx-4 mb-3 rounded-xl p-3 space-y-1" style={{ background: "hsl(0 60% 15%)", border: "1px solid hsl(0 50% 35%)" }}>
+          <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: "hsl(0 80% 70%)" }}>
+            🔴 Dubbele inplanning gedetecteerd
+          </p>
+          {crossProjectConflicts.slice(0, 10).map((c, i) => (
+            <p key={i} className="text-[11px]" style={{ color: "hsl(0 60% 75%)" }}>
+              <span className="font-semibold">{c.name}</span> is op <span className="font-mono">{c.datum}</span> ook ingepland bij <span className="font-semibold">{c.otherProject}</span>
+            </p>
+          ))}
+          {crossProjectConflicts.length > 10 && (
+            <p className="text-[10px] italic" style={{ color: "hsl(0 40% 60%)" }}>
+              ...en {crossProjectConflicts.length - 10} meer
+            </p>
+          )}
+        </div>
+      )}
+
       {planningCostBreakdown.total > 0 && (
         <div className="mx-4 mb-20 lg:mb-4 rounded-xl overflow-hidden" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
           <div className="px-4 py-3 flex items-center justify-between gap-2" style={{ borderBottom: "1px solid var(--accent-border)" }}>
