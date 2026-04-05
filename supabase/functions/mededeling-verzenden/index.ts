@@ -5,18 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT = 10;
-const RATE_WINDOW_MS = 60_000;
-
-function checkRateLimit(key: string): boolean {
-  const now = Date.now();
-  const timestamps = (rateLimitMap.get(key) ?? []).filter(t => now - t < RATE_WINDOW_MS);
-  if (timestamps.length >= RATE_LIMIT) return false;
-  timestamps.push(now);
-  rateLimitMap.set(key, timestamps);
-  return true;
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -50,14 +38,17 @@ Deno.serve(async (req) => {
     }
     const userId = claimsData.claims.sub;
 
-    if (!checkRateLimit(userId)) {
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: allowed } = await adminClient.rpc("check_rate_limit", {
+      _key: userId, _endpoint: "mededeling-verzenden", _limit: 10, _window_seconds: 60,
+    });
+    if (!allowed) {
       return new Response(JSON.stringify({ error: "Te veel verzoeken. Probeer het later opnieuw." }), {
         status: 429,
         headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
       });
     }
-
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: isManager } = await adminClient.rpc("has_role", {
       _user_id: userId,
