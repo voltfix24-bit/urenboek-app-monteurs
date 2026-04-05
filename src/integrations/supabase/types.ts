@@ -628,7 +628,10 @@ export type Database = {
           naam: string
           nummer: string
           opdrachtgever_id: string | null
+          postcode: string | null
+          stad: string | null
           stationsnaam: string | null
+          straat: string | null
           updated_at: string
         }
         Insert: {
@@ -643,7 +646,10 @@ export type Database = {
           naam: string
           nummer: string
           opdrachtgever_id?: string | null
+          postcode?: string | null
+          stad?: string | null
           stationsnaam?: string | null
+          straat?: string | null
           updated_at?: string
         }
         Update: {
@@ -658,7 +664,10 @@ export type Database = {
           naam?: string
           nummer?: string
           opdrachtgever_id?: string | null
+          postcode?: string | null
+          stad?: string | null
           stationsnaam?: string | null
+          straat?: string | null
           updated_at?: string
         }
         Relationships: [

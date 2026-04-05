@@ -4,7 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays, Download } from "lucide-react";
+import { volledigAdres } from "@/lib/utils";
+import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays, Download, MapPin, AlertTriangle } from "lucide-react";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
 import { ForecastTab } from "@/components/ForecastTab";
@@ -16,13 +17,14 @@ interface Project {
   id: string; nummer: string; naam: string; active: boolean; opdrachtgever_id: string | null;
   stationsnaam: string | null; adres: string | null; case_type: string | null;
   contactpersoon_naam: string | null; contactpersoon_tel: string | null; contactpersoon_email: string | null;
+  straat: string | null; postcode: string | null; stad: string | null;
 }
 type FormState = {
   nummer: string; naam: string; opdrachtgever_id: string | null;
-  stationsnaam: string; adres: string; case_type: string;
+  stationsnaam: string; straat: string; postcode: string; stad: string; case_type: string;
   contactpersoon_naam: string; contactpersoon_tel: string; contactpersoon_email: string;
 };
-const emptyForm: FormState = { nummer: "", naam: "", opdrachtgever_id: null, stationsnaam: "", adres: "", case_type: "", contactpersoon_naam: "", contactpersoon_tel: "", contactpersoon_email: "" };
+const emptyForm: FormState = { nummer: "", naam: "", opdrachtgever_id: null, stationsnaam: "", straat: "", postcode: "", stad: "", case_type: "", contactpersoon_naam: "", contactpersoon_tel: "", contactpersoon_email: "" };
 
 const inputStyle = { background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" };
 
@@ -51,7 +53,7 @@ export default function Projecten() {
 
   const fetchData = useCallback(async () => {
     const [p, o] = await Promise.all([
-      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email").order("nummer"),
+      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad").order("nummer"),
       supabase.from("opdrachtgevers").select("id, naam").order("naam"),
     ]);
     if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data);
@@ -87,10 +89,10 @@ export default function Projecten() {
 
   async function handleAdd() {
     if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
-    const insert: any = { nummer: form.nummer.trim(), naam: form.naam.trim() };
+    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
+    const insert: any = { nummer: form.nummer.trim(), naam: form.naam.trim(), straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(), adres: `${form.straat.trim()}, ${form.postcode.trim()} ${form.stad.trim()}` };
     if (form.opdrachtgever_id) insert.opdrachtgever_id = form.opdrachtgever_id;
     if (form.stationsnaam.trim()) insert.stationsnaam = form.stationsnaam.trim();
-    if (form.adres.trim()) insert.adres = form.adres.trim();
     if (form.case_type) insert.case_type = form.case_type;
     if (isManager) {
       if (form.contactpersoon_naam.trim()) insert.contactpersoon_naam = form.contactpersoon_naam.trim();
@@ -103,11 +105,13 @@ export default function Projecten() {
 
   async function handleUpdate(id: string) {
     if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
+    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
     const update: any = {
       nummer: form.nummer.trim(), naam: form.naam.trim(),
       opdrachtgever_id: form.opdrachtgever_id || null,
       stationsnaam: form.stationsnaam.trim() || null,
-      adres: form.adres.trim() || null,
+      straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(),
+      adres: `${form.straat.trim()}, ${form.postcode.trim()} ${form.stad.trim()}`,
       case_type: form.case_type || null,
     };
     if (isManager) {
@@ -135,7 +139,7 @@ export default function Projecten() {
     setEditId(p.id); setExpandedId(null); setShowAdd(false);
     setForm({
       nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id,
-      stationsnaam: p.stationsnaam || "", adres: p.adres || "", case_type: p.case_type || "",
+      stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "",
       contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "",
       contactpersoon_email: p.contactpersoon_email || "",
     });
@@ -173,7 +177,7 @@ export default function Projecten() {
     setSelectedId(p.id);
     setForm({
       nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id,
-      stationsnaam: p.stationsnaam || "", adres: p.adres || "", case_type: p.case_type || "",
+      stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "",
       contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "",
       contactpersoon_email: p.contactpersoon_email || "",
     });
@@ -187,10 +191,10 @@ export default function Projecten() {
 
   async function handleDesktopAdd() {
     if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
-    const insert: any = { nummer: form.nummer.trim(), naam: form.naam.trim() };
+    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
+    const insert: any = { nummer: form.nummer.trim(), naam: form.naam.trim(), straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(), adres: `${form.straat.trim()}, ${form.postcode.trim()} ${form.stad.trim()}` };
     if (form.opdrachtgever_id) insert.opdrachtgever_id = form.opdrachtgever_id;
     if (form.stationsnaam.trim()) insert.stationsnaam = form.stationsnaam.trim();
-    if (form.adres.trim()) insert.adres = form.adres.trim();
     if (form.case_type) insert.case_type = form.case_type;
     if (isManager) {
       if (form.contactpersoon_naam.trim()) insert.contactpersoon_naam = form.contactpersoon_naam.trim();
@@ -203,11 +207,13 @@ export default function Projecten() {
 
   async function handleDesktopUpdate() {
     if (!selectedId || !form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
+    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
     const update: any = {
       nummer: form.nummer.trim(), naam: form.naam.trim(),
       opdrachtgever_id: form.opdrachtgever_id || null,
       stationsnaam: form.stationsnaam.trim() || null,
-      adres: form.adres.trim() || null,
+      straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(),
+      adres: `${form.straat.trim()}, ${form.postcode.trim()} ${form.stad.trim()}`,
       case_type: form.case_type || null,
     };
     if (isManager) {
@@ -228,7 +234,16 @@ export default function Projecten() {
           <input value={form.naam} onChange={e => setForm(f => ({ ...f, naam: e.target.value }))} placeholder="Casenaam" className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
         </div>
         <input value={form.stationsnaam} onChange={e => setForm(f => ({ ...f, stationsnaam: e.target.value }))} placeholder="Stationsnaam bijv. KOPPOELLN" className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
-        <input value={form.adres} onChange={e => setForm(f => ({ ...f, adres: e.target.value }))} placeholder="Adres: Straat, Stad" className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
+        <p className="text-[11px] font-semibold uppercase tracking-wider mt-2" style={{ color: "var(--text-muted)" }}>Adres werklocatie *</p>
+        <input value={form.straat} onChange={e => setForm(f => ({ ...f, straat: e.target.value }))} placeholder="Burgemeester Fletzlaan 12" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ ...inputStyle, borderColor: !form.straat.trim() && form.nummer.trim() ? "var(--danger-border)" : undefined }} />
+        <div className="grid grid-cols-2 gap-2">
+          <input value={form.postcode} onChange={e => {
+            let v = e.target.value;
+            if (v.length === 4 && /^\d{4}$/.test(v) && form.postcode.length < 4) v += " ";
+            setForm(f => ({ ...f, postcode: v }));
+          }} placeholder="1234 AB" maxLength={7} className="px-3 py-2.5 rounded-xl text-sm" style={{ ...inputStyle, borderColor: !form.postcode.trim() && form.nummer.trim() ? "var(--danger-border)" : undefined }} />
+          <input value={form.stad} onChange={e => setForm(f => ({ ...f, stad: e.target.value }))} placeholder="Amsterdam" className="px-3 py-2.5 rounded-xl text-sm" style={{ ...inputStyle, borderColor: !form.stad.trim() && form.nummer.trim() ? "var(--danger-border)" : undefined }} />
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <select value={form.opdrachtgever_id || ""} onChange={e => setForm(f => ({ ...f, opdrachtgever_id: e.target.value || null }))} className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle}>
             <option value="">Geen opdrachtgever</option>
@@ -456,7 +471,10 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
       <div className="p-4 flex items-center gap-3 cursor-pointer" onClick={onToggleExpand}>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{project.naam}</p>
+            <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>
+              {project.naam}
+              {(!project.straat || !project.stad) && <span title="Adres onvolledig — monteurs kunnen niet navigeren"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>}
+            </p>
             <CaseTypeBadge type={project.case_type} />
           </div>
           <p className="text-xs mt-0.5 font-mono" style={{ color: "var(--accent)" }}>{project.nummer}</p>
@@ -474,8 +492,20 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
       </div>
       {isExpanded && (
         <div className="px-4 pb-4 space-y-2 animate-fade-in" style={{ borderTop: "1px solid var(--border)" }}>
-          <div className="pt-3 space-y-1.5">
-            {project.adres && <DetailLine label="Adres" value={project.adres} />}
+           <div className="pt-3 space-y-1.5">
+            {volledigAdres(project) ? (
+              <>
+                <DetailLine label="Straat" value={project.straat} />
+                <DetailLine label="Postcode" value={project.postcode} />
+                <DetailLine label="Stad" value={project.stad} />
+                <a href={`https://maps.google.com/?q=${encodeURIComponent(volledigAdres(project))}`} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs mt-1" style={{ color: "var(--accent)" }}>
+                  <MapPin className="h-3 w-3" /> Bekijk op kaart ↗
+                </a>
+              </>
+            ) : project.adres ? (
+              <DetailLine label="Adres" value={project.adres} />
+            ) : null}
             {project.case_type && <DetailLine label="Case type" value={project.case_type} />}
             {project.stationsnaam && <DetailLine label="Station" value={project.stationsnaam} />}
             {ogNaam && <DetailLine label="Opdrachtgever" value={ogNaam} />}
@@ -531,7 +561,10 @@ function DesktopListCard({ project, ogNaam, selected, onClick, marge }: { projec
       }}
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[13px] font-semibold truncate" style={{ color: "var(--text-primary)" }}>{project.naam}</p>
+        <p className="text-[13px] font-semibold truncate" style={{ color: "var(--text-primary)" }}>
+          {project.naam}
+          {(!project.straat || !project.stad) && <span title="Adres onvolledig"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>}
+        </p>
         <div className="flex items-center gap-1.5 shrink-0">
           {marge && (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: margeBg(marge.marge), color: margeColor(marge.marge), fontFamily: "DM Mono, monospace" }}>
@@ -641,8 +674,16 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
             <InfoField label="Casenaam" value={project.naam} />
             <InfoField label="Opdrachtgever" value={ogNaam} />
             <InfoField label="Stationsnaam" value={project.stationsnaam} />
-            <InfoField label="Adres" value={project.adres} />
+            <InfoField label="Straat" value={project.straat} />
+            <InfoField label="Postcode" value={project.postcode} />
+            <InfoField label="Stad" value={project.stad} />
           </div>
+          {volledigAdres(project) && (
+            <a href={`https://maps.google.com/?q=${encodeURIComponent(volledigAdres(project))}`} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs mt-2" style={{ color: "var(--accent)" }}>
+              <MapPin className="h-3 w-3" /> Bekijk op kaart ↗
+            </a>
+          )}
 
           {/* Contact section (manager only) */}
           {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (

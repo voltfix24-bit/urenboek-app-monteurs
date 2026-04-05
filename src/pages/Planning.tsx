@@ -5,13 +5,14 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
-import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare, Clock, Check } from "lucide-react";
+import { volledigAdres } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare, Clock, Check, MapPin, Navigation } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 
-interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; }
+interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
 interface ExistingBoeking { id: string; uren: number; status: string; }
 
@@ -56,15 +57,15 @@ export default function Planning() {
       let statusMap = new Map<string, boolean>();
       if (projectIds.length > 0) {
         const [{ data: projects }, { data: statuses }] = await Promise.all([
-          supabase.from("projects").select("id, naam, nummer").in("id", projectIds),
+          supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").in("id", projectIds),
           supabase.from("project_planning_status").select("project_id, is_definitief").in("project_id", projectIds),
         ]);
         projMap = new Map(projects?.map((p: any) => [p.id, p]) ?? []);
         (statuses || []).forEach((s: any) => statusMap.set(s.project_id, s.is_definitief));
       }
       setItems(data.map((d: any) => {
-        const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "" };
-        return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false };
+        const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "", straat: null, postcode: null, stad: null, adres: null };
+        return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false, project_straat: (proj as any).straat, project_postcode: (proj as any).postcode, project_stad: (proj as any).stad, project_adres: (proj as any).adres };
       }));
     }
     setLoading(false);
@@ -74,6 +75,21 @@ export default function Planning() {
 
   const weekDates = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const today = format(new Date(), "yyyy-MM-dd");
+
+  function openNavigatie(adres: string) {
+    const encoded = encodeURIComponent(adres);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    if (isIOS) {
+      window.location.href = `maps://maps.apple.com/?daddr=${encoded}`;
+      setTimeout(() => { window.open(`https://maps.google.com/?daddr=${encoded}`, "_blank"); }, 500);
+    } else if (isAndroid) {
+      window.location.href = `google.navigation:q=${encoded}`;
+      setTimeout(() => { window.open(`https://maps.google.com/?daddr=${encoded}`, "_blank"); }, 500);
+    } else {
+      window.open(`https://maps.google.com/?daddr=${encoded}`, "_blank");
+    }
+  }
 
   function getBeschikbaarheidForDate(dateStr: string): BeschikbaarheidItem | null {
     return beschikbaarheid.find(b => dateStr >= b.datum_van && dateStr <= b.datum_tot) || null;
@@ -216,6 +232,25 @@ export default function Planning() {
                           </button>
                         )
                       )}
+
+                      {/* Address + Navigate */}
+                      {item.is_definitief && (() => {
+                        const adres = volledigAdres({ straat: item.project_straat, postcode: item.project_postcode, stad: item.project_stad, adres: item.project_adres });
+                        if (!adres) return null;
+                        return (
+                          <>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, padding: "6px 0", borderTop: "1px solid var(--border)" }}>
+                              <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--text-muted)" }} />
+                              <span style={{ fontSize: 12, color: "var(--text-secondary)", flex: 1 }}>{adres}</span>
+                            </div>
+                            <button onClick={() => openNavigatie(adres)}
+                              style={{ width: "100%", marginTop: 8, padding: "10px 0", borderRadius: 12, background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer" }}>
+                              <Navigation className="h-4 w-4" />
+                              Navigeer naar werklocatie
+                            </button>
+                          </>
+                        );
+                      })()}
                     </div>
                   );
                 })}
