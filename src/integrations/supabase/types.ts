@@ -781,6 +781,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_rate_limit_log: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
