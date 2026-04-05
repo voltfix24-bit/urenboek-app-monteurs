@@ -116,8 +116,8 @@ export default function Dashboard() {
     if (forecasts && forecasts.length > 0) {
       const fIds = forecasts.map((f: any) => f.id);
       const pIds = forecasts.map((f: any) => f.project_id);
-      const [{ data: regels }, { data: projs }] = await Promise.all([
-        supabase.from("forecast_regels").select("forecast_id, tarief_terrevolt, tarief_inkoop, aantal, geplande_uren, uurtarief_snap, type").in("forecast_id", fIds),
+        const [{ data: regels }, { data: projs }] = await Promise.all([
+          supabase.from("forecast_regels").select("forecast_id, tarief, eigen_kosten, aantal, geplande_uren, uurtarief_snap, type").in("forecast_id", fIds),
         supabase.from("projects").select("id, naam, nummer").in("id", pIds),
       ]);
       const projMap = new Map((projs ?? []).map((p: any) => [p.id, p]));

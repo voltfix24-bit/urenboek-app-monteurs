@@ -119,6 +119,7 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
             <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5" style={{ color: "var(--text-muted)" }}>Beheer</p>
             {[
               { path: "/beheer/intake-regels", label: "Intake regels" },
+              { path: "/beheer/tarieven", label: "Tarieven" },
             ].map(item => (
               <button key={item.path} onClick={() => navigate(item.path)}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-colors text-left"

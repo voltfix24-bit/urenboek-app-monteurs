@@ -63,8 +63,8 @@ export interface BerekendeRegel {
   max_aantal: number;
   waarschuwing: string | null;
   hint: string | null;
-  tarief_terrevolt: number;
-  tarief_inkoop: number;
+  tarief: number;
+  eigen_kosten: number;
 }
 
 export const defaultAntwoorden: IntakeAntwoorden = {
@@ -152,8 +152,8 @@ export function berekenRegels(
             max_aantal: regel.max_aantal,
             waarschuwing: regel.waarschuwing,
             hint: regel.hint,
-            tarief_terrevolt: spec?.tarief_terrevolt || 0,
-            tarief_inkoop: spec?.tarief_inkoop || 0,
+            tarief: spec?.tarief || 0,
+            eigen_kosten: 0,
           });
         }
         continue;
@@ -162,12 +162,10 @@ export function berekenRegels(
 
     if (!getriggerd) continue;
 
-    // Check uitsluitingen
     if (regel.sluit_uit_code && actief.has(regel.sluit_uit_code)) {
       actief.delete(regel.sluit_uit_code);
     }
 
-    // Add or merge
     if (actief.has(regel.spec_code)) {
       const bestaand = actief.get(regel.spec_code)!;
       if (regel.standaard_aantal > bestaand.aantal) {
@@ -187,8 +185,8 @@ export function berekenRegels(
         max_aantal: regel.max_aantal,
         waarschuwing: regel.waarschuwing,
         hint: regel.hint,
-        tarief_terrevolt: spec?.tarief_terrevolt || 0,
-        tarief_inkoop: spec?.tarief_inkoop || 0,
+        tarief: spec?.tarief || 0,
+        eigen_kosten: 0,
       });
     }
   }
@@ -214,7 +212,6 @@ export function berekenRegels(
   if (actief.has("R310030") && antwoorden.ggi) {
     actief.get("R310030")!.aantal = antwoorden.ggi_aantal;
   }
-  // LS stroken/kabels
   if (actief.has("R340040")) actief.get("R340040")!.aantal = antwoorden.ls_stroken;
   if (actief.has("R340050")) actief.get("R340050")!.aantal = antwoorden.ls_kabels;
 
