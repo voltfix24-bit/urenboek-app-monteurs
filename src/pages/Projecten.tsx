@@ -471,7 +471,10 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
       <div className="p-4 flex items-center gap-3 cursor-pointer" onClick={onToggleExpand}>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{project.naam}</p>
+            <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>
+              {project.naam}
+              {(!project.straat || !project.stad) && <AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} title="Adres onvolledig — monteurs kunnen niet navigeren" />}
+            </p>
             <CaseTypeBadge type={project.case_type} />
           </div>
           <p className="text-xs mt-0.5 font-mono" style={{ color: "var(--accent)" }}>{project.nummer}</p>
@@ -489,8 +492,20 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
       </div>
       {isExpanded && (
         <div className="px-4 pb-4 space-y-2 animate-fade-in" style={{ borderTop: "1px solid var(--border)" }}>
-          <div className="pt-3 space-y-1.5">
-            {project.adres && <DetailLine label="Adres" value={project.adres} />}
+           <div className="pt-3 space-y-1.5">
+            {volledigAdres(project) ? (
+              <>
+                <DetailLine label="Straat" value={project.straat} />
+                <DetailLine label="Postcode" value={project.postcode} />
+                <DetailLine label="Stad" value={project.stad} />
+                <a href={`https://maps.google.com/?q=${encodeURIComponent(volledigAdres(project))}`} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs mt-1" style={{ color: "var(--accent)" }}>
+                  <MapPin className="h-3 w-3" /> Bekijk op kaart ↗
+                </a>
+              </>
+            ) : project.adres ? (
+              <DetailLine label="Adres" value={project.adres} />
+            ) : null}
             {project.case_type && <DetailLine label="Case type" value={project.case_type} />}
             {project.stationsnaam && <DetailLine label="Station" value={project.stationsnaam} />}
             {ogNaam && <DetailLine label="Opdrachtgever" value={ogNaam} />}
@@ -656,8 +671,16 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
             <InfoField label="Casenaam" value={project.naam} />
             <InfoField label="Opdrachtgever" value={ogNaam} />
             <InfoField label="Stationsnaam" value={project.stationsnaam} />
-            <InfoField label="Adres" value={project.adres} />
+            <InfoField label="Straat" value={project.straat} />
+            <InfoField label="Postcode" value={project.postcode} />
+            <InfoField label="Stad" value={project.stad} />
           </div>
+          {volledigAdres(project) && (
+            <a href={`https://maps.google.com/?q=${encodeURIComponent(volledigAdres(project))}`} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs mt-2" style={{ color: "var(--accent)" }}>
+              <MapPin className="h-3 w-3" /> Bekijk op kaart ↗
+            </a>
+          )}
 
           {/* Contact section (manager only) */}
           {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
