@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
-interface NavBadges {
+export interface NavBadges {
   openGoedkeuringen: number;
   ongelezen: number;
   verlofAanvragen: number;

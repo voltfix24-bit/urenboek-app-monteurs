@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { useNavBadges } from "@/hooks/useNavBadges";
+import type { NavBadges } from "@/hooks/useNavBadges";
 import { NavBadge } from "./NavBadge";
 import { GlobalSearch } from "./GlobalSearch";
 import terrevoltLogo from "@/assets/terrevolt-logo.svg";
@@ -27,12 +27,15 @@ const monteurItems = [
   { path: "/profiel", icon: User, label: "Profiel" },
 ];
 
-export function DesktopSidebar() {
+interface DesktopSidebarProps {
+  badges: NavBadges;
+}
+
+export function DesktopSidebar({ badges }: DesktopSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { isManager, signOut } = useAuth();
   const { profile: profileCtx } = useProfile();
-  const { badges } = useNavBadges();
   const [showSearch, setShowSearch] = useState(false);
   const displayName = profileCtx?.full_name || "Gebruiker";
 
