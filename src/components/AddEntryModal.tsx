@@ -12,7 +12,7 @@ function dateKey(date: Date) {
 interface AddEntryModalProps {
   weekDays: Date[];
   onClose: () => void;
-  onSubmit: (entry: { date: string; projectNumber: string; description: string; hours: number }) => void;
+  onSubmit: (entry: { date: string; projectId: string; description: string; hours: number }) => void;
   initialDate?: Date | null;
 }
 
@@ -20,7 +20,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
   const { projects, loading } = useProjects();
   const [step, setStep] = useState(initialDate ? 2 : 1);
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate || null);
-  const [form, setForm] = useState({ projectNummer: null as string | null, werkzaamheden: null as string | null, uren: 8 });
+  const [form, setForm] = useState({ projectId: null as string | null, werkzaamheden: null as string | null, uren: 8 });
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
@@ -46,14 +46,14 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
     }
   }, [dragY, onClose]);
 
-  const proj = projects.find((p) => p.nummer === form.projectNummer);
+  const proj = projects.find((p) => p.id === form.projectId);
   const today = dateKey(new Date());
 
   function handleSubmit() {
     if (!selectedDate || !proj || !form.werkzaamheden) return;
     onSubmit({
       date: format(selectedDate, "yyyy-MM-dd"),
-      projectNumber: proj.nummer,
+      projectId: proj.id,
       description: form.werkzaamheden,
       hours: form.uren,
     });
@@ -134,7 +134,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
                 <p className="text-xs text-center py-4" style={{ color: "#8AAD6E" }}>Laden...</p>
               ) : (
                 projects.map((p) => (
-                  <button key={p.id} onClick={() => { setForm((f) => ({ ...f, projectNummer: p.nummer })); setStep(3); }} className="w-full text-left transition-colors active:scale-[0.97]" style={{ padding: "14px 16px", borderRadius: 14, background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }}>
+                  <button key={p.id} onClick={() => { setForm((f) => ({ ...f, projectId: p.id })); setStep(3); }} className="w-full text-left transition-colors active:scale-[0.97]" style={{ padding: "14px 16px", borderRadius: 14, background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }}>
                     <p className="text-sm font-semibold">{p.naam}</p>
                     <p className="text-xs mt-0.5" style={{ color: "#8AAD6E" }}>{p.nummer}</p>
                   </button>

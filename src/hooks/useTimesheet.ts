@@ -8,6 +8,7 @@ export interface TimeEntry {
   id: string;
   date: string;
   projectNumber: string;
+  projectId: string;
   description: string;
   hours: number;
   status: string;
@@ -21,6 +22,7 @@ export function useTimesheet() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [allEntries, setAllEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
 
   const weekDates = Array.from({ length: 7 }, (_, i) =>
     addDays(currentWeekStart, i)
@@ -29,71 +31,98 @@ export function useTimesheet() {
   const weekStartStr = format(weekDates[0], "yyyy-MM-dd");
   const weekEndStr = format(weekDates[6], "yyyy-MM-dd");
 
-  const fetchEntries = useCallback(async () => {
+  // Get profile id on mount
+  useEffect(() => {
     if (!user) return;
+    (async () => {
+      const { data } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
+      if (data) setProfileId(data.id);
+    })();
+  }, [user]);
+
+  const fetchEntries = useCallback(async () => {
+    if (!user || !profileId) return;
     setLoading(true);
     const { data, error } = await supabase
-      .from("time_entries")
-      .select("*")
-      .eq("user_id", user.id)
-      .gte("date", weekStartStr)
-      .lte("date", weekEndStr)
-      .order("date");
+      .from("uren_boekingen")
+      .select("id, datum, project_id, beschrijving, uren, status, type")
+      .eq("medewerker_id", profileId)
+      .gte("datum", weekStartStr)
+      .lte("datum", weekEndStr)
+      .order("datum");
 
     if (error) {
       toast.error("Fout bij ophalen uren");
     } else {
+      // Fetch project numbers for display
+      const projectIds = [...new Set((data ?? []).map(e => e.project_id))];
+      let projMap = new Map<string, string>();
+      if (projectIds.length > 0) {
+        const { data: projs } = await supabase.from("projects").select("id, nummer").in("id", projectIds);
+        projMap = new Map(projs?.map(p => [p.id, p.nummer]) ?? []);
+      }
       setEntries(
         (data ?? []).map((e) => ({
           id: e.id,
-          date: e.date,
-          projectNumber: e.project_number,
-          description: e.description,
-          hours: Number(e.hours),
+          date: e.datum,
+          projectId: e.project_id,
+          projectNumber: projMap.get(e.project_id) || "",
+          description: e.beschrijving || e.type || "",
+          hours: Number(e.uren),
           status: e.status,
         }))
       );
     }
     setLoading(false);
-  }, [user, weekStartStr, weekEndStr]);
+  }, [user, profileId, weekStartStr, weekEndStr]);
 
   const fetchAllEntries = useCallback(async () => {
-    if (!user) return;
+    if (!user || !profileId) return;
     const { data, error } = await supabase
-      .from("time_entries")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("date", { ascending: false })
+      .from("uren_boekingen")
+      .select("id, datum, project_id, beschrijving, uren, status, type")
+      .eq("medewerker_id", profileId)
+      .order("datum", { ascending: false })
       .limit(100);
 
     if (!error && data) {
+      const projectIds = [...new Set(data.map(e => e.project_id))];
+      let projMap = new Map<string, string>();
+      if (projectIds.length > 0) {
+        const { data: projs } = await supabase.from("projects").select("id, nummer").in("id", projectIds);
+        projMap = new Map(projs?.map(p => [p.id, p.nummer]) ?? []);
+      }
       setAllEntries(
         data.map((e) => ({
           id: e.id,
-          date: e.date,
-          projectNumber: e.project_number,
-          description: e.description,
-          hours: Number(e.hours),
+          date: e.datum,
+          projectId: e.project_id,
+          projectNumber: projMap.get(e.project_id) || "",
+          description: e.beschrijving || e.type || "",
+          hours: Number(e.uren),
           status: e.status,
         }))
       );
     }
-  }, [user]);
+  }, [user, profileId]);
 
   useEffect(() => {
-    fetchEntries();
-    fetchAllEntries();
-  }, [fetchEntries, fetchAllEntries]);
+    if (profileId) {
+      fetchEntries();
+      fetchAllEntries();
+    }
+  }, [profileId, fetchEntries, fetchAllEntries]);
 
   const addEntry = useCallback(
-    async (entry: Omit<TimeEntry, "id" | "status">) => {
-      if (!user) return;
-      const { error } = await supabase.from("time_entries").insert({
-        user_id: user.id,
-        date: entry.date,
-        project_number: entry.projectNumber,
-        description: entry.description,
-        hours: entry.hours,
+    async (entry: { date: string; projectId: string; description: string; hours: number }) => {
+      if (!user || !profileId) return;
+      const { error } = await supabase.from("uren_boekingen").insert({
+        medewerker_id: profileId,
+        datum: entry.date,
+        project_id: entry.projectId,
+        beschrijving: entry.description,
+        type: entry.description || "monteren",
+        uren: entry.hours,
         status: "concept",
       });
       if (error) {
@@ -104,35 +133,12 @@ export function useTimesheet() {
         fetchAllEntries();
       }
     },
-    [user, fetchEntries, fetchAllEntries]
-  );
-
-  const addMultipleEntries = useCallback(
-    async (entries: Omit<TimeEntry, "id" | "status">[]) => {
-      if (!user || entries.length === 0) return;
-      const rows = entries.map((entry) => ({
-        user_id: user.id,
-        date: entry.date,
-        project_number: entry.projectNumber,
-        description: entry.description,
-        hours: entry.hours,
-        status: "concept",
-      }));
-      const { error } = await supabase.from("time_entries").insert(rows);
-      if (error) {
-        toast.error("Fout bij toevoegen");
-      } else {
-        toast.success(`${entries.length} dagen toegevoegd`);
-        fetchEntries();
-        fetchAllEntries();
-      }
-    },
-    [user, fetchEntries, fetchAllEntries]
+    [user, profileId, fetchEntries, fetchAllEntries]
   );
 
   const removeEntry = useCallback(
     async (id: string) => {
-      const { error } = await supabase.from("time_entries").delete().eq("id", id);
+      const { error } = await supabase.from("uren_boekingen").delete().eq("id", id);
       if (error) {
         toast.error("Fout bij verwijderen");
       } else {
@@ -146,7 +152,7 @@ export function useTimesheet() {
   const submitEntry = useCallback(
     async (id: string) => {
       const { error } = await supabase
-        .from("time_entries")
+        .from("uren_boekingen")
         .update({ status: "ingediend" })
         .eq("id", id);
       if (error) {
@@ -163,8 +169,8 @@ export function useTimesheet() {
   const revertToConcept = useCallback(
     async (id: string) => {
       const { error } = await supabase
-        .from("time_entries")
-        .update({ status: "concept", approved_by: null })
+        .from("uren_boekingen")
+        .update({ status: "concept", approved_by: null, afkeur_reden: null })
         .eq("id", id);
       if (error) {
         toast.error("Fout bij terugzetten");
@@ -212,8 +218,8 @@ export function useTimesheet() {
     weekDates,
     weekEntries,
     allEntries,
+    profileId,
     addEntry,
-    addMultipleEntries,
     removeEntry,
     submitEntry,
     revertToConcept,

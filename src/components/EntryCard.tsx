@@ -36,7 +36,7 @@ export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDa
       )}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold truncate" style={{ color: "#2D4A1E" }}>{proj?.naam || entry.projectNumber}</p>
+          <p className="text-sm font-semibold truncate" style={{ color: "#2D4A1E" }}>{proj?.naam || entry.projectNumber || "Onbekend project"}</p>
           <p className="text-xs mt-0.5" style={{ color: "#8AAD6E" }}>
             {proj?.nummer || entry.projectNumber}
             {entry.description && ` · ${entry.description}`}

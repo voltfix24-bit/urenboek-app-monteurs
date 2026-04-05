@@ -28,13 +28,13 @@ export function useNavBadges() {
 
     if (isManager) {
       const [{ count: c1 }, { count: c2 }] = await Promise.all([
-        supabase.from("time_entries").select("id", { count: "exact", head: true }).eq("status", "ingediend"),
+        supabase.from("uren_boekingen").select("id", { count: "exact", head: true }).eq("status", "ingediend"),
         supabase.from("beschikbaarheid").select("id", { count: "exact", head: true }).eq("status", "aangevraagd"),
       ]);
       next.openGoedkeuringen = c1 || 0;
       next.verlofAanvragen = c2 || 0;
     } else {
-      const { count } = await supabase.from("time_entries").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "afgekeurd");
+      const { count } = await supabase.from("uren_boekingen").select("id", { count: "exact", head: true }).eq("medewerker_id", profileId).eq("status", "afgekeurd");
       next.afgekeurdeUren = count || 0;
     }
 
@@ -51,7 +51,7 @@ export function useNavBadges() {
   }, [fetchBadges]);
 
   useEffect(() => {
-    const ch1 = supabase.channel("badge-te").on("postgres_changes", { event: "*", schema: "public", table: "time_entries" }, fetchBadges).subscribe();
+    const ch1 = supabase.channel("badge-ub").on("postgres_changes", { event: "*", schema: "public", table: "uren_boekingen" }, fetchBadges).subscribe();
     const ch2 = supabase.channel("badge-ls").on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges).subscribe();
     return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
   }, [fetchBadges]);

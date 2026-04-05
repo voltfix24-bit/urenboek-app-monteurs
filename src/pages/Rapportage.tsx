@@ -12,7 +12,7 @@ import { PageShell } from "@/components/PageShell";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-interface ReportEntry { date: string; project_number: string; description: string; hours: number; status: string; full_name: string; }
+interface ReportEntry { datum: string; project_nummer: string; project_naam: string; beschrijving: string; uren: number; status: string; full_name: string; }
 
 function getWeekRange(weekStart: Date) {
   return { start: format(weekStart, "yyyy-MM-dd"), end: format(addDays(weekStart, 6), "yyyy-MM-dd") };
@@ -32,32 +32,47 @@ export default function Rapportage() {
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
-    let query = supabase.from("time_entries").select("*").gte("date", startDate).lte("date", endDate).order("date");
+    let query = supabase.from("uren_boekingen").select("*").gte("datum", startDate).lte("datum", endDate).order("datum");
     if (filter !== "alle") query = query.eq("status", filter);
-    const { data: timeEntries, error } = await query;
+    const { data: boekingen, error } = await query;
     if (error) { toast.error("Fout bij ophalen"); setLoading(false); return; }
-    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name");
-    const profileMap = new Map(profiles?.map((p) => [p.user_id, p.full_name]) ?? []);
-    setEntries((timeEntries ?? []).map((e) => ({ date: e.date, project_number: e.project_number, description: e.description, hours: Number(e.hours), status: e.status, full_name: profileMap.get(e.user_id) || "Onbekend" })));
+
+    const medIds = [...new Set((boekingen ?? []).map((b: any) => b.medewerker_id))];
+    const projIds = [...new Set((boekingen ?? []).map((b: any) => b.project_id))];
+    const [{ data: profiles }, { data: projects }] = await Promise.all([
+      medIds.length > 0 ? supabase.from("profiles").select("id, full_name").in("id", medIds) : { data: [] },
+      projIds.length > 0 ? supabase.from("projects").select("id, naam, nummer").in("id", projIds) : { data: [] },
+    ]);
+    const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p.full_name]));
+    const projMap = new Map((projects ?? []).map((p: any) => [p.id, p]));
+
+    setEntries((boekingen ?? []).map((e: any) => {
+      const proj = projMap.get(e.project_id) || { naam: "Onbekend", nummer: "" };
+      return {
+        datum: e.datum, project_nummer: proj.nummer, project_naam: proj.naam,
+        beschrijving: e.beschrijving || e.type || "", uren: Number(e.uren),
+        status: e.status, full_name: profileMap.get(e.medewerker_id) || "Onbekend",
+      };
+    }));
     setLoading(false);
   }, [startDate, endDate, filter]);
 
   useEffect(() => { fetchReport(); }, [fetchReport]);
 
-  const totalHours = entries.reduce((s, e) => s + e.hours, 0);
-  const uniqueProjects = new Set(entries.map((e) => e.project_number)).size;
+  const totalHours = entries.reduce((s, e) => s + e.uren, 0);
+  const uniqueProjects = new Set(entries.map((e) => e.project_nummer)).size;
   const uniqueEmployees = new Set(entries.map((e) => e.full_name)).size;
 
-  const perMedewerker = entries.reduce<Record<string, number>>((acc, e) => { acc[e.full_name] = (acc[e.full_name] || 0) + e.hours; return acc; }, {});
+  const perMedewerker = entries.reduce<Record<string, number>>((acc, e) => { acc[e.full_name] = (acc[e.full_name] || 0) + e.uren; return acc; }, {});
   const medewerkerStats = Object.entries(perMedewerker).sort((a, b) => b[1] - a[1]);
   const maxMedUren = Math.max(...medewerkerStats.map((m) => m[1]), 1);
 
-  const perProject = entries.reduce<Record<string, number>>((acc, e) => { acc[e.project_number] = (acc[e.project_number] || 0) + e.hours; return acc; }, {});
+  const perProject = entries.reduce<Record<string, number>>((acc, e) => { acc[e.project_nummer || e.project_naam] = (acc[e.project_nummer || e.project_naam] || 0) + e.uren; return acc; }, {});
   const projectStats = Object.entries(perProject).sort((a, b) => b[1] - a[1]);
 
   const exportCSV = () => {
     const rows = [["Datum", "Project", "Medewerker", "Omschrijving", "Uren"]];
-    entries.forEach((e) => rows.push([e.date, e.project_number, e.full_name, e.description, String(e.hours)]));
+    entries.forEach((e) => rows.push([e.datum, e.project_nummer, e.full_name, e.beschrijving, String(e.uren)]));
     const csv = rows.map((r) => r.map((c) => `"${c}"`).join(";")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -71,7 +86,6 @@ export default function Rapportage() {
     const ph = doc.internal.pageSize.getHeight();
     const margin = 16;
 
-    // Header - now light theme
     doc.setFillColor(235, 240, 228);
     doc.rect(0, 0, pw, 36, "F");
     doc.setFillColor(74, 124, 47);
@@ -87,7 +101,6 @@ export default function Rapportage() {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(138, 173, 110);
     doc.text("Urenrapportage", margin + 24, 23);
-
     doc.setFontSize(10);
     doc.setTextColor(90, 122, 66);
     doc.text(`Week ${weekNumber} \u2022 ${format(currentWeekStart, "d MMM", { locale: nl })} \u2013 ${format(addDays(currentWeekStart, 6), "d MMM yyyy", { locale: nl })}`, pw - margin, 17, { align: "right" });
@@ -155,7 +168,7 @@ export default function Rapportage() {
       autoTable(doc, {
         startY: y, margin: { left: margin, right: margin },
         head: [["Datum", "Project", "Medewerker", "Omschrijving", "Uren"]],
-        body: entries.map(e => [format(new Date(e.date), "EEE d/M", { locale: nl }), e.project_number, e.full_name, e.description || "\u2013", e.hours + "u"]),
+        body: entries.map(e => [format(new Date(e.datum), "EEE d/M", { locale: nl }), e.project_nummer, e.full_name, e.beschrijving || "\u2013", e.uren + "u"]),
         styles: { fontSize: 8, cellPadding: 3, textColor: [45, 74, 30], fillColor: [245, 247, 240], lineColor: [197, 212, 178], lineWidth: 0.2 },
         headStyles: { fillColor: [223, 232, 214], textColor: [74, 124, 47], fontStyle: "bold", fontSize: 8 },
         alternateRowStyles: { fillColor: [235, 240, 228] },

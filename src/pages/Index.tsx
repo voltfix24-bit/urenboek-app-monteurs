@@ -75,7 +75,7 @@ const Index = () => {
     if (!user || conceptEntries.length === 0) return;
     setSubmittingAll(true);
     const ids = conceptEntries.map(e => e.id);
-    const { error } = await supabase.from("time_entries").update({ status: "ingediend" }).in("id", ids);
+    const { error } = await supabase.from("uren_boekingen").update({ status: "ingediend" }).in("id", ids);
     if (error) { toast.error("Fout bij indienen"); }
     else { toast.success(`${ids.length} uren ingediend!`); setShowFridayBanner(false); window.location.reload(); }
     setSubmittingAll(false);
