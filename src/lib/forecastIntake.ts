@@ -2,6 +2,7 @@ import { SPEC_CODES } from "./specCodes";
 
 export interface IntakeAntwoorden {
   rmu_vervangen: boolean;
+  rmu_merk: string | null;
   rmu_configuratie_id: string | null;
   rmu_velden: number;
   trafo_situatie: "nieuw" | "draaien" | "geen";
@@ -68,6 +69,7 @@ export interface BerekendeRegel {
 
 export const defaultAntwoorden: IntakeAntwoorden = {
   rmu_vervangen: false,
+  rmu_merk: null,
   rmu_configuratie_id: null,
   rmu_velden: 0,
   trafo_situatie: "geen",
