@@ -217,6 +217,25 @@ export default function Planning() {
                           </button>
                         )
                       )}
+
+                      {/* Address + Navigate */}
+                      {item.is_definitief && (() => {
+                        const adres = volledigAdres({ straat: item.project_straat, postcode: item.project_postcode, stad: item.project_stad, adres: item.project_adres });
+                        if (!adres) return null;
+                        return (
+                          <>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, padding: "6px 0", borderTop: "1px solid var(--border)" }}>
+                              <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--text-muted)" }} />
+                              <span style={{ fontSize: 12, color: "var(--text-secondary)", flex: 1 }}>{adres}</span>
+                            </div>
+                            <button onClick={() => openNavigatie(adres)}
+                              style={{ width: "100%", marginTop: 8, padding: "10px 0", borderRadius: 12, background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer" }}>
+                              <Navigation className="h-4 w-4" />
+                              Navigeer naar werklocatie
+                            </button>
+                          </>
+                        );
+                      })()}
                     </div>
                   );
                 })}
