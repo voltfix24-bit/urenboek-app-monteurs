@@ -172,7 +172,7 @@ export default function Medewerkers() {
             <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>Managers ({managers.length})</p>
             <div className="space-y-1.5">
               {managers.map((emp, i) => (
-                <EmployeeRow key={emp.user_id} emp={emp} idx={i} isSelf={emp.user_id === user?.id} onRoleChange={handleRoleChange} onDelete={handleDelete} updatingRoleId={updatingRoleId} deletingId={deletingId} />
+                <EmployeeRow key={emp.user_id} emp={emp} idx={i} isSelf={emp.user_id === user?.id} onRoleChange={handleRoleChange} onDelete={handleDelete} updatingRoleId={updatingRoleId} deletingId={deletingId} onTariefChange={handleTariefChange} />
               ))}
             </div>
           </>
@@ -183,7 +183,7 @@ export default function Medewerkers() {
             <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>Medewerkers ({monteurs.length})</p>
             <div className="space-y-1.5">
               {monteurs.map((emp, i) => (
-                <EmployeeRow key={emp.user_id} emp={emp} idx={i + managers.length} isSelf={emp.user_id === user?.id} onRoleChange={handleRoleChange} onDelete={handleDelete} updatingRoleId={updatingRoleId} deletingId={deletingId} />
+                <EmployeeRow key={emp.user_id} emp={emp} idx={i + managers.length} isSelf={emp.user_id === user?.id} onRoleChange={handleRoleChange} onDelete={handleDelete} updatingRoleId={updatingRoleId} deletingId={deletingId} onTariefChange={handleTariefChange} />
               ))}
             </div>
           </>
