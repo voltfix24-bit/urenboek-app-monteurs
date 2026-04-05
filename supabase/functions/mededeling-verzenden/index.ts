@@ -5,6 +5,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT = 10;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const timestamps = (rateLimitMap.get(key) ?? []).filter(t => now - t < RATE_WINDOW_MS);
+  if (timestamps.length >= RATE_LIMIT) return false;
+  timestamps.push(now);
+  rateLimitMap.set(key, timestamps);
+  return true;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -23,7 +36,6 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify user is manager
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -37,6 +49,13 @@ Deno.serve(async (req) => {
       });
     }
     const userId = claimsData.claims.sub;
+
+    if (!checkRateLimit(userId)) {
+      return new Response(JSON.stringify({ error: "Te veel verzoeken. Probeer het later opnieuw." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+      });
+    }
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -59,7 +78,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Insert mededeling
     const { data: mededeling, error: insertError } = await adminClient
       .from("mededelingen")
       .insert({
@@ -79,18 +97,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create leesstatus records for all recipients
     let recipientIds: string[] = [];
 
     if (ontvangerType === "iedereen") {
-      // All profiles except sender
       const { data: allProfiles } = await adminClient
         .from("profiles")
         .select("id")
         .neq("id", profileId);
       recipientIds = allProfiles?.map((p) => p.id) ?? [];
     } else if (ontvangerType === "monteurs") {
-      // All non-manager profiles
       const { data: allProfiles } = await adminClient.from("profiles").select("id, user_id");
       if (allProfiles) {
         for (const p of allProfiles) {
@@ -103,7 +118,6 @@ Deno.serve(async (req) => {
         }
       }
     }
-    // For "persoon" type, no bulk leesstatus needed (handled by specific ontvanger_id)
 
     if (recipientIds.length > 0) {
       const leesRecords = recipientIds.map((id) => ({
@@ -115,10 +129,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, mededelingId: mededeling.id, recipients: recipientIds.length }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
