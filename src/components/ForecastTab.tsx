@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
-import { SPEC_CODES, SPEC_CODE_GROEPEN, type SpecCode } from "@/lib/specCodes";
+import { SPEC_CODES, GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/specCodes";
 import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, Check, Info } from "lucide-react";
 
 const mono = "font-mono tracking-tight";
@@ -13,8 +13,8 @@ interface ForecastRegel {
   type: string;
   spec_code?: string;
   spec_omschrijving?: string;
-  tarief_terrevolt?: number;
-  tarief_inkoop?: number;
+  tarief?: number;
+  eigen_kosten?: number;
   aantal?: number;
   medewerker_id?: string;
   geplande_uren?: number;
@@ -34,9 +34,14 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const [monteurs, setMonteurs] = useState<MonteurOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [verwachteOmzet, setVerwachteOmzet] = useState<number>(0);
+  const [specCodes, setSpecCodes] = useState<SpecCode[]>(SPEC_CODES);
 
   const loadForecast = useCallback(async () => {
     setLoading(true);
+    // Load live spec codes
+    const codes = await loadSpecCodes(supabase);
+    setSpecCodes(codes);
+
     const { data: fc } = await supabase.from("project_forecast").select("*").eq("project_id", projectId).maybeSingle();
     if (fc) {
       setForecastId(fc.id);
@@ -48,7 +53,6 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       setMethode(null);
       setRegels([]);
     }
-    // Load monteurs for uren method
     const { data: profiles } = await supabase.from("profiles").select("id, user_id, full_name, uurtarief");
     const { data: roles } = await supabase.from("user_roles").select("user_id, role");
     if (profiles && roles) {
@@ -76,8 +80,8 @@ export function ForecastTab({ projectId }: { projectId: string }) {
         type: r.type,
         spec_code: r.spec_code || null,
         spec_omschrijving: r.spec_omschrijving || null,
-        tarief_terrevolt: r.tarief_terrevolt ?? null,
-        tarief_inkoop: r.tarief_inkoop ?? null,
+        tarief: r.tarief ?? null,
+        eigen_kosten: r.eigen_kosten ?? null,
         aantal: r.aantal ?? 1,
         medewerker_id: r.medewerker_id || null,
         geplande_uren: r.geplande_uren ?? null,
@@ -112,7 +116,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
         <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Hoe wordt dit project vergoed?</p>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { key: "stuksprijzen", Icon: ClipboardList, label: "Stuksprijzen", desc: "Vergoeding per spec-code (R320010 etc.)", sub: "Liander tarieven als basis" },
+            { key: "stuksprijzen", Icon: ClipboardList, label: "Stuksprijzen", desc: "Vergoeding per spec-code (R320010 etc.)", sub: "Tarieven Van Gelder als basis" },
             { key: "uren", Icon: Clock, label: "Op uren", desc: "Vergoeding per gewerkt uur", sub: "Op basis van monteurtarief" },
           ].map(o => (
             <button key={o.key} onClick={() => selectMethode(o.key)} className="p-5 rounded-[14px] text-center space-y-2 transition-colors hover:border-[var(--accent)]" style={{ background: "var(--bg-surface)", border: "1.5px solid var(--border)", cursor: "pointer" }}>
@@ -128,25 +132,30 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   }
 
   if (methode === "stuksprijzen") {
-    return <StuksprijzenEditor regels={regels} onUpdate={updateRegels} onSave={() => saveRegels(regels)} />;
+    return <StuksprijzenEditor regels={regels} onUpdate={updateRegels} onSave={() => saveRegels(regels)} specCodes={specCodes} />;
   }
 
   return <UrenEditor regels={regels} monteurs={monteurs} onUpdate={updateRegels} onSave={() => saveRegels(regels)} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} />;
 }
 
-function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; onSave: () => void }) {
+function StuksprijzenEditor({ regels, onUpdate, onSave, specCodes }: { regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; onSave: () => void; specCodes: SpecCode[] }) {
   const [search, setSearch] = useState("");
   const [openGroepen, setOpenGroepen] = useState<Set<string>>(new Set());
 
+  const groepen = useMemo(() => {
+    const gs = new Set(specCodes.map(s => s.groep));
+    return Array.from(gs).sort();
+  }, [specCodes]);
+
   const filtered = useMemo(() => {
-    if (!search.trim()) return SPEC_CODES;
+    if (!search.trim()) return specCodes;
     const q = search.toLowerCase();
-    return SPEC_CODES.filter(s => s.code.toLowerCase().includes(q) || s.omschrijving.toLowerCase().includes(q));
-  }, [search]);
+    return specCodes.filter(s => s.code.toLowerCase().includes(q) || s.omschrijving.toLowerCase().includes(q));
+  }, [search, specCodes]);
 
   function addCode(sc: SpecCode) {
     if (regels.find(r => r.spec_code === sc.code)) return;
-    onUpdate([...regels, { type: "stuks", spec_code: sc.code, spec_omschrijving: sc.omschrijving, tarief_terrevolt: sc.tarief_terrevolt, tarief_inkoop: sc.tarief_inkoop, aantal: 1 }]);
+    onUpdate([...regels, { type: "stuks", spec_code: sc.code, spec_omschrijving: sc.omschrijving, tarief: sc.tarief, eigen_kosten: 0, aantal: 1 }]);
   }
 
   function updateAantal(code: string, delta: number) {
@@ -161,11 +170,7 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
     onUpdate(regels.filter(r => r.spec_code !== code));
   }
 
-  const totaalOmzet = regels.reduce((s, r) => s + (r.tarief_terrevolt || 0) * (r.aantal || 1), 0);
-  const totaalKosten = regels.reduce((s, r) => s + (r.tarief_inkoop || 0) * (r.aantal || 1), 0);
-  const margeEuro = totaalOmzet - totaalKosten;
-  const margePerc = totaalOmzet > 0 ? (margeEuro / totaalOmzet) * 100 : 0;
-  const margeColor = margePerc > 30 ? "var(--success)" : margePerc >= 15 ? "var(--warn-text)" : "var(--danger)";
+  const totaalOmzet = regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0);
 
   const selectedCodes = new Set(regels.map(r => r.spec_code));
 
@@ -178,14 +183,15 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
       </div>
 
       <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
-        {SPEC_CODE_GROEPEN.map(g => {
-          const codes = filtered.filter(s => s.groep === g.prefix);
+        {groepen.map(g => {
+          const codes = filtered.filter(s => s.groep === g);
           if (codes.length === 0) return null;
-          const open = openGroepen.has(g.prefix);
+          const open = openGroepen.has(g);
+          const label = GROEP_LABELS[g] || g;
           return (
-            <div key={g.prefix}>
-              <button onClick={() => { const n = new Set(openGroepen); open ? n.delete(g.prefix) : n.add(g.prefix); setOpenGroepen(n); }} className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold" style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)", borderBottom: "1px solid var(--border)" }}>
-                {g.label}
+            <div key={g}>
+              <button onClick={() => { const n = new Set(openGroepen); open ? n.delete(g) : n.add(g); setOpenGroepen(n); }} className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold" style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)", borderBottom: "1px solid var(--border)" }}>
+                {label}
                 {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               </button>
               {open && codes.map(sc => (
@@ -195,7 +201,7 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
                   </button>
                   <span className={`${mono} w-16 shrink-0`} style={{ color: "var(--accent)" }}>{sc.code}</span>
                   <span className="flex-1 truncate" style={{ color: "var(--text-primary)" }}>{sc.omschrijving}</span>
-                  <span className={`${mono} shrink-0`} style={{ color: "var(--text-secondary)" }}>{fmt(sc.tarief_terrevolt)}</span>
+                  <span className={`${mono} shrink-0`} style={{ color: "var(--text-secondary)" }}>{fmt(sc.tarief)} / {sc.eenheid}</span>
                 </div>
               ))}
             </div>
@@ -208,11 +214,11 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
         <>
           <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Geselecteerde codes</p>
           <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-            <div className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
-              <span>Code</span><span>Omschrijving</span><span>Aantal</span><span>Liander betaalt</span><span>TerreVolt kosten</span><span></span>
+            <div className="grid grid-cols-[80px_1fr_70px_90px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
+              <span>Code</span><span>Omschrijving</span><span>Aantal</span><span>Totaal omzet</span><span></span>
             </div>
             {regels.map(r => (
-              <div key={r.spec_code} className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid var(--border)" }}>
+              <div key={r.spec_code} className="grid grid-cols-[80px_1fr_70px_90px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid var(--border)" }}>
                 <span className={mono} style={{ color: "var(--accent)" }}>{r.spec_code}</span>
                 <span className="truncate" style={{ color: "var(--text-primary)" }}>{r.spec_omschrijving}</span>
                 <div className="flex items-center gap-0.5">
@@ -220,8 +226,7 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
                   <input type="number" value={r.aantal || 1} onChange={e => setAantal(r.spec_code!, parseFloat(e.target.value) || 1)} className={`w-8 text-center text-[11px] ${mono} bg-transparent`} style={{ color: "var(--text-primary)" }} />
                   <button onClick={() => updateAantal(r.spec_code!, 0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Plus className="h-3 w-3" style={{ color: "var(--text-secondary)" }} /></button>
                 </div>
-                <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt((r.tarief_terrevolt || 0) * (r.aantal || 1))}</span>
-                <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt((r.tarief_inkoop || 0) * (r.aantal || 1))}</span>
+                <span className={mono} style={{ color: "var(--success)" }}>{fmt((r.tarief || 0) * (r.aantal || 1))}</span>
                 <button onClick={() => removeCode(r.spec_code!)} className="w-5 h-5 rounded flex items-center justify-center" style={{ color: "var(--danger)" }}><X className="h-3.5 w-3.5" /></button>
               </div>
             ))}
@@ -229,20 +234,9 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
 
           {/* Totals */}
           <div className="rounded-xl p-3.5 space-y-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-            <div className="flex justify-between text-[12px]">
-              <span style={{ color: "var(--text-secondary)" }}>Totaal omzet (Liander betaalt)</span>
-              <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(totaalOmzet)}</span>
-            </div>
-            <div className="flex justify-between text-[12px]">
-              <span style={{ color: "var(--text-secondary)" }}>Totaal kosten (TerreVolt)</span>
-              <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(totaalKosten)}</span>
-            </div>
-            <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid var(--border)" }}>
-              <span style={{ color: "var(--text-primary)" }}>Marge</span>
-              <div className="flex items-center gap-2">
-                <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(margeEuro)}</span>
-                <span className="px-3 py-0.5 rounded-full text-[13px] font-semibold" style={{ background: margeColor + "18", color: margeColor }}>{margePerc.toFixed(1)}%</span>
-              </div>
+            <div className="flex justify-between text-[13px] font-semibold">
+              <span style={{ color: "var(--text-primary)" }}>Totaal omzet (Van Gelder)</span>
+              <span className={mono} style={{ color: "var(--success)" }}>{fmt(totaalOmzet)}</span>
             </div>
           </div>
 
@@ -293,7 +287,6 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
 
   return (
     <div className="space-y-4">
-      {/* Add monteur */}
       <div className="flex gap-2">
         <select value={selectedMonteur} onChange={e => setSelectedMonteur(e.target.value)} className="flex-1 px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
           <option value="">Monteur toevoegen...</option>
@@ -327,7 +320,6 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
             })}
           </div>
 
-          {/* Omzet input & totals */}
           <div className="rounded-xl p-3.5 space-y-2" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
             <div className="flex justify-between text-[12px]">
               <span style={{ color: "var(--text-secondary)" }}>Totaal geplande uren</span>

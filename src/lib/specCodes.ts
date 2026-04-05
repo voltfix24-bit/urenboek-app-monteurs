@@ -1,64 +1,82 @@
 export interface SpecCode {
   code: string;
   omschrijving: string;
-  tarief_terrevolt: number;
-  tarief_inkoop: number;
+  eenheid: string;
+  tarief: number;
   groep: string;
 }
 
-export const SPEC_CODE_GROEPEN: { label: string; prefix: string }[] = [
-  { label: "R31x — Bouwkundig", prefix: "R31" },
-  { label: "R32x — MS-installatie", prefix: "R32" },
-  { label: "R33x — Trafoposten", prefix: "R33" },
-  { label: "R34x — LS-rek", prefix: "R34" },
-  { label: "R35x — Aarding", prefix: "R35" },
-  { label: "R37x — Overig", prefix: "R37" },
-  { label: "R41x — Kabels & moffen", prefix: "R41" },
-  { label: "R44x — WV", prefix: "R44" },
-  { label: "R50x — Revisie", prefix: "R50" },
-];
+export const GROEP_LABELS: Record<string, string> = {
+  'R31x': 'R31x — Bouwkundig',
+  'R32x': 'R32x — MS-installatie',
+  'R33x': 'R33x — Trafoposten',
+  'R34x': 'R34x — LS-installatie',
+  'R35x': 'R35x — Aarding',
+  'R36x': 'R36x — OV',
+  'R37x': 'R37x — Overig',
+  'R41x': 'R41x — MS moffen/eindsluit',
+  'R42x': 'R42x — LS moffen/eindsluit',
+  'R43x': 'R43x — Aansluitingen',
+  'R44x': 'R44x — WV',
+  'R50x': 'R50x — Revisie/oplevering',
+  'R61x': 'R61x — Personeel',
+};
 
 export const SPEC_CODES: SpecCode[] = [
-  // R31x — Bouwkundig
-  { code: "R310010", omschrijving: "Boren/coördinatie", tarief_terrevolt: 134.96, tarief_inkoop: 47.54, groep: "R31" },
-  { code: "R310020", omschrijving: "Dichtzetten", tarief_terrevolt: 92.21, tarief_inkoop: 49.70, groep: "R31" },
-  { code: "R310030", omschrijving: "GGI", tarief_terrevolt: 440.22, tarief_inkoop: 182.85, groep: "R31" },
-  { code: "R310040", omschrijving: "Traanplaat", tarief_terrevolt: 771.56, tarief_inkoop: 216.18, groep: "R31" },
-  // R32x — MS-installatie
-  { code: "R320010", omschrijving: "MS-installatie", tarief_terrevolt: 19130, tarief_inkoop: 7820, groep: "R32" },
-  { code: "R320020", omschrijving: "Extra MS-veld", tarief_terrevolt: 2645, tarief_inkoop: 1524, groep: "R32" },
-  { code: "R320030", omschrijving: "Ombouw MS→iMS", tarief_terrevolt: 1543, tarief_inkoop: 581, groep: "R32" },
-  { code: "R320040", omschrijving: "Compactstation", tarief_terrevolt: 12603, tarief_inkoop: 5352, groep: "R32" },
-  // R33x — Trafoposten
-  { code: "R330010", omschrijving: "Plaatsen trafo", tarief_terrevolt: 2346, tarief_inkoop: 1088, groep: "R33" },
-  { code: "R330020", omschrijving: "Draaien trafo", tarief_terrevolt: 2346, tarief_inkoop: 987, groep: "R33" },
-  { code: "R330030", omschrijving: "Kabel betreedbaar", tarief_terrevolt: 1876, tarief_inkoop: 658, groep: "R33" },
-  { code: "R330040", omschrijving: "Kabel compact", tarief_terrevolt: 1407, tarief_inkoop: 629, groep: "R33" },
-  { code: "R330050", omschrijving: "Vrijschakelen", tarief_terrevolt: 469, tarief_inkoop: 216, groep: "R33" },
-  // R34x — LS-rek
-  { code: "R340010", omschrijving: "LS-rek ≤630kVA", tarief_terrevolt: 3838, tarief_inkoop: 2004, groep: "R34" },
-  { code: "R340020", omschrijving: "LS-rek >630kVA", tarief_terrevolt: 4691, tarief_inkoop: 2276, groep: "R34" },
-  { code: "R340030", omschrijving: "Uitbreidingsrek", tarief_terrevolt: 1379, tarief_inkoop: 364, groep: "R34" },
-  { code: "R340040", omschrijving: "LS stroken", tarief_terrevolt: 441, tarief_inkoop: 73, groep: "R34" },
-  { code: "R340050", omschrijving: "LS-kabel aansluiten", tarief_terrevolt: 220, tarief_inkoop: 146, groep: "R34" },
-  { code: "R340060", omschrijving: "Zekeringen wisselen", tarief_terrevolt: 247, tarief_inkoop: 52, groep: "R34" },
-  // R35x — Aarding
-  { code: "R350010", omschrijving: "Meten aardweerstand", tarief_terrevolt: 220.44, tarief_inkoop: 144.72, groep: "R35" },
-  { code: "R350020", omschrijving: "Vereffeningsleiding", tarief_terrevolt: 2352, tarief_inkoop: 966.93, groep: "R35" },
-  // R37x — Overig
-  { code: "R370010", omschrijving: "Provisorium", tarief_terrevolt: 3875, tarief_inkoop: 3279, groep: "R37" },
-  { code: "R370020", omschrijving: "LS kast", tarief_terrevolt: 1352, tarief_inkoop: 582.21, groep: "R37" },
-  { code: "R370030", omschrijving: "NSA", tarief_terrevolt: 938.23, tarief_inkoop: 480.45, groep: "R37" },
-  // R41x — Kabels & moffen
-  { code: "R410010", omschrijving: "MS eindsluiting", tarief_terrevolt: 1250, tarief_inkoop: 580, groep: "R41" },
-  { code: "R410020", omschrijving: "MS verbindingsmof", tarief_terrevolt: 1450, tarief_inkoop: 670, groep: "R41" },
-  { code: "R370010", omschrijving: "Provisorium", tarief_terrevolt: 3875, tarief_inkoop: 3279, groep: "R37" },
-  { code: "R370020", omschrijving: "LS kast", tarief_terrevolt: 1352, tarief_inkoop: 582.21, groep: "R37" },
-  { code: "R370030", omschrijving: "NSA", tarief_terrevolt: 938.23, tarief_inkoop: 480.45, groep: "R37" },
-  // R44x — WV
-  { code: "R440010", omschrijving: "WV-er", tarief_terrevolt: 136.43, tarief_inkoop: 90, groep: "R44" },
-  { code: "R440020", omschrijving: "WV-er opleiding", tarief_terrevolt: 68.22, tarief_inkoop: 40, groep: "R44" },
-  // R50x — Revisie
-  { code: "R500010", omschrijving: "Revisie volledig", tarief_terrevolt: 2540, tarief_inkoop: 1138, groep: "R50" },
-  { code: "R500020", omschrijving: "Revisie excl civiel", tarief_terrevolt: 1465, tarief_inkoop: 851.81, groep: "R50" },
+  { code: 'R310010', omschrijving: 'Boren gaten tbv doorvoeren', eenheid: 'st', tarief: 66.56, groep: 'R31x' },
+  { code: 'R310020', omschrijving: 'Dichtzetten doorvoeringen', eenheid: 'st', tarief: 59.13, groep: 'R31x' },
+  { code: 'R310030', omschrijving: 'GGI', eenheid: 'st', tarief: 235.99, groep: 'R31x' },
+  { code: 'R310040', omschrijving: 'Traanplaat', eenheid: 'st', tarief: 302.66, groep: 'R31x' },
+  { code: 'R320010', omschrijving: 'Basis MS-installatie', eenheid: 'st', tarief: 9200.98, groep: 'R32x' },
+  { code: 'R320020', omschrijving: 'Extra MS-veld', eenheid: 'st', tarief: 1696.24, groep: 'R32x' },
+  { code: 'R320030', omschrijving: 'Ombouw MS → iMS', eenheid: 'st', tarief: 813.27, groep: 'R32x' },
+  { code: 'R320040', omschrijving: 'Compactstation', eenheid: 'st', tarief: 6493.32, groep: 'R32x' },
+  { code: 'R330010', omschrijving: 'Plaatsen transformator', eenheid: 'st', tarief: 1504.04, groep: 'R33x' },
+  { code: 'R330020', omschrijving: 'Draaien transformator', eenheid: 'st', tarief: 1241.86, groep: 'R33x' },
+  { code: 'R330030', omschrijving: 'Trafokabel betreedbaar', eenheid: 'st', tarief: 821.25, groep: 'R33x' },
+  { code: 'R330040', omschrijving: 'Trafokabel compact', eenheid: 'st', tarief: 810.46, groep: 'R33x' },
+  { code: 'R330050', omschrijving: 'Vrijschakelen trafo', eenheid: 'st', tarief: 300.81, groep: 'R33x' },
+  { code: 'R340010', omschrijving: 'LS-rek ≤630kVA', eenheid: 'st', tarief: 2460.94, groep: 'R34x' },
+  { code: 'R340020', omschrijving: 'LS-rek >630kVA', eenheid: 'st', tarief: 2808.08, groep: 'R34x' },
+  { code: 'R340030', omschrijving: 'Uitbreidingsrek', eenheid: 'st', tarief: 509.43, groep: 'R34x' },
+  { code: 'R340040', omschrijving: 'LS stroken', eenheid: 'st', tarief: 101.89, groep: 'R34x' },
+  { code: 'R340050', omschrijving: 'LS-kabel aansluiten', eenheid: 'st', tarief: 165.55, groep: 'R34x' },
+  { code: 'R340060', omschrijving: 'Zekeringen wisselen', eenheid: 'st', tarief: 73.45, groep: 'R34x' },
+  { code: 'R350010', omschrijving: 'Meten aardweerstand', eenheid: 'keer', tarief: 164.76, groep: 'R35x' },
+  { code: 'R350020', omschrijving: 'Vereffeningsleiding', eenheid: 'st', tarief: 1253.70, groep: 'R35x' },
+  { code: 'R360010', omschrijving: 'OV kast', eenheid: 'st', tarief: 487.61, groep: 'R36x' },
+  { code: 'R360020', omschrijving: 'OV kWh-meter', eenheid: 'st', tarief: 106.02, groep: 'R36x' },
+  { code: 'R370010', omschrijving: 'Provisorium', eenheid: 'st', tarief: 3875.16, groep: 'R37x' },
+  { code: 'R370020', omschrijving: 'LS kast', eenheid: 'st', tarief: 815.10, groep: 'R37x' },
+  { code: 'R370030', omschrijving: 'NSA coördinatie', eenheid: 'st', tarief: 601.62, groep: 'R37x' },
+  { code: 'R410010', omschrijving: 'MS mof', eenheid: 'st', tarief: 610.93, groep: 'R41x' },
+  { code: 'R410020', omschrijving: 'MS eindsluiting', eenheid: 'st', tarief: 494.74, groep: 'R41x' },
+  { code: 'R420010', omschrijving: 'LS mof', eenheid: 'st', tarief: 141.35, groep: 'R42x' },
+  { code: 'R420020', omschrijving: 'LS eindsluiting', eenheid: 'st', tarief: 115.15, groep: 'R42x' },
+  { code: 'R430010', omschrijving: 'Overzetten huisaansluiting', eenheid: 'st', tarief: 314.88, groep: 'R43x' },
+  { code: 'R430020', omschrijving: 'Verwijderen LS kast', eenheid: 'st', tarief: 442.16, groep: 'R43x' },
+  { code: 'R440010', omschrijving: 'WV-er', eenheid: 'uur', tarief: 110.00, groep: 'R44x' },
+  { code: 'R440020', omschrijving: 'WV-er io', eenheid: 'uur', tarief: 50.00, groep: 'R44x' },
+  { code: 'R440030', omschrijving: 'Vrijschakelen kabeldeel', eenheid: 'keer', tarief: 300.81, groep: 'R44x' },
+  { code: 'R500010', omschrijving: 'Revisiedossier volledig', eenheid: 'st', tarief: 1393.63, groep: 'R50x' },
+  { code: 'R500020', omschrijving: 'Revisiedossier excl civiel', eenheid: 'st', tarief: 939.49, groep: 'R50x' },
+  { code: 'R610040', omschrijving: 'VP', eenheid: 'uur', tarief: 70.00, groep: 'R61x' },
+  { code: 'R610050', omschrijving: 'AVP distributie', eenheid: 'uur', tarief: 75.00, groep: 'R61x' },
+  { code: 'R610060', omschrijving: 'VOP', eenheid: 'uur', tarief: 55.00, groep: 'R61x' },
 ];
+
+export async function loadSpecCodes(supabase: any): Promise<SpecCode[]> {
+  const { data } = await supabase
+    .from('spec_code_tarieven')
+    .select('*')
+    .eq('actief', true)
+    .order('code');
+  if (!data || data.length === 0) return SPEC_CODES;
+  return data.map((d: any) => ({
+    code: d.code,
+    omschrijving: d.omschrijving,
+    eenheid: d.eenheid,
+    tarief: Number(d.tarief),
+    groep: d.groep,
+  }));
+}
