@@ -364,7 +364,7 @@ export default function Profiel() {
                 { key: "system", label: "Systeem" },
                 { key: "dark", label: "☾ Donker" },
               ] as const).map(opt => {
-                const current = localStorage.getItem("terrevolt_theme") || "system";
+                const current = localStorage.getItem("terrevolt_theme") || "light";
                 const active = current === opt.key;
                 return (
                   <button key={opt.key} onClick={() => {
@@ -372,11 +372,14 @@ export default function Profiel() {
                     if (opt.key === "dark") {
                       document.documentElement.dataset.theme = "dark";
                     } else if (opt.key === "light") {
-                      document.documentElement.dataset.theme = "light";
-                    } else {
                       delete document.documentElement.dataset.theme;
+                    } else {
                       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-                      if (prefersDark) document.documentElement.dataset.theme = "dark";
+                      if (prefersDark) {
+                        document.documentElement.dataset.theme = "dark";
+                      } else {
+                        delete document.documentElement.dataset.theme;
+                      }
                     }
                     setLoading(l => !l);
                     setTimeout(() => setLoading(l => !l), 0);
