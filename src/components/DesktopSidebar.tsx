@@ -8,7 +8,7 @@ import { GlobalSearch } from "./GlobalSearch";
 import terrevoltLogo from "@/assets/terrevolt-logo.svg";
 import {
   LayoutDashboard, CheckCircle, CalendarDays, FolderOpen, Users,
-  BarChart3, Clock, Bell, User, LogOut, Search, AlertTriangle,
+  BarChart3, Clock, Bell, User, LogOut, Search, AlertTriangle, Settings,
 } from "lucide-react";
 
 const managerItems = [
@@ -111,6 +111,24 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
             );
           })}
         </nav>
+
+        {/* Beheer section - managers only */}
+        {isManager && (
+          <div className="px-3 pb-2">
+            <div className="mb-1 mt-1" style={{ borderTop: "1px solid var(--border)" }} />
+            <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5" style={{ color: "var(--text-muted)" }}>Beheer</p>
+            {[
+              { path: "/beheer/intake-regels", label: "Intake regels" },
+            ].map(item => (
+              <button key={item.path} onClick={() => navigate(item.path)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-colors text-left"
+                style={{ background: isActive(item.path) ? "var(--accent-light)" : "transparent", color: isActive(item.path) ? "var(--text-primary)" : "var(--text-muted)", opacity: 0.8 }}>
+                <Settings style={{ width: 14, height: 14 }} />
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
           <div className="flex items-center gap-2.5">
