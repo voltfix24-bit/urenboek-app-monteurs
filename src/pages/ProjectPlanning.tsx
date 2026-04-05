@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { mutate } from "@/lib/supabaseHelpers";
 import { ArrowLeft, X, Save, Check, Plus, Minus, GripVertical, FileText, Trash2, Loader2 } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { BottomNav } from "@/components/BottomNav";
@@ -145,13 +146,12 @@ export default function ProjectPlanning() {
   const saveState = useCallback(async (s: MatrixState) => {
     if (!projectId) return;
     setSaveStatus("saving");
-    const { error } = await supabase.from("project_planning_matrix").upsert({
+    if (!await mutate(supabase.from("project_planning_matrix").upsert({
       project_id: projectId,
       state_json: s as any,
       updated_at: new Date().toISOString(),
       updated_by: myProfileId.current,
-    }, { onConflict: "project_id" });
-    if (error) { toast.error("Opslaan mislukt"); setSaveStatus("idle"); return; }
+    }, { onConflict: "project_id" }))) { setSaveStatus("idle"); return; }
     setSaveStatus("saved");
     setTimeout(() => setSaveStatus("idle"), 2000);
   }, [projectId]);

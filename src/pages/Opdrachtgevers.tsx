@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { mutate } from "@/lib/supabaseHelpers";
 import { ArrowLeft, Plus, Pencil, X, Phone, Mail, User, Building2 } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
@@ -19,9 +20,9 @@ export default function Opdrachtgevers() {
   useEffect(() => { fetchItems(); }, [fetchItems]);
   useEffect(() => { if (!isManager) navigate("/"); }, [isManager, navigate]);
 
-  async function handleAdd() { if (!form.naam.trim()) { toast.error("Vul een bedrijfsnaam in"); return; } const { error } = await supabase.from("opdrachtgevers").insert({ naam: form.naam.trim(), contactpersoon: form.contactpersoon.trim(), telefoon: form.telefoon.trim(), email: form.email.trim() }); if (error) toast.error("Fout"); else { toast.success("Toegevoegd"); setForm(emptyForm); setShowAdd(false); fetchItems(); } }
-  async function handleUpdate(id: string) { if (!form.naam.trim()) { toast.error("Vul een bedrijfsnaam in"); return; } const { error } = await supabase.from("opdrachtgevers").update({ naam: form.naam.trim(), contactpersoon: form.contactpersoon.trim(), telefoon: form.telefoon.trim(), email: form.email.trim() }).eq("id", id); if (error) toast.error("Fout"); else { toast.success("Gewijzigd"); setEditId(null); setForm(emptyForm); fetchItems(); } }
-  async function handleDelete(item: Opdrachtgever) { if (confirmDeleteId !== item.id) { setConfirmDeleteId(item.id); return; } setConfirmDeleteId(null); const { error } = await supabase.from("opdrachtgevers").delete().eq("id", item.id); if (error) toast.error("Fout — mogelijk zijn er nog projecten aan gekoppeld"); else { toast.success("Verwijderd"); fetchItems(); } }
+  async function handleAdd() { if (!form.naam.trim()) { toast.error("Vul een bedrijfsnaam in"); return; } if (!await mutate(supabase.from("opdrachtgevers").insert({ naam: form.naam.trim(), contactpersoon: form.contactpersoon.trim(), telefoon: form.telefoon.trim(), email: form.email.trim() }))) return; toast.success("Toegevoegd"); setForm(emptyForm); setShowAdd(false); fetchItems(); }
+  async function handleUpdate(id: string) { if (!form.naam.trim()) { toast.error("Vul een bedrijfsnaam in"); return; } if (!await mutate(supabase.from("opdrachtgevers").update({ naam: form.naam.trim(), contactpersoon: form.contactpersoon.trim(), telefoon: form.telefoon.trim(), email: form.email.trim() }).eq("id", id))) return; toast.success("Gewijzigd"); setEditId(null); setForm(emptyForm); fetchItems(); }
+  async function handleDelete(item: Opdrachtgever) { if (confirmDeleteId !== item.id) { setConfirmDeleteId(item.id); return; } setConfirmDeleteId(null); if (!await mutate(supabase.from("opdrachtgevers").delete().eq("id", item.id))) return; toast.success("Verwijderd"); fetchItems(); }
 
   return (
     <PageShell>

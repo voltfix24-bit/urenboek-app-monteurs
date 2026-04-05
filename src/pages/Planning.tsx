@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 import { toast } from "sonner";
+import { mutate } from "@/lib/supabaseHelpers";
 
 interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
@@ -93,7 +94,7 @@ export default function Planning() {
 
   const saveUren = async (submitDirect: boolean) => {
     if (!profileId || !modalItem) return;
-    const { error } = await supabase.from("uren_boekingen").insert({
+    if (!await mutate(supabase.from("uren_boekingen").insert({
       medewerker_id: profileId,
       project_id: modalItem.project_id,
       datum: modalItem.datum,
@@ -101,8 +102,7 @@ export default function Planning() {
       type: urenForm.werkzaamheden,
       beschrijving: urenForm.werkzaamheden,
       status: submitDirect ? "ingediend" : "concept",
-    });
-    if (error) { toast.error("Fout bij opslaan"); return; }
+    }))) return;
     toast.success("Uren geboekt ✓");
     setShowUrenModal(false);
     fetchPlanning();

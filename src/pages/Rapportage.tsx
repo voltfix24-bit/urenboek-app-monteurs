@@ -3,6 +3,7 @@ import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { query } from "@/lib/supabaseHelpers";
 import { Download, ChevronLeft, ChevronRight, FileText, Clock, FolderOpen, Users, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, startOfISOWeek, addDays, getISOWeek, getISOWeekYear, addWeeks } from "date-fns";
@@ -32,21 +33,21 @@ export default function Rapportage() {
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
-    let query = supabase.from("uren_boekingen").select("*").gte("datum", startDate).lte("datum", endDate).order("datum");
-    if (filter !== "alle") query = query.eq("status", filter);
-    const { data: boekingen, error } = await query;
-    if (error) { toast.error("Fout bij ophalen"); setLoading(false); return; }
+    let q = supabase.from("uren_boekingen").select("*").gte("datum", startDate).lte("datum", endDate).order("datum");
+    if (filter !== "alle") q = q.eq("status", filter);
+    const boekingen = await query(q);
+    if (!boekingen) { setLoading(false); return; }
 
-    const medIds = [...new Set((boekingen ?? []).map((b: any) => b.medewerker_id))];
-    const projIds = [...new Set((boekingen ?? []).map((b: any) => b.project_id))];
-    const [{ data: profiles }, { data: projects }] = await Promise.all([
-      medIds.length > 0 ? supabase.from("profiles").select("id, full_name").in("id", medIds) : { data: [] },
-      projIds.length > 0 ? supabase.from("projects").select("id, naam, nummer").in("id", projIds) : { data: [] },
+    const medIds = [...new Set(boekingen.map((b: any) => b.medewerker_id))];
+    const projIds = [...new Set(boekingen.map((b: any) => b.project_id))];
+    const [profiles, projects] = await Promise.all([
+      medIds.length > 0 ? query(supabase.from("profiles").select("id, full_name").in("id", medIds)) : [],
+      projIds.length > 0 ? query(supabase.from("projects").select("id, naam, nummer").in("id", projIds)) : [],
     ]);
     const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p.full_name]));
     const projMap = new Map((projects ?? []).map((p: any) => [p.id, p]));
 
-    setEntries((boekingen ?? []).map((e: any) => {
+    setEntries(boekingen.map((e: any) => {
       const proj = projMap.get(e.project_id) || { naam: "Onbekend", nummer: "" };
       return {
         datum: e.datum, project_nummer: proj.nummer, project_naam: proj.naam,

@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
+import { mutate } from "@/lib/supabaseHelpers";
 import { Send, ArrowLeft, AlertTriangle, Bell } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -58,9 +59,8 @@ export default function Mededelingen() {
 
   const sendMededeling = async () => {
     if (!profileId || !titel.trim()) return;
-    const { error } = await supabase.from("mededelingen").insert({ titel: titel.trim(), inhoud: inhoud.trim(), urgentie, ontvanger_type: ontvangerType, verzonden_door: profileId });
-    if (error) toast.error("Fout bij verzenden");
-    else { toast.success("Mededeling verzonden!"); setShowCompose(false); setTitel(""); setInhoud(""); setUrgentie("normaal"); setOntvangerType("iedereen"); fetchMededelingen(); }
+    if (!await mutate(supabase.from("mededelingen").insert({ titel: titel.trim(), inhoud: inhoud.trim(), urgentie, ontvanger_type: ontvangerType, verzonden_door: profileId }))) return;
+    toast.success("Mededeling verzonden!"); setShowCompose(false); setTitel(""); setInhoud(""); setUrgentie("normaal"); setOntvangerType("iedereen"); fetchMededelingen();
   };
 
   const unreadCount = items.filter(i => !i.gelezen).length;

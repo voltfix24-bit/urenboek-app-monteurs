@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
+import { mutate } from "@/lib/supabaseHelpers";
 import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -92,21 +93,18 @@ export default function ManagerPlanning() {
   const savePlanning = async () => {
     if (!myProfileId) return;
     if (editId) {
-      const { error } = await supabase.from("planning").update({ project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any).eq("id", editId);
-      if (error) toast.error("Fout bij bijwerken");
-      else { toast.success("Planning bijgewerkt"); setShowModal(false); fetchAll(); }
+      if (!await mutate(supabase.from("planning").update({ project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any).eq("id", editId))) return;
+      toast.success("Planning bijgewerkt"); setShowModal(false); fetchAll();
     } else {
-      const { error } = await supabase.from("planning").insert({ medewerker_id: modalForm.medewerker_id, project_id: modalForm.project_id, datum: modalForm.datum, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie, created_by: myProfileId } as any);
-      if (error) toast.error("Fout bij aanmaken");
-      else { toast.success("Ingepland!"); setShowModal(false); fetchAll(); }
+      if (!await mutate(supabase.from("planning").insert({ medewerker_id: modalForm.medewerker_id, project_id: modalForm.project_id, datum: modalForm.datum, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie, created_by: myProfileId } as any))) return;
+      toast.success("Ingepland!"); setShowModal(false); fetchAll();
     }
   };
 
   const deletePlanning = async () => {
     if (!editId) return;
-    const { error } = await supabase.from("planning").delete().eq("id", editId);
-    if (error) toast.error("Fout bij verwijderen");
-    else { toast.success("Verwijderd"); setShowModal(false); fetchAll(); }
+    if (!await mutate(supabase.from("planning").delete().eq("id", editId))) return;
+    toast.success("Verwijderd"); setShowModal(false); fetchAll();
   };
 
   const projMap = new Map(projects.map(p => [p.id, p]));

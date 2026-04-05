@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { mutate } from "@/lib/supabaseHelpers";
 import { format, startOfISOWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass, CheckCircle, Users, TrendingUp, CalendarDays } from "lucide-react";
@@ -156,22 +157,19 @@ export default function Dashboard() {
   useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
   const handleApprove = async (id: string) => {
-    const { error } = await supabase.from("uren_boekingen").update({ status: "goedgekeurd" } as any).eq("id", id);
-    if (error) toast.error("Fout bij goedkeuren");
-    else { toast.success("Goedgekeurd"); fetchDashboard(); }
+    if (!await mutate(supabase.from("uren_boekingen").update({ status: "goedgekeurd" } as any).eq("id", id))) return;
+    toast.success("Goedgekeurd"); fetchDashboard();
   };
 
   const handleReject = async () => {
     if (!afkeurId || !afkeurReden.trim()) { toast.error("Vul een reden in"); return; }
-    const { error } = await supabase.from("uren_boekingen").update({ status: "afgekeurd", afkeur_reden: afkeurReden.trim() } as any).eq("id", afkeurId);
-    if (error) toast.error("Fout bij afkeuren");
-    else { toast.success("Afgekeurd"); setAfkeurId(null); setAfkeurReden(""); fetchDashboard(); }
+    if (!await mutate(supabase.from("uren_boekingen").update({ status: "afgekeurd", afkeur_reden: afkeurReden.trim() } as any).eq("id", afkeurId))) return;
+    toast.success("Afgekeurd"); setAfkeurId(null); setAfkeurReden(""); fetchDashboard();
   };
 
   const handleVerlof = async (id: string, status: string) => {
-    const { error } = await supabase.from("beschikbaarheid").update({ status } as any).eq("id", id);
-    if (error) toast.error("Fout");
-    else { toast.success(status === "goedgekeurd" ? "Goedgekeurd" : "Afgekeurd"); fetchDashboard(); }
+    if (!await mutate(supabase.from("beschikbaarheid").update({ status } as any).eq("id", id))) return;
+    toast.success(status === "goedgekeurd" ? "Goedgekeurd" : "Afgekeurd"); fetchDashboard();
   };
 
   const margeColor = (m: number) => m >= 30 ? "var(--success)" : m >= 15 ? "var(--warn-dot)" : "var(--danger)";

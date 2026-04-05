@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { mutate } from "@/lib/supabaseHelpers";
 import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays } from "lucide-react";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
@@ -94,9 +95,8 @@ export default function Projecten() {
       if (form.contactpersoon_tel.trim()) insert.contactpersoon_tel = form.contactpersoon_tel.trim();
       if (form.contactpersoon_email.trim()) insert.contactpersoon_email = form.contactpersoon_email.trim();
     }
-    const { error } = await supabase.from("projects").insert(insert);
-    if (error) toast.error(error.message.includes("duplicate") ? "Casenummer bestaat al" : "Fout bij toevoegen");
-    else { toast.success("Project toegevoegd"); setForm(emptyForm); setShowAdd(false); fetchData(); }
+    if (!await mutate(supabase.from("projects").insert(insert))) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); return; }
+    toast.success("Project toegevoegd"); setForm(emptyForm); setShowAdd(false); fetchData();
   }
 
   async function handleUpdate(id: string) {
@@ -113,21 +113,20 @@ export default function Projecten() {
       update.contactpersoon_tel = form.contactpersoon_tel.trim() || null;
       update.contactpersoon_email = form.contactpersoon_email.trim() || null;
     }
-    const { error } = await supabase.from("projects").update(update).eq("id", id);
-    if (error) toast.error("Fout bij wijzigen");
-    else { toast.success("Project gewijzigd"); setEditId(null); setForm(emptyForm); fetchData(); }
+    if (!await mutate(supabase.from("projects").update(update).eq("id", id))) return;
+    toast.success("Project gewijzigd"); setEditId(null); setForm(emptyForm); fetchData();
   }
 
   async function toggleActive(p: Project) {
-    const { error } = await supabase.from("projects").update({ active: !p.active }).eq("id", p.id);
-    if (error) toast.error("Fout"); else { toast.success(p.active ? "Gedeactiveerd" : "Geactiveerd"); fetchData(); }
+    if (!await mutate(supabase.from("projects").update({ active: !p.active }).eq("id", p.id))) return;
+    toast.success(p.active ? "Gedeactiveerd" : "Geactiveerd"); fetchData();
   }
 
   async function handleDelete(p: Project) {
     if (confirmDeleteId !== p.id) { setConfirmDeleteId(p.id); return; }
     setConfirmDeleteId(null);
-    const { error } = await supabase.from("projects").delete().eq("id", p.id);
-    if (error) toast.error("Fout bij verwijderen"); else { toast.success("Verwijderd"); setSearchQuery(""); setSelectedId(null); setDesktopMode("view"); fetchData(); }
+    if (!await mutate(supabase.from("projects").delete().eq("id", p.id))) return;
+    toast.success("Verwijderd"); setSearchQuery(""); setSelectedId(null); setDesktopMode("view"); fetchData();
   }
 
   function startEdit(p: Project) {
@@ -196,9 +195,8 @@ export default function Projecten() {
       if (form.contactpersoon_tel.trim()) insert.contactpersoon_tel = form.contactpersoon_tel.trim();
       if (form.contactpersoon_email.trim()) insert.contactpersoon_email = form.contactpersoon_email.trim();
     }
-    const { error } = await supabase.from("projects").insert(insert);
-    if (error) toast.error(error.message.includes("duplicate") ? "Casenummer bestaat al" : "Fout bij toevoegen");
-    else { toast.success("Project toegevoegd"); setForm(emptyForm); setDesktopMode("view"); fetchData(); }
+    if (!await mutate(supabase.from("projects").insert(insert))) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); return; }
+    toast.success("Project toegevoegd"); setForm(emptyForm); setDesktopMode("view"); fetchData();
   }
 
   async function handleDesktopUpdate() {
@@ -215,9 +213,8 @@ export default function Projecten() {
       update.contactpersoon_tel = form.contactpersoon_tel.trim() || null;
       update.contactpersoon_email = form.contactpersoon_email.trim() || null;
     }
-    const { error } = await supabase.from("projects").update(update).eq("id", selectedId);
-    if (error) toast.error("Fout bij wijzigen");
-    else { toast.success("Project gewijzigd"); setDesktopMode("view"); fetchData(); }
+    if (!await mutate(supabase.from("projects").update(update).eq("id", selectedId))) return;
+    toast.success("Project gewijzigd"); setDesktopMode("view"); fetchData();
   }
 
   function renderFormFields() {

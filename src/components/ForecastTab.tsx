@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { query, mutate } from "@/lib/supabaseHelpers";
 import { SPEC_CODES, SPEC_CODE_GROEPEN, type SpecCode } from "@/lib/specCodes";
 import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, Check, Info } from "lucide-react";
 
@@ -60,8 +61,8 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   useEffect(() => { loadForecast(); }, [loadForecast]);
 
   async function selectMethode(m: string) {
-    const { data, error } = await supabase.from("project_forecast").insert({ project_id: projectId, methode: m }).select().single();
-    if (error) { toast.error("Fout bij opslaan methode"); return; }
+    const data = await query(supabase.from("project_forecast").insert({ project_id: projectId, methode: m }).select().single());
+    if (!data) return;
     setForecastId(data.id);
     setMethode(m);
   }
@@ -82,8 +83,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
         geplande_uren: r.geplande_uren ?? null,
         uurtarief_snap: r.uurtarief_snap ?? null,
       }));
-      const { error } = await supabase.from("forecast_regels").insert(inserts);
-      if (error) { toast.error("Fout bij opslaan"); return; }
+      if (!await mutate(supabase.from("forecast_regels").insert(inserts))) return;
     }
     toast.success("Forecast opgeslagen");
   }

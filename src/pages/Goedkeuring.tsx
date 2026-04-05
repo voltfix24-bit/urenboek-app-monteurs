@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
+import { query, mutate } from "@/lib/supabaseHelpers";
 import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, startOfWeek, addDays } from "date-fns";
@@ -32,25 +33,25 @@ export default function Goedkeuring() {
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
-    const { data: boekingen, error } = await supabase
+    const boekingen = await query(supabase
       .from("uren_boekingen")
       .select("*")
       .gte("datum", format(weekStart, "yyyy-MM-dd"))
       .lte("datum", format(weekEnd, "yyyy-MM-dd"))
-      .order("datum");
-    if (error) { toast.error("Fout bij ophalen uren"); setLoading(false); return; }
+      .order("datum"));
+    if (!boekingen) { setLoading(false); return; }
 
-    const medIds = [...new Set((boekingen ?? []).map((b: any) => b.medewerker_id))];
-    const projIds = [...new Set((boekingen ?? []).map((b: any) => b.project_id))];
+    const medIds = [...new Set(boekingen.map((b: any) => b.medewerker_id))];
+    const projIds = [...new Set(boekingen.map((b: any) => b.project_id))];
 
-    const [{ data: profiles }, { data: projects }] = await Promise.all([
-      medIds.length > 0 ? supabase.from("profiles").select("id, full_name").in("id", medIds) : { data: [] },
-      projIds.length > 0 ? supabase.from("projects").select("id, naam, nummer").in("id", projIds) : { data: [] },
+    const [profiles, projects] = await Promise.all([
+      medIds.length > 0 ? query(supabase.from("profiles").select("id, full_name").in("id", medIds)) : [],
+      projIds.length > 0 ? query(supabase.from("projects").select("id, naam, nummer").in("id", projIds)) : [],
     ]);
     const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p.full_name]));
     const projMap = new Map((projects ?? []).map((p: any) => [p.id, p]));
 
-    const merged: EntryWithProfile[] = (boekingen ?? []).map((e: any) => {
+    const merged: EntryWithProfile[] = boekingen.map((e: any) => {
       const proj = projMap.get(e.project_id) || { naam: "Onbekend", nummer: "" };
       return {
         id: e.id, datum: e.datum, project_naam: proj.naam, project_nummer: proj.nummer,
@@ -68,9 +69,9 @@ export default function Goedkeuring() {
   const updateStatus = async (id: string, status: string, reden?: string) => {
     const update: any = { status, approved_by: myProfileId };
     if (reden) update.afkeur_reden = reden;
-    const { error } = await supabase.from("uren_boekingen").update(update).eq("id", id);
-    if (error) toast.error("Fout bij bijwerken");
-    else { toast.success(status === "goedgekeurd" ? "Goedgekeurd!" : "Afgekeurd"); fetchEntries(); }
+    if (!await mutate(supabase.from("uren_boekingen").update(update).eq("id", id))) return;
+    toast.success(status === "goedgekeurd" ? "Goedgekeurd!" : "Afgekeurd");
+    fetchEntries();
     setAfkeurId(null);
     setAfkeurReden("");
   };
@@ -79,9 +80,9 @@ export default function Goedkeuring() {
     const userEntries = entries.filter((e) => e.full_name === userName && e.status === "ingediend");
     if (userEntries.length === 0) return;
     const ids = userEntries.map((e) => e.id);
-    const { error } = await supabase.from("uren_boekingen").update({ status: "goedgekeurd", approved_by: myProfileId }).in("id", ids);
-    if (error) toast.error("Fout bij bulk-goedkeuring");
-    else { toast.success(`${userEntries.length} uren goedgekeurd voor ${userName}`); fetchEntries(); }
+    if (!await mutate(supabase.from("uren_boekingen").update({ status: "goedgekeurd", approved_by: myProfileId }).in("id", ids))) return;
+    toast.success(`${userEntries.length} uren goedgekeurd voor ${userName}`);
+    fetchEntries();
   };
 
   const filteredEntries = entries.filter((e) => filter === "alle" || e.status === filter);
