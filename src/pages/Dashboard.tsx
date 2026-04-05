@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
+import { PageShell } from "@/components/PageShell";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { format, startOfISOWeek, addDays } from "date-fns";
@@ -85,7 +86,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ background: "#F5F7F0", maxWidth: 430, margin: "0 auto", paddingBottom: 80 }}>
+    <PageShell>
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -221,8 +222,6 @@ export default function Dashboard() {
           </>
         )}
       </main>
-
-      <BottomNav />
-    </div>
+    </PageShell>
   );
 }
