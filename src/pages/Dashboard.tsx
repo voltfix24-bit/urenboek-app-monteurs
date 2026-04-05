@@ -153,6 +153,21 @@ export default function Dashboard() {
       setProjectsWithMarge(result.sort((a, b) => a.marge - b.marge));
     }
 
+    // Overuren meldingen
+    const { data: ouData, count: ouCount } = await supabase
+      .from("overuren_meldingen")
+      .select("id, medewerker_id, datum, type, geboekte_uren, limiet_uren", { count: "exact" })
+      .eq("status", "open")
+      .order("created_at", { ascending: false })
+      .limit(3);
+    if (ouData) {
+      const ouMedIds = [...new Set(ouData.map((m: any) => m.medewerker_id))];
+      const { data: ouProfs } = ouMedIds.length > 0 ? await supabase.from("profiles").select("id, full_name").in("id", ouMedIds) : { data: [] };
+      const ouNameMap = new Map((ouProfs ?? []).map((p: any) => [p.id, p.full_name]));
+      setOverurenMeldingen(ouData.map((m: any) => ({ ...m, full_name: ouNameMap.get(m.medewerker_id) || "Onbekend", geboekte_uren: Number(m.geboekte_uren), limiet_uren: Number(m.limiet_uren) })));
+    }
+    setOverurenCount(ouCount || 0);
+
     setLoading(false);
   }, [user]);
 
