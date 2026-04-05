@@ -187,7 +187,7 @@ export default function ManagerPlanning() {
           })()}
 
           <div className="flex gap-1">
-            <div className="w-16 shrink-0" />
+            <div className="w-16 lg:w-40 shrink-0" />
             {weekDates.map((d, i) => (
               <div key={i} className="flex-1 text-center">
                 <p className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>{DAGEN[i]}</p>
@@ -213,12 +213,12 @@ export default function ManagerPlanning() {
 
           {medewerkers.map((med, mi) => (
             <div key={med.id} className="flex gap-1 items-stretch">
-              <div className="w-16 shrink-0 flex items-center">
+              <div className="w-16 lg:w-40 shrink-0 flex items-center">
                 <div className="flex items-center gap-1.5">
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
                     {med.full_name.charAt(0)}
                   </div>
-                  <span className="text-[10px] font-medium truncate max-w-[44px]" style={{ color: "var(--text-primary)" }}>{med.full_name.split(" ")[0]}</span>
+                  <span className="text-[10px] lg:text-xs font-medium truncate max-w-[44px] lg:max-w-[120px]" style={{ color: "var(--text-primary)" }}>{med.full_name.split(" ")[0]}<span className="hidden lg:inline"> {med.full_name.split(" ").slice(1).join(" ")}</span></span>
                 </div>
               </div>
               {weekDates.map((d, i) => {
@@ -229,14 +229,17 @@ export default function ManagerPlanning() {
                 const hasConflict = conflicts.length > 0;
 
                 return (
-                  <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] flex flex-col items-center justify-center text-center transition-colors active:scale-95" style={{
+                  <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] lg:min-h-[64px] flex flex-col items-center justify-center text-center transition-colors active:scale-95" style={{
                     background: hasConflict && !entry ? "var(--danger-light)" : entry ? "var(--accent-light)" : "var(--bg-base)",
                     border: hasConflict ? "1px solid var(--danger-border)" : entry ? "1px solid var(--accent-border)" : "1px solid var(--bg-surface-2)",
                   }}>
                     {entry ? (
                       <>
-                        <span className="text-[8px] font-bold truncate w-full" style={{ color: "var(--text-primary)" }}>{proj?.nummer?.slice(-3) || "?"}</span>
-                        <span className="text-[7px]" style={{ color: "var(--text-muted)" }}>{entry.starttijd}</span>
+                        <span className="text-[8px] lg:text-[11px] font-bold truncate lg:whitespace-normal w-full" style={{ color: "var(--text-primary)" }}>
+                          <span className="lg:hidden">{proj?.nummer?.slice(-3) || "?"}</span>
+                          <span className="hidden lg:inline">{proj?.naam || proj?.nummer || "?"}</span>
+                        </span>
+                        <span className="text-[7px] lg:text-[10px]" style={{ color: "var(--text-muted)" }}>{entry.starttijd}–{entry.eindtijd}</span>
                       </>
                     ) : hasConflict ? (
                       <AlertTriangle className="h-3 w-3" style={{ color: "var(--danger)", opacity: 0.6 }} />
@@ -270,26 +273,23 @@ export default function ManagerPlanning() {
           {gridContent}
         </PullToRefresh>
       </div>
-      <div className="hidden lg:block">
+      <div className="hidden lg:block" style={{ maxWidth: "none" }}>
         {gridContent}
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
+      {showModal && (() => {
+        const modalBody = (
+          <>
+            <div className="w-10 h-1 rounded-full mx-auto lg:hidden" style={{ background: "var(--border)" }} />
             <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
             </h2>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>{modalForm.datum}</p>
-
             {modalStatus && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: modalStatus.bg, border: `1px solid ${modalStatus.color}33` }}>
                 <span className="text-xs font-semibold" style={{ color: modalStatus.color }}>{modalStatus.label}</span>
               </div>
             )}
-
             {modalConflicts.length > 0 && (
               <div className="space-y-1.5">
                 {modalConflicts.map((c, i) => (
@@ -300,7 +300,6 @@ export default function ManagerPlanning() {
                 ))}
               </div>
             )}
-
             <div className="space-y-3">
               <div className="space-y-1">
                 <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Project</label>
@@ -308,7 +307,6 @@ export default function ManagerPlanning() {
                   {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
                 </select>
               </div>
-
               <div className="flex gap-3">
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Start</label>
@@ -319,22 +317,35 @@ export default function ManagerPlanning() {
                   <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
                 </div>
               </div>
-
               <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-
               <button onClick={savePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>
-
               {editId && (
                 <button onClick={deletePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
                   Verwijderen
                 </button>
               )}
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        );
+        return (
+          <>
+            <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
+              <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+              <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+                {modalBody}
+              </div>
+            </div>
+            <div className="hidden lg:flex fixed inset-0 z-50 items-center justify-center" onClick={() => setShowModal(false)}>
+              <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+              <div className="relative w-full max-w-md rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }} onClick={e => e.stopPropagation()}>
+                {modalBody}
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
     </PageShell>
   );
