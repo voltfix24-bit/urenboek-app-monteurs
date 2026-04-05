@@ -13,6 +13,7 @@ export const SPEC_CODE_GROEPEN: { label: string; prefix: string }[] = [
   { label: "R34x — LS-rek", prefix: "R34" },
   { label: "R35x — Aarding", prefix: "R35" },
   { label: "R37x — Overig", prefix: "R37" },
+  { label: "R41x — Kabels & moffen", prefix: "R41" },
   { label: "R44x — WV", prefix: "R44" },
   { label: "R50x — Revisie", prefix: "R50" },
 ];
@@ -45,6 +46,12 @@ export const SPEC_CODES: SpecCode[] = [
   { code: "R350010", omschrijving: "Meten aardweerstand", tarief_terrevolt: 220.44, tarief_inkoop: 144.72, groep: "R35" },
   { code: "R350020", omschrijving: "Vereffeningsleiding", tarief_terrevolt: 2352, tarief_inkoop: 966.93, groep: "R35" },
   // R37x — Overig
+  { code: "R370010", omschrijving: "Provisorium", tarief_terrevolt: 3875, tarief_inkoop: 3279, groep: "R37" },
+  { code: "R370020", omschrijving: "LS kast", tarief_terrevolt: 1352, tarief_inkoop: 582.21, groep: "R37" },
+  { code: "R370030", omschrijving: "NSA", tarief_terrevolt: 938.23, tarief_inkoop: 480.45, groep: "R37" },
+  // R41x — Kabels & moffen
+  { code: "R410010", omschrijving: "MS eindsluiting", tarief_terrevolt: 1250, tarief_inkoop: 580, groep: "R41" },
+  { code: "R410020", omschrijving: "MS verbindingsmof", tarief_terrevolt: 1450, tarief_inkoop: 670, groep: "R41" },
   { code: "R370010", omschrijving: "Provisorium", tarief_terrevolt: 3875, tarief_inkoop: 3279, groep: "R37" },
   { code: "R370020", omschrijving: "LS kast", tarief_terrevolt: 1352, tarief_inkoop: 582.21, groep: "R37" },
   { code: "R370030", omschrijving: "NSA", tarief_terrevolt: 938.23, tarief_inkoop: 480.45, groep: "R37" },
