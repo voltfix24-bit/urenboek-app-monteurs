@@ -4,11 +4,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 
-interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; }
+interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
@@ -37,13 +37,18 @@ export default function Planning() {
     if (data) {
       const projectIds = [...new Set(data.map((d: any) => d.project_id))];
       let projMap = new Map();
+      let statusMap = new Map<string, boolean>();
       if (projectIds.length > 0) {
-        const { data: projects } = await supabase.from("projects").select("id, naam, nummer").in("id", projectIds);
+        const [{ data: projects }, { data: statuses }] = await Promise.all([
+          supabase.from("projects").select("id, naam, nummer").in("id", projectIds),
+          supabase.from("project_planning_status").select("project_id, is_definitief").in("project_id", projectIds),
+        ]);
         projMap = new Map(projects?.map((p: any) => [p.id, p]) ?? []);
+        (statuses || []).forEach((s: any) => statusMap.set(s.project_id, s.is_definitief));
       }
       setItems(data.map((d: any) => {
         const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "" };
-        return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer };
+        return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false };
       }));
     }
     setLoading(false);
@@ -116,7 +121,16 @@ export default function Planning() {
                   )}
 
                   {dayItems.map(item => (
-                    <div key={item.id} className="rounded-2xl p-4 space-y-2" style={{ background: "#EBF0E4", border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2" }}>
+                    <div key={item.id} className="rounded-2xl p-4 space-y-2" style={{
+                      background: "#EBF0E4",
+                      border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                      opacity: item.is_definitief ? 1 : 0.5,
+                    }}>
+                      {!item.is_definitief && (
+                        <div className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-lg mb-1" style={{ background: "#DFE8D6", color: "#8AAD6E" }}>
+                          <Lock className="h-3 w-3" /> {item.project_naam} — Planning nog concept
+                        </div>
+                      )}
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-sm font-bold" style={{ color: "#2D4A1E" }}>{item.project_naam}</p>
