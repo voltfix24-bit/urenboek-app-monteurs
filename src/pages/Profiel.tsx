@@ -28,6 +28,7 @@ const TYPE_COLORS: Record<string, { bg: string; border: string; dot: string }> =
 export default function Profiel() {
   const { user, roles, signOut } = useAuth();
   const { refetch: refetchProfileContext } = useProfile();
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [certs, setCerts] = useState<Certificaat[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
   const [editing, setEditing] = useState(false);
