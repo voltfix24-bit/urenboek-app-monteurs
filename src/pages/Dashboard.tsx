@@ -24,6 +24,8 @@ export default function Dashboard() {
   const [expiringCerts, setExpiringCerts] = useState<any[]>([]);
   const [todayPlanning, setTodayPlanning] = useState<any[]>([]);
   const [projectsWithMarge, setProjectsWithMarge] = useState<any[]>([]);
+  const [overurenMeldingen, setOverurenMeldingen] = useState<any[]>([]);
+  const [overurenCount, setOverurenCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [afkeurReden, setAfkeurReden] = useState("");
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
@@ -151,6 +153,21 @@ export default function Dashboard() {
       setProjectsWithMarge(result.sort((a, b) => a.marge - b.marge));
     }
 
+    // Overuren meldingen
+    const { data: ouData, count: ouCount } = await supabase
+      .from("overuren_meldingen")
+      .select("id, medewerker_id, datum, type, geboekte_uren, limiet_uren", { count: "exact" })
+      .eq("status", "open")
+      .order("created_at", { ascending: false })
+      .limit(3);
+    if (ouData) {
+      const ouMedIds = [...new Set(ouData.map((m: any) => m.medewerker_id))];
+      const { data: ouProfs } = ouMedIds.length > 0 ? await supabase.from("profiles").select("id, full_name").in("id", ouMedIds) : { data: [] };
+      const ouNameMap = new Map((ouProfs ?? []).map((p: any) => [p.id, p.full_name]));
+      setOverurenMeldingen(ouData.map((m: any) => ({ ...m, full_name: ouNameMap.get(m.medewerker_id) || "Onbekend", geboekte_uren: Number(m.geboekte_uren), limiet_uren: Number(m.limiet_uren) })));
+    }
+    setOverurenCount(ouCount || 0);
+
     setLoading(false);
   }, [user]);
 
@@ -203,8 +220,9 @@ export default function Dashboard() {
                 { label: "Uren (week)", value: weekHours + "u", color: "var(--success)", Icon: Clock },
                 { label: "Projecten", value: String(activeProjects), color: "var(--info)", Icon: FolderOpen, onClick: () => navigate("/projecten") },
                 { label: "Team", value: String(teamCount), color: "var(--purple)", Icon: Users, onClick: () => navigate("/medewerkers") },
+                { label: "Overuren", value: overurenCount > 0 ? String(overurenCount) : "✓", color: overurenCount > 0 ? "var(--warn-text)" : "var(--success)", Icon: overurenCount > 0 ? AlertTriangle : CheckCircle, onClick: () => navigate("/overuren") },
               ].map((k, i) => (
-                <div key={i} onClick={k.onClick} className="rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", cursor: k.onClick ? "pointer" : "default" }}>
+                <div key={i} onClick={k.onClick} className="rounded-2xl p-3 text-center" style={{ background: overurenCount > 0 && k.label === "Overuren" ? "var(--warn-bg)" : "var(--bg-surface)", border: "1px solid var(--border)", cursor: k.onClick ? "pointer" : "default" }}>
                   <k.Icon className="h-5 w-5 mx-auto mb-1" style={{ color: k.color }} />
                   <p className="text-xl font-extrabold" style={{ color: k.color, fontFamily: "DM Mono, monospace" }}>{k.value}</p>
                   <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{k.label}</p>
@@ -285,6 +303,39 @@ export default function Dashboard() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Overuren meldingen section */}
+            {overurenMeldingen.length > 0 && (
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                    <AlertTriangle className="h-3.5 w-3.5" style={{ color: "var(--warn-dot)" }} /> Overuren meldingen
+                  </p>
+                  <button onClick={() => navigate("/overuren")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
+                    Bekijk alle <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+                {overurenMeldingen.map((m: any) => {
+                  const typeLabel = m.type === "dag_overschrijding" ? "Dag > 8u" : m.type === "week_overschrijding" ? "Week > 40u" : "Meer dan ingepland";
+                  return (
+                    <div key={m.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: "var(--warn-dot)" }} />
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{m.full_name}</p>
+                          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                            {format(new Date(m.datum), "d MMM", { locale: nl })} · {typeLabel}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold" style={{ fontFamily: "DM Mono, monospace", color: m.geboekte_uren > m.limiet_uren ? "var(--danger)" : "var(--text-primary)" }}>
+                        {m.geboekte_uren}u / {m.limiet_uren}u
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 

@@ -7,7 +7,8 @@ import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
-import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck, CheckCircle } from "lucide-react";
+import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck, CheckCircle, AlertTriangle } from "lucide-react";
+import { checkOveruren } from "@/lib/overurenCheck";
 import { useNavigate } from "react-router-dom";
 import { format, startOfWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -15,6 +16,7 @@ import { nl } from "date-fns/locale";
 interface EntryWithProfile {
   id: string; datum: string; project_naam: string; project_nummer: string; beschrijving: string;
   uren: number; status: string; medewerker_id: string; full_name: string; afkeur_reden: string | null;
+  project_id: string;
 }
 
 export default function Goedkeuring() {
@@ -27,6 +29,7 @@ export default function Goedkeuring() {
   const [loading, setLoading] = useState(true);
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
   const [afkeurReden, setAfkeurReden] = useState("");
+  const [overurenIds, setOverurenIds] = useState<Set<string>>(new Set());
 
   const weekStart = startOfWeek(addDays(new Date(), weekOffset * 7), { weekStartsOn: 1 });
   const weekEnd = addDays(weekStart, 6);
@@ -57,20 +60,38 @@ export default function Goedkeuring() {
         id: e.id, datum: e.datum, project_naam: proj.naam, project_nummer: proj.nummer,
         beschrijving: e.beschrijving || e.type || "", uren: Number(e.uren), status: e.status,
         medewerker_id: e.medewerker_id, full_name: profileMap.get(e.medewerker_id) || "Onbekend",
-        afkeur_reden: e.afkeur_reden,
+        afkeur_reden: e.afkeur_reden, project_id: e.project_id,
       };
     });
     setEntries(merged);
+
+    // Fetch overuren meldingen for this week
+    const { data: ouData } = await supabase
+      .from("overuren_meldingen")
+      .select("medewerker_id, datum")
+      .eq("status", "open")
+      .gte("datum", format(weekStart, "yyyy-MM-dd"))
+      .lte("datum", format(weekEnd, "yyyy-MM-dd"));
+    if (ouData) {
+      const ids = new Set(ouData.map((m: any) => `${m.medewerker_id}_${m.datum}`));
+      setOverurenIds(ids);
+    }
+
     setLoading(false);
   }, [weekOffset]);
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
   const updateStatus = async (id: string, status: string, reden?: string) => {
+    const entry = entries.find(e => e.id === id);
     const update: any = { status, approved_by: myProfileId };
     if (reden) update.afkeur_reden = reden;
     if (!await mutate(supabase.from("uren_boekingen").update(update).eq("id", id))) return;
     toast.success(status === "goedgekeurd" ? "Goedgekeurd!" : "Afgekeurd");
+    // Check overuren after approval
+    if (status === "goedgekeurd" && entry) {
+      checkOveruren(entry.medewerker_id, entry.datum, entry.project_id, entry.uren).catch(() => {});
+    }
     fetchEntries();
     setAfkeurId(null);
     setAfkeurReden("");
@@ -182,6 +203,7 @@ export default function Goedkeuring() {
               <div className="divide-y" style={{ borderColor: "var(--bg-surface-2)" }}>
                 {userEntries.map((entry) => {
                   const sc = statusConfig[entry.status] || statusConfig.concept;
+                  const hasOveruren = overurenIds.has(`${entry.medewerker_id}_${entry.datum}`);
                   return (
                     <div key={entry.id} className="px-4 py-3">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -192,7 +214,12 @@ export default function Goedkeuring() {
                           {entry.project_nummer}
                         </span>
                         <span className="text-xs flex-1 truncate min-w-0" style={{ color: "var(--text-primary)" }}>{entry.project_naam} {entry.beschrijving ? `· ${entry.beschrijving}` : ""}</span>
-                        <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{entry.uren}u</span>
+                        <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
+                          {entry.uren}u
+                          {hasOveruren && (
+                            <span onClick={() => navigate("/overuren")} className="inline cursor-pointer"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>
+                          )}
+                        </span>
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>
                           <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
                           {entry.status}

@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import type { NavBadges } from "@/hooks/useNavBadges";
 import { NavBadge } from "./NavBadge";
-import { Clock, CheckCircle, BarChart3, Users, CalendarDays, Bell, User, LayoutDashboard } from "lucide-react";
+import { Clock, CheckCircle, BarChart3, Users, CalendarDays, Bell, User, LayoutDashboard, AlertTriangle } from "lucide-react";
 
 interface BottomNavProps {
   badges: NavBadges;
@@ -23,9 +23,9 @@ export function BottomNav({ badges }: BottomNavProps) {
   const managerTabs = [
     { key: "/dashboard", icon: LayoutDashboard, label: "Dashboard", dot: badges.verlofAanvragen > 0 },
     { key: "/goedkeuring", icon: CheckCircle, label: "Keuren", badge: badges.openGoedkeuringen },
+    { key: "/overuren", icon: AlertTriangle, label: "Overuren", badge: badges.openOveruren },
     { key: "/manager-planning", icon: CalendarDays, label: "Planning" },
     { key: "/medewerkers", icon: Users, label: "Team" },
-    { key: "/rapportage", icon: BarChart3, label: "Rapport" },
   ];
 
   const tabs = isManager ? managerTabs : monteurTabs;

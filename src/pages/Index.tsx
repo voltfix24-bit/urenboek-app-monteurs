@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, addDays } from "date-fns";
 import { queueOfflineEntry, syncOfflineEntries, getPendingCount } from "@/lib/offlineQueue";
+import { checkOveruren } from "@/lib/overurenCheck";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
@@ -106,13 +107,29 @@ const Index = () => {
     setShowFridayBanner(isFridayAfternoon() && viewingCurrentWeek && conceptEntries.length > 0);
   }, [conceptEntries.length, currentWeekStart]);
 
+  const handleSubmitEntry = useCallback(async (id: string) => {
+    const entry = [...weekEntries, ...allEntries].find(e => e.id === id);
+    await submitEntry(id);
+    if (entry && profileId) {
+      checkOveruren(profileId, entry.date, entry.projectId, entry.hours).catch(() => {});
+    }
+  }, [weekEntries, allEntries, submitEntry, profileId]);
+
   const submitAllConcepts = useCallback(async () => {
     if (!user || conceptEntries.length === 0) return;
     setSubmittingAll(true);
     const count = await submitAll();
-    if (count > 0) setShowFridayBanner(false);
+    if (count > 0) {
+      setShowFridayBanner(false);
+      // Check overuren for all submitted entries
+      if (profileId) {
+        for (const entry of conceptEntries) {
+          checkOveruren(profileId, entry.date, entry.projectId, entry.hours).catch(() => {});
+        }
+      }
+    }
     setSubmittingAll(false);
-  }, [user, conceptEntries, submitAll]);
+  }, [user, conceptEntries, submitAll, profileId]);
 
   const handleRefresh = async () => {
     window.location.reload();
@@ -388,7 +405,7 @@ const Index = () => {
                       {DAGEN[i]} {d.getDate()} {MAANDEN[d.getMonth()]}
                     </p>
                     {dayEntries.map((entry) => (
-                      <EntryCard key={entry.id} entry={entry} onSubmit={submitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
+                      <EntryCard key={entry.id} entry={entry} onSubmit={handleSubmitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
                     ))}
                   </div>
                 );
@@ -422,7 +439,7 @@ const Index = () => {
 
             <div className="space-y-2">
               {allEntries.map((entry) => (
-                <EntryCard key={entry.id} entry={entry} showDate onSubmit={submitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
+                <EntryCard key={entry.id} entry={entry} showDate onSubmit={handleSubmitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
               ))}
               {allEntries.length === 0 && (
                 <div className="text-center py-12">

@@ -8,12 +8,13 @@ import { GlobalSearch } from "./GlobalSearch";
 import terrevoltLogo from "@/assets/terrevolt-logo.svg";
 import {
   LayoutDashboard, CheckCircle, CalendarDays, FolderOpen, Users,
-  BarChart3, Clock, Bell, User, LogOut, Search,
+  BarChart3, Clock, Bell, User, LogOut, Search, AlertTriangle,
 } from "lucide-react";
 
 const managerItems = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard", badgeKey: "verlofDot" as const },
   { path: "/goedkeuring", icon: CheckCircle, label: "Goedkeuring", badgeKey: "openGoedkeuringen" as const },
+  { path: "/overuren", icon: AlertTriangle, label: "Overuren", badgeKey: "openOveruren" as const },
   { path: "/manager-planning", icon: CalendarDays, label: "Planning" },
   { path: "/projecten", icon: FolderOpen, label: "Projecten" },
   { path: "/medewerkers", icon: Users, label: "Team" },
