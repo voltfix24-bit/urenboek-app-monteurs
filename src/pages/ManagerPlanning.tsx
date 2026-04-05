@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
@@ -41,6 +42,7 @@ function getModalStatus(medId: string, dateStr: string, medewerkers: MedewerkerI
 
 export default function ManagerPlanning() {
   const { isManager, user } = useAuth();
+  const { profileId: myProfileId } = useProfile();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [entries, setEntries] = useState<PlanningEntry[]>([]);
   const [medewerkers, setMedewerkers] = useState<MedewerkerInfo[]>([]);
@@ -73,11 +75,7 @@ export default function ManagerPlanning() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  const getProfileId = useCallback(async () => {
-    if (!user) return null;
-    const { data } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
-    return data?.id || null;
-  }, [user]);
+
 
   const openAddModal = (medewerker_id: string, datum: string) => {
     const existing = entries.find(e => e.medewerker_id === medewerker_id && e.datum === datum);
@@ -92,14 +90,13 @@ export default function ManagerPlanning() {
   };
 
   const savePlanning = async () => {
-    const profileId = await getProfileId();
-    if (!profileId) return;
+    if (!myProfileId) return;
     if (editId) {
       const { error } = await supabase.from("planning").update({ project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any).eq("id", editId);
       if (error) toast.error("Fout bij bijwerken");
       else { toast.success("Planning bijgewerkt"); setShowModal(false); fetchAll(); }
     } else {
-      const { error } = await supabase.from("planning").insert({ medewerker_id: modalForm.medewerker_id, project_id: modalForm.project_id, datum: modalForm.datum, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie, created_by: profileId } as any);
+      const { error } = await supabase.from("planning").insert({ medewerker_id: modalForm.medewerker_id, project_id: modalForm.project_id, datum: modalForm.datum, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie, created_by: myProfileId } as any);
       if (error) toast.error("Fout bij aanmaken");
       else { toast.success("Ingepland!"); setShowModal(false); fetchAll(); }
     }

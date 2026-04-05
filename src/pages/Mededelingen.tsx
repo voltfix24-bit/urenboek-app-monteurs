@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
@@ -13,21 +14,15 @@ interface Mededeling { id: string; titel: string; inhoud: string; urgentie: stri
 
 export default function Mededelingen() {
   const { user, isManager } = useAuth();
+  const { profileId } = useProfile();
   const [items, setItems] = useState<Mededeling[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Mededeling | null>(null);
   const [showCompose, setShowCompose] = useState(false);
-  const [profileId, setProfileId] = useState<string | null>(null);
   const [titel, setTitel] = useState("");
   const [inhoud, setInhoud] = useState("");
   const [urgentie, setUrgentie] = useState("normaal");
   const [ontvangerType, setOntvangerType] = useState("iedereen");
-
-  const fetchProfileId = useCallback(async () => {
-    if (!user) return;
-    const { data } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
-    if (data) setProfileId(data.id);
-  }, [user]);
 
   const fetchMededelingen = useCallback(async () => {
     if (!user) return;
@@ -44,7 +39,6 @@ export default function Mededelingen() {
     setLoading(false);
   }, [user, profileId]);
 
-  useEffect(() => { fetchProfileId(); }, [fetchProfileId]);
   useEffect(() => { if (profileId) fetchMededelingen(); }, [fetchMededelingen, profileId]);
 
   useEffect(() => {

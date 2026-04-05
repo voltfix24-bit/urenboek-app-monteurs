@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 interface NavBadges {
   openGoedkeuringen: number;
@@ -11,16 +12,8 @@ interface NavBadges {
 
 export function useNavBadges() {
   const { user, isManager } = useAuth();
+  const { profileId } = useProfile();
   const [badges, setBadges] = useState<NavBadges>({ openGoedkeuringen: 0, ongelezen: 0, verlofAanvragen: 0, afgekeurdeUren: 0 });
-  const [profileId, setProfileId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
-      if (data) setProfileId(data.id);
-    })();
-  }, [user]);
 
   const fetchBadges = useCallback(async () => {
     if (!user || !profileId) return;

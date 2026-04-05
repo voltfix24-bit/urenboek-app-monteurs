@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, X, Save, Check, Plus, Minus, GripVertical, FileText, Trash2, Loader2 } from "lucide-react";
@@ -85,6 +86,7 @@ export default function ProjectPlanning() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { isManager, user } = useAuth();
+  const { profileId: profileIdFromContext } = useProfile();
 
   const [project, setProject] = useState<Project | null>(null);
   const [state, setState] = useState<MatrixState>(getDefaultState());
@@ -121,11 +123,7 @@ export default function ProjectPlanning() {
         supabase.from("user_roles").select("user_id, role"),
       ]);
 
-      // Get my profile id
-      if (user) {
-        const { data: myProfile } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
-        myProfileId.current = myProfile?.id || null;
-      }
+      myProfileId.current = profileIdFromContext;
 
       if (projRes.data) setProject(projRes.data as any);
       if (matrixRes.data?.state_json) {
