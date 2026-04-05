@@ -406,12 +406,13 @@ export default function ProjectPlanning() {
 
         {/* Save status */}
         <span className="text-[11px]" style={{ color: saveStatus === "saving" ? "#8AAD6E" : saveStatus === "saved" ? "#2D7A3A" : "transparent" }}>
-          {saveStatus === "saving" ? "Opslaan..." : saveStatus === "saved" ? "Opgeslagen ✓" : "·"}
+          {saveStatus === "saving" ? "Opslaan..." : saveStatus === "saved" ? "Opgeslagen" : "·"}
         </span>
 
         {/* Status badge */}
-        <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold" style={{ background: isDef ? "#D4EDD8" : "#FFF3CD", color: isDef ? "#2D7A3A" : "#8B6914" }}>
-          ● {isDef ? "Definitief" : "Concept"}
+        <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1" style={{ background: isDef ? "#D4EDD8" : "#FFF3CD", color: isDef ? "#2D7A3A" : "#8B6914" }}>
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: isDef ? "#2D7A3A" : "#8B6914" }} />
+          {isDef ? "Definitief" : "Concept"}
         </span>
 
         <button onClick={() => setShowTemplates(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid #C5D4B2", color: "#5A7A42" }}>
@@ -422,8 +423,8 @@ export default function ProjectPlanning() {
         </button>
 
         {isDef ? (
-          <button onClick={() => setShowConceptDialog(true)} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: "#2D7A3A" }}>
-            ✓ Gepubliceerd
+          <button onClick={() => setShowConceptDialog(true)} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white flex items-center gap-1" style={{ background: "#2D7A3A" }}>
+            <Check className="h-3.5 w-3.5" /> Gepubliceerd
           </button>
         ) : (
           <button onClick={() => setShowDefinitiefDialog(true)} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: "#2D5A8A" }}>
