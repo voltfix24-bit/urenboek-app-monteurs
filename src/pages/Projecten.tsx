@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays } from "lucide-react";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
+import { ForecastTab } from "@/components/ForecastTab";
+import { PlanningStatusTab } from "@/components/PlanningStatusTab";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
