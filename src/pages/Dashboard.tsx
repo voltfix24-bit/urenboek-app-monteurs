@@ -220,8 +220,9 @@ export default function Dashboard() {
                 { label: "Uren (week)", value: weekHours + "u", color: "var(--success)", Icon: Clock },
                 { label: "Projecten", value: String(activeProjects), color: "var(--info)", Icon: FolderOpen, onClick: () => navigate("/projecten") },
                 { label: "Team", value: String(teamCount), color: "var(--purple)", Icon: Users, onClick: () => navigate("/medewerkers") },
+                { label: "Overuren", value: overurenCount > 0 ? String(overurenCount) : "✓", color: overurenCount > 0 ? "var(--warn-text)" : "var(--success)", Icon: overurenCount > 0 ? AlertTriangle : CheckCircle, onClick: () => navigate("/overuren") },
               ].map((k, i) => (
-                <div key={i} onClick={k.onClick} className="rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", cursor: k.onClick ? "pointer" : "default" }}>
+                <div key={i} onClick={k.onClick} className="rounded-2xl p-3 text-center" style={{ background: overurenCount > 0 && k.label === "Overuren" ? "var(--warn-bg)" : "var(--bg-surface)", border: "1px solid var(--border)", cursor: k.onClick ? "pointer" : "default" }}>
                   <k.Icon className="h-5 w-5 mx-auto mb-1" style={{ color: k.color }} />
                   <p className="text-xl font-extrabold" style={{ color: k.color, fontFamily: "DM Mono, monospace" }}>{k.value}</p>
                   <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{k.label}</p>
