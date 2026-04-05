@@ -224,7 +224,7 @@ export default function Dashboard() {
                   </button>
                 </div>
                 {todayPlanning.map(p => (
-                  <div key={p.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
+                  <div key={p.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
                         {p.naam?.charAt(0)}
@@ -250,7 +250,7 @@ export default function Dashboard() {
                   </button>
                 </div>
                 {pendingEntries.slice(0, 5).map(e => (
-                  <div key={e.id} className="py-2.5" style={{ borderBottom: "1px solid #DFE8D6" }}>
+                  <div key={e.id} className="py-2.5" style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{e.full_name}</p>
@@ -260,10 +260,10 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <div className="flex gap-1 shrink-0 ml-2">
-                        <button onClick={() => handleApprove(e.id)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid #8DC99A" }}>
+                        <button onClick={() => handleApprove(e.id)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
                           <Check className="h-4 w-4" style={{ color: "var(--success)" }} />
                         </button>
-                        <button onClick={() => { setAfkeurId(e.id); setAfkeurReden(""); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
+                        <button onClick={() => { setAfkeurId(e.id); setAfkeurReden(""); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }}>
                           <X className="h-4 w-4" style={{ color: "var(--danger)" }} />
                         </button>
                       </div>
@@ -275,7 +275,7 @@ export default function Dashboard() {
                           onChange={ev => setAfkeurReden(ev.target.value)}
                           placeholder="Reden voor afkeuring..."
                           className="flex-1 px-3 py-2 rounded-xl text-xs"
-                          style={{ background: "var(--bg-base)", border: "1px solid #E8A09A", color: "var(--text-primary)" }}
+                          style={{ background: "var(--bg-base)", border: "1px solid var(--danger-border)", color: "var(--text-primary)" }}
                           autoFocus
                           onKeyDown={ev => ev.key === "Enter" && handleReject()}
                         />
@@ -293,17 +293,17 @@ export default function Dashboard() {
               <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Verlofaanvragen</p>
                 {verlofAanvragen.map(v => (
-                  <div key={v.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
+                  <div key={v.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
                     <div>
                       <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{v.naam}</p>
                       <p className="text-[10px] capitalize" style={{ color: "var(--text-muted)" }}>{v.type} · {format(new Date(v.datum_van), "d MMM", { locale: nl })} → {format(new Date(v.datum_tot), "d MMM", { locale: nl })}</p>
                       {v.reden && <p className="text-[10px] italic" style={{ color: "var(--text-muted)" }}>{v.reden}</p>}
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => handleVerlof(v.id, "goedgekeurd")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid #8DC99A" }}>
+                      <button onClick={() => handleVerlof(v.id, "goedgekeurd")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
                         <Check className="h-4 w-4" style={{ color: "var(--success)" }} />
                       </button>
-                      <button onClick={() => handleVerlof(v.id, "afgekeurd")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
+                      <button onClick={() => handleVerlof(v.id, "afgekeurd")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }}>
                         <X className="h-4 w-4" style={{ color: "var(--danger)" }} />
                       </button>
                     </div>
@@ -324,7 +324,7 @@ export default function Dashboard() {
                   </button>
                 </div>
                 {projectsWithMarge.map(p => (
-                  <div key={p.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
+                  <div key={p.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{p.naam}</p>
                       <p className="text-[10px]" style={{ color: "var(--text-muted)", fontFamily: "DM Mono, monospace" }}>
@@ -349,7 +349,7 @@ export default function Dashboard() {
                 {expiringCerts.map(c => {
                   const expired = new Date(c.vervaldatum) < new Date();
                   return (
-                    <div key={c.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
+                    <div key={c.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
                       <div className="flex items-center gap-2">
                         <Shield className="h-4 w-4" style={{ color: expired ? "var(--danger)" : "var(--warn-dot)" }} />
                         <div>

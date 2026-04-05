@@ -78,7 +78,7 @@ export default function Mededelingen() {
         </header>
         <div className="px-4 py-4 space-y-3">
           {selected.urgentie === "urgent" && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }}>
               <AlertTriangle className="h-4 w-4" style={{ color: "var(--danger)" }} />
               <span className="text-xs font-semibold" style={{ color: "var(--danger)" }}>Urgent bericht</span>
             </div>
@@ -106,7 +106,7 @@ export default function Mededelingen() {
         items.map(item => (
           <button key={item.id} onClick={() => openDetail(item)} className="w-full text-left rounded-2xl p-4 transition-colors active:scale-[0.98]" style={{
             background: item.gelezen ? "var(--bg-base)" : "var(--bg-surface)",
-            border: item.urgentie === "urgent" ? "1px solid #E8A09A" : "1px solid var(--border)",
+            border: item.urgentie === "urgent" ? "1px solid var(--danger-border)" : "1px solid var(--border)",
           }}>
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
@@ -178,7 +178,7 @@ export default function Mededelingen() {
                 {(["normaal", "urgent"] as const).map(u => (
                   <button key={u} onClick={() => setUrgentie(u)} className="flex-1 py-2 rounded-xl text-xs font-semibold capitalize" style={{
                     background: urgentie === u ? (u === "urgent" ? "var(--danger-light)" : "var(--success-light)") : "var(--bg-base)",
-                    border: urgentie === u ? (u === "urgent" ? "1px solid #E8A09A" : "1px solid #8DC99A") : "1px solid var(--border)",
+                    border: urgentie === u ? (u === "urgent" ? "1px solid var(--danger-border)" : "1px solid var(--success-border)") : "1px solid var(--border)",
                     color: urgentie === u ? (u === "urgent" ? "var(--danger)" : "var(--success)") : "var(--text-muted)",
                   }}>{u}</button>
                 ))}
@@ -188,7 +188,7 @@ export default function Mededelingen() {
                 {(["iedereen", "monteurs", "persoon"] as const).map(t => (
                   <button key={t} onClick={() => setOntvangerType(t)} className="shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold capitalize" style={{
                     background: ontvangerType === t ? "var(--accent-light)" : "var(--bg-base)",
-                    border: ontvangerType === t ? "1px solid #9DC87A" : "1px solid var(--border)",
+                    border: ontvangerType === t ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                     color: ontvangerType === t ? "var(--accent)" : "var(--text-muted)",
                   }}>{t}</button>
                 ))}

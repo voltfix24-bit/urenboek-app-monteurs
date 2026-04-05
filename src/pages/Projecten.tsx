@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays, Download } from "lucide-react";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
 import { ForecastTab } from "@/components/ForecastTab";
@@ -242,7 +242,7 @@ export default function Projecten() {
           </select>
         </div>
         {isManager && (
-          <div className="rounded-xl p-3 space-y-2 mt-1" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070" }}>
+          <div className="rounded-xl p-3 space-y-2 mt-1" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
             <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
               <Lock className="h-3 w-3" /> Contactpersoon (alleen zichtbaar voor managers)
             </p>
@@ -375,12 +375,12 @@ export default function Projecten() {
               <h1 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Projecten</h1>
               <div className="flex-1" />
               <button onClick={() => navigate("/opdrachtgevers")} className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}><Building2 className="h-3.5 w-3.5" /> Opdrachtgevers</button>
-              <button onClick={() => { setShowAdd(true); setEditId(null); setExpandedId(null); setForm(emptyForm); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid #8DC99A" }}><Plus className="h-4 w-4" style={{ color: "var(--success)" }} /></button>
+              <button onClick={() => { setShowAdd(true); setEditId(null); setExpandedId(null); setForm(emptyForm); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}><Plus className="h-4 w-4" style={{ color: "var(--success)" }} /></button>
             </div>
           </header>
           <div className="px-4 py-4 space-y-4 pb-24">
             {showAdd && (
-              <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--bg-surface)", border: "1px solid #9DC87A" }}>
+              <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>
                 <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Nieuw project</h3>
                 {renderFormFields()}
                 <div className="flex gap-2 pt-1">
@@ -430,7 +430,7 @@ export default function Projecten() {
 function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfirmingDelete, form, setForm, renderFormFields, onEdit, onCancel, onSave, onToggle, onDelete, onCancelDelete, onToggleExpand }: any) {
   if (isEditing) {
     return (
-      <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--bg-surface)", border: "1px solid #7AAADE" }}>
+      <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--bg-surface)", border: "1px solid var(--info-border)" }}>
         <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Project bewerken</h3>
         {renderFormFields()}
         <div className="flex gap-2 pt-1">
@@ -442,7 +442,7 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
   }
   if (isConfirmingDelete) {
     return (
-      <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
+      <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }}>
         <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>"{project.naam}" verwijderen?</p>
         <div className="flex gap-2">
           <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
@@ -481,7 +481,7 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
             {ogNaam && <DetailLine label="Opdrachtgever" value={ogNaam} />}
           </div>
           {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
-            <div className="rounded-xl p-3 space-y-1.5 mt-2" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070" }}>
+            <div className="rounded-xl p-3 space-y-1.5 mt-2" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
               <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
                 <Lock className="h-3 w-3" /> Contactpersoon opdrachtgever
               </p>
@@ -498,6 +498,9 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
               )}
             </div>
           )}
+          <button onClick={() => generateProjectPdf(project, ogNaam, isManager)} className="w-full mt-2 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+            <Download className="h-3.5 w-3.5" /> PDF downloaden
+          </button>
         </div>
       )}
     </div>
@@ -524,7 +527,7 @@ function DesktopListCard({ project, ogNaam, selected, onClick, marge }: { projec
       className="w-full text-left p-2.5 rounded-xl mb-1.5 transition-colors cursor-pointer"
       style={{
         background: selected ? "var(--accent-light)" : "var(--bg-surface)",
-        border: selected ? "1.5px solid #4A7C2F" : "1px solid var(--border)",
+        border: selected ? "1.5px solid var(--accent)" : "1px solid var(--border)",
       }}
     >
       <div className="flex items-center justify-between gap-2">
@@ -545,6 +548,39 @@ function DesktopListCard({ project, ogNaam, selected, onClick, marge }: { projec
       {project.stationsnaam && <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{project.stationsnaam}</p>}
     </button>
   );
+}
+
+function generateProjectPdf(project: any, ogNaam: string | null, isManager: boolean) {
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${project.naam}</title><style>
+    body{font-family:system-ui,sans-serif;padding:40px;color:#2D4A1E;max-width:800px;margin:0 auto}
+    h1{font-size:22px;margin-bottom:4px}table{width:100%;border-collapse:collapse;margin:16px 0}
+    td,th{text-align:left;padding:8px 12px;border-bottom:1px solid #C5D4B2;font-size:13px}
+    th{color:#5A7A42;font-weight:500;width:140px}.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;background:#D4E8C2;color:#4A7C2F;font-weight:600}
+    .section{margin-top:24px;padding-top:16px;border-top:2px solid #EBF0E4}
+    .section h2{font-size:15px;color:#5A7A42;margin-bottom:8px}
+    @media print{body{padding:20px}}
+  </style></head><body>
+    <h1>${project.naam}</h1>
+    <span class="badge">${project.nummer}</span>
+    <table><tbody>
+      <tr><th>Status</th><td>${project.active ? "Actief" : "Inactief"}</td></tr>
+      ${project.case_type ? `<tr><th>Case type</th><td>${project.case_type}</td></tr>` : ""}
+      ${project.stationsnaam ? `<tr><th>Stationsnaam</th><td>${project.stationsnaam}</td></tr>` : ""}
+      ${project.adres ? `<tr><th>Adres</th><td>${project.adres}</td></tr>` : ""}
+      ${ogNaam ? `<tr><th>Opdrachtgever</th><td>${ogNaam}</td></tr>` : ""}
+    </tbody></table>
+    ${isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) ? `
+      <div class="section"><h2>Contactpersoon opdrachtgever</h2><table><tbody>
+        ${project.contactpersoon_naam ? `<tr><th>Naam</th><td>${project.contactpersoon_naam}</td></tr>` : ""}
+        ${project.contactpersoon_tel ? `<tr><th>Telefoon</th><td>${project.contactpersoon_tel}</td></tr>` : ""}
+        ${project.contactpersoon_email ? `<tr><th>Email</th><td>${project.contactpersoon_email}</td></tr>` : ""}
+      </tbody></table></div>
+    ` : ""}
+    <p style="margin-top:32px;font-size:10px;color:#8AAD6E">Gegenereerd op ${new Date().toLocaleDateString("nl-NL")} · TerreVolt BV</p>
+    <script>window.onload=()=>window.print()</script>
+  </body></html>`;
+  const w = window.open("", "_blank");
+  if (w) { w.document.write(html); w.document.close(); }
 }
 
 function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate }: any) {
@@ -568,6 +604,9 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => generateProjectPdf(project, ogNaam, isManager)} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+            <Download className="h-3.5 w-3.5" /> PDF
+          </button>
           <button onClick={onEdit} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
             <Pencil className="h-3.5 w-3.5" /> Bewerken
           </button>
@@ -584,7 +623,7 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
           <button key={t.key} onClick={() => setActiveTab(t.key)} className="px-4 py-2 text-sm transition-colors" style={{
             color: activeTab === t.key ? "var(--accent)" : "var(--text-muted)",
             fontWeight: activeTab === t.key ? 500 : 400,
-            borderBottom: activeTab === t.key ? "2px solid #4A7C2F" : "2px solid transparent",
+            borderBottom: activeTab === t.key ? "2px solid var(--accent)" : "2px solid transparent",
             marginBottom: -1,
           }}>
             {t.label}
@@ -607,7 +646,7 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
 
           {/* Contact section (manager only) */}
           {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
-            <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070" }}>
+            <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
               <p className="text-xs font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
                 <Lock className="h-3 w-3" /> Contactpersoon opdrachtgever
               </p>
@@ -653,7 +692,7 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
                 <button onClick={onDelete} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "var(--danger)" }}>Definitief verwijderen</button>
               </div>
             ) : (
-              <button onClick={onDelete} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #E8A09A", color: "var(--danger)" }}>
+              <button onClick={onDelete} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
                 <Trash2 className="h-3.5 w-3.5" /> Verwijderen
               </button>
             )}
@@ -674,13 +713,13 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
 
 function InfoField({ label, value, mono, badge }: { label: string; value: string | null; mono?: boolean; badge?: boolean }) {
   if (!value) return (
-    <div style={{ borderBottom: "1px solid #EBF0E4", paddingBottom: 8 }}>
+    <div style={{ borderBottom: "1px solid var(--bg-surface)", paddingBottom: 8 }}>
       <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{label}</p>
       <p className="text-[13px] mt-0.5" style={{ color: "var(--border)" }}>—</p>
     </div>
   );
   return (
-    <div style={{ borderBottom: "1px solid #EBF0E4", paddingBottom: 8 }}>
+    <div style={{ borderBottom: "1px solid var(--bg-surface)", paddingBottom: 8 }}>
       <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{label}</p>
       {badge ? <CaseTypeBadge type={value} /> : (
         <p className={`text-[13px] mt-0.5 ${mono ? "font-mono" : ""}`} style={{ color: "var(--text-primary)" }}>{value}</p>

@@ -145,7 +145,7 @@ const Index = () => {
             <HeaderLogo />
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "var(--accent-light)", border: "1px solid #9DC87A" }}>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
                 <span className="text-lg font-extrabold" style={{ color: "var(--accent)" }}>{totalHours}</span>
                 <span className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>uur</span>
               </div>
@@ -194,7 +194,7 @@ const Index = () => {
                 className="flex-1 py-2.5 text-sm font-medium transition-colors"
                 style={{
                   color: activeTab === key ? "var(--accent)" : "var(--text-muted)",
-                  borderBottom: activeTab === key ? "2px solid #4A7C2F" : "2px solid transparent",
+                  borderBottom: activeTab === key ? "2px solid var(--accent)" : "2px solid transparent",
                   background: "transparent",
                   marginBottom: -1,
                 }}
@@ -296,7 +296,7 @@ const Index = () => {
 
         {/* Friday afternoon banner */}
         {showFridayBanner && (
-          <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070" }}>
+          <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
             <p className="text-xs font-medium flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Je hebt nog {conceptHours}u niet ingediend deze week.
             </p>
@@ -347,7 +347,7 @@ const Index = () => {
                       padding: "10px 0",
                       borderRadius: 12,
                       background: isToday ? "var(--accent-light)" : "var(--bg-surface)",
-                      border: isToday ? "1px solid #9DC87A" : "1px solid var(--border)",
+                      border: isToday ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                     }}
                   >
                     <span className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{DAGEN[i]}</span>

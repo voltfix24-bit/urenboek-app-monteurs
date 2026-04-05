@@ -31,7 +31,7 @@ export default function Opdrachtgevers() {
           <button onClick={() => navigate("/")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}><ArrowLeft className="h-4 w-4" /></button>
           <h1 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Opdrachtgevers</h1>
           <div className="flex-1" />
-          <button onClick={() => { setShowAdd(true); setEditId(null); setForm(emptyForm); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid #8DC99A" }}><Plus className="h-4 w-4" style={{ color: "var(--success)" }} /></button>
+          <button onClick={() => { setShowAdd(true); setEditId(null); setForm(emptyForm); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}><Plus className="h-4 w-4" style={{ color: "var(--success)" }} /></button>
         </div>
       </header>
       <div className="px-4 py-4 space-y-3">
@@ -52,7 +52,7 @@ export default function Opdrachtgevers() {
         ) : (
           <div className="space-y-2">
             {items.map(item => confirmDeleteId === item.id ? (
-              <div key={item.id} className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
+              <div key={item.id} className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }}>
                 <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>"{item.naam}" verwijderen?</p>
                 <div className="flex gap-2">
                   <button onClick={() => setConfirmDeleteId(null)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>

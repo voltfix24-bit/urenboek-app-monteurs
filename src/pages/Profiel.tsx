@@ -189,7 +189,7 @@ export default function Profiel() {
                 return (
                   <button key={dag} onClick={() => toggleVrijeDag(dag)} className="flex-1 py-2 rounded-xl text-[11px] font-semibold" style={{
                     background: active ? "var(--accent-light)" : "var(--bg-base)",
-                    border: active ? "1px solid #9DC87A" : "1px solid var(--border)",
+                    border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                     color: active ? "var(--accent)" : "var(--text-muted)",
                   }}>{DAGEN_LABEL[dag]}</button>
                 );
@@ -198,7 +198,7 @@ export default function Profiel() {
           </div>
 
           {/* Calendar */}
-          <div className="rounded-xl p-3" style={{ background: "var(--bg-base)", border: "1px solid #DFE8D6" }}>
+          <div className="rounded-xl p-3" style={{ background: "var(--bg-base)", border: "1px solid var(--bg-surface-2)" }}>
             <div className="flex items-center justify-between mb-3">
               <button onClick={() => setCalMonth(subMonths(calMonth, 1))} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface)" }}>
                 <ChevronLeft className="h-4 w-4" style={{ color: "var(--text-secondary)" }} />
@@ -229,7 +229,7 @@ export default function Profiel() {
                 return (
                   <div key={day.toISOString()} className="h-9 flex flex-col items-center justify-center rounded-lg relative" style={{
                     background: tc ? tc.bg : isToday ? "var(--accent-light)" : "transparent",
-                    border: isToday ? "1.5px solid #4A7C2F" : tc ? `1px solid ${tc.border}` : "1px solid transparent",
+                    border: isToday ? "1.5px solid var(--accent)" : tc ? `1px solid ${tc.border}` : "1px solid transparent",
                   }}>
                     <span className="text-[11px] font-medium" style={{ color: tc ? tc.dot : isToday ? "var(--text-primary)" : "var(--text-secondary)" }}>
                       {format(day, "d")}
@@ -242,7 +242,7 @@ export default function Profiel() {
               })}
             </div>
             {/* Legend */}
-            <div className="flex flex-wrap gap-3 mt-3 pt-2" style={{ borderTop: "1px solid #DFE8D6" }}>
+            <div className="flex flex-wrap gap-3 mt-3 pt-2" style={{ borderTop: "1px solid var(--bg-surface-2)" }}>
               {[
                 { label: "Vrije dag", color: "var(--text-muted)" },
                 { label: "Vakantie", color: "var(--warn-dot)" },
@@ -259,10 +259,10 @@ export default function Profiel() {
 
           {/* Action buttons */}
           <div className="flex gap-2">
-            <button onClick={() => setShowVerlof(true)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--warn-light)", border: "1px solid #E8D070", color: "var(--warn-text)" }}>
+            <button onClick={() => setShowVerlof(true)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)", color: "var(--warn-text)" }}>
               Verlof aanvragen
             </button>
-            <button onClick={meldZiek} className="flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A", color: "var(--danger)" }}>
+            <button onClick={meldZiek} className="flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
               <ThermometerSun className="h-3.5 w-3.5" /> Ziek melden
             </button>
           </div>
@@ -293,7 +293,7 @@ export default function Profiel() {
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Certificaten</p>
-            <button onClick={() => setShowAddCert(true)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid #8DC99A" }}>
+            <button onClick={() => setShowAddCert(true)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
               <Plus className="h-3.5 w-3.5" style={{ color: "var(--success)" }} />
             </button>
           </div>
@@ -316,7 +316,46 @@ export default function Profiel() {
           })}
         </div>
 
-        <button onClick={signOut} className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A", color: "var(--danger)" }}>
+        {/* Instellingen - Weergave */}
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Instellingen</p>
+          <div>
+            <p className="text-[10px] font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Weergave</p>
+            <div className="flex gap-1.5">
+              {([
+                { key: "light", label: "☀ Licht" },
+                { key: "system", label: "Systeem" },
+                { key: "dark", label: "☾ Donker" },
+              ] as const).map(opt => {
+                const current = localStorage.getItem("terrevolt_theme") || "system";
+                const active = current === opt.key;
+                return (
+                  <button key={opt.key} onClick={() => {
+                    localStorage.setItem("terrevolt_theme", opt.key);
+                    if (opt.key === "dark") {
+                      document.documentElement.dataset.theme = "dark";
+                    } else if (opt.key === "light") {
+                      document.documentElement.dataset.theme = "light";
+                    } else {
+                      delete document.documentElement.dataset.theme;
+                      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                      if (prefersDark) document.documentElement.dataset.theme = "dark";
+                    }
+                    // Force re-render
+                    setLoading(l => !l);
+                    setTimeout(() => setLoading(l => !l), 0);
+                  }} className="flex-1 py-2.5 rounded-xl text-[11px] font-semibold" style={{
+                    background: active ? "var(--accent-light)" : "var(--bg-base)",
+                    border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+                    color: active ? "var(--accent)" : "var(--text-muted)",
+                  }}>{opt.label}</button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <button onClick={signOut} className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
           <LogOut className="h-4 w-4" /> Uitloggen
         </button>
       </main>
@@ -333,7 +372,7 @@ export default function Profiel() {
                 {(["vakantie", "verlof", "anders"] as const).map(t => (
                   <button key={t} onClick={() => setVerlofForm({ ...verlofForm, type: t })} className="flex-1 py-2 rounded-xl text-xs font-semibold capitalize" style={{
                     background: verlofForm.type === t ? "var(--accent-light)" : "var(--bg-base)",
-                    border: verlofForm.type === t ? "1px solid #9DC87A" : "1px solid var(--border)",
+                    border: verlofForm.type === t ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                     color: verlofForm.type === t ? "var(--accent)" : "var(--text-muted)",
                   }}>{t}</button>
                 ))}
@@ -369,7 +408,7 @@ export default function Profiel() {
                 {(["VCA", "NEN3140", "rijbewijs_BE", "overig"] as const).map(t => (
                   <button key={t} onClick={() => setCertForm({ ...certForm, type: t })} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold" style={{
                     background: certForm.type === t ? "var(--accent-light)" : "var(--bg-base)",
-                    border: certForm.type === t ? "1px solid #9DC87A" : "1px solid var(--border)",
+                    border: certForm.type === t ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                     color: certForm.type === t ? "var(--accent)" : "var(--text-muted)",
                   }}>{t}</button>
                 ))}

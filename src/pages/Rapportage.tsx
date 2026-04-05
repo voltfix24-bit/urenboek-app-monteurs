@@ -224,7 +224,7 @@ export default function Rapportage() {
             {([["goedgekeurd", "Goedgekeurd"], ["ingediend", "Ingediend"], ["alle", "Alle uren"]] as const).map(([k, l]) => (
               <button key={k} onClick={() => setFilter(k)} className="shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-colors" style={{
                 background: filter === k ? "var(--accent-light)" : "var(--bg-base)",
-                border: filter === k ? "1px solid #9DC87A" : "1px solid var(--border)",
+                border: filter === k ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                 color: filter === k ? "var(--accent)" : "var(--text-muted)",
               }}>
                 {l}
@@ -264,7 +264,7 @@ export default function Rapportage() {
                       <span className="text-xs font-bold tabular-nums" style={{ color: "var(--accent)" }}>{uren}u</span>
                     </div>
                     <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "var(--bg-surface-2)" }}>
-                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(uren / maxMedUren) * 100}%`, background: "linear-gradient(90deg, #4A7C2F, #6B9E4A)" }} />
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(uren / maxMedUren) * 100}%`, background: "linear-gradient(90deg, var(--accent), var(--accent-mid))" }} />
                     </div>
                   </div>
                 ))}
@@ -275,7 +275,7 @@ export default function Rapportage() {
               <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Per project</p>
                 {projectStats.map(([project, uren]) => (
-                  <div key={project} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
+                  <div key={project} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
                     <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{project}</span>
                     <span className="text-xs font-bold tabular-nums" style={{ color: "var(--accent)" }}>{uren}u</span>
                   </div>
@@ -293,7 +293,7 @@ export default function Rapportage() {
 
             {entries.length > 0 && (
               <div className="flex gap-2">
-                <button onClick={exportPDF} className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]" style={{ background: "var(--accent-light)", border: "1px solid #9DC87A", color: "var(--accent)" }}>
+                <button onClick={exportPDF} className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)" }}>
                   <FileText className="h-4 w-4" /> PDF
                 </button>
                 <button onClick={exportCSV} className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>

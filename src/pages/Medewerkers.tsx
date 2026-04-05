@@ -90,7 +90,7 @@ export default function Medewerkers() {
           </div>
           <button onClick={() => setShowAdd(!showAdd)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{
             background: showAdd ? "var(--danger-light)" : "var(--success-light)",
-            border: showAdd ? "1px solid #E8A09A" : "1px solid #8DC99A",
+            border: showAdd ? "1px solid var(--danger-border)" : "1px solid var(--success-border)",
             color: showAdd ? "var(--danger)" : "var(--success)",
           }}>
             {showAdd ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -100,7 +100,7 @@ export default function Medewerkers() {
 
       <main className="px-4 py-4 space-y-4">
         {showAdd && (
-          <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--bg-surface)", border: "1px solid #9DC87A" }}>
+          <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>
             <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Nieuwe medewerker</p>
             <form onSubmit={handleCreate} className="space-y-3">
               {[{ key: "fullName", label: "Naam", placeholder: "Jan Jansen", value: fullName, onChange: setFullName },
@@ -117,7 +117,7 @@ export default function Medewerkers() {
                   {Object.entries(roleLabels).map(([value, label]) => (
                     <button key={value} type="button" onClick={() => setRole(value)} className="px-3 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
                       background: role === value ? "var(--accent-light)" : "var(--bg-base)",
-                      border: role === value ? "1px solid #9DC87A" : "1px solid var(--border)",
+                      border: role === value ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                       color: role === value ? "var(--accent)" : "var(--text-muted)",
                     }}>{label}</button>
                   ))}
@@ -140,7 +140,7 @@ export default function Medewerkers() {
         )}
 
         {createdUsers.length > 0 && (
-          <div className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid #9DC87A" }}>
+          <div className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>
             <div className="px-4 py-2.5" style={{ background: "var(--accent-light)" }}>
               <span className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Zojuist aangemaakt</span>
             </div>
@@ -236,7 +236,7 @@ function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId,
         {!isSelf && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <button className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }} disabled={deletingId === emp.user_id}>
+              <button className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }} disabled={deletingId === emp.user_id}>
                 <Trash2 className="h-3.5 w-3.5" style={{ color: "var(--danger)" }} />
               </button>
             </AlertDialogTrigger>
@@ -259,7 +259,7 @@ function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId,
           {Object.entries(roleLabels).map(([value, label]) => (
             <button key={value} onClick={() => { onRoleChange(emp.user_id, value); setShowRol(false); }} className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors" style={{
               background: emp.role === value ? "var(--accent-light)" : "var(--bg-base)",
-              border: emp.role === value ? "1px solid #9DC87A" : "1px solid var(--border)",
+              border: emp.role === value ? "1px solid var(--accent-border)" : "1px solid var(--border)",
               color: emp.role === value ? "var(--accent)" : "var(--text-muted)",
             }}>{label}</button>
           ))}
@@ -267,7 +267,7 @@ function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId,
       )}
 
       {/* Tariefinformatie - only managers */}
-      <div className="mt-2 rounded-xl p-3 space-y-1.5" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070" }}>
+      <div className="mt-2 rounded-xl p-3 space-y-1.5" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
         <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
           <Lock className="h-3 w-3" /> Tariefinformatie (alleen managers)
         </p>

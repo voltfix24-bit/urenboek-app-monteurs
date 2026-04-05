@@ -127,7 +127,7 @@ export default function Goedkeuring() {
         {([["ingediend", "Ingediend"], ["goedgekeurd", "Goedgekeurd"], ["afgekeurd", "Afgekeurd"], ["alle", "Alle"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setFilter(k)} className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors" style={{
             background: filter === k ? "var(--accent-light)" : "var(--bg-surface)",
-            border: filter === k ? "1px solid #9DC87A" : "1px solid var(--border)",
+            border: filter === k ? "1px solid var(--accent-border)" : "1px solid var(--border)",
             color: filter === k ? "var(--accent)" : "var(--text-muted)",
           }}>
             {l}
@@ -172,7 +172,7 @@ export default function Goedkeuring() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold tabular-nums" style={{ color: "var(--accent)" }}>{totalHours}u</span>
                   {pendingCount > 0 && (
-                    <button onClick={() => approveAllForUser(name)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-colors active:scale-95" style={{ background: "var(--success-light)", border: "1px solid #8DC99A", color: "var(--success)" }}>
+                    <button onClick={() => approveAllForUser(name)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-colors active:scale-95" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)", color: "var(--success)" }}>
                       <CheckCheck className="h-3.5 w-3.5" /> Alles goedkeuren
                     </button>
                   )}
@@ -199,10 +199,10 @@ export default function Goedkeuring() {
                         </span>
                         {entry.status === "ingediend" && (
                           <div className="flex gap-1">
-                            <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "var(--success-light)", border: "1px solid #8DC99A" }} onClick={() => updateStatus(entry.id, "goedgekeurd")}>
+                            <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }} onClick={() => updateStatus(entry.id, "goedgekeurd")}>
                               <Check className="h-4 w-4" style={{ color: "var(--success)" }} />
                             </button>
-                            <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }} onClick={() => setAfkeurId(entry.id)}>
+                            <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }} onClick={() => setAfkeurId(entry.id)}>
                               <X className="h-4 w-4" style={{ color: "var(--danger)" }} />
                             </button>
                           </div>
@@ -232,7 +232,7 @@ export default function Goedkeuring() {
               <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Goedkeuren</span>
             </div>
             {totalIngediend > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "var(--warn-light)", border: "1px solid #E8D070" }}>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
                 <span className="text-lg font-extrabold" style={{ color: "var(--warn-text)" }}>{totalIngediend}</span>
                 <span className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>open</span>
               </div>
