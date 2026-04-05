@@ -9,6 +9,7 @@ import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
 import { ForecastTab } from "@/components/ForecastTab";
 import { PlanningStatusTab } from "@/components/PlanningStatusTab";
+import { useNavBadges } from "@/hooks/useNavBadges";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
@@ -38,6 +39,7 @@ function CaseTypeBadge({ type }: { type: string | null }) {
 
 export default function Projecten() {
   const { isManager } = useAuth(); const navigate = useNavigate();
+  const { badges } = useNavBadges();
   const [projects, setProjects] = useState<Project[]>([]); const [opdrachtgevers, setOpdrachtgevers] = useState<Opdrachtgever[]>([]);
   const [loading, setLoading] = useState(true); const [showAdd, setShowAdd] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -257,7 +259,7 @@ export default function Projecten() {
 
   return (
     <>
-      <DesktopSidebar />
+      <DesktopSidebar badges={badges} />
 
       {/* ===== DESKTOP LAYOUT ===== */}
       <div className="hidden lg:block" style={{ marginLeft: 240, minHeight: "100vh", background: "var(--bg-base)" }}>
@@ -419,7 +421,7 @@ export default function Projecten() {
             )}
           </div>
         </div>
-        <BottomNav />
+        <BottomNav badges={badges} />
       </div>
     </>
   );

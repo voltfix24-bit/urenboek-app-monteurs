@@ -8,6 +8,7 @@ import { mutate } from "@/lib/supabaseHelpers";
 import { ArrowLeft, X, Save, Check, Plus, Minus, GripVertical, FileText, Trash2, Loader2, Download } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { BottomNav } from "@/components/BottomNav";
+import { useNavBadges } from "@/hooks/useNavBadges";
 import { getISOWeek, startOfISOWeek, addDays, format, getISOWeekYear } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -88,6 +89,7 @@ export default function ProjectPlanning() {
   const navigate = useNavigate();
   const { isManager, user } = useAuth();
   const { profileId: profileIdFromContext } = useProfile();
+  const { badges } = useNavBadges();
 
   const [project, setProject] = useState<Project | null>(null);
   const [state, setState] = useState<MatrixState>(getDefaultState());
@@ -943,7 +945,7 @@ export default function ProjectPlanning() {
 
       {/* Mobile bottom nav */}
       <div className="lg:hidden">
-        <BottomNav />
+        <BottomNav badges={badges} />
       </div>
 
       <style>{`
