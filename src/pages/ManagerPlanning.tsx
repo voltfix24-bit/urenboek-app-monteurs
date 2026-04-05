@@ -16,7 +16,7 @@ interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
-const AVATAR_COLORS = ['#4A7C2F', '#6B9E4A', '#2D6B8A', '#8B6914', '#5A4A7C'];
+const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)', 'var(--warn-text)', 'var(--purple)'];
 
 function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null): string[] {
   const conflicts: string[] = [];
@@ -33,10 +33,10 @@ function getConflicts(medId: string, dateStr: string, dayIndex: number, entries:
 function getModalStatus(medId: string, dateStr: string, medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], dateObj: Date): { label: string; color: string; bg: string } | null {
   const med = medewerkers.find(m => m.id === medId);
   const verlof = beschikbaarheid.find(b => b.medewerker_id === medId && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
-  if (verlof) return { label: "Op vakantie", color: "#C0392B", bg: "#FDECEA" };
+  if (verlof) return { label: "Op vakantie", color: "var(--danger)", bg: "var(--danger-light)" };
   const jsDay = dateObj.getDay();
-  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "Vaste vrije dag", color: "#8B6914", bg: "#FFF8DC" };
-  return { label: "Beschikbaar", color: "#2D7A3A", bg: "#D4EDD8" };
+  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "Vaste vrije dag", color: "var(--warn-text)", bg: "var(--warn-bg)" };
+  return { label: "Beschikbaar", color: "var(--success)", bg: "var(--success-light)" };
 }
 
 export default function ManagerPlanning() {
@@ -129,36 +129,36 @@ export default function ManagerPlanning() {
   }, [modalForm.medewerker_id, modalForm.datum, entries, medewerkers, beschikbaarheid, editId, weekDates]);
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "#F5F7F0" }}><p style={{ color: "#8AAD6E" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   const gridContent = (
     <main className="px-4 py-4 space-y-4">
-      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
           <ChevronLeft className="h-4 w-4" />
         </button>
         <div className="text-center">
-          <p className="text-lg font-extrabold" style={{ color: "#2D4A1E" }}>Week {weekNumber}</p>
-          <p className="text-[11px]" style={{ color: "#8AAD6E" }}>
+          <p className="text-lg font-extrabold" style={{ color: "var(--text-primary)" }}>Week {weekNumber}</p>
+          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
             {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 4), "d MMM", { locale: nl })}
           </p>
         </div>
-        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
       {loading ? (
-        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
+        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
       ) : (
         <>
           <div className="flex gap-1">
             <div className="w-16 shrink-0" />
             {weekDates.map((d, i) => (
               <div key={i} className="flex-1 text-center">
-                <p className="text-[10px] font-semibold" style={{ color: "#8AAD6E" }}>{DAGEN[i]}</p>
-                <p className="text-xs font-bold" style={{ color: "#2D4A1E" }}>{d.getDate()}</p>
+                <p className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>{DAGEN[i]}</p>
+                <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{d.getDate()}</p>
               </div>
             ))}
           </div>
@@ -170,7 +170,7 @@ export default function ManagerPlanning() {
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
                     {med.full_name.charAt(0)}
                   </div>
-                  <span className="text-[10px] font-medium truncate max-w-[44px]" style={{ color: "#2D4A1E" }}>{med.full_name.split(" ")[0]}</span>
+                  <span className="text-[10px] font-medium truncate max-w-[44px]" style={{ color: "var(--text-primary)" }}>{med.full_name.split(" ")[0]}</span>
                 </div>
               </div>
               {weekDates.map((d, i) => {
@@ -182,21 +182,21 @@ export default function ManagerPlanning() {
 
                 return (
                   <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] flex flex-col items-center justify-center text-center transition-colors active:scale-95" style={{
-                    background: hasConflict && !entry ? "#FDECEA" : entry ? "#D4E8C2" : "#F5F7F0",
+                    background: hasConflict && !entry ? "var(--danger-light)" : entry ? "var(--accent-light)" : "var(--bg-base)",
                     border: hasConflict ? "1px solid #E8A09A" : entry ? "1px solid #9DC87A" : "1px solid #DFE8D6",
                   }}>
                     {entry ? (
                       <>
-                        <span className="text-[8px] font-bold truncate w-full" style={{ color: "#2D4A1E" }}>{proj?.nummer?.slice(-3) || "?"}</span>
-                        <span className="text-[7px]" style={{ color: "#8AAD6E" }}>{entry.starttijd}</span>
+                        <span className="text-[8px] font-bold truncate w-full" style={{ color: "var(--text-primary)" }}>{proj?.nummer?.slice(-3) || "?"}</span>
+                        <span className="text-[7px]" style={{ color: "var(--text-muted)" }}>{entry.starttijd}</span>
                       </>
                     ) : hasConflict ? (
-                      <AlertTriangle className="h-3 w-3" style={{ color: "#C0392B", opacity: 0.6 }} />
+                      <AlertTriangle className="h-3 w-3" style={{ color: "var(--danger)", opacity: 0.6 }} />
                     ) : (
-                      <Plus className="h-3 w-3" style={{ color: "#C5D4B2" }} />
+                      <Plus className="h-3 w-3" style={{ color: "var(--border)" }} />
                     )}
                     {hasConflict && entry && (
-                      <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "#C0392B" }} />
+                      <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "var(--danger)" }} />
                     )}
                   </button>
                 );
@@ -210,10 +210,10 @@ export default function ManagerPlanning() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3 flex items-center gap-2.5">
           <HeaderLogo />
-          <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>Planning</span>
+          <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Planning</span>
         </div>
       </header>
 
@@ -228,13 +228,13 @@ export default function ManagerPlanning() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "#EBF0E4", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "#C5D4B2" }} />
-            <h2 className="text-base font-bold" style={{ color: "#2D4A1E" }}>
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
+            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
             </h2>
-            <p className="text-xs" style={{ color: "#8AAD6E" }}>{modalForm.datum}</p>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>{modalForm.datum}</p>
 
             {modalStatus && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: modalStatus.bg, border: `1px solid ${modalStatus.color}33` }}>
@@ -245,9 +245,9 @@ export default function ManagerPlanning() {
             {modalConflicts.length > 0 && (
               <div className="space-y-1.5">
                 {modalConflicts.map((c, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#FDECEA", border: "1px solid #E8A09A" }}>
-                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#C0392B" }} />
-                    <span className="text-xs font-medium" style={{ color: "#C0392B" }}>Conflict: {c}</span>
+                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--danger)" }} />
+                    <span className="text-xs font-medium" style={{ color: "var(--danger)" }}>Conflict: {c}</span>
                   </div>
                 ))}
               </div>
@@ -255,31 +255,31 @@ export default function ManagerPlanning() {
 
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-[10px] font-medium" style={{ color: "#8AAD6E" }}>Project</label>
-                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }}>
+                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Project</label>
+                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
                 </select>
               </div>
 
               <div className="flex gap-3">
                 <div className="flex-1 space-y-1">
-                  <label className="text-[10px]" style={{ color: "#8AAD6E" }}>Start</label>
-                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E", colorScheme: "light" }} />
+                  <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Start</label>
+                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
                 </div>
                 <div className="flex-1 space-y-1">
-                  <label className="text-[10px]" style={{ color: "#8AAD6E" }}>Eind</label>
-                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E", colorScheme: "light" }} />
+                  <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Eind</label>
+                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
                 </div>
               </div>
 
-              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
+              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
 
-              <button onClick={savePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)", color: "#fff" }}>
+              <button onClick={savePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>
 
               {editId && (
-                <button onClick={deletePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "#FDECEA", border: "1px solid #E8A09A", color: "#C0392B" }}>
+                <button onClick={deletePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A", color: "var(--danger)" }}>
                   Verwijderen
                 </button>
               )}

@@ -20,7 +20,7 @@ export function PageShell({ children, mobileConstrained = true }: PageShellProps
       <DesktopSidebar />
       <div
         className="min-h-screen overflow-x-hidden"
-        style={{ background: "#F5F7F0" }}
+        style={{ background: "var(--bg-base)" }}
       >
         {/* Mobile wrapper */}
         <div

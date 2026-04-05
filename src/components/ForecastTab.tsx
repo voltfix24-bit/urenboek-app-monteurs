@@ -102,24 +102,24 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
   if (loading) return (
     <div className="text-center py-8">
-      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} />
+      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
     </div>
   );
 
   if (!methode) {
     return (
       <div className="space-y-4">
-        <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Hoe wordt dit project vergoed?</p>
+        <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Hoe wordt dit project vergoed?</p>
         <div className="grid grid-cols-2 gap-3">
           {[
             { key: "stuksprijzen", Icon: ClipboardList, label: "Stuksprijzen", desc: "Vergoeding per spec-code (R320010 etc.)", sub: "Liander tarieven als basis" },
             { key: "uren", Icon: Clock, label: "Op uren", desc: "Vergoeding per gewerkt uur", sub: "Op basis van monteurtarief" },
           ].map(o => (
-            <button key={o.key} onClick={() => selectMethode(o.key)} className="p-5 rounded-[14px] text-center space-y-2 transition-colors hover:border-[#4A7C2F]" style={{ background: "#EBF0E4", border: "1.5px solid #C5D4B2", cursor: "pointer" }}>
-              <o.Icon className="h-6 w-6 mx-auto" style={{ color: "#4A7C2F" }} />
-              <p className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>{o.label}</p>
-              <p className="text-[11px]" style={{ color: "#8AAD6E" }}>{o.desc}</p>
-              <p className="text-[10px]" style={{ color: "#C5D4B2" }}>{o.sub}</p>
+            <button key={o.key} onClick={() => selectMethode(o.key)} className="p-5 rounded-[14px] text-center space-y-2 transition-colors hover:border-[#4A7C2F]" style={{ background: "var(--bg-surface)", border: "1.5px solid #C5D4B2", cursor: "pointer" }}>
+              <o.Icon className="h-6 w-6 mx-auto" style={{ color: "var(--accent)" }} />
+              <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{o.label}</p>
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{o.desc}</p>
+              <p className="text-[10px]" style={{ color: "var(--border)" }}>{o.sub}</p>
             </button>
           ))}
         </div>
@@ -165,7 +165,7 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
   const totaalKosten = regels.reduce((s, r) => s + (r.tarief_inkoop || 0) * (r.aantal || 1), 0);
   const margeEuro = totaalOmzet - totaalKosten;
   const margePerc = totaalOmzet > 0 ? (margeEuro / totaalOmzet) * 100 : 0;
-  const margeColor = margePerc > 30 ? "#2D7A3A" : margePerc >= 15 ? "#8B6914" : "#C0392B";
+  const margeColor = margePerc > 30 ? "var(--success)" : margePerc >= 15 ? "var(--warn-text)" : "var(--danger)";
 
   const selectedCodes = new Set(regels.map(r => r.spec_code));
 
@@ -173,29 +173,29 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
     <div className="space-y-4">
       {/* Spec code browser */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#8AAD6E" }} />
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Zoek op code of omschrijving..." className="w-full pl-9 pr-3 py-2 rounded-[10px] text-sm" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--text-muted)" }} />
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Zoek op code of omschrijving..." className="w-full pl-9 pr-3 py-2 rounded-[10px] text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
       </div>
 
-      <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #C5D4B2" }}>
+      <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
         {SPEC_CODE_GROEPEN.map(g => {
           const codes = filtered.filter(s => s.groep === g.prefix);
           if (codes.length === 0) return null;
           const open = openGroepen.has(g.prefix);
           return (
             <div key={g.prefix}>
-              <button onClick={() => { const n = new Set(openGroepen); open ? n.delete(g.prefix) : n.add(g.prefix); setOpenGroepen(n); }} className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold" style={{ background: "#DFE8D6", color: "#2D4A1E", borderBottom: "1px solid #C5D4B2" }}>
+              <button onClick={() => { const n = new Set(openGroepen); open ? n.delete(g.prefix) : n.add(g.prefix); setOpenGroepen(n); }} className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold" style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)", borderBottom: "1px solid var(--border)" }}>
                 {g.label}
                 {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               </button>
               {open && codes.map(sc => (
-                <div key={sc.code} className="flex items-center gap-2 px-3 py-1.5 text-[12px]" style={{ background: "#EBF0E4", borderBottom: "1px solid #C5D4B2" }}>
-                  <button onClick={() => addCode(sc)} disabled={selectedCodes.has(sc.code)} className="w-6 h-6 rounded flex items-center justify-center shrink-0 text-xs" style={{ background: selectedCodes.has(sc.code) ? "#C5D4B2" : "#D4E8C2", color: selectedCodes.has(sc.code) ? "#8AAD6E" : "#4A7C2F" }}>
+                <div key={sc.code} className="flex items-center gap-2 px-3 py-1.5 text-[12px]" style={{ background: "var(--bg-surface)", borderBottom: "1px solid var(--border)" }}>
+                  <button onClick={() => addCode(sc)} disabled={selectedCodes.has(sc.code)} className="w-6 h-6 rounded flex items-center justify-center shrink-0 text-xs" style={{ background: selectedCodes.has(sc.code) ? "var(--border)" : "var(--accent-light)", color: selectedCodes.has(sc.code) ? "var(--text-muted)" : "var(--accent)" }}>
                     {selectedCodes.has(sc.code) ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
                   </button>
-                  <span className={`${mono} w-16 shrink-0`} style={{ color: "#4A7C2F" }}>{sc.code}</span>
-                  <span className="flex-1 truncate" style={{ color: "#2D4A1E" }}>{sc.omschrijving}</span>
-                  <span className={`${mono} shrink-0`} style={{ color: "#5A7A42" }}>{fmt(sc.tarief_terrevolt)}</span>
+                  <span className={`${mono} w-16 shrink-0`} style={{ color: "var(--accent)" }}>{sc.code}</span>
+                  <span className="flex-1 truncate" style={{ color: "var(--text-primary)" }}>{sc.omschrijving}</span>
+                  <span className={`${mono} shrink-0`} style={{ color: "var(--text-secondary)" }}>{fmt(sc.tarief_terrevolt)}</span>
                 </div>
               ))}
             </div>
@@ -206,54 +206,54 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
       {/* Selected codes table */}
       {regels.length > 0 ? (
         <>
-          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Geselecteerde codes</p>
-          <div className="rounded-xl overflow-hidden" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-            <div className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "#DFE8D6", color: "#8AAD6E" }}>
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Geselecteerde codes</p>
+          <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+            <div className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
               <span>Code</span><span>Omschrijving</span><span>Aantal</span><span>Liander betaalt</span><span>TerreVolt kosten</span><span></span>
             </div>
             {regels.map(r => (
-              <div key={r.spec_code} className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid #C5D4B2" }}>
-                <span className={mono} style={{ color: "#4A7C2F" }}>{r.spec_code}</span>
-                <span className="truncate" style={{ color: "#2D4A1E" }}>{r.spec_omschrijving}</span>
+              <div key={r.spec_code} className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid var(--border)" }}>
+                <span className={mono} style={{ color: "var(--accent)" }}>{r.spec_code}</span>
+                <span className="truncate" style={{ color: "var(--text-primary)" }}>{r.spec_omschrijving}</span>
                 <div className="flex items-center gap-0.5">
-                  <button onClick={() => updateAantal(r.spec_code!, -0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "#DFE8D6" }}><Minus className="h-3 w-3" style={{ color: "#5A7A42" }} /></button>
-                  <input type="number" value={r.aantal || 1} onChange={e => setAantal(r.spec_code!, parseFloat(e.target.value) || 1)} className={`w-8 text-center text-[11px] ${mono} bg-transparent`} style={{ color: "#2D4A1E" }} />
-                  <button onClick={() => updateAantal(r.spec_code!, 0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "#DFE8D6" }}><Plus className="h-3 w-3" style={{ color: "#5A7A42" }} /></button>
+                  <button onClick={() => updateAantal(r.spec_code!, -0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Minus className="h-3 w-3" style={{ color: "var(--text-secondary)" }} /></button>
+                  <input type="number" value={r.aantal || 1} onChange={e => setAantal(r.spec_code!, parseFloat(e.target.value) || 1)} className={`w-8 text-center text-[11px] ${mono} bg-transparent`} style={{ color: "var(--text-primary)" }} />
+                  <button onClick={() => updateAantal(r.spec_code!, 0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Plus className="h-3 w-3" style={{ color: "var(--text-secondary)" }} /></button>
                 </div>
-                <span className={mono} style={{ color: "#2D4A1E" }}>{fmt((r.tarief_terrevolt || 0) * (r.aantal || 1))}</span>
-                <span className={mono} style={{ color: "#2D4A1E" }}>{fmt((r.tarief_inkoop || 0) * (r.aantal || 1))}</span>
-                <button onClick={() => removeCode(r.spec_code!)} className="w-5 h-5 rounded flex items-center justify-center" style={{ color: "#C0392B" }}><X className="h-3.5 w-3.5" /></button>
+                <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt((r.tarief_terrevolt || 0) * (r.aantal || 1))}</span>
+                <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt((r.tarief_inkoop || 0) * (r.aantal || 1))}</span>
+                <button onClick={() => removeCode(r.spec_code!)} className="w-5 h-5 rounded flex items-center justify-center" style={{ color: "var(--danger)" }}><X className="h-3.5 w-3.5" /></button>
               </div>
             ))}
           </div>
 
           {/* Totals */}
-          <div className="rounded-xl p-3.5 space-y-1.5" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2" }}>
+          <div className="rounded-xl p-3.5 space-y-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
             <div className="flex justify-between text-[12px]">
-              <span style={{ color: "#5A7A42" }}>Totaal omzet (Liander betaalt)</span>
-              <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(totaalOmzet)}</span>
+              <span style={{ color: "var(--text-secondary)" }}>Totaal omzet (Liander betaalt)</span>
+              <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(totaalOmzet)}</span>
             </div>
             <div className="flex justify-between text-[12px]">
-              <span style={{ color: "#5A7A42" }}>Totaal kosten (TerreVolt)</span>
-              <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(totaalKosten)}</span>
+              <span style={{ color: "var(--text-secondary)" }}>Totaal kosten (TerreVolt)</span>
+              <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(totaalKosten)}</span>
             </div>
-            <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid #C5D4B2" }}>
-              <span style={{ color: "#2D4A1E" }}>Marge</span>
+            <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid var(--border)" }}>
+              <span style={{ color: "var(--text-primary)" }}>Marge</span>
               <div className="flex items-center gap-2">
-                <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(margeEuro)}</span>
+                <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(margeEuro)}</span>
                 <span className="px-3 py-0.5 rounded-full text-[13px] font-semibold" style={{ background: margeColor + "18", color: margeColor }}>{margePerc.toFixed(1)}%</span>
               </div>
             </div>
           </div>
 
-          <button onClick={onSave} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
+          <button onClick={onSave} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
             Forecast opslaan
           </button>
         </>
       ) : (
-        <div className="text-center py-8 rounded-xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-          <Info className="h-6 w-6 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-          <p className="text-sm" style={{ color: "#8AAD6E" }}>Voeg spec-codes toe om de forecast te berekenen.</p>
+        <div className="text-center py-8 rounded-xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <Info className="h-6 w-6 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Voeg spec-codes toe om de forecast te berekenen.</p>
         </div>
       )}
     </div>
@@ -286,7 +286,7 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
   const totaalKosten = regels.reduce((s, r) => s + (r.geplande_uren || 0) * (r.uurtarief_snap || 0), 0);
   const margeEuro = verwachteOmzet - totaalKosten;
   const margePerc = verwachteOmzet > 0 ? (margeEuro / verwachteOmzet) * 100 : 0;
-  const margeColor = margePerc > 30 ? "#2D7A3A" : margePerc >= 15 ? "#8B6914" : "#C0392B";
+  const margeColor = margePerc > 30 ? "var(--success)" : margePerc >= 15 ? "var(--warn-text)" : "var(--danger)";
 
   const usedIds = new Set(regels.map(r => r.medewerker_id));
   const available = monteurs.filter(m => !usedIds.has(m.id));
@@ -295,64 +295,64 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
     <div className="space-y-4">
       {/* Add monteur */}
       <div className="flex gap-2">
-        <select value={selectedMonteur} onChange={e => setSelectedMonteur(e.target.value)} className="flex-1 px-3 py-2 rounded-xl text-sm" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#2D4A1E" }}>
+        <select value={selectedMonteur} onChange={e => setSelectedMonteur(e.target.value)} className="flex-1 px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
           <option value="">Monteur toevoegen...</option>
           {available.map(m => (
             <option key={m.id} value={m.id}>{m.full_name} ({m.uurtarief != null ? `€${m.uurtarief}/u` : "geen tarief"})</option>
           ))}
         </select>
-        <button onClick={addMonteur} disabled={!selectedMonteur} className="px-3 py-2 rounded-xl text-sm font-semibold" style={{ background: "#D4E8C2", color: "#4A7C2F", border: "1px solid #9DC87A" }}>
+        <button onClick={addMonteur} disabled={!selectedMonteur} className="px-3 py-2 rounded-xl text-sm font-semibold" style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid #9DC87A" }}>
           <Plus className="h-4 w-4" />
         </button>
       </div>
 
       {regels.length > 0 && (
         <>
-          <div className="rounded-xl overflow-hidden" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-            <div className="grid grid-cols-[1fr_70px_70px_80px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "#DFE8D6", color: "#8AAD6E" }}>
+          <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+            <div className="grid grid-cols-[1fr_70px_70px_80px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
               <span>Monteur</span><span>Tarief</span><span>Uren</span><span>Kosten</span><span></span>
             </div>
             {regels.map(r => {
               const m = monteurs.find(m => m.id === r.medewerker_id);
               const kosten = (r.geplande_uren || 0) * (r.uurtarief_snap || 0);
               return (
-                <div key={r.medewerker_id} className="grid grid-cols-[1fr_70px_70px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid #C5D4B2" }}>
-                  <span className="truncate" style={{ color: "#2D4A1E" }}>{m?.full_name || "?"}</span>
-                  <span className={mono} style={{ color: "#5A7A42" }}>€ {r.uurtarief_snap || 0}</span>
-                  <input type="number" value={r.geplande_uren || 0} onChange={e => updateUren(r.medewerker_id!, parseFloat(e.target.value) || 0)} className={`w-14 text-center bg-transparent text-[12px] ${mono}`} style={{ color: "#2D4A1E" }} min={0} />
-                  <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(kosten)}</span>
-                  <button onClick={() => removeMonteur(r.medewerker_id!)} className="w-5 h-5 rounded flex items-center justify-center" style={{ color: "#C0392B" }}><X className="h-3.5 w-3.5" /></button>
+                <div key={r.medewerker_id} className="grid grid-cols-[1fr_70px_70px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid var(--border)" }}>
+                  <span className="truncate" style={{ color: "var(--text-primary)" }}>{m?.full_name || "?"}</span>
+                  <span className={mono} style={{ color: "var(--text-secondary)" }}>€ {r.uurtarief_snap || 0}</span>
+                  <input type="number" value={r.geplande_uren || 0} onChange={e => updateUren(r.medewerker_id!, parseFloat(e.target.value) || 0)} className={`w-14 text-center bg-transparent text-[12px] ${mono}`} style={{ color: "var(--text-primary)" }} min={0} />
+                  <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(kosten)}</span>
+                  <button onClick={() => removeMonteur(r.medewerker_id!)} className="w-5 h-5 rounded flex items-center justify-center" style={{ color: "var(--danger)" }}><X className="h-3.5 w-3.5" /></button>
                 </div>
               );
             })}
           </div>
 
           {/* Omzet input & totals */}
-          <div className="rounded-xl p-3.5 space-y-2" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2" }}>
+          <div className="rounded-xl p-3.5 space-y-2" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
             <div className="flex justify-between text-[12px]">
-              <span style={{ color: "#5A7A42" }}>Totaal geplande uren</span>
-              <span className={mono} style={{ color: "#2D4A1E" }}>{totaalUren} u</span>
+              <span style={{ color: "var(--text-secondary)" }}>Totaal geplande uren</span>
+              <span className={mono} style={{ color: "var(--text-primary)" }}>{totaalUren} u</span>
             </div>
             <div className="flex justify-between text-[12px]">
-              <span style={{ color: "#5A7A42" }}>Totale personeelskosten</span>
-              <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(totaalKosten)}</span>
+              <span style={{ color: "var(--text-secondary)" }}>Totale personeelskosten</span>
+              <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(totaalKosten)}</span>
             </div>
-            <div className="pt-2" style={{ borderTop: "1px solid #C5D4B2" }}>
-              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Verwachte omzet (€)</label>
-              <input type="number" value={verwachteOmzet || ""} onChange={e => setVerwachteOmzet(parseFloat(e.target.value) || 0)} placeholder="bijv. 25000" className={`w-full mt-1 px-3 py-2 rounded-xl text-sm ${mono}`} style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
+            <div className="pt-2" style={{ borderTop: "1px solid var(--border)" }}>
+              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Verwachte omzet (€)</label>
+              <input type="number" value={verwachteOmzet || ""} onChange={e => setVerwachteOmzet(parseFloat(e.target.value) || 0)} placeholder="bijv. 25000" className={`w-full mt-1 px-3 py-2 rounded-xl text-sm ${mono}`} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
             </div>
             {verwachteOmzet > 0 && (
-              <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid #C5D4B2" }}>
-                <span style={{ color: "#2D4A1E" }}>Marge</span>
+              <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid var(--border)" }}>
+                <span style={{ color: "var(--text-primary)" }}>Marge</span>
                 <div className="flex items-center gap-2">
-                  <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(margeEuro)}</span>
+                  <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(margeEuro)}</span>
                   <span className="px-3 py-0.5 rounded-full text-[13px] font-semibold" style={{ background: margeColor + "18", color: margeColor }}>{margePerc.toFixed(1)}%</span>
                 </div>
               </div>
             )}
           </div>
 
-          <button onClick={onSave} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
+          <button onClick={onSave} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
             Forecast opslaan
           </button>
         </>

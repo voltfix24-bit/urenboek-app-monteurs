@@ -184,47 +184,47 @@ export default function Rapportage() {
   };
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "#F5F7F0" }}><p style={{ color: "#8AAD6E" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3">
           <div className="flex items-center gap-2.5">
             <HeaderLogo />
-            <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>Rapportage</span>
+            <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Rapportage</span>
           </div>
         </div>
       </header>
 
       <main className="px-4 py-4 space-y-4">
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <div className="flex items-center justify-between">
-            <button onClick={() => setCurrentWeekStart((p) => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+            <button onClick={() => setCurrentWeekStart((p) => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
               <ChevronLeft className="h-4 w-4" />
             </button>
             <div className="text-center">
-              <p className="text-lg font-extrabold" style={{ color: "#2D4A1E" }}>Week {weekNumber}</p>
-              <p className="text-[11px]" style={{ color: "#8AAD6E" }}>
+              <p className="text-lg font-extrabold" style={{ color: "var(--text-primary)" }}>Week {weekNumber}</p>
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
                 {format(currentWeekStart, "d MMM", { locale: nl })} – {format(addDays(currentWeekStart, 6), "d MMM yyyy", { locale: nl })}
               </p>
             </div>
-            <button onClick={() => setCurrentWeekStart((p) => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+            <button onClick={() => setCurrentWeekStart((p) => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
 
-          <button onClick={() => setCurrentWeekStart(startOfISOWeek(new Date()))} className="w-full py-1.5 rounded-xl text-[11px] font-semibold transition-colors" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+          <button onClick={() => setCurrentWeekStart(startOfISOWeek(new Date()))} className="w-full py-1.5 rounded-xl text-[11px] font-semibold transition-colors" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
             Deze week
           </button>
 
           <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
             {([["goedgekeurd", "Goedgekeurd"], ["ingediend", "Ingediend"], ["alle", "Alle uren"]] as const).map(([k, l]) => (
               <button key={k} onClick={() => setFilter(k)} className="shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-colors" style={{
-                background: filter === k ? "#D4E8C2" : "#F5F7F0",
-                border: filter === k ? "1px solid #9DC87A" : "1px solid #C5D4B2",
-                color: filter === k ? "#4A7C2F" : "#8AAD6E",
+                background: filter === k ? "var(--accent-light)" : "var(--bg-base)",
+                border: filter === k ? "1px solid #9DC87A" : "1px solid var(--border)",
+                color: filter === k ? "var(--accent)" : "var(--text-muted)",
               }}>
                 {l}
               </button>
@@ -234,35 +234,35 @@ export default function Rapportage() {
 
         <div className="flex gap-2">
           {[
-            { label: "Uren", value: totalHours + "u", Icon: Clock, color: "#2D7A3A" },
-            { label: "Projecten", value: String(uniqueProjects), Icon: FolderOpen, color: "#2D5A8A" },
-            { label: "Monteurs", value: String(uniqueEmployees), Icon: Users, color: "#D4A017" },
+            { label: "Uren", value: totalHours + "u", Icon: Clock, color: "var(--success)" },
+            { label: "Projecten", value: String(uniqueProjects), Icon: FolderOpen, color: "var(--info)" },
+            { label: "Monteurs", value: String(uniqueEmployees), Icon: Users, color: "var(--warn-dot)" },
           ].map((k, i) => (
-            <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+            <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
               <k.Icon className="h-5 w-5 mx-auto mb-1" style={{ color: k.color }} />
               <p className="text-xl font-extrabold" style={{ color: k.color }}>{k.value}</p>
-              <p className="text-[10px] font-medium mt-0.5" style={{ color: "#8AAD6E" }}>{k.label}</p>
+              <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{k.label}</p>
             </div>
           ))}
         </div>
 
         {loading ? (
           <div className="text-center py-10">
-            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} />
-            <p className="text-xs mt-3" style={{ color: "#8AAD6E" }}>Laden...</p>
+            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
+            <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>Laden...</p>
           </div>
         ) : (
           <>
             {medewerkerStats.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Per monteur</p>
+              <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Per monteur</p>
                 {medewerkerStats.map(([naam, uren]) => (
                   <div key={naam} className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium" style={{ color: "#2D4A1E" }}>{naam}</span>
-                      <span className="text-xs font-bold tabular-nums" style={{ color: "#4A7C2F" }}>{uren}u</span>
+                      <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{naam}</span>
+                      <span className="text-xs font-bold tabular-nums" style={{ color: "var(--accent)" }}>{uren}u</span>
                     </div>
-                    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "#DFE8D6" }}>
+                    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "var(--bg-surface-2)" }}>
                       <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(uren / maxMedUren) * 100}%`, background: "linear-gradient(90deg, #4A7C2F, #6B9E4A)" }} />
                     </div>
                   </div>
@@ -271,31 +271,31 @@ export default function Rapportage() {
             )}
 
             {projectStats.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#8AAD6E" }}>Per project</p>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Per project</p>
                 {projectStats.map(([project, uren]) => (
                   <div key={project} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
-                    <span className="text-sm font-medium" style={{ color: "#2D4A1E" }}>{project}</span>
-                    <span className="text-xs font-bold tabular-nums" style={{ color: "#4A7C2F" }}>{uren}u</span>
+                    <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{project}</span>
+                    <span className="text-xs font-bold tabular-nums" style={{ color: "var(--accent)" }}>{uren}u</span>
                   </div>
                 ))}
               </div>
             )}
 
             {entries.length === 0 && (
-              <div className="text-center py-10 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <BarChart3 className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-                <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen data gevonden</p>
-                <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Geen uren in deze periode</p>
+              <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                <BarChart3 className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
+                <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen data gevonden</p>
+                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Geen uren in deze periode</p>
               </div>
             )}
 
             {entries.length > 0 && (
               <div className="flex gap-2">
-                <button onClick={exportPDF} className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]" style={{ background: "#D4E8C2", border: "1px solid #9DC87A", color: "#4A7C2F" }}>
+                <button onClick={exportPDF} className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]" style={{ background: "var(--accent-light)", border: "1px solid #9DC87A", color: "var(--accent)" }}>
                   <FileText className="h-4 w-4" /> PDF
                 </button>
-                <button onClick={exportCSV} className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+                <button onClick={exportCSV} className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                   <Download className="h-4 w-4" /> CSV
                 </button>
               </div>

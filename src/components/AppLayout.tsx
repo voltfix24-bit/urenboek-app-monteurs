@@ -20,12 +20,12 @@ export function AppLayout({ children, title, subtitle, headerActions, rawDesktop
       <DesktopSidebar />
 
       {/* Desktop content area */}
-      <div className="hidden lg:block" style={{ marginLeft: 240, minHeight: "100vh", background: "#F5F7F0" }}>
+      <div className="hidden lg:block" style={{ marginLeft: 240, minHeight: "100vh", background: "var(--bg-base)" }}>
         {title && (
           <header className="flex items-center justify-between px-10 pt-8 pb-4">
             <div>
-              <h1 className="text-[22px] font-medium" style={{ color: "#2D4A1E" }}>{title}</h1>
-              {subtitle && <p className="text-sm mt-0.5" style={{ color: "#8AAD6E" }}>{subtitle}</p>}
+              <h1 className="text-[22px] font-medium" style={{ color: "var(--text-primary)" }}>{title}</h1>
+              {subtitle && <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>{subtitle}</p>}
             </div>
             {headerActions && <div className="flex items-center gap-2">{headerActions}</div>}
           </header>
