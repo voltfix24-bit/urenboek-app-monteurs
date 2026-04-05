@@ -174,22 +174,22 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
       {/* Spec code browser */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--text-muted)" }} />
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Zoek op code of omschrijving..." className="w-full pl-9 pr-3 py-2 rounded-[10px] text-sm" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Zoek op code of omschrijving..." className="w-full pl-9 pr-3 py-2 rounded-[10px] text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
       </div>
 
-      <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #C5D4B2" }}>
+      <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
         {SPEC_CODE_GROEPEN.map(g => {
           const codes = filtered.filter(s => s.groep === g.prefix);
           if (codes.length === 0) return null;
           const open = openGroepen.has(g.prefix);
           return (
             <div key={g.prefix}>
-              <button onClick={() => { const n = new Set(openGroepen); open ? n.delete(g.prefix) : n.add(g.prefix); setOpenGroepen(n); }} className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold" style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)", borderBottom: "1px solid #C5D4B2" }}>
+              <button onClick={() => { const n = new Set(openGroepen); open ? n.delete(g.prefix) : n.add(g.prefix); setOpenGroepen(n); }} className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold" style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)", borderBottom: "1px solid var(--border)" }}>
                 {g.label}
                 {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               </button>
               {open && codes.map(sc => (
-                <div key={sc.code} className="flex items-center gap-2 px-3 py-1.5 text-[12px]" style={{ background: "var(--bg-surface)", borderBottom: "1px solid #C5D4B2" }}>
+                <div key={sc.code} className="flex items-center gap-2 px-3 py-1.5 text-[12px]" style={{ background: "var(--bg-surface)", borderBottom: "1px solid var(--border)" }}>
                   <button onClick={() => addCode(sc)} disabled={selectedCodes.has(sc.code)} className="w-6 h-6 rounded flex items-center justify-center shrink-0 text-xs" style={{ background: selectedCodes.has(sc.code) ? "var(--border)" : "var(--accent-light)", color: selectedCodes.has(sc.code) ? "var(--text-muted)" : "var(--accent)" }}>
                     {selectedCodes.has(sc.code) ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
                   </button>
@@ -207,12 +207,12 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
       {regels.length > 0 ? (
         <>
           <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Geselecteerde codes</p>
-          <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+          <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
             <div className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
               <span>Code</span><span>Omschrijving</span><span>Aantal</span><span>Liander betaalt</span><span>TerreVolt kosten</span><span></span>
             </div>
             {regels.map(r => (
-              <div key={r.spec_code} className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid #C5D4B2" }}>
+              <div key={r.spec_code} className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid var(--border)" }}>
                 <span className={mono} style={{ color: "var(--accent)" }}>{r.spec_code}</span>
                 <span className="truncate" style={{ color: "var(--text-primary)" }}>{r.spec_omschrijving}</span>
                 <div className="flex items-center gap-0.5">
@@ -228,7 +228,7 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
           </div>
 
           {/* Totals */}
-          <div className="rounded-xl p-3.5 space-y-1.5" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2" }}>
+          <div className="rounded-xl p-3.5 space-y-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
             <div className="flex justify-between text-[12px]">
               <span style={{ color: "var(--text-secondary)" }}>Totaal omzet (Liander betaalt)</span>
               <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(totaalOmzet)}</span>
@@ -237,7 +237,7 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
               <span style={{ color: "var(--text-secondary)" }}>Totaal kosten (TerreVolt)</span>
               <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(totaalKosten)}</span>
             </div>
-            <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid #C5D4B2" }}>
+            <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid var(--border)" }}>
               <span style={{ color: "var(--text-primary)" }}>Marge</span>
               <div className="flex items-center gap-2">
                 <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(margeEuro)}</span>
@@ -246,12 +246,12 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
             </div>
           </div>
 
-          <button onClick={onSave} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
+          <button onClick={onSave} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
             Forecast opslaan
           </button>
         </>
       ) : (
-        <div className="text-center py-8 rounded-xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+        <div className="text-center py-8 rounded-xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <Info className="h-6 w-6 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>Voeg spec-codes toe om de forecast te berekenen.</p>
         </div>
@@ -295,7 +295,7 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
     <div className="space-y-4">
       {/* Add monteur */}
       <div className="flex gap-2">
-        <select value={selectedMonteur} onChange={e => setSelectedMonteur(e.target.value)} className="flex-1 px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }}>
+        <select value={selectedMonteur} onChange={e => setSelectedMonteur(e.target.value)} className="flex-1 px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
           <option value="">Monteur toevoegen...</option>
           {available.map(m => (
             <option key={m.id} value={m.id}>{m.full_name} ({m.uurtarief != null ? `€${m.uurtarief}/u` : "geen tarief"})</option>
@@ -308,7 +308,7 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
 
       {regels.length > 0 && (
         <>
-          <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+          <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
             <div className="grid grid-cols-[1fr_70px_70px_80px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
               <span>Monteur</span><span>Tarief</span><span>Uren</span><span>Kosten</span><span></span>
             </div>
@@ -316,7 +316,7 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
               const m = monteurs.find(m => m.id === r.medewerker_id);
               const kosten = (r.geplande_uren || 0) * (r.uurtarief_snap || 0);
               return (
-                <div key={r.medewerker_id} className="grid grid-cols-[1fr_70px_70px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid #C5D4B2" }}>
+                <div key={r.medewerker_id} className="grid grid-cols-[1fr_70px_70px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid var(--border)" }}>
                   <span className="truncate" style={{ color: "var(--text-primary)" }}>{m?.full_name || "?"}</span>
                   <span className={mono} style={{ color: "var(--text-secondary)" }}>€ {r.uurtarief_snap || 0}</span>
                   <input type="number" value={r.geplande_uren || 0} onChange={e => updateUren(r.medewerker_id!, parseFloat(e.target.value) || 0)} className={`w-14 text-center bg-transparent text-[12px] ${mono}`} style={{ color: "var(--text-primary)" }} min={0} />
@@ -328,7 +328,7 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
           </div>
 
           {/* Omzet input & totals */}
-          <div className="rounded-xl p-3.5 space-y-2" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2" }}>
+          <div className="rounded-xl p-3.5 space-y-2" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
             <div className="flex justify-between text-[12px]">
               <span style={{ color: "var(--text-secondary)" }}>Totaal geplande uren</span>
               <span className={mono} style={{ color: "var(--text-primary)" }}>{totaalUren} u</span>
@@ -337,12 +337,12 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
               <span style={{ color: "var(--text-secondary)" }}>Totale personeelskosten</span>
               <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(totaalKosten)}</span>
             </div>
-            <div className="pt-2" style={{ borderTop: "1px solid #C5D4B2" }}>
+            <div className="pt-2" style={{ borderTop: "1px solid var(--border)" }}>
               <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Verwachte omzet (€)</label>
-              <input type="number" value={verwachteOmzet || ""} onChange={e => setVerwachteOmzet(parseFloat(e.target.value) || 0)} placeholder="bijv. 25000" className={`w-full mt-1 px-3 py-2 rounded-xl text-sm ${mono}`} style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+              <input type="number" value={verwachteOmzet || ""} onChange={e => setVerwachteOmzet(parseFloat(e.target.value) || 0)} placeholder="bijv. 25000" className={`w-full mt-1 px-3 py-2 rounded-xl text-sm ${mono}`} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
             </div>
             {verwachteOmzet > 0 && (
-              <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid #C5D4B2" }}>
+              <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid var(--border)" }}>
                 <span style={{ color: "var(--text-primary)" }}>Marge</span>
                 <div className="flex items-center gap-2">
                   <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(margeEuro)}</span>
@@ -352,7 +352,7 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
             )}
           </div>
 
-          <button onClick={onSave} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
+          <button onClick={onSave} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
             Forecast opslaan
           </button>
         </>

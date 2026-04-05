@@ -122,7 +122,7 @@ export default function Planning() {
 
   const content = (
     <main className="px-4 py-4 space-y-4">
-      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
         <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -177,7 +177,7 @@ export default function Planning() {
                   return (
                     <div key={item.id} className="rounded-2xl p-4 space-y-2" style={{
                       background: "var(--bg-surface)",
-                      border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                      border: isToday ? "1px solid #9DC87A" : "1px solid var(--border)",
                       opacity: item.is_definitief ? 1 : 0.5,
                     }}>
                       {!item.is_definitief && (
@@ -226,7 +226,7 @@ export default function Planning() {
           })}
 
           {items.length === 0 && beschikbaarheid.length === 0 && (
-            <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+            <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
               <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
               <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen bevestigde planning deze week</p>
               <p className="text-xs mt-1 px-6" style={{ color: "var(--text-muted)" }}>Je manager heeft de planning nog niet gepubliceerd voor deze week.</p>
@@ -234,7 +234,7 @@ export default function Planning() {
           )}
 
           {allConcept && beschikbaarheid.length === 0 && (
-            <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+            <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
               <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
               <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Planning in voorbereiding</p>
               <p className="text-xs mt-1 px-6" style={{ color: "var(--text-muted)" }}>Je manager werkt nog aan de planning voor deze week. Je ziet hem zodra deze definitief is gemaakt.</p>
@@ -247,7 +247,7 @@ export default function Planning() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3 flex items-center gap-2.5">
           <HeaderLogo />
           <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Mijn planning</span>
@@ -266,12 +266,12 @@ export default function Planning() {
       {/* Uren boeken modal */}
       {showUrenModal && modalItem && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowUrenModal(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "var(--bg-surface)", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
             <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Uren boeken</h2>
 
-            <div className="space-y-1 rounded-xl p-3" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2" }}>
+            <div className="space-y-1 rounded-xl p-3" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
               <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{modalItem.project_naam}</p>
               <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
                 {format(new Date(modalItem.datum + "T12:00:00"), "EEEE d MMMM", { locale: nl })} · {modalItem.starttijd} – {modalItem.eindtijd}
@@ -284,7 +284,7 @@ export default function Planning() {
                 {["schakelen", "monteren"].map(w => (
                   <button key={w} onClick={() => setUrenForm(f => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{
                     background: urenForm.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)",
-                    border: urenForm.werkzaamheden === w ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                    border: urenForm.werkzaamheden === w ? "1px solid #9DC87A" : "1px solid var(--border)",
                     color: urenForm.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)",
                   }}>
                     {w}
@@ -304,7 +304,7 @@ export default function Planning() {
                 {[4, 6, 8, 9, 10].map(h => (
                   <button key={h} onClick={() => setUrenForm(f => ({ ...f, uren: h }))} className="px-3 py-1 rounded-lg text-xs font-medium transition-colors" style={{
                     background: urenForm.uren === h ? "var(--accent-light)" : "var(--bg-base)",
-                    border: urenForm.uren === h ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                    border: urenForm.uren === h ? "1px solid #9DC87A" : "1px solid var(--border)",
                     color: urenForm.uren === h ? "var(--accent)" : "var(--text-muted)",
                   }}>
                     {h}u
@@ -314,7 +314,7 @@ export default function Planning() {
             </div>
 
             <div className="flex gap-2">
-              <button onClick={() => saveUren(false)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)", color: "#fff" }}>
+              <button onClick={() => saveUren(false)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
                 Opslaan als concept
               </button>
               <button onClick={() => saveUren(true)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--bg-surface)", border: "1.5px solid #4A7C2F", color: "var(--accent)" }}>

@@ -72,9 +72,9 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh]" onClick={onClose}>
-      <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.4)", backdropFilter: "blur(8px)" }} />
-      <div className="relative w-full rounded-2xl overflow-hidden" style={{ maxWidth: 560, maxHeight: "70vh", background: "var(--bg-surface)", border: "1px solid #C5D4B2" }} onClick={e => e.stopPropagation()}>
-        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid #C5D4B2" }}>
+      <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 40%, transparent)", backdropFilter: "blur(8px)" }} />
+      <div className="relative w-full rounded-2xl overflow-hidden" style={{ maxWidth: 560, maxHeight: "70vh", background: "var(--bg-surface)", border: "1px solid var(--border)" }} onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
           <Search className="h-5 w-5 shrink-0" style={{ color: "var(--text-muted)" }} />
           <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} onKeyDown={handleKeyDown} placeholder="Zoek projecten, medewerkers, mededelingen..." className="flex-1 text-base bg-transparent outline-none" style={{ color: "var(--text-primary)" }} />
           <button onClick={onClose}><X className="h-5 w-5" style={{ color: "var(--text-muted)" }} /></button>

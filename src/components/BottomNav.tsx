@@ -37,9 +37,9 @@ export function BottomNav() {
       className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full lg:hidden"
       style={{
         maxWidth: 430,
-        background: "rgba(235,240,228,0.97)",
+        background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)",
         backdropFilter: "blur(16px)",
-        borderTop: "1px solid #C5D4B2",
+        borderTop: "1px solid var(--border)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
     >

@@ -112,7 +112,7 @@ export default function Goedkeuring() {
   const mainContent = (
     <main className="px-4 py-4 space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 rounded-xl p-0.5" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+        <div className="flex items-center gap-1 rounded-xl p-0.5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <button className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }} onClick={() => setWeekOffset((w) => w - 1)}>
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -132,7 +132,7 @@ export default function Goedkeuring() {
         {([["ingediend", "Ingediend"], ["goedgekeurd", "Goedgekeurd"], ["afgekeurd", "Afgekeurd"], ["alle", "Alle"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setFilter(k)} className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors" style={{
             background: filter === k ? "var(--accent-light)" : "var(--bg-surface)",
-            border: filter === k ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+            border: filter === k ? "1px solid #9DC87A" : "1px solid var(--border)",
             color: filter === k ? "var(--accent)" : "var(--text-muted)",
           }}>
             {l}
@@ -146,7 +146,7 @@ export default function Goedkeuring() {
           <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>Laden...</p>
         </div>
       ) : Object.keys(grouped).length === 0 ? (
-        <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+        <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
           <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen uren gevonden</p>
           <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Geen uren met deze filter voor deze week</p>
@@ -156,7 +156,7 @@ export default function Goedkeuring() {
           const totalHours = userEntries.reduce((s, e) => s + e.uren, 0);
           const pendingCount = userEntries.filter((e) => e.status === "ingediend").length;
           return (
-            <div key={name} className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+            <div key={name} className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
               <div className="flex items-center justify-between px-4 py-3" style={{ background: "var(--bg-surface-2)" }}>
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-xs font-bold" style={{ color: "#fff" }}>
@@ -229,7 +229,7 @@ export default function Goedkeuring() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -257,11 +257,11 @@ export default function Goedkeuring() {
 
       {afkeurId && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setAfkeurId(null)}>
-          <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "var(--bg-surface)", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
             <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Uren afkeuren</h2>
-            <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={3} className="w-full px-3 py-2.5 rounded-xl text-sm resize-none" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+            <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={3} className="w-full px-3 py-2.5 rounded-xl text-sm resize-none" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
             <button onClick={() => afkeurReden.trim() ? updateStatus(afkeurId, "afgekeurd", afkeurReden.trim()) : toast.error("Vul een reden in")} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--danger)", color: "#fff" }}>
               Afkeuren
             </button>

@@ -183,7 +183,7 @@ export default function Dashboard() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <HeaderLogo />
@@ -206,7 +206,7 @@ export default function Dashboard() {
                 { label: "Projecten", value: String(activeProjects), color: "var(--info)", Icon: FolderOpen, onClick: () => navigate("/projecten") },
                 { label: "Team", value: String(teamCount), color: "var(--purple)", Icon: Users, onClick: () => navigate("/medewerkers") },
               ].map((k, i) => (
-                <div key={i} onClick={k.onClick} className="rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", cursor: k.onClick ? "pointer" : "default" }}>
+                <div key={i} onClick={k.onClick} className="rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", cursor: k.onClick ? "pointer" : "default" }}>
                   <k.Icon className="h-5 w-5 mx-auto mb-1" style={{ color: k.color }} />
                   <p className="text-xl font-extrabold" style={{ color: k.color, fontFamily: "DM Mono, monospace" }}>{k.value}</p>
                   <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{k.label}</p>
@@ -216,7 +216,7 @@ export default function Dashboard() {
 
             {/* Today planning */}
             {todayPlanning.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
                     <CalendarDays className="h-3.5 w-3.5" /> Vandaag ingepland
@@ -244,7 +244,7 @@ export default function Dashboard() {
 
             {/* Pending approvals with inline actions */}
             {pendingEntries.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Openstaande goedkeuringen ({pendingCount})</p>
                   <button onClick={() => navigate("/goedkeuring")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
@@ -292,7 +292,7 @@ export default function Dashboard() {
 
             {/* Verlof requests with inline actions */}
             {verlofAanvragen.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Verlofaanvragen</p>
                 {verlofAanvragen.map(v => (
                   <div key={v.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
@@ -316,7 +316,7 @@ export default function Dashboard() {
 
             {/* Active projects with marge */}
             {projectsWithMarge.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
                     <TrendingUp className="h-3.5 w-3.5" /> Projecten marge
@@ -343,7 +343,7 @@ export default function Dashboard() {
 
             {/* Expiring certs */}
             {expiringCerts.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
                   <AlertTriangle className="h-3.5 w-3.5" style={{ color: "var(--warn-dot)" }} />
                   Certificaten verlopen binnenkort
@@ -370,7 +370,7 @@ export default function Dashboard() {
 
             {/* Empty state */}
             {pendingEntries.length === 0 && verlofAanvragen.length === 0 && todayPlanning.length === 0 && projectsWithMarge.length === 0 && (
-              <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
                 <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Alles bijgewerkt</p>
                 <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Geen openstaande items</p>

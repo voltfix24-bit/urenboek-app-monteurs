@@ -63,7 +63,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center animate-fade-in"
-      style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)", opacity: isDragging ? Math.max(0.2, 1 - dragY / 300) : 1 }}
+      style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)", opacity: isDragging ? Math.max(0.2, 1 - dragY / 300) : 1 }}
       onClick={onClose}
     >
       <div
@@ -74,7 +74,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
           background: "var(--bg-surface)",
           borderRadius: "24px 24px 0 0",
           padding: "20px 20px 48px",
-          border: "1px solid #C5D4B2",
+          border: "1px solid var(--border)",
           borderBottom: "none",
           minHeight: 360,
           maxHeight: "85vh",
@@ -108,7 +108,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
               {weekDays.map((d, i) => {
                 const isToday = dateKey(d) === today;
                 return (
-                  <button key={i} onClick={() => { setSelectedDate(d); setStep(2); }} className="w-full flex items-center justify-between transition-colors active:scale-[0.97]" style={{ padding: "14px 16px", borderRadius: 14, background: isToday ? "var(--accent-light)" : "var(--bg-base)", border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2", color: "var(--text-primary)", fontSize: 14, fontWeight: 500 }}>
+                  <button key={i} onClick={() => { setSelectedDate(d); setStep(2); }} className="w-full flex items-center justify-between transition-colors active:scale-[0.97]" style={{ padding: "14px 16px", borderRadius: 14, background: isToday ? "var(--accent-light)" : "var(--bg-base)", border: isToday ? "1px solid #9DC87A" : "1px solid var(--border)", color: "var(--text-primary)", fontSize: 14, fontWeight: 500 }}>
                     <span>{DAGEN[i]} {d.getDate()} {MAANDEN[d.getMonth()]}</span>
                     {isToday && <span className="text-[11px] font-medium" style={{ color: "var(--accent)" }}>Vandaag</span>}
                   </button>
@@ -134,7 +134,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
                 <p className="text-xs text-center py-4" style={{ color: "var(--text-muted)" }}>Laden...</p>
               ) : (
                 projects.map((p) => (
-                  <button key={p.id} onClick={() => { setForm((f) => ({ ...f, projectId: p.id })); setStep(3); }} className="w-full text-left transition-colors active:scale-[0.97]" style={{ padding: "14px 16px", borderRadius: 14, background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }}>
+                  <button key={p.id} onClick={() => { setForm((f) => ({ ...f, projectId: p.id })); setStep(3); }} className="w-full text-left transition-colors active:scale-[0.97]" style={{ padding: "14px 16px", borderRadius: 14, background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
                     <p className="text-sm font-semibold">{p.naam}</p>
                     <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{p.nummer}</p>
                   </button>
@@ -158,7 +158,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
               <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Soort werkzaamheden</label>
               <div className="flex gap-2">
                 {["schakelen", "monteren"].map((w) => (
-                  <button key={w} onClick={() => setForm((f) => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{ background: form.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)", border: form.werkzaamheden === w ? "1px solid #9DC87A" : "1px solid #C5D4B2", color: form.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)" }}>
+                  <button key={w} onClick={() => setForm((f) => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{ background: form.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)", border: form.werkzaamheden === w ? "1px solid #9DC87A" : "1px solid var(--border)", color: form.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)" }}>
                     {w}
                   </button>
                 ))}
@@ -174,14 +174,14 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
               </div>
               <div className="flex justify-center gap-2 mt-2">
                 {[4, 6, 8, 9, 10].map((h) => (
-                  <button key={h} onClick={() => setForm((f) => ({ ...f, uren: h }))} className="px-3 py-1 rounded-lg text-xs font-medium transition-colors" style={{ background: form.uren === h ? "var(--accent-light)" : "var(--bg-base)", border: form.uren === h ? "1px solid #9DC87A" : "1px solid #C5D4B2", color: form.uren === h ? "var(--accent)" : "var(--text-muted)" }}>
+                  <button key={h} onClick={() => setForm((f) => ({ ...f, uren: h }))} className="px-3 py-1 rounded-lg text-xs font-medium transition-colors" style={{ background: form.uren === h ? "var(--accent-light)" : "var(--bg-base)", border: form.uren === h ? "1px solid #9DC87A" : "1px solid var(--border)", color: form.uren === h ? "var(--accent)" : "var(--text-muted)" }}>
                     {h}u
                   </button>
                 ))}
               </div>
             </div>
 
-            <button onClick={handleSubmit} disabled={!form.werkzaamheden} className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-40" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)", color: "#fff", boxShadow: "0 8px 24px rgba(74,124,47,0.3)" }}>
+            <button onClick={handleSubmit} disabled={!form.werkzaamheden} className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff", boxShadow: "0 8px 24px color-mix(in srgb, var(--accent) 30%, transparent)" }}>
               Opslaan als concept
             </button>
           </div>

@@ -77,7 +77,7 @@ export default function Medewerkers() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <HeaderLogo />
@@ -102,7 +102,7 @@ export default function Medewerkers() {
                 { key: "email", label: "E-mail", placeholder: "jan@terrevolt.nl", value: email, onChange: setEmail, type: "email" }].map((f) => (
                 <div key={f.key} className="space-y-1">
                   <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{f.label}</label>
-                  <input type={f.type || "text"} value={f.value} onChange={(e) => f.onChange(e.target.value)} placeholder={f.placeholder} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+                  <input type={f.type || "text"} value={f.value} onChange={(e) => f.onChange(e.target.value)} placeholder={f.placeholder} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
                 </div>
               ))}
 
@@ -112,7 +112,7 @@ export default function Medewerkers() {
                   {Object.entries(roleLabels).map(([value, label]) => (
                     <button key={value} type="button" onClick={() => setRole(value)} className="px-3 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
                       background: role === value ? "var(--accent-light)" : "var(--bg-base)",
-                      border: role === value ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                      border: role === value ? "1px solid #9DC87A" : "1px solid var(--border)",
                       color: role === value ? "var(--accent)" : "var(--text-muted)",
                     }}>{label}</button>
                   ))}
@@ -122,12 +122,12 @@ export default function Medewerkers() {
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Wachtwoord</label>
                 <div className="flex gap-1.5">
-                  <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Wachtwoord" className="flex-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
-                  <button type="button" onClick={generatePassword} className="px-3 py-2.5 rounded-xl text-sm shrink-0" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2" }}>🎲</button>
+                  <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Wachtwoord" className="flex-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                  <button type="button" onClick={generatePassword} className="px-3 py-2.5 rounded-xl text-sm shrink-0" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>🎲</button>
                 </div>
               </div>
 
-              <button type="submit" disabled={loading} className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
+              <button type="submit" disabled={loading} className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors active:scale-[0.98]" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
                 {loading ? "Bezig..." : "Toevoegen"}
               </button>
             </form>
@@ -141,19 +141,19 @@ export default function Medewerkers() {
             </div>
             <div className="p-3 space-y-2">
               {createdUsers.map((u, i) => (
-                <div key={i} className="p-3 rounded-xl space-y-2" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2" }}>
+                <div key={i} className="p-3 rounded-xl space-y-2" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{u.fullName}</p>
                       <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{u.email} · {roleLabels[u.role]}</p>
                     </div>
-                    <button onClick={() => copyCredentials(u)} className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold" style={{ background: "var(--bg-surface-2)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+                    <button onClick={() => copyCredentials(u)} className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                       <Copy className="h-3 w-3" /> Kopieer
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>Wachtwoord:</span>
-                    <code className="text-[11px] px-2 py-0.5 rounded-md font-mono" style={{ background: "var(--bg-surface-2)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }}>
+                    <code className="text-[11px] px-2 py-0.5 rounded-md font-mono" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
                       {showPasswords[i] ? u.password : "••••••••••"}
                     </code>
                     <button className="w-6 h-6 flex items-center justify-center" style={{ color: "var(--text-muted)" }} onClick={() => setShowPasswords((prev) => ({ ...prev, [i]: !prev[i] }))}>
@@ -217,7 +217,7 @@ function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId,
   }
 
   return (
-    <div className="rounded-2xl p-3.5 transition-transform active:scale-[0.985]" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+    <div className="rounded-2xl p-3.5 transition-transform active:scale-[0.985]" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
       <div className="flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: AVATAR_COLORS[idx % AVATAR_COLORS.length], color: "#fff" }}>
           {emp.full_name.charAt(0).toUpperCase()}
@@ -225,7 +225,7 @@ function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId,
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{emp.full_name}</p>
         </div>
-        <button onClick={() => !isSelf && setShowRol(!showRol)} className="px-2 py-1 rounded-lg text-[11px] font-semibold capitalize shrink-0" style={{ background: "var(--bg-surface-2)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }} disabled={isSelf}>
+        <button onClick={() => !isSelf && setShowRol(!showRol)} className="px-2 py-1 rounded-lg text-[11px] font-semibold capitalize shrink-0" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-secondary)" }} disabled={isSelf}>
           {roleLabels[emp.role] || emp.role} {!isSelf && "↓"}
         </button>
         {!isSelf && (
@@ -254,7 +254,7 @@ function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId,
           {Object.entries(roleLabels).map(([value, label]) => (
             <button key={value} onClick={() => { onRoleChange(emp.user_id, value); setShowRol(false); }} className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors" style={{
               background: emp.role === value ? "var(--accent-light)" : "var(--bg-base)",
-              border: emp.role === value ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+              border: emp.role === value ? "1px solid #9DC87A" : "1px solid var(--border)",
               color: emp.role === value ? "var(--accent)" : "var(--text-muted)",
             }}>{label}</button>
           ))}
@@ -269,7 +269,7 @@ function EmployeeRow({ emp, idx, isSelf, onRoleChange, onDelete, updatingRoleId,
         {editTarief ? (
           <div className="flex items-center gap-2">
             <span className="text-sm" style={{ color: "var(--warn-text)" }}>€</span>
-            <input type="number" step="0.50" min="0" value={tariefVal} onChange={e => setTariefVal(e.target.value)} placeholder="bijv. 75.00" className="flex-1 px-2 py-1.5 rounded-lg text-sm font-mono" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+            <input type="number" step="0.50" min="0" value={tariefVal} onChange={e => setTariefVal(e.target.value)} placeholder="bijv. 75.00" className="flex-1 px-2 py-1.5 rounded-lg text-sm font-mono" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
             <span className="text-sm" style={{ color: "var(--warn-text)" }}>/ uur</span>
             <button onClick={saveTarief} className="px-2 py-1 rounded-lg flex items-center justify-center" style={{ background: "var(--accent-light)", color: "var(--accent)" }}><Check className="h-3.5 w-3.5" /></button>
             <button onClick={() => setEditTarief(false)} className="px-2 py-1 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-base)", color: "var(--text-muted)" }}><X className="h-3.5 w-3.5" /></button>

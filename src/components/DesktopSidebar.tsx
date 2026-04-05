@@ -61,7 +61,7 @@ export function DesktopSidebar() {
 
   return (
     <>
-      <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-40" style={{ width: 240, background: "var(--bg-surface)", borderRight: "1px solid #C5D4B2" }}>
+      <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-40" style={{ width: 240, background: "var(--bg-surface)", borderRight: "1px solid var(--border)" }}>
         <div className="px-5 py-5">
           <button onClick={() => navigate("/")} className="focus:outline-none">
             <img src={terrevoltLogo} alt="TerreVolt" className="h-8" />
@@ -74,7 +74,7 @@ export function DesktopSidebar() {
         </div>
 
         {/* Search button */}
-        <button onClick={() => setShowSearch(true)} className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-muted)" }}>
+        <button onClick={() => setShowSearch(true)} className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>
           <Search className="h-4 w-4" />
           <span className="text-xs">Zoeken...</span>
           <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>⌘K</span>
@@ -101,7 +101,7 @@ export function DesktopSidebar() {
           })}
         </nav>
 
-        <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid #C5D4B2" }}>
+        <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
               {(profile?.full_name || "?").charAt(0).toUpperCase()}

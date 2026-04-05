@@ -25,7 +25,7 @@ export default function Opdrachtgevers() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center gap-3">
           <button onClick={() => navigate("/")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}><ArrowLeft className="h-4 w-4" /></button>
           <h1 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Opdrachtgevers</h1>
@@ -38,11 +38,11 @@ export default function Opdrachtgevers() {
           <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--bg-surface)", border: `1px solid ${editId ? "var(--info-border)" : "var(--accent-border)"}` }}>
             <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{editId ? "Bewerken" : "Nieuwe opdrachtgever"}</h3>
             {["naam", "contactpersoon", "telefoon", "email"].map(k => (
-              <input key={k} value={(form as any)[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} placeholder={k === "naam" ? "Bedrijfsnaam *" : k === "contactpersoon" ? "Naam contactpersoon" : k === "telefoon" ? "Telefoonnummer" : "E-mailadres"} type={k === "email" ? "email" : k === "telefoon" ? "tel" : "text"} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+              <input key={k} value={(form as any)[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} placeholder={k === "naam" ? "Bedrijfsnaam *" : k === "contactpersoon" ? "Naam contactpersoon" : k === "telefoon" ? "Telefoonnummer" : "E-mailadres"} type={k === "email" ? "email" : k === "telefoon" ? "tel" : "text"} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
             ))}
             <div className="flex gap-2">
-              <button onClick={() => { setShowAdd(false); setEditId(null); setForm(emptyForm); }} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>Annuleren</button>
-              <button onClick={() => editId ? handleUpdate(editId) : handleAdd()} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>{editId ? "Opslaan" : "Toevoegen"}</button>
+              <button onClick={() => { setShowAdd(false); setEditId(null); setForm(emptyForm); }} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
+              <button onClick={() => editId ? handleUpdate(editId) : handleAdd()} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>{editId ? "Opslaan" : "Toevoegen"}</button>
             </div>
           </div>
         )}
@@ -54,12 +54,12 @@ export default function Opdrachtgevers() {
               <div key={item.id} className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
                 <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>"{item.naam}" verwijderen?</p>
                 <div className="flex gap-2">
-                  <button onClick={() => setConfirmDeleteId(null)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>Annuleren</button>
+                  <button onClick={() => setConfirmDeleteId(null)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
                   <button onClick={() => handleDelete(item)} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "var(--danger)" }}>Verwijderen</button>
                 </div>
               </div>
             ) : (
-              <div key={item.id} className="rounded-2xl p-4 transition-transform active:scale-[0.985]" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <div key={item.id} className="rounded-2xl p-4 transition-transform active:scale-[0.985]" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{item.naam}</p>

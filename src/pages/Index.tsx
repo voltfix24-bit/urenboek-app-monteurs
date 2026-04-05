@@ -122,7 +122,7 @@ const Index = () => {
     <PageShell>
     <div {...swipeHandlers} style={{ position: "relative" }}>
       {/* Header */}
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <HeaderLogo />
@@ -143,7 +143,7 @@ const Index = () => {
                       { path: "/projecten", label: "Projecten" },
                       { path: "/opdrachtgevers", label: "Opdrachtgevers" },
                     ].map(n => (
-                      <button key={n.path} onClick={() => navigate(n.path)} className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+                      <button key={n.path} onClick={() => navigate(n.path)} className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                         {n.label}
                       </button>
                     ))}
@@ -159,17 +159,17 @@ const Index = () => {
 
           {isManager && (
             <div className="flex gap-1.5 mt-2.5 sm:hidden overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-              <button onClick={() => navigate("/projecten")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+              <button onClick={() => navigate("/projecten")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                 <FolderOpen className="h-3 w-3" /> Projecten
               </button>
-              <button onClick={() => navigate("/opdrachtgevers")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+              <button onClick={() => navigate("/opdrachtgevers")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                 <Building2 className="h-3 w-3" /> Opdrachtgevers
               </button>
             </div>
           )}
 
           {/* Tabs */}
-          <div className="flex mt-2.5" style={{ borderBottom: "1px solid #C5D4B2" }}>
+          <div className="flex mt-2.5" style={{ borderBottom: "1px solid var(--border)" }}>
             {([["week", "Deze week"], ["overzicht", "Overzicht"]] as const).map(([key, label]) => (
               <button
                 key={key}
@@ -206,9 +206,9 @@ const Index = () => {
           bottom: 90,
           right: "max(24px, calc(50% - 215px + 24px))",
           width: 56, height: 56, borderRadius: "50%",
-          background: "linear-gradient(135deg, #4A7C2F, #3D6826)",
+          background: "linear-gradient(135deg, var(--accent), var(--accent-dark))",
           color: "#fff", fontSize: 26, fontWeight: 300,
-          boxShadow: "0 8px 28px rgba(74,124,47,0.35)",
+          boxShadow: "0 8px 28px color-mix(in srgb, var(--accent) 35%, transparent)",
         }}
       >
         +
@@ -226,7 +226,7 @@ const Index = () => {
       <>
         {/* Onboarding banner */}
         {showOnboarding && !isManager && (
-          <div className="mx-4 mt-3 rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+          <div className="mx-4 mt-3 rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: "var(--accent-light)" }}>👋</div>
             <div>
               <p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Welkom bij TerreVolt Urenregistratie</p>
@@ -272,7 +272,7 @@ const Index = () => {
           <div className="px-4 py-4 space-y-4 animate-fade-in">
             {/* Week navigation */}
             <div className="flex items-center justify-between">
-              <button onClick={goToPreviousWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+              <button onClick={goToPreviousWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                 ‹
               </button>
               <div className="text-center">
@@ -281,7 +281,7 @@ const Index = () => {
                   {totalHours}u geboekt deze week
                 </p>
               </div>
-              <button onClick={goToNextWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+              <button onClick={goToNextWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                 ›
               </button>
             </div>
@@ -303,7 +303,7 @@ const Index = () => {
                       padding: "10px 0",
                       borderRadius: 12,
                       background: isToday ? "var(--accent-light)" : "var(--bg-surface)",
-                      border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                      border: isToday ? "1px solid #9DC87A" : "1px solid var(--border)",
                     }}
                   >
                     <span className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{DAGEN[i]}</span>
@@ -369,7 +369,7 @@ const Index = () => {
                 { label: "In behandeling", value: String(ingediendCount), color: "var(--warn-dot)" },
                 { label: "Afgekeurd", value: String(afgekeurdCount), color: "var(--danger)" },
               ].map((s, i) => (
-                <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+                <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                   <p className="text-lg font-bold" style={{ color: s.color }}>{s.value}</p>
                   <p className="text-[10px] mt-0.5 font-medium" style={{ color: "var(--text-muted)" }}>{s.label}</p>
                 </div>

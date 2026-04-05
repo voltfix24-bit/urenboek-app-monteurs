@@ -134,7 +134,7 @@ export default function ManagerPlanning() {
 
   const gridContent = (
     <main className="px-4 py-4 space-y-4">
-      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
         <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -210,7 +210,7 @@ export default function ManagerPlanning() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3 flex items-center gap-2.5">
           <HeaderLogo />
           <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Planning</span>
@@ -228,8 +228,8 @@ export default function ManagerPlanning() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
             <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
@@ -256,7 +256,7 @@ export default function ManagerPlanning() {
             <div className="space-y-3">
               <div className="space-y-1">
                 <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Project</label>
-                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }}>
+                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
                 </select>
               </div>
@@ -264,17 +264,17 @@ export default function ManagerPlanning() {
               <div className="flex gap-3">
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Start</label>
-                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)", colorScheme: "light" }} />
+                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
                 </div>
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Eind</label>
-                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)", colorScheme: "light" }} />
+                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
                 </div>
               </div>
 
-              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
 
-              <button onClick={savePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)", color: "#fff" }}>
+              <button onClick={savePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>
 

@@ -126,7 +126,7 @@ export default function Profiel() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3 flex items-center gap-2.5">
           <HeaderLogo />
           <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Profiel</span>
@@ -147,7 +147,7 @@ export default function Profiel() {
         </div>
 
         {/* Mijn gegevens */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Mijn gegevens</p>
             <button onClick={() => editing ? saveProfile() : setEditing(true)} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "var(--accent)" }}>
@@ -159,7 +159,7 @@ export default function Profiel() {
               {[{ label: "Naam", key: "full_name" as const }, { label: "Telefoon", key: "telefoon" as const }, { label: "Adres", key: "adres" as const }].map(f => (
                 <div key={f.key}>
                   <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{f.label}</label>
-                  <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+                  <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
                 </div>
               ))}
             </div>
@@ -173,7 +173,7 @@ export default function Profiel() {
         </div>
 
         {/* Beschikbaarheid & Kalender */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Beschikbaarheid</p>
 
           {/* Vaste vrije dagen */}
@@ -185,7 +185,7 @@ export default function Profiel() {
                 return (
                   <button key={dag} onClick={() => toggleVrijeDag(dag)} className="flex-1 py-2 rounded-xl text-[11px] font-semibold" style={{
                     background: active ? "var(--accent-light)" : "var(--bg-base)",
-                    border: active ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                    border: active ? "1px solid #9DC87A" : "1px solid var(--border)",
                     color: active ? "var(--accent)" : "var(--text-muted)",
                   }}>{DAGEN_LABEL[dag]}</button>
                 );
@@ -286,7 +286,7 @@ export default function Profiel() {
         </div>
 
         {/* Certificaten */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Certificaten</p>
             <button onClick={() => setShowAddCert(true)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid #8DC99A" }}>
@@ -320,8 +320,8 @@ export default function Profiel() {
       {/* Verlof modal */}
       {showVerlof && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowVerlof(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
             <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Verlof aanvragen</h2>
             <div className="space-y-3">
@@ -329,7 +329,7 @@ export default function Profiel() {
                 {(["vakantie", "verlof", "anders"] as const).map(t => (
                   <button key={t} onClick={() => setVerlofForm({ ...verlofForm, type: t })} className="flex-1 py-2 rounded-xl text-xs font-semibold capitalize" style={{
                     background: verlofForm.type === t ? "var(--accent-light)" : "var(--bg-base)",
-                    border: verlofForm.type === t ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                    border: verlofForm.type === t ? "1px solid #9DC87A" : "1px solid var(--border)",
                     color: verlofForm.type === t ? "var(--accent)" : "var(--text-muted)",
                   }}>{t}</button>
                 ))}
@@ -337,15 +337,15 @@ export default function Profiel() {
               <div className="flex gap-3">
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Van</label>
-                  <input type="date" value={verlofForm.datum_van} onChange={e => setVerlofForm({ ...verlofForm, datum_van: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)", colorScheme: "light" }} />
+                  <input type="date" value={verlofForm.datum_van} onChange={e => setVerlofForm({ ...verlofForm, datum_van: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
                 </div>
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Tot</label>
-                  <input type="date" value={verlofForm.datum_tot} onChange={e => setVerlofForm({ ...verlofForm, datum_tot: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)", colorScheme: "light" }} />
+                  <input type="date" value={verlofForm.datum_tot} onChange={e => setVerlofForm({ ...verlofForm, datum_tot: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
                 </div>
               </div>
-              <input value={verlofForm.reden} onChange={e => setVerlofForm({ ...verlofForm, reden: e.target.value })} placeholder="Reden (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
-              <button onClick={requestVerlof} disabled={!verlofForm.datum_van || !verlofForm.datum_tot} className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)", color: "#fff" }}>
+              <input value={verlofForm.reden} onChange={e => setVerlofForm({ ...verlofForm, reden: e.target.value })} placeholder="Reden (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              <button onClick={requestVerlof} disabled={!verlofForm.datum_van || !verlofForm.datum_tot} className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
                 Aanvragen
               </button>
             </div>
@@ -356,8 +356,8 @@ export default function Profiel() {
       {/* Cert modal */}
       {showAddCert && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowAddCert(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
             <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Certificaat toevoegen</h2>
             <div className="space-y-3">
@@ -365,17 +365,17 @@ export default function Profiel() {
                 {(["VCA", "NEN3140", "rijbewijs_BE", "overig"] as const).map(t => (
                   <button key={t} onClick={() => setCertForm({ ...certForm, type: t })} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold" style={{
                     background: certForm.type === t ? "var(--accent-light)" : "var(--bg-base)",
-                    border: certForm.type === t ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                    border: certForm.type === t ? "1px solid #9DC87A" : "1px solid var(--border)",
                     color: certForm.type === t ? "var(--accent)" : "var(--text-muted)",
                   }}>{t}</button>
                 ))}
               </div>
-              <input value={certForm.naam} onChange={e => setCertForm({ ...certForm, naam: e.target.value })} placeholder="Naam certificaat" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+              <input value={certForm.naam} onChange={e => setCertForm({ ...certForm, naam: e.target.value })} placeholder="Naam certificaat" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
               <div className="space-y-1">
                 <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Vervaldatum</label>
-                <input type="date" value={certForm.vervaldatum} onChange={e => setCertForm({ ...certForm, vervaldatum: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)", colorScheme: "light" }} />
+                <input type="date" value={certForm.vervaldatum} onChange={e => setCertForm({ ...certForm, vervaldatum: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
               </div>
-              <button onClick={addCertificaat} disabled={!certForm.naam || !certForm.vervaldatum} className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)", color: "#fff" }}>
+              <button onClick={addCertificaat} disabled={!certForm.naam || !certForm.vervaldatum} className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
                 Toevoegen
               </button>
             </div>

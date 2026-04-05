@@ -74,7 +74,7 @@ export default function Mededelingen() {
   if (selected) {
     return (
       <PageShell>
-        <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+        <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
           <button onClick={() => setSelected(null)} className="flex items-center gap-2 text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
             <ArrowLeft className="h-4 w-4" /> Terug
           </button>
@@ -88,7 +88,7 @@ export default function Mededelingen() {
           )}
           <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{selected.titel}</h1>
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>{selected.verzender_naam} · {formatDistanceToNow(new Date(selected.created_at), { locale: nl, addSuffix: true })}</p>
-          <div className="text-sm leading-relaxed whitespace-pre-wrap rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }}>
+          <div className="text-sm leading-relaxed whitespace-pre-wrap rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
             {selected.inhoud || "Geen inhoud"}
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function Mededelingen() {
       {loading ? (
         <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
       ) : items.length === 0 ? (
-        <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+        <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <Bell className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
           <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen mededelingen</p>
         </div>
@@ -109,7 +109,7 @@ export default function Mededelingen() {
         items.map(item => (
           <button key={item.id} onClick={() => openDetail(item)} className="w-full text-left rounded-2xl p-4 transition-colors active:scale-[0.98]" style={{
             background: item.gelezen ? "var(--bg-base)" : "var(--bg-surface)",
-            border: item.urgentie === "urgent" ? "1px solid #E8A09A" : "1px solid #C5D4B2",
+            border: item.urgentie === "urgent" ? "1px solid #E8A09A" : "1px solid var(--border)",
           }}>
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
@@ -132,7 +132,7 @@ export default function Mededelingen() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <HeaderLogo />
@@ -159,8 +159,8 @@ export default function Mededelingen() {
         <button onClick={() => setShowCompose(true)} className="fixed z-40 flex items-center justify-center active:scale-93 transition-transform" style={{
           bottom: 90, right: "max(24px, calc(50% - 215px + 24px))",
           width: 56, height: 56, borderRadius: "50%",
-          background: "linear-gradient(135deg, #4A7C2F, #3D6826)",
-          color: "#fff", boxShadow: "0 8px 28px rgba(74,124,47,0.35)",
+          background: "linear-gradient(135deg, var(--accent), var(--accent-dark))",
+          color: "#fff", boxShadow: "0 8px 28px color-mix(in srgb, var(--accent) 35%, transparent)",
         }}>
           <Send className="h-5 w-5" />
         </button>
@@ -168,20 +168,20 @@ export default function Mededelingen() {
 
       {showCompose && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowCompose(false)}>
-          <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
             <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Nieuwe mededeling</h2>
 
             <div className="space-y-3">
-              <input value={titel} onChange={e => setTitel(e.target.value)} placeholder="Titel" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
-              <textarea value={inhoud} onChange={e => setInhoud(e.target.value)} placeholder="Inhoud..." rows={4} className="w-full px-3 py-2.5 rounded-xl text-sm resize-none" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+              <input value={titel} onChange={e => setTitel(e.target.value)} placeholder="Titel" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              <textarea value={inhoud} onChange={e => setInhoud(e.target.value)} placeholder="Inhoud..." rows={4} className="w-full px-3 py-2.5 rounded-xl text-sm resize-none" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
 
               <div className="flex gap-2">
                 {(["normaal", "urgent"] as const).map(u => (
                   <button key={u} onClick={() => setUrgentie(u)} className="flex-1 py-2 rounded-xl text-xs font-semibold capitalize" style={{
                     background: urgentie === u ? (u === "urgent" ? "var(--danger-light)" : "var(--success-light)") : "var(--bg-base)",
-                    border: urgentie === u ? (u === "urgent" ? "1px solid #E8A09A" : "1px solid #8DC99A") : "1px solid #C5D4B2",
+                    border: urgentie === u ? (u === "urgent" ? "1px solid #E8A09A" : "1px solid #8DC99A") : "1px solid var(--border)",
                     color: urgentie === u ? (u === "urgent" ? "var(--danger)" : "var(--success)") : "var(--text-muted)",
                   }}>{u}</button>
                 ))}
@@ -191,13 +191,13 @@ export default function Mededelingen() {
                 {(["iedereen", "monteurs", "persoon"] as const).map(t => (
                   <button key={t} onClick={() => setOntvangerType(t)} className="shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold capitalize" style={{
                     background: ontvangerType === t ? "var(--accent-light)" : "var(--bg-base)",
-                    border: ontvangerType === t ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                    border: ontvangerType === t ? "1px solid #9DC87A" : "1px solid var(--border)",
                     color: ontvangerType === t ? "var(--accent)" : "var(--text-muted)",
                   }}>{t}</button>
                 ))}
               </div>
 
-              <button onClick={sendMededeling} disabled={!titel.trim()} className="w-full py-3 rounded-2xl text-sm font-bold transition-colors disabled:opacity-40" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)", color: "#fff" }}>
+              <button onClick={sendMededeling} disabled={!titel.trim()} className="w-full py-3 rounded-2xl text-sm font-bold transition-colors disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
                 Verzenden
               </button>
             </div>

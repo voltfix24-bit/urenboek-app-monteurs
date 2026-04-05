@@ -22,7 +22,7 @@ type FormState = {
 };
 const emptyForm: FormState = { nummer: "", naam: "", opdrachtgever_id: null, stationsnaam: "", adres: "", case_type: "", contactpersoon_naam: "", contactpersoon_tel: "", contactpersoon_email: "" };
 
-const inputStyle = { background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" };
+const inputStyle = { background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" };
 
 function CaseTypeBadge({ type }: { type: string | null }) {
   if (!type) return null;
@@ -271,10 +271,10 @@ export default function Projecten() {
             <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>{activeProjects.length} projecten actief</p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/opdrachtgevers")} className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+            <button onClick={() => navigate("/opdrachtgevers")} className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
               <Building2 className="h-3.5 w-3.5" /> Opdrachtgevers →
             </button>
-            <button onClick={startDesktopAdd} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>
+            <button onClick={startDesktopAdd} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
               <Plus className="h-3.5 w-3.5" /> Nieuw project
             </button>
           </div>
@@ -283,7 +283,7 @@ export default function Projecten() {
         {/* Desktop 2-column layout */}
         <div className="flex px-10 pb-10" style={{ height: "calc(100vh - 100px)" }}>
           {/* Left: project list */}
-          <div className="flex-shrink-0 overflow-y-auto pr-4" style={{ width: "40%", borderRight: "1px solid #C5D4B2" }}>
+          <div className="flex-shrink-0 overflow-y-auto pr-4" style={{ width: "40%", borderRight: "1px solid var(--border)" }}>
             {/* Search */}
             <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--text-muted)" }} />
@@ -293,7 +293,7 @@ export default function Projecten() {
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Zoek op naam of casenummer..."
                 className="w-full pl-9 pr-9 py-2 rounded-[10px] text-sm"
-                style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }}
+                style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>
@@ -370,7 +370,7 @@ export default function Projecten() {
       {/* ===== MOBILE LAYOUT ===== */}
       <div className="lg:hidden">
         <div className="min-h-screen" style={{ background: "var(--bg-base)", maxWidth: 430, margin: "0 auto" }}>
-          <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+          <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
             <div className="flex items-center gap-3">
               <button onClick={() => navigate("/")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}><ArrowLeft className="h-4 w-4" /></button>
               <h1 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Projecten</h1>
@@ -385,8 +385,8 @@ export default function Projecten() {
                 <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Nieuw project</h3>
                 {renderFormFields()}
                 <div className="flex gap-2 pt-1">
-                  <button onClick={() => setShowAdd(false)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>Annuleren</button>
-                  <button onClick={handleAdd} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>Toevoegen</button>
+                  <button onClick={() => setShowAdd(false)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
+                  <button onClick={handleAdd} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>Toevoegen</button>
                 </div>
               </div>
             )}
@@ -436,7 +436,7 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
         {renderFormFields()}
         <div className="flex gap-2 pt-1">
           <button onClick={onCancel} className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1" style={{ background: "var(--bg-base)", color: "var(--text-secondary)" }}><X className="h-3.5 w-3.5" /> Annuleren</button>
-          <button onClick={onSave} className="flex-1 py-2 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}><Check className="h-3.5 w-3.5" /> Opslaan</button>
+          <button onClick={onSave} className="flex-1 py-2 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}><Check className="h-3.5 w-3.5" /> Opslaan</button>
         </div>
       </div>
     );
@@ -446,14 +446,14 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
       <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
         <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>"{project.naam}" verwijderen?</p>
         <div className="flex gap-2">
-          <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>Annuleren</button>
+          <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
           <button onClick={onDelete} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "var(--danger)" }}>Verwijderen</button>
         </div>
       </div>
     );
   }
   return (
-    <div className="rounded-2xl overflow-hidden transition-transform active:scale-[0.985]" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", opacity: project.active ? 1 : 0.5 }}>
+    <div className="rounded-2xl overflow-hidden transition-transform active:scale-[0.985]" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", opacity: project.active ? 1 : 0.5 }}>
       <div className="p-4 flex items-center gap-3 cursor-pointer" onClick={onToggleExpand}>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -474,7 +474,7 @@ function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfi
         {isExpanded ? <ChevronUp className="h-4 w-4 shrink-0" style={{ color: "var(--text-muted)" }} /> : <ChevronDown className="h-4 w-4 shrink-0" style={{ color: "var(--text-muted)" }} />}
       </div>
       {isExpanded && (
-        <div className="px-4 pb-4 space-y-2 animate-fade-in" style={{ borderTop: "1px solid #C5D4B2" }}>
+        <div className="px-4 pb-4 space-y-2 animate-fade-in" style={{ borderTop: "1px solid var(--border)" }}>
           <div className="pt-3 space-y-1.5">
             {project.adres && <DetailLine label="Adres" value={project.adres} />}
             {project.case_type && <DetailLine label="Case type" value={project.case_type} />}
@@ -525,7 +525,7 @@ function DesktopListCard({ project, ogNaam, selected, onClick, marge }: { projec
       className="w-full text-left p-2.5 rounded-xl mb-1.5 transition-colors cursor-pointer"
       style={{
         background: selected ? "var(--accent-light)" : "var(--bg-surface)",
-        border: selected ? "1.5px solid #4A7C2F" : "1px solid #C5D4B2",
+        border: selected ? "1.5px solid #4A7C2F" : "1px solid var(--border)",
       }}
     >
       <div className="flex items-center justify-between gap-2">
@@ -569,10 +569,10 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={onEdit} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+          <button onClick={onEdit} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
             <Pencil className="h-3.5 w-3.5" /> Bewerken
           </button>
-          <button onClick={onToggle} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+          <button onClick={onToggle} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
             {project.active ? <ToggleRight className="h-3.5 w-3.5" style={{ color: "var(--success)" }} /> : <ToggleLeft className="h-3.5 w-3.5" />}
             {project.active ? "Deactiveren" : "Activeren"}
           </button>
@@ -580,7 +580,7 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-0" style={{ borderBottom: "1px solid #C5D4B2" }}>
+      <div className="flex gap-0" style={{ borderBottom: "1px solid var(--border)" }}>
         {tabs.map(t => (
           <button key={t.key} onClick={() => setActiveTab(t.key)} className="px-4 py-2 text-sm transition-colors" style={{
             color: activeTab === t.key ? "var(--accent)" : "var(--text-muted)",
@@ -641,16 +641,16 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
 
           {/* Actions */}
           <div className="space-y-2 pt-2">
-            <button onClick={onEdit} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+            <button onClick={onEdit} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
               <Pencil className="h-3.5 w-3.5" /> Project bewerken
             </button>
-            <button onClick={onToggle} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+            <button onClick={onToggle} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
               {project.active ? <ToggleRight className="h-3.5 w-3.5" /> : <ToggleLeft className="h-3.5 w-3.5" />}
               {project.active ? "Deactiveren" : "Activeren"}
             </button>
             {confirmDeleteId === project.id ? (
               <div className="flex gap-2">
-                <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>Annuleren</button>
+                <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
                 <button onClick={onDelete} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "var(--danger)" }}>Definitief verwijderen</button>
               </div>
             ) : (
@@ -705,8 +705,8 @@ function DesktopFormPanel({ title, renderFormFields, onCancel, onSubmit, submitL
         {renderFormFields()}
       </div>
       <div className="flex gap-3 pt-2">
-        <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>Annuleren</button>
-        <button onClick={onSubmit} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)" }}>{submitLabel}</button>
+        <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
+        <button onClick={onSubmit} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>{submitLabel}</button>
       </div>
     </div>
   );

@@ -339,8 +339,8 @@ export default function ProjectPlanning() {
     const datum = weekNr !== undefined ? dateFromWeek(state.year, weekNr, dayIdx) : null;
 
     return (
-      <div className="fixed top-0 right-0 h-full z-50 flex flex-col" style={{ width: 320, background: "var(--bg-surface)", borderLeft: "1px solid #C5D4B2", animation: "slideInRight 0.25s ease" }}>
-        <div className="flex items-center justify-between p-4" style={{ borderBottom: "1px solid #C5D4B2" }}>
+      <div className="fixed top-0 right-0 h-full z-50 flex flex-col" style={{ width: 320, background: "var(--bg-surface)", borderLeft: "1px solid var(--border)", animation: "slideInRight 0.25s ease" }}>
+        <div className="flex items-center justify-between p-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <div>
             <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{state.activities[actIdx] || "Activiteit"}</p>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
@@ -369,7 +369,7 @@ export default function ProjectPlanning() {
               {monteurs.map(m => (
                 <button key={m.id} onClick={() => setCell(selectedCell, { medewerker_id: cell?.medewerker_id === m.id ? null : m.id })}
                   className="w-full text-left px-3 py-2 rounded-lg text-xs flex items-center gap-2 transition-all"
-                  style={{ background: cell?.medewerker_id === m.id ? "var(--accent-light)" : "var(--bg-base)", border: "1px solid #C5D4B2" }}>
+                  style={{ background: cell?.medewerker_id === m.id ? "var(--accent-light)" : "var(--bg-base)", border: "1px solid var(--border)" }}>
                   <span className="w-2 h-2 rounded-full" style={{ background: cell?.medewerker_id === m.id ? "var(--accent)" : "var(--border)" }} />
                   <span style={{ color: "var(--text-primary)" }}>{m.full_name}</span>
                   {m.uurtarief && <span className="ml-auto font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>€{m.uurtarief}/u</span>}
@@ -383,11 +383,11 @@ export default function ProjectPlanning() {
             <p className="text-[10px] uppercase font-semibold tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Notitie</p>
             <textarea rows={2} value={cell?.note || ""} onChange={e => setCell(selectedCell, { note: e.target.value })}
               placeholder="Optionele opmerking..." className="w-full rounded-lg px-3 py-2 text-xs resize-none"
-              style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+              style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
           </div>
         </div>
 
-        <div className="p-4 space-y-2" style={{ borderTop: "1px solid #C5D4B2" }}>
+        <div className="p-4 space-y-2" style={{ borderTop: "1px solid var(--border)" }}>
           <button onClick={() => setSelectedCell(null)} className="w-full py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: "var(--accent)" }}>Opslaan</button>
           <button onClick={() => { clearCell(selectedCell); setSelectedCell(null); }} className="w-full py-2 rounded-xl text-xs font-medium" style={{ border: "1px solid #E8A09A", color: "var(--danger)" }}>Cel leegmaken</button>
         </div>
@@ -408,7 +408,7 @@ export default function ProjectPlanning() {
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-base)" }}>
       {/* Header */}
-      <header className="sticky top-0 z-40 px-4 py-3 flex items-center gap-3 flex-wrap" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-40 px-4 py-3 flex items-center gap-3 flex-wrap" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <button onClick={() => navigate("/projecten")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
           <ArrowLeft className="h-4 w-4" />
         </button>
@@ -430,7 +430,7 @@ export default function ProjectPlanning() {
           {isDef ? "Definitief" : "Concept"}
         </span>
 
-        <button onClick={() => setShowTemplates(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+        <button onClick={() => setShowTemplates(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
           <FileText className="h-3.5 w-3.5 inline mr-1" />Templates
         </button>
         <button onClick={() => saveState(state)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid #4A7C2F", color: "var(--accent)" }}>
@@ -450,7 +450,7 @@ export default function ProjectPlanning() {
 
       {/* Info grid */}
       <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+        <div className="lg:col-span-2 rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <div className="grid grid-cols-3 gap-3 text-xs">
             <InfoField label="Casenummer" value={project.nummer} readonly />
             <InfoField label="Type MS installatie" value={state.msType} onChange={v => updateState(s => ({ ...s, msType: v }))} />
@@ -459,7 +459,7 @@ export default function ProjectPlanning() {
             <div>
               <label className="text-[10px] uppercase font-semibold tracking-wider block mb-1" style={{ color: "var(--text-muted)" }}>Te plaatsen trafo</label>
               <select value={state.trafo} onChange={e => updateState(s => ({ ...s, trafo: e.target.value }))}
-                className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }}>
+                className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
                 {TRAFO_OPTIONS.map(o => <option key={o}>{o}</option>)}
               </select>
             </div>
@@ -472,7 +472,7 @@ export default function ProjectPlanning() {
                 {(["MSH", "LSH", "MSR", "LSR"] as const).map(k => (
                   <button key={k} onClick={() => updateState(s => ({ ...s, werkplanToggles: { ...s.werkplanToggles, [k]: !s.werkplanToggles[k] } }))}
                     className="px-2 py-1 rounded-md text-[10px] font-semibold transition-all"
-                    style={{ background: state.werkplanToggles[k] ? "var(--accent-light)" : "var(--bg-surface)", color: state.werkplanToggles[k] ? "var(--text-primary)" : "var(--text-muted)", border: "1px solid #C5D4B2" }}>
+                    style={{ background: state.werkplanToggles[k] ? "var(--accent-light)" : "var(--bg-surface)", color: state.werkplanToggles[k] ? "var(--text-primary)" : "var(--text-muted)", border: "1px solid var(--border)" }}>
                     {k}
                   </button>
                 ))}
@@ -491,10 +491,10 @@ export default function ProjectPlanning() {
       </div>
 
       {/* Matrix */}
-      <div className="mx-4 mb-4 rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid #C5D4B2" }}>
+      <div className="mx-4 mb-4 rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--border)" }}>
         {/* Week headers - synced scroll */}
-        <div className="flex" style={{ borderBottom: "1px solid #C5D4B2" }}>
-          <div className="flex-shrink-0 flex items-center px-3 text-xs font-semibold" style={{ width: SIDEBAR_W, background: "var(--accent-light)", color: "var(--text-primary)", borderRight: "1px solid #C5D4B2" }}>
+        <div className="flex" style={{ borderBottom: "1px solid var(--border)" }}>
+          <div className="flex-shrink-0 flex items-center px-3 text-xs font-semibold" style={{ width: SIDEBAR_W, background: "var(--accent-light)", color: "var(--text-primary)", borderRight: "1px solid var(--border)" }}>
             Planning {state.year}
             <select value={state.year} onChange={e => updateState(s => ({ ...s, year: Number(e.target.value) }))}
               className="ml-1 bg-transparent text-xs font-semibold outline-none" style={{ color: "var(--accent)" }}>
@@ -505,7 +505,7 @@ export default function ProjectPlanning() {
             <div className="flex" style={{ width: totalW }}>
               {state.weekNrs.map((wn, wi) => (
                 <div key={wi} style={{ width: 5 * CELL_SIZE }}>
-                  <div className="text-center py-1 text-[10px] font-semibold" style={{ background: "var(--accent-light)", color: "var(--text-primary)", borderBottom: "1px solid #C5D4B2" }}>
+                  <div className="text-center py-1 text-[10px] font-semibold" style={{ background: "var(--accent-light)", color: "var(--text-primary)", borderBottom: "1px solid var(--border)" }}>
                     Week <input type="number" value={wn} min={1} max={53}
                       onChange={e => updateState(s => {
                         const nrs = [...s.weekNrs];
@@ -533,13 +533,13 @@ export default function ProjectPlanning() {
         {/* Body */}
         <div className="flex">
           {/* Activities sidebar */}
-          <div className="flex-shrink-0" style={{ width: SIDEBAR_W, borderRight: "1px solid #C5D4B2" }}>
+          <div className="flex-shrink-0" style={{ width: SIDEBAR_W, borderRight: "1px solid var(--border)" }}>
             <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "hsl(120,25%,90%)", color: "var(--text-secondary)", height: 30, display: "flex", alignItems: "center" }}>
               Activiteiten
             </div>
             {state.activities.map((act, ai) => (
               <div key={ai} draggable onDragStart={() => handleDragStart(ai)} onDragOver={e => handleDragOver(e, ai)} onDrop={() => handleDrop(ai)}
-                className="flex items-center gap-1.5 px-2 group" style={{ height: CELL_SIZE, borderBottom: "1px solid #C5D4B2", cursor: "grab", opacity: dragIdx === ai ? 0.5 : 1 }}>
+                className="flex items-center gap-1.5 px-2 group" style={{ height: CELL_SIZE, borderBottom: "1px solid var(--border)", cursor: "grab", opacity: dragIdx === ai ? 0.5 : 1 }}>
                 <GripVertical className="h-3 w-3 shrink-0" style={{ color: "var(--border)" }} />
                 <input value={act} onChange={e => updateState(s => {
                   const acts = [...s.activities];
@@ -586,7 +586,7 @@ export default function ProjectPlanning() {
                             width: CELL_SIZE, height: CELL_SIZE,
                             background: cell ? cell.color : "transparent",
                             borderRight: "1px solid rgba(197,212,178,0.2)",
-                            borderBottom: "1px solid #C5D4B2",
+                            borderBottom: "1px solid var(--border)",
                             cursor: "pointer",
                           }}
                           onClick={() => {
@@ -618,8 +618,8 @@ export default function ProjectPlanning() {
         </div>
 
         {/* Comments strip */}
-        <div className="flex" style={{ borderTop: "1px solid #C5D4B2" }}>
-          <div className="flex-shrink-0 px-3 flex items-center text-[10px] font-semibold uppercase tracking-wider" style={{ width: SIDEBAR_W, color: "var(--text-muted)", borderRight: "1px solid #C5D4B2", height: 44 }}>
+        <div className="flex" style={{ borderTop: "1px solid var(--border)" }}>
+          <div className="flex-shrink-0 px-3 flex items-center text-[10px] font-semibold uppercase tracking-wider" style={{ width: SIDEBAR_W, color: "var(--text-muted)", borderRight: "1px solid var(--border)", height: 44 }}>
             Opmerkingen
           </div>
           <div ref={footerScrollRef} className="flex-1 overflow-x-auto" onScroll={() => syncScroll("footer")} style={{ scrollbarWidth: "none" }}>
@@ -628,7 +628,7 @@ export default function ProjectPlanning() {
                 <div key={wi} style={{ width: 5 * CELL_SIZE }}>
                   <textarea value={state.weekComments[wi] || ""} onChange={e => updateState(s => ({ ...s, weekComments: { ...s.weekComments, [wi]: e.target.value } }))}
                     placeholder={`Opmerking week ${wn}...`}
-                    className="w-full bg-transparent text-[10px] px-2 py-1 resize-none outline-none" style={{ height: 44, color: "var(--text-primary)", borderRight: "1px solid #C5D4B2" }} />
+                    className="w-full bg-transparent text-[10px] px-2 py-1 resize-none outline-none" style={{ height: 44, color: "var(--text-primary)", borderRight: "1px solid var(--border)" }} />
                 </div>
               ))}
             </div>
@@ -668,7 +668,7 @@ export default function ProjectPlanning() {
 
       {/* Context menu */}
       {contextMenu && (
-        <div className="fixed z-50 rounded-xl p-3 space-y-3 shadow-lg" style={{ left: contextMenu.x, top: contextMenu.y, background: "var(--bg-base)", border: "1px solid #C5D4B2", width: 200 }}
+        <div className="fixed z-50 rounded-xl p-3 space-y-3 shadow-lg" style={{ left: contextMenu.x, top: contextMenu.y, background: "var(--bg-base)", border: "1px solid var(--border)", width: 200 }}
           onMouseDown={e => e.stopPropagation()}>
           <p className="text-[10px] font-bold" style={{ color: "var(--text-primary)" }}>
             {state.activities[Number(contextMenu.key.split("-")[0])] || "Activiteit"} — {DAY_LABELS[Number(contextMenu.key.split("-")[2])]}
@@ -682,7 +682,7 @@ export default function ProjectPlanning() {
           <textarea placeholder="Notitie..." value={getCell(contextMenu.key)?.note || ""}
             onChange={e => setCell(contextMenu.key, { note: e.target.value })}
             className="w-full rounded-lg px-2 py-1 text-[10px] resize-none" rows={2}
-            style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+            style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
           <button onClick={() => { clearCell(contextMenu.key); setContextMenu(null); }} className="w-full text-center text-[10px] font-medium py-1 rounded-lg" style={{ color: "var(--danger)", border: "1px solid #E8A09A" }}>
             Cel leegmaken
           </button>
@@ -721,7 +721,7 @@ function InfoField({ label, value, onChange, readonly }: { label: string; value:
     <div>
       <label className="text-[10px] uppercase font-semibold tracking-wider block mb-1" style={{ color: "var(--text-muted)" }}>{label}</label>
       <input value={value} readOnly={readonly} onChange={e => onChange?.(e.target.value)}
-        className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: readonly ? "var(--bg-surface-2)" : "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+        className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: readonly ? "var(--bg-surface-2)" : "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
     </div>
   );
 }
@@ -732,7 +732,7 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-      <div className="rounded-2xl p-6 w-full max-w-lg space-y-4" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2" }}>
+      <div className="rounded-2xl p-6 w-full max-w-lg space-y-4" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Planning templates</h3>
           <button onClick={onClose}><X className="h-4 w-4" style={{ color: "var(--text-secondary)" }} /></button>
@@ -741,7 +741,7 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
         <div className="space-y-3">
           {TEMPLATES.map((t, i) => (
             <button key={i} onClick={() => setSelected(i)} className="w-full text-left p-4 rounded-xl transition-all"
-              style={{ background: selected === i ? "var(--accent-light)" : "var(--bg-surface)", border: selected === i ? "1.5px solid #4A7C2F" : "1px solid #C5D4B2" }}>
+              style={{ background: selected === i ? "var(--accent-light)" : "var(--bg-surface)", border: selected === i ? "1.5px solid #4A7C2F" : "1px solid var(--border)" }}>
               <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{t.name}</p>
               <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{t.desc}</p>
               <div className="flex flex-wrap gap-1 mt-2">
@@ -757,13 +757,13 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
           <div className="p-3 rounded-xl" style={{ background: "var(--warn-light)", border: "1px solid #E8D070" }}>
             <p className="text-xs font-medium mb-2" style={{ color: "var(--warn-text)" }}>Huidige activiteiten worden vervangen. Doorgaan?</p>
             <div className="flex gap-2">
-              <button onClick={() => setConfirmLoad(false)} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>Annuleren</button>
+              <button onClick={() => setConfirmLoad(false)} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
               <button onClick={() => selected !== null && onApply(TEMPLATES[selected].activities)} className="flex-1 py-1.5 rounded-lg text-xs text-white" style={{ background: "var(--accent)" }}>Laden</button>
             </div>
           </div>
         ) : (
           <div className="flex gap-2">
-            <button onClick={onClose} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>Annuleren</button>
+            <button onClick={onClose} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
             <button disabled={selected === null} onClick={() => setConfirmLoad(true)} className="flex-1 py-2 rounded-lg text-xs text-white disabled:opacity-40" style={{ background: "var(--accent)" }}>Template laden</button>
           </div>
         )}
@@ -777,11 +777,11 @@ function ConfirmDialog({ title, text, confirmLabel, confirmColor, onCancel, onCo
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2" }}>
+      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
         <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>{title}</h3>
         <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{text}</p>
         <div className="flex gap-2">
-          <button onClick={onCancel} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>Annuleren</button>
+          <button onClick={onCancel} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
           <button onClick={onConfirm} className="flex-1 py-2 rounded-lg text-xs text-white" style={{ background: confirmColor }}>{confirmLabel}</button>
         </div>
       </div>

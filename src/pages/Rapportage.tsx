@@ -189,7 +189,7 @@ export default function Rapportage() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3">
           <div className="flex items-center gap-2.5">
             <HeaderLogo />
@@ -199,7 +199,7 @@ export default function Rapportage() {
       </header>
 
       <main className="px-4 py-4 space-y-4">
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <div className="flex items-center justify-between">
             <button onClick={() => setCurrentWeekStart((p) => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
               <ChevronLeft className="h-4 w-4" />
@@ -215,7 +215,7 @@ export default function Rapportage() {
             </button>
           </div>
 
-          <button onClick={() => setCurrentWeekStart(startOfISOWeek(new Date()))} className="w-full py-1.5 rounded-xl text-[11px] font-semibold transition-colors" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+          <button onClick={() => setCurrentWeekStart(startOfISOWeek(new Date()))} className="w-full py-1.5 rounded-xl text-[11px] font-semibold transition-colors" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
             Deze week
           </button>
 
@@ -223,7 +223,7 @@ export default function Rapportage() {
             {([["goedgekeurd", "Goedgekeurd"], ["ingediend", "Ingediend"], ["alle", "Alle uren"]] as const).map(([k, l]) => (
               <button key={k} onClick={() => setFilter(k)} className="shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-colors" style={{
                 background: filter === k ? "var(--accent-light)" : "var(--bg-base)",
-                border: filter === k ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                border: filter === k ? "1px solid #9DC87A" : "1px solid var(--border)",
                 color: filter === k ? "var(--accent)" : "var(--text-muted)",
               }}>
                 {l}
@@ -238,7 +238,7 @@ export default function Rapportage() {
             { label: "Projecten", value: String(uniqueProjects), Icon: FolderOpen, color: "var(--info)" },
             { label: "Monteurs", value: String(uniqueEmployees), Icon: Users, color: "var(--warn-dot)" },
           ].map((k, i) => (
-            <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+            <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
               <k.Icon className="h-5 w-5 mx-auto mb-1" style={{ color: k.color }} />
               <p className="text-xl font-extrabold" style={{ color: k.color }}>{k.value}</p>
               <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{k.label}</p>
@@ -254,7 +254,7 @@ export default function Rapportage() {
         ) : (
           <>
             {medewerkerStats.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Per monteur</p>
                 {medewerkerStats.map(([naam, uren]) => (
                   <div key={naam} className="space-y-1">
@@ -271,7 +271,7 @@ export default function Rapportage() {
             )}
 
             {projectStats.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Per project</p>
                 {projectStats.map(([project, uren]) => (
                   <div key={project} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
@@ -283,7 +283,7 @@ export default function Rapportage() {
             )}
 
             {entries.length === 0 && (
-              <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <BarChart3 className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
                 <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen data gevonden</p>
                 <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Geen uren in deze periode</p>
@@ -295,7 +295,7 @@ export default function Rapportage() {
                 <button onClick={exportPDF} className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]" style={{ background: "var(--accent-light)", border: "1px solid #9DC87A", color: "var(--accent)" }}>
                   <FileText className="h-4 w-4" /> PDF
                 </button>
-                <button onClick={exportCSV} className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
+                <button onClick={exportCSV} className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors active:scale-[0.98]" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                   <Download className="h-4 w-4" /> CSV
                 </button>
               </div>

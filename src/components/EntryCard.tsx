@@ -28,7 +28,7 @@ export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDa
   const dayIdx = dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1;
 
   return (
-    <div className="rounded-2xl p-4 transition-transform active:scale-[0.985]" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+    <div className="rounded-2xl p-4 transition-transform active:scale-[0.985]" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
       {showDate && (
         <p className="text-xs font-medium mb-2" style={{ color: "var(--text-muted)" }}>
           {DAGEN[dayIdx]} {dateObj.getDate()} {MAANDEN[dateObj.getMonth()]}
