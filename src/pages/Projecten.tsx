@@ -706,6 +706,25 @@ function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdi
             </a>
           )}
 
+          {/* Intake status */}
+          {isManager && !project.intake_gedaan && (
+            <div className="rounded-xl p-3 flex items-center justify-between" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4" style={{ color: "var(--warn-text)" }} />
+                <span className="text-xs font-semibold" style={{ color: "var(--warn-text)" }}>Forecast intake nog niet gedaan</span>
+              </div>
+              <button onClick={onStartIntake} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+                Intake starten →
+              </button>
+            </div>
+          )}
+          {isManager && project.intake_gedaan && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "var(--success-light)", color: "var(--success)" }}>✓ Intake voltooid</span>
+              <button onClick={onStartIntake} className="text-[11px]" style={{ color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>Opnieuw doen</button>
+            </div>
+          )}
+
           {/* Contact section (manager only) */}
           {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
             <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
