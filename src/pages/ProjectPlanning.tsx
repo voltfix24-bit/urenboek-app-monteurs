@@ -777,13 +777,38 @@ export default function ProjectPlanning() {
       {/* Cost estimate */}
       {planningCostBreakdown.total > 0 && (
         <div className="mx-4 mb-20 lg:mb-4 rounded-xl overflow-hidden" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
-          <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid var(--accent-border)" }}>
+          <div className="px-4 py-3 flex items-center justify-between gap-2" style={{ borderBottom: "1px solid var(--accent-border)" }}>
             <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
               Geschatte kosten op basis van huidige planning
             </span>
-            <span className="text-sm font-bold font-mono" style={{ color: "var(--accent)" }}>
-              € {planningCostBreakdown.total.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const header = "Monteur;Dagen;Uren;Uurtarief;Subtotaal";
+                  const lines = planningCostBreakdown.rows.map(r =>
+                    `${r.name};${r.days};${r.days * 8};€${r.tarief};€${r.subtotal}`
+                  );
+                  lines.push(`;;;;;;`);
+                  lines.push(`Totaal;;;;€${planningCostBreakdown.total}`);
+                  const csv = [header, ...lines].join("\n");
+                  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `kostenschatting-${project?.nummer ?? "project"}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success("CSV gedownload");
+                }}
+                className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+                title="Exporteer als CSV"
+              >
+                <Download className="w-3.5 h-3.5" style={{ color: "var(--accent)" }} />
+              </button>
+              <span className="text-sm font-bold font-mono" style={{ color: "var(--accent)" }}>
+                € {planningCostBreakdown.total.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </span>
+            </div>
           </div>
           <div className="px-4 py-2 space-y-1">
             <div className="flex text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
