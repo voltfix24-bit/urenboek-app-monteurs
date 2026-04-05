@@ -121,11 +121,8 @@ export default function ProjectPlanning() {
         supabase.from("user_roles").select("user_id, role"),
       ]);
 
-      // Get my profile id
-      if (user) {
-        const { data: myProfile } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
-        myProfileId.current = myProfile?.id || null;
-      }
+      // Set my profile id from context
+      myProfileId.current = cachedProfileId;
 
       if (projRes.data) setProject(projRes.data as any);
       if (matrixRes.data?.state_json) {

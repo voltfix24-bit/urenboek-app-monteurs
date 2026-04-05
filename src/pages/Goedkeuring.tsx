@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
@@ -17,6 +18,7 @@ interface EntryWithProfile {
 
 export default function Goedkeuring() {
   const { isManager, user } = useAuth();
+  const { profileId: myProfileId } = useProfile();
   const navigate = useNavigate();
   const [entries, setEntries] = useState<EntryWithProfile[]>([]);
   const [filter, setFilter] = useState<string>("ingediend");
@@ -63,15 +65,8 @@ export default function Goedkeuring() {
 
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
-  const getMyProfileId = useCallback(async () => {
-    if (!user) return null;
-    const { data } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
-    return data?.id || null;
-  }, [user]);
-
   const updateStatus = async (id: string, status: string, reden?: string) => {
-    const profileId = await getMyProfileId();
-    const update: any = { status, approved_by: profileId };
+    const update: any = { status, approved_by: myProfileId };
     if (reden) update.afkeur_reden = reden;
     const { error } = await supabase.from("uren_boekingen").update(update).eq("id", id);
     if (error) toast.error("Fout bij bijwerken");

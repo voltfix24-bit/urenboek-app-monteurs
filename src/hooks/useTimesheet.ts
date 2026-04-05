@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { startOfWeek, addDays, format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 
 export interface TimeEntry {
@@ -16,13 +17,13 @@ export interface TimeEntry {
 
 export function useTimesheet() {
   const { user } = useAuth();
+  const { profileId } = useProfile();
   const [currentWeekStart, setCurrentWeekStart] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [allEntries, setAllEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
-  const [profileId, setProfileId] = useState<string | null>(null);
 
   const weekDates = Array.from({ length: 7 }, (_, i) =>
     addDays(currentWeekStart, i)
@@ -30,15 +31,6 @@ export function useTimesheet() {
 
   const weekStartStr = format(weekDates[0], "yyyy-MM-dd");
   const weekEndStr = format(weekDates[6], "yyyy-MM-dd");
-
-  // Get profile id on mount
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
-      if (data) setProfileId(data.id);
-    })();
-  }, [user]);
 
   const fetchEntries = useCallback(async () => {
     if (!user || !profileId) return;

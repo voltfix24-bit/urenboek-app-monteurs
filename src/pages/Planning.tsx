@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
@@ -17,11 +18,11 @@ const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
 export default function Planning() {
   const { user } = useAuth();
+  const { profileId } = useProfile();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [items, setItems] = useState<PlanningItem[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [profileId, setProfileId] = useState<string | null>(null);
   const [existingBoekingen, setExistingBoekingen] = useState<Map<string, ExistingBoeking>>(new Map());
   const [showUrenModal, setShowUrenModal] = useState(false);
   const [modalItem, setModalItem] = useState<PlanningItem | null>(null);
@@ -29,18 +30,15 @@ export default function Planning() {
   const weekNumber = getISOWeek(weekStart);
 
   const fetchPlanning = useCallback(async () => {
-    if (!user) return;
+    if (!user || !profileId) return;
     setLoading(true);
-    const { data: profile } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
-    if (!profile) { setLoading(false); return; }
-    setProfileId(profile.id);
     const startStr = format(weekStart, "yyyy-MM-dd");
     const endStr = format(addDays(weekStart, 6), "yyyy-MM-dd");
 
     const [{ data }, { data: beschData }, { data: boekData }] = await Promise.all([
-      supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id").eq("medewerker_id", profile.id).gte("datum", startStr).lte("datum", endStr).order("datum"),
-      supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", profile.id).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
-      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status").eq("medewerker_id", profile.id).gte("datum", startStr).lte("datum", endStr),
+      supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
+      supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", profileId).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
+      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr),
     ]);
     setBeschikbaarheid((beschData ?? []) as any);
 
