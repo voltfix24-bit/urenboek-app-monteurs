@@ -57,7 +57,7 @@ export default function Planning() {
       let statusMap = new Map<string, boolean>();
       if (projectIds.length > 0) {
         const [{ data: projects }, { data: statuses }] = await Promise.all([
-          supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").in("id", projectIds),
+          supabase.from("projects_monteur" as any).select("id, naam, nummer, straat, postcode, stad, adres").in("id", projectIds),
           supabase.from("project_planning_status").select("project_id, is_definitief").in("project_id", projectIds),
         ]);
         projMap = new Map(projects?.map((p: any) => [p.id, p]) ?? []);

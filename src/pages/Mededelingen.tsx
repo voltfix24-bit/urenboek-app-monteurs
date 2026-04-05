@@ -33,7 +33,7 @@ export default function Mededelingen() {
       const { data: readData } = await supabase.from("mededeling_leesstatus").select("mededeling_id, gelezen_op").eq("medewerker_id", profileId);
       const readMap = new Map(readData?.map((r: any) => [r.mededeling_id, !!r.gelezen_op]) ?? []);
       const senderIds = [...new Set(data.map((d: any) => d.verzonden_door))];
-      const { data: profiles } = await supabase.from("profiles").select("id, full_name").in("id", senderIds);
+      const { data: profiles } = await supabase.from("profiles_public" as any).select("id, full_name").in("id", senderIds);
       const nameMap = new Map(profiles?.map((p: any) => [p.id, p.full_name]) ?? []);
       setItems(data.map((d: any) => ({ id: d.id, titel: d.titel, inhoud: d.inhoud, urgentie: d.urgentie, created_at: d.created_at, verzender_naam: nameMap.get(d.verzonden_door) || "Onbekend", gelezen: readMap.get(d.id) || false })));
     }

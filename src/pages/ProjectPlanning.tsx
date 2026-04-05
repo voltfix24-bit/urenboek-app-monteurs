@@ -124,7 +124,7 @@ export default function ProjectPlanning() {
         supabase.from("projects").select("id, nummer, naam, stationsnaam, case_type").eq("id", projectId).single(),
         supabase.from("project_planning_matrix").select("*").eq("project_id", projectId).maybeSingle(),
         supabase.from("project_planning_status").select("*").eq("project_id", projectId).maybeSingle(),
-        supabase.from("profiles").select("id, user_id, full_name, uurtarief"),
+        supabase.from("profiles").select("id, user_id, full_name"),
         supabase.from("user_roles").select("user_id, role"),
       ]);
 
@@ -141,7 +141,7 @@ export default function ProjectPlanning() {
       // Filter monteurs
       const monteurUserIds = new Set((rolesRes.data || []).filter((r: any) => r.role === "monteur").map((r: any) => r.user_id));
       const allProfiles = profilesRes.data || [];
-      setMonteurs(allProfiles.filter((p: any) => monteurUserIds.has(p.user_id)).map((p: any) => ({ id: p.id, full_name: p.full_name, uurtarief: p.uurtarief })));
+      setMonteurs(allProfiles.filter((p: any) => monteurUserIds.has(p.user_id)).map((p: any) => ({ id: p.id, full_name: p.full_name, uurtarief: null })));
 
       // Fetch other project matrices for cross-project conflict detection
       const { data: otherData } = await supabase
