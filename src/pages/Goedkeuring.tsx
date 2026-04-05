@@ -203,6 +203,7 @@ export default function Goedkeuring() {
               <div className="divide-y" style={{ borderColor: "var(--bg-surface-2)" }}>
                 {userEntries.map((entry) => {
                   const sc = statusConfig[entry.status] || statusConfig.concept;
+                  const hasOveruren = overurenIds.has(`${entry.medewerker_id}_${entry.datum}`);
                   return (
                     <div key={entry.id} className="px-4 py-3">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -213,7 +214,12 @@ export default function Goedkeuring() {
                           {entry.project_nummer}
                         </span>
                         <span className="text-xs flex-1 truncate min-w-0" style={{ color: "var(--text-primary)" }}>{entry.project_naam} {entry.beschrijving ? `· ${entry.beschrijving}` : ""}</span>
-                        <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{entry.uren}u</span>
+                        <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
+                          {entry.uren}u
+                          {hasOveruren && (
+                            <AlertTriangle className="h-3 w-3 inline ml-1 cursor-pointer" style={{ color: "var(--warn-text)" }} title="Overuren melding aanwezig" onClick={() => navigate("/overuren")} />
+                          )}
+                        </span>
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>
                           <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
                           {entry.status}
