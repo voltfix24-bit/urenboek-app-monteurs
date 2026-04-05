@@ -64,6 +64,19 @@ export default function Goedkeuring() {
       };
     });
     setEntries(merged);
+
+    // Fetch overuren meldingen for this week
+    const { data: ouData } = await supabase
+      .from("overuren_meldingen")
+      .select("medewerker_id, datum")
+      .eq("status", "open")
+      .gte("datum", format(weekStart, "yyyy-MM-dd"))
+      .lte("datum", format(weekEnd, "yyyy-MM-dd"));
+    if (ouData) {
+      const ids = new Set(ouData.map((m: any) => `${m.medewerker_id}_${m.datum}`));
+      setOverurenIds(ids);
+    }
+
     setLoading(false);
   }, [weekOffset]);
 
