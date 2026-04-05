@@ -5,7 +5,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { ArrowLeft, X, Save, Check, Plus, Minus, GripVertical, FileText, Trash2, Loader2, Download } from "lucide-react";
+import { ArrowLeft, X, Save, Check, Plus, Minus, GripVertical, FileText, Trash2, Loader2, Download, Pencil } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
@@ -28,11 +28,7 @@ const COLORS = [
   { id: "c12", hex: "#A9CCE3", name: "Overig" },
 ];
 
-const TEMPLATES = [
-  { name: "NSA-case", desc: "Standaard NSA vervanging", activities: ["Civiele werkzaamheden", "Levering NSA", "MS-installatie", "LS-aansluiting", "Inbedrijfstelling", "Revisie & oplevering"] },
-  { name: "Compactstation", desc: "Nieuw compactstation plaatsen", activities: ["Civiele werkzaamheden", "Levering Compactstation", "MS-aansluiting", "LS-configuratie", "Inbedrijfstelling", "Oplevering"] },
-  { name: "Provisorium", desc: "Tijdelijke voorziening", activities: ["Levering Provisorium", "Plaatsen RMU Magnefix", "Kabelaansluiting MS", "LS tijdelijk", "Inbedrijfstelling", "Definitief terugplaatsen"] },
-];
+// Templates loaded from DB
 
 const TRAFO_OPTIONS = ["—", "160 kVA", "250 kVA", "400 kVA", "630 kVA", "800 kVA", "1000 kVA"];
 const DAY_LABELS = ["Ma", "Di", "Wo", "Do", "Vr"];
