@@ -44,8 +44,9 @@ export function useNavBadges() {
   }, [fetchBadges]);
 
   useEffect(() => {
-    const ch1 = supabase.channel("badge-ub").on("postgres_changes", { event: "*", schema: "public", table: "uren_boekingen" }, fetchBadges).subscribe();
-    const ch2 = supabase.channel("badge-ls").on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges).subscribe();
+    if (!user) return;
+    const ch1 = supabase.channel(`badge-ub-${Date.now()}`).on("postgres_changes", { event: "*", schema: "public", table: "uren_boekingen" }, fetchBadges).subscribe();
+    const ch2 = supabase.channel(`badge-ls-${Date.now()}`).on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges).subscribe();
     return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
   }, [fetchBadges]);
 
