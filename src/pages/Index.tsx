@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { subWeeks } from "date-fns";
 import { useTimesheet } from "@/hooks/useTimesheet";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -60,6 +61,8 @@ const Index = () => {
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [pendingOffline, setPendingOffline] = useState(0);
+  const [vorigeWeekConcept, setVorigeWeekConcept] = useState<{ id: string; datum: string; uren: number }[]>([]);
+  const [submittingVorigeWeek, setSubmittingVorigeWeek] = useState(false);
 
   // Track online/offline status
   useEffect(() => {
@@ -99,6 +102,25 @@ const Index = () => {
       setOnboardingChecked(true);
     })();
   }, [profileId, onboardingChecked]);
+
+  // Vorige week reminder
+  useEffect(() => {
+    if (!profileId) return;
+    const vorigeMaandag = startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 });
+    const vorigeVrijdag = addDays(vorigeMaandag, 4);
+    const startStr = format(vorigeMaandag, "yyyy-MM-dd");
+    const endStr = format(vorigeVrijdag, "yyyy-MM-dd");
+    (async () => {
+      const { data } = await supabase
+        .from("uren_boekingen")
+        .select("id, datum, uren")
+        .eq("medewerker_id", profileId)
+        .eq("status", "concept")
+        .gte("datum", startStr)
+        .lte("datum", endStr);
+      setVorigeWeekConcept(data?.map((d: any) => ({ id: d.id, datum: d.datum, uren: Number(d.uren) })) || []);
+    })();
+  }, [profileId]);
 
   useEffect(() => {
     const now = new Date();
@@ -274,8 +296,38 @@ const Index = () => {
   );
 
   function renderContent() {
+    const vorigeWeekUren = vorigeWeekConcept.reduce((s, e) => s + e.uren, 0);
+    const submitVorigeWeek = async () => {
+      setSubmittingVorigeWeek(true);
+      const ids = vorigeWeekConcept.map(e => e.id);
+      const { error } = await supabase.from("uren_boekingen").update({ status: "ingediend" } as any).in("id", ids);
+      if (!error) {
+        toast.success(`${vorigeWeekUren}u ingediend ✓`);
+        setVorigeWeekConcept([]);
+      } else {
+        toast.error("Er ging iets mis");
+      }
+      setSubmittingVorigeWeek(false);
+    };
+
     return (
       <>
+        {/* Vorige week reminder */}
+        {vorigeWeekConcept.length > 0 && (
+          <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
+            <p className="text-xs font-medium flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Je hebt nog {vorigeWeekUren}u van vorige week niet ingediend.
+            </p>
+            <button
+              onClick={submitVorigeWeek}
+              disabled={submittingVorigeWeek}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0 transition-colors disabled:opacity-50"
+              style={{ background: "var(--accent)", color: "#fff" }}
+            >
+              Alles indienen <ArrowRight className="h-3 w-3" />
+            </button>
+          </div>
+        )}
         {/* Offline banner */}
         {isOffline && (
           <div className="mx-4 mt-3 flex items-center gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
