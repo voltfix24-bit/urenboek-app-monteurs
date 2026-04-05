@@ -48,6 +48,7 @@ export default function Projecten() {
   const [loading, setLoading] = useState(true); const [showAdd, setShowAdd] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
+  const [intakeProjectId, setIntakeProjectId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
