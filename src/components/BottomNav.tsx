@@ -1,22 +1,25 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavBadges } from "@/hooks/useNavBadges";
+import { NavBadge } from "./NavBadge";
 import { Clock, CheckCircle, BarChart3, Users, CalendarDays, Bell, User, LayoutDashboard } from "lucide-react";
 
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isManager } = useAuth();
+  const { badges } = useNavBadges();
 
   const monteurTabs = [
-    { key: "/", icon: Clock, label: "Uren" },
+    { key: "/", icon: Clock, label: "Uren", badge: badges.afgekeurdeUren },
     { key: "/planning", icon: CalendarDays, label: "Planning" },
-    { key: "/mededelingen", icon: Bell, label: "Berichten" },
+    { key: "/mededelingen", icon: Bell, label: "Berichten", badge: badges.ongelezen },
     { key: "/profiel", icon: User, label: "Profiel" },
   ];
 
   const managerTabs = [
-    { key: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { key: "/goedkeuring", icon: CheckCircle, label: "Keuren" },
+    { key: "/dashboard", icon: LayoutDashboard, label: "Dashboard", dot: badges.verlofAanvragen > 0 },
+    { key: "/goedkeuring", icon: CheckCircle, label: "Keuren", badge: badges.openGoedkeuringen },
     { key: "/manager-planning", icon: CalendarDays, label: "Planning" },
     { key: "/medewerkers", icon: Users, label: "Team" },
     { key: "/rapportage", icon: BarChart3, label: "Rapport" },
@@ -41,7 +44,7 @@ export function BottomNav() {
       }}
     >
       <div className="flex items-center">
-        {tabs.map((t) => {
+        {tabs.map((t: any) => {
           const active = isActive(t.key);
           const Icon = t.icon;
           return (
@@ -55,7 +58,11 @@ export function BottomNav() {
                 borderTop: active ? "2px solid #4A7C2F" : "2px solid transparent",
               }}
             >
-              <Icon className="h-5 w-5" />
+              <span className="relative">
+                <Icon className="h-5 w-5" />
+                {t.badge > 0 && <NavBadge count={t.badge} />}
+                {t.dot && <NavBadge count={1} dot />}
+              </span>
               <span className="text-[10px] font-semibold">{t.label}</span>
             </button>
           );
