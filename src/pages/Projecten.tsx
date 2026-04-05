@@ -11,10 +11,6 @@ import { BottomNav } from "@/components/BottomNav";
 import { ForecastTab } from "@/components/ForecastTab";
 import { PlanningStatusTab } from "@/components/PlanningStatusTab";
 import { useNavBadges } from "@/hooks/useNavBadges";
-import { BottomNav } from "@/components/BottomNav";
-import { ForecastTab } from "@/components/ForecastTab";
-import { PlanningStatusTab } from "@/components/PlanningStatusTab";
-import { useNavBadges } from "@/hooks/useNavBadges";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
