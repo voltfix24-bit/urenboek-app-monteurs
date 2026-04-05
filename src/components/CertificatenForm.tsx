@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CERT_CONFIG, type CertConfig } from "@/lib/certificaten";
-import { Info, AlertCircle, ExternalLink, X } from "lucide-react";
+import { Info, AlertCircle, ExternalLink, X, Paperclip, Camera, FolderOpen, Loader2, Check } from "lucide-react";
 
 interface Props {
   medewerker_id: string;
@@ -15,14 +15,23 @@ interface CertState {
   niveaus: string[];
   vervaldatum: string;
   gebieden: string[];
+  existingFileUrl: string | null;
 }
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"];
+const IS_TOUCH = typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
 
 export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: Props) {
   const [state, setState] = useState<Record<string, CertState>>({});
+  const [uploads, setUploads] = useState<Record<string, File | null>>({});
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPoortInfo, setShowPoortInfo] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const cameraInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     loadExisting();
@@ -32,7 +41,7 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
     const { data } = await supabase.from("certificaten").select("*").eq("medewerker_id", medewerker_id);
     const initial: Record<string, CertState> = {};
     for (const cfg of CERT_CONFIG) {
-      initial[cfg.type] = { checked: false, niveaus: [], vervaldatum: "", gebieden: [] };
+      initial[cfg.type] = { checked: false, niveaus: [], vervaldatum: "", gebieden: [], existingFileUrl: null };
     }
     if (data) {
       for (const cert of data) {
@@ -47,6 +56,9 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
           for (const g of cert.ggi_gebieden as string[]) {
             if (!initial[t].gebieden.includes(g)) initial[t].gebieden.push(g);
           }
+        }
+        if (cert.bestand_url && !initial[t].existingFileUrl) {
+          initial[t].existingFileUrl = cert.bestand_url;
         }
       }
     }
@@ -65,13 +77,7 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
   const setNiveau = (type: string, niveau: string) => {
     setState(s => {
       const cur = s[type]?.niveaus || [];
-      return {
-        ...s,
-        [type]: {
-          ...s[type],
-          niveaus: cur.includes(niveau) ? cur.filter(n => n !== niveau) : [...cur, niveau]
-        }
-      };
+      return { ...s, [type]: { ...s[type], niveaus: cur.includes(niveau) ? cur.filter(n => n !== niveau) : [...cur, niveau] } };
     });
     setErrors(e => { const n = { ...e }; delete n[type]; return n; });
   };
@@ -84,15 +90,31 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
   const setGebied = (type: string, code: string) => {
     setState(s => {
       const cur = s[type]?.gebieden || [];
-      return {
-        ...s,
-        [type]: {
-          ...s[type],
-          gebieden: cur.includes(code) ? cur.filter(g => g !== code) : [...cur, code]
-        }
-      };
+      return { ...s, [type]: { ...s[type], gebieden: cur.includes(code) ? cur.filter(g => g !== code) : [...cur, code] } };
     });
     setErrors(e => { const n = { ...e }; delete n[type]; return n; });
+  };
+
+  const handleFileSelect = (type: string, file: File | null) => {
+    if (!file) return;
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("Bestand is te groot. Max 10MB.");
+      return;
+    }
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error("Alleen foto's (JPG, PNG, HEIC) of PDF toegestaan.");
+      return;
+    }
+    setUploads(u => ({ ...u, [type]: file }));
+  };
+
+  const removeUpload = (type: string) => {
+    setUploads(u => ({ ...u, [type]: null }));
+  };
+
+  const openSignedUrl = async (path: string) => {
+    const { data } = await supabase.storage.from("certificaten").createSignedUrl(path, 3600);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
 
   const validate = (): boolean => {
@@ -100,18 +122,23 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
     for (const cfg of CERT_CONFIG) {
       const s = state[cfg.type];
       if (!s?.checked) continue;
-      if (cfg.heeftNiveau && s.niveaus.length === 0) {
-        errs[cfg.type] = "Selecteer minimaal één niveau";
-      }
-      if (cfg.heeftVervaldatum && !s.vervaldatum) {
-        errs[cfg.type] = "Vul een geldigheidsdatum in";
-      }
-      if (cfg.heeftGebieden && s.gebieden.length === 0) {
-        errs[cfg.type] = "Selecteer minimaal één gebied";
-      }
+      if (cfg.heeftNiveau && s.niveaus.length === 0) errs[cfg.type] = "Selecteer minimaal één niveau";
+      if (cfg.heeftVervaldatum && !s.vervaldatum) errs[cfg.type] = "Vul een geldigheidsdatum in";
+      if (cfg.heeftGebieden && s.gebieden.length === 0) errs[cfg.type] = "Selecteer minimaal één gebied";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
+  };
+
+  const uploadFile = async (type: string, file: File): Promise<string | null> => {
+    const ext = file.name.split(".").pop() || "bin";
+    const path = `${medewerker_id}/${type}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("certificaten").upload(path, file, { upsert: true });
+    if (error) {
+      console.error("Upload error:", error);
+      return null;
+    }
+    return path;
   };
 
   const handleSave = async () => {
@@ -119,89 +146,156 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
     setSaving(true);
 
     const checkedTypes = CERT_CONFIG.filter(c => state[c.type]?.checked).map(c => c.type);
+    const uncheckedTypes = CERT_CONFIG.filter(c => !state[c.type]?.checked).map(c => c.type);
 
-    if (checkedTypes.length > 0) {
-      await supabase.from("certificaten").delete()
-        .eq("medewerker_id", medewerker_id)
-        .in("type", checkedTypes);
+    // Delete existing certs for all types
+    const allTypes = [...checkedTypes, ...uncheckedTypes];
+    if (allTypes.length > 0) {
+      await supabase.from("certificaten").delete().eq("medewerker_id", medewerker_id).in("type", allTypes);
     }
 
-    const uncheckedTypes = CERT_CONFIG.filter(c => !state[c.type]?.checked).map(c => c.type);
-    if (uncheckedTypes.length > 0) {
-      await supabase.from("certificaten").delete()
-        .eq("medewerker_id", medewerker_id)
-        .in("type", uncheckedTypes);
+    // Upload files first
+    const uploadedPaths: Record<string, string> = {};
+    for (const type of checkedTypes) {
+      const file = uploads[type];
+      if (file) {
+        setUploading(u => ({ ...u, [type]: true }));
+        const path = await uploadFile(type, file);
+        if (path) uploadedPaths[type] = path;
+        setUploading(u => ({ ...u, [type]: false }));
+      }
     }
 
     const inserts: any[] = [];
     for (const cfg of CERT_CONFIG) {
       const s = state[cfg.type];
       if (!s?.checked) continue;
+      const bestand_url = uploadedPaths[cfg.type] || s.existingFileUrl || null;
 
       if (cfg.heeftNiveau && s.niveaus.length > 0) {
         for (const niveau of s.niveaus) {
-          inserts.push({
-            medewerker_id,
-            type: cfg.type,
-            subtype: niveau,
-            naam: `${cfg.label} - ${niveau}`,
-            vervaldatum: s.vervaldatum || null,
-          });
+          inserts.push({ medewerker_id, type: cfg.type, subtype: niveau, naam: `${cfg.label} - ${niveau}`, vervaldatum: s.vervaldatum || null, bestand_url });
         }
       } else if (cfg.heeftGebieden && s.gebieden.length > 0) {
-        for (const gebied of s.gebieden) {
-          const gebiedLabel = cfg.gebieden?.find(g => g.code === gebied)?.label || gebied;
-          inserts.push({
-            medewerker_id,
-            type: cfg.type,
-            naam: `GGI - ${gebiedLabel}`,
-            ggi_gebieden: s.gebieden,
-            vervaldatum: null,
-          });
-        }
-        const ggiInserts = inserts.filter(i => i.type === "GGI");
-        if (ggiInserts.length > 1) {
-          const allGebieden = s.gebieden;
-          const removeCount = ggiInserts.length - 1;
-          for (let i = 0; i < removeCount; i++) {
-            const idx = inserts.findIndex(ins => ins.type === "GGI");
-            if (idx > -1) inserts.splice(idx, 1);
-          }
-          const remaining = inserts.find(ins => ins.type === "GGI");
-          if (remaining) {
-            remaining.naam = `GGI - ${allGebieden.map(g => cfg.gebieden?.find(gb => gb.code === g)?.label || g).join(", ")}`;
-            remaining.ggi_gebieden = allGebieden;
-          }
-        }
+        const gebiedLabels = s.gebieden.map(g => cfg.gebieden?.find(gb => gb.code === g)?.label || g);
+        inserts.push({ medewerker_id, type: cfg.type, naam: `GGI - ${gebiedLabels.join(", ")}`, ggi_gebieden: s.gebieden, vervaldatum: null, bestand_url });
       } else if (cfg.type === "POORT") {
-        inserts.push({
-          medewerker_id,
-          type: cfg.type,
-          naam: cfg.kortLabel || cfg.label,
-          vervaldatum: null,
-        });
+        inserts.push({ medewerker_id, type: cfg.type, naam: cfg.kortLabel || cfg.label, vervaldatum: null, bestand_url });
       } else {
-        inserts.push({
-          medewerker_id,
-          type: cfg.type,
-          naam: cfg.label,
-          vervaldatum: s.vervaldatum || null,
-        });
+        inserts.push({ medewerker_id, type: cfg.type, naam: cfg.label, vervaldatum: s.vervaldatum || null, bestand_url });
       }
     }
 
     if (inserts.length > 0) {
       const { error } = await supabase.from("certificaten").insert(inserts);
-      if (error) {
-        toast.error("Fout bij opslaan: " + error.message);
-        setSaving(false);
-        return;
-      }
+      if (error) { toast.error("Fout bij opslaan: " + error.message); setSaving(false); return; }
     }
 
     toast.success("Certificaten opgeslagen ✓");
     setSaving(false);
     onSaved();
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const renderUploadZone = (cfg: CertConfig, s: CertState) => {
+    const file = uploads[cfg.type];
+    const isUploading = uploading[cfg.type];
+    const hasExisting = !!s.existingFileUrl && !file;
+
+    const uploadHint = cfg.type === "POORT"
+      ? "Screenshot van behaalde instructie"
+      : cfg.type === "GGI"
+        ? "Screenshot vanuit Certwell"
+        : "PDF, foto of screenshot";
+
+    if (isUploading) {
+      return (
+        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
+          <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--accent)" }} />
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Uploaden...</span>
+        </div>
+      );
+    }
+
+    if (file) {
+      return (
+        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
+          <Check className="h-4 w-4 shrink-0" style={{ color: "var(--success)" }} />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>{file.name}</p>
+            <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{formatFileSize(file.size)}</p>
+          </div>
+          <button type="button" onClick={(e) => { e.stopPropagation(); removeUpload(cfg.type); }} className="shrink-0">
+            <X className="h-4 w-4" style={{ color: "var(--text-muted)" }} />
+          </button>
+        </div>
+      );
+    }
+
+    if (hasExisting) {
+      return (
+        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
+          <Paperclip className="h-4 w-4 shrink-0" style={{ color: "var(--success)" }} />
+          <span className="text-xs font-medium flex-1" style={{ color: "var(--success)" }}>📎 Bewijs aanwezig</span>
+          <button type="button" onClick={(e) => { e.stopPropagation(); openSignedUrl(s.existingFileUrl!); }}
+            className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+            Bekijken
+          </button>
+          <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRefs.current[cfg.type]?.click(); }}
+            className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+            Vervangen
+          </button>
+          <input ref={el => { fileInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
+            accept="image/*,application/pdf" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
+        </div>
+      );
+    }
+
+    // Empty upload zone
+    if (IS_TOUCH) {
+      return (
+        <div className="mt-2 space-y-2" onClick={e => e.stopPropagation()}>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => cameraInputRefs.current[cfg.type]?.click()}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-[9px] text-xs"
+              style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+              <Camera className="h-3.5 w-3.5" /> Foto maken
+            </button>
+            <button type="button" onClick={() => fileInputRefs.current[cfg.type]?.click()}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-[9px] text-xs"
+              style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+              <FolderOpen className="h-3.5 w-3.5" /> Bestand kiezen
+            </button>
+          </div>
+          <p className="text-[10px] text-center" style={{ color: "var(--text-muted)" }}>{uploadHint}</p>
+          <input ref={el => { cameraInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
+            accept="image/*" capture="environment" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
+          <input ref={el => { fileInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
+            accept="image/*,application/pdf" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
+        </div>
+      );
+    }
+
+    return (
+      <div className="mt-2" onClick={e => e.stopPropagation()}>
+        <button type="button" onClick={() => fileInputRefs.current[cfg.type]?.click()}
+          className="w-full p-3 rounded-[10px] text-center transition-colors group"
+          style={{ background: "var(--bg-base)", border: "1.5px dashed var(--border)", cursor: "pointer" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent-border)"; e.currentTarget.style.background = "var(--accent-light)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg-base)"; }}>
+          <Paperclip className="h-4 w-4 mx-auto mb-1" style={{ color: "var(--text-muted)" }} />
+          <p className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>Bewijs uploaden</p>
+          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{uploadHint}</p>
+        </button>
+        <input ref={el => { fileInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
+          accept="image/*,application/pdf" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
+      </div>
+    );
   };
 
   if (loading) return (
@@ -213,7 +307,7 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
   return (
     <div className="space-y-3">
       {CERT_CONFIG.map(cfg => {
-        const s = state[cfg.type] || { checked: false, niveaus: [], vervaldatum: "", gebieden: [] };
+        const s = state[cfg.type] || { checked: false, niveaus: [], vervaldatum: "", gebieden: [], existingFileUrl: null };
         const isChecked = s.checked;
 
         return (
@@ -303,6 +397,9 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
                 {cfg.type === "POORT" && (
                   <p className="text-xs" style={{ color: "var(--success)" }}>✓ Geregistreerd als behaald</p>
                 )}
+
+                {/* Upload zone */}
+                {renderUploadZone(cfg, s)}
 
                 {errors[cfg.type] && (
                   <p className="text-xs font-medium" style={{ color: "var(--danger)" }}>{errors[cfg.type]}</p>
