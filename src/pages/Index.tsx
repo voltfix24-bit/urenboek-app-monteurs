@@ -77,7 +77,7 @@ const Index = () => {
   }, []);
 
   const {
-    weekDates, weekEntries, allEntries, addEntry, removeEntry, submitEntry,
+    weekDates, weekEntries, allEntries, addEntry, removeEntry, submitEntry, submitAll,
     revertToConcept, goToPreviousWeek, goToNextWeek, totalHours, currentWeekStart,
     loading, profileId,
   } = useTimesheet();
@@ -109,12 +109,10 @@ const Index = () => {
   const submitAllConcepts = useCallback(async () => {
     if (!user || conceptEntries.length === 0) return;
     setSubmittingAll(true);
-    const ids = conceptEntries.map(e => e.id);
-    const { error } = await supabase.from("uren_boekingen").update({ status: "ingediend" }).in("id", ids);
-    if (error) { toast.error("Fout bij indienen"); }
-    else { toast.success(`${ids.length} uren ingediend!`); setShowFridayBanner(false); window.location.reload(); }
+    const count = await submitAll();
+    if (count > 0) setShowFridayBanner(false);
     setSubmittingAll(false);
-  }, [user, conceptEntries]);
+  }, [user, conceptEntries, submitAll]);
 
   const handleRefresh = async () => {
     window.location.reload();
