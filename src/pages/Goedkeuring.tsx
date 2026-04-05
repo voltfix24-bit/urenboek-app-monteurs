@@ -125,6 +125,8 @@ export default function Goedkeuring() {
     return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
   }
 
+  const [selectedMonteur, setSelectedMonteur] = useState<string | null>(null);
+
   const mainContent = (
     <main className="px-4 py-4 space-y-4">
       <div className="flex items-center justify-between gap-2">
@@ -168,86 +170,194 @@ export default function Goedkeuring() {
           <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Geen uren met deze filter voor deze week</p>
         </div>
       ) : (
-        Object.entries(grouped).map(([name, userEntries]) => {
-          const totalHours = userEntries.reduce((s, e) => s + e.uren, 0);
-          const pendingCount = userEntries.filter((e) => e.status === "ingediend").length;
-          return (
-            <div key={name} className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-              <div className="flex items-center justify-between px-4 py-3" style={{ background: "var(--bg-surface-2)" }}>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-xs font-bold" style={{ color: "#fff" }}>
-                    {name.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{name}</span>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>{userEntries.length} dag{userEntries.length !== 1 ? "en" : ""} · {totalHours}u</span>
+        <>
+          {/* Mobile: stacked cards */}
+          <div className="lg:hidden space-y-4">
+            {renderGroupedCards(grouped)}
+          </div>
+          {/* Desktop: 2-column layout */}
+          <div className="hidden lg:flex gap-4">
+            <div className="w-[40%] space-y-2">
+              {Object.entries(grouped).map(([name, userEntries]) => {
+                const totalHours = userEntries.reduce((s, e) => s + e.uren, 0);
+                const pendingCount = userEntries.filter((e) => e.status === "ingediend").length;
+                const isSelected = selectedMonteur === name;
+                return (
+                  <button key={name} onClick={() => setSelectedMonteur(name)} className="w-full text-left rounded-2xl p-4 transition-colors" style={{
+                    background: isSelected ? "var(--accent-light)" : "var(--bg-surface)",
+                    border: isSelected ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+                  }}>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-xs font-bold" style={{ color: "#fff" }}>
+                        {name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate" style={{ color: "var(--text-primary)" }}>{name}</p>
+                        <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{userEntries.length} boekingen · {totalHours}u</p>
+                      </div>
                       {pendingCount > 0 && (
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--warn-light)", color: "var(--warn-text)" }}>
-                          {pendingCount} open
+                          {pendingCount}
                         </span>
                       )}
                     </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="w-[60%]">
+              {selectedMonteur && grouped[selectedMonteur] ? (
+                <div className="rounded-2xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                  <div className="flex items-center justify-between px-4 py-3" style={{ background: "var(--bg-surface-2)" }}>
+                    <span className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{selectedMonteur}</span>
+                    {grouped[selectedMonteur].some(e => e.status === "ingediend") && (
+                      <button onClick={() => approveAllForUser(selectedMonteur)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)", color: "var(--success)" }}>
+                        <CheckCheck className="h-3.5 w-3.5" /> Alles goedkeuren
+                      </button>
+                    )}
+                  </div>
+                  <div className="divide-y" style={{ borderColor: "var(--bg-surface-2)" }}>
+                    {grouped[selectedMonteur].map((entry) => {
+                      const sc = statusConfig[entry.status] || statusConfig.concept;
+                      const hasOveruren = overurenIds.has(`${entry.medewerker_id}_${entry.datum}`);
+                      return (
+                        <div key={entry.id} className="px-4 py-3">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[11px] font-medium min-w-[60px]" style={{ color: "var(--text-muted)" }}>
+                              {format(new Date(entry.datum), "EEE d/M", { locale: nl })}
+                            </span>
+                            <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
+                              {entry.project_nummer}
+                            </span>
+                            <span className="text-xs flex-1 truncate min-w-0" style={{ color: "var(--text-primary)" }}>{entry.project_naam} {entry.beschrijving ? `· ${entry.beschrijving}` : ""}</span>
+                            <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
+                              {entry.uren}u
+                              {hasOveruren && (
+                                <span onClick={() => navigate("/overuren")} className="inline cursor-pointer"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>
+                              )}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
+                              {entry.status}
+                            </span>
+                            {entry.status === "ingediend" && (
+                              <div className="flex gap-1">
+                                <button className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }} onClick={() => updateStatus(entry.id, "goedgekeurd")}>
+                                  <Check className="h-4 w-4" style={{ color: "var(--success)" }} />
+                                </button>
+                                <button className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }} onClick={() => setAfkeurId(entry.id)}>
+                                  <X className="h-4 w-4" style={{ color: "var(--danger)" }} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          {entry.status === "afgekeurd" && entry.afkeur_reden && (
+                            <p className="text-[10px] italic mt-1" style={{ color: "var(--danger)" }}>Reden: {entry.afkeur_reden}</p>
+                          )}
+                          {afkeurId === entry.id && (
+                            <div className="mt-2 space-y-2">
+                              <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={2} className="w-full px-3 py-2 rounded-xl text-sm resize-none" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                              <div className="flex gap-2">
+                                <button onClick={() => afkeurReden.trim() ? updateStatus(afkeurId, "afgekeurd", afkeurReden.trim()) : toast.error("Vul een reden in")} className="flex-1 py-2 rounded-xl text-xs font-bold" style={{ background: "var(--danger)", color: "#fff" }}>Afkeuren</button>
+                                <button onClick={() => { setAfkeurId(null); setAfkeurReden(""); }} className="px-3 py-2 rounded-xl text-xs font-medium" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>Annuleren</button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold tabular-nums" style={{ color: "var(--accent)" }}>{totalHours}u</span>
-                  {pendingCount > 0 && (
-                    <button onClick={() => approveAllForUser(name)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-colors active:scale-95" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)", color: "var(--success)" }}>
-                      <CheckCheck className="h-3.5 w-3.5" /> Alles goedkeuren
-                    </button>
-                  )}
+              ) : (
+                <div className="text-center py-20 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>Selecteer een monteur</p>
                 </div>
-              </div>
-
-              <div className="divide-y" style={{ borderColor: "var(--bg-surface-2)" }}>
-                {userEntries.map((entry) => {
-                  const sc = statusConfig[entry.status] || statusConfig.concept;
-                  const hasOveruren = overurenIds.has(`${entry.medewerker_id}_${entry.datum}`);
-                  return (
-                    <div key={entry.id} className="px-4 py-3">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-medium min-w-[60px]" style={{ color: "var(--text-muted)" }}>
-                          {format(new Date(entry.datum), "EEE d/M", { locale: nl })}
-                        </span>
-                        <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
-                          {entry.project_nummer}
-                        </span>
-                        <span className="text-xs flex-1 truncate min-w-0" style={{ color: "var(--text-primary)" }}>{entry.project_naam} {entry.beschrijving ? `· ${entry.beschrijving}` : ""}</span>
-                        <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
-                          {entry.uren}u
-                          {hasOveruren && (
-                            <span onClick={() => navigate("/overuren")} className="inline cursor-pointer"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>
-                          )}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
-                          {entry.status}
-                        </span>
-                        {entry.status === "ingediend" && (
-                          <div className="flex gap-1">
-                            <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }} onClick={() => updateStatus(entry.id, "goedgekeurd")}>
-                              <Check className="h-4 w-4" style={{ color: "var(--success)" }} />
-                            </button>
-                            <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }} onClick={() => setAfkeurId(entry.id)}>
-                              <X className="h-4 w-4" style={{ color: "var(--danger)" }} />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      {entry.status === "afgekeurd" && entry.afkeur_reden && (
-                        <p className="text-[10px] italic mt-1" style={{ color: "var(--danger)" }}>Reden: {entry.afkeur_reden}</p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              )}
             </div>
-          );
-        })
+          </div>
+        </>
       )}
     </main>
   );
+
+  function renderGroupedCards(grouped: Record<string, EntryWithProfile[]>) {
+    return Object.entries(grouped).map(([name, userEntries]) => {
+      const totalHours = userEntries.reduce((s, e) => s + e.uren, 0);
+      const pendingCount = userEntries.filter((e) => e.status === "ingediend").length;
+      return (
+        <div key={name} className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <div className="flex items-center justify-between px-4 py-3" style={{ background: "var(--bg-surface-2)" }}>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-xs font-bold" style={{ color: "#fff" }}>
+                {name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <span className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{name}</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>{userEntries.length} dag{userEntries.length !== 1 ? "en" : ""} · {totalHours}u</span>
+                  {pendingCount > 0 && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--warn-light)", color: "var(--warn-text)" }}>
+                      {pendingCount} open
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold tabular-nums" style={{ color: "var(--accent)" }}>{totalHours}u</span>
+              {pendingCount > 0 && (
+                <button onClick={() => approveAllForUser(name)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-colors active:scale-95" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)", color: "var(--success)" }}>
+                  <CheckCheck className="h-3.5 w-3.5" /> Alles goedkeuren
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="divide-y" style={{ borderColor: "var(--bg-surface-2)" }}>
+            {userEntries.map((entry) => {
+              const sc = statusConfig[entry.status] || statusConfig.concept;
+              const hasOveruren = overurenIds.has(`${entry.medewerker_id}_${entry.datum}`);
+              return (
+                <div key={entry.id} className="px-4 py-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] font-medium min-w-[60px]" style={{ color: "var(--text-muted)" }}>
+                      {format(new Date(entry.datum), "EEE d/M", { locale: nl })}
+                    </span>
+                    <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
+                      {entry.project_nummer}
+                    </span>
+                    <span className="text-xs flex-1 truncate min-w-0" style={{ color: "var(--text-primary)" }}>{entry.project_naam} {entry.beschrijving ? `· ${entry.beschrijving}` : ""}</span>
+                    <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
+                      {entry.uren}u
+                      {hasOveruren && (
+                        <span onClick={() => navigate("/overuren")} className="inline cursor-pointer"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>
+                      )}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
+                      {entry.status}
+                    </span>
+                    {entry.status === "ingediend" && (
+                      <div className="flex gap-1">
+                        <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }} onClick={() => updateStatus(entry.id, "goedgekeurd")}>
+                          <Check className="h-4 w-4" style={{ color: "var(--success)" }} />
+                        </button>
+                        <button className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }} onClick={() => setAfkeurId(entry.id)}>
+                          <X className="h-4 w-4" style={{ color: "var(--danger)" }} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {entry.status === "afgekeurd" && entry.afkeur_reden && (
+                    <p className="text-[10px] italic mt-1" style={{ color: "var(--danger)" }}>Reden: {entry.afkeur_reden}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    });
+  }
 
   return (
     <PageShell>
@@ -277,8 +387,9 @@ export default function Goedkeuring() {
         {mainContent}
       </div>
 
+      {/* Mobile afkeur sheet */}
       {afkeurId && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setAfkeurId(null)}>
+        <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center" onClick={() => setAfkeurId(null)}>
           <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
           <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
