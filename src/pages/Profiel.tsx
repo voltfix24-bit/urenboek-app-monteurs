@@ -27,7 +27,7 @@ const TYPE_COLORS: Record<string, { bg: string; border: string; dot: string }> =
 
 export default function Profiel() {
   const { user, roles, signOut } = useAuth();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const { refetch: refetchProfileContext } = useProfile();
   const [certs, setCerts] = useState<Certificaat[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
   const [editing, setEditing] = useState(false);
@@ -55,7 +55,7 @@ export default function Profiel() {
   const saveProfile = async () => {
     if (!profile) return;
     if (!await mutate(supabase.from("profiles").update({ full_name: editForm.full_name, telefoon: editForm.telefoon, adres: editForm.adres } as any).eq("id", profile.id))) return;
-    toast.success("Profiel opgeslagen"); setEditing(false); fetchProfile();
+    toast.success("Profiel opgeslagen"); setEditing(false); fetchProfile(); refetchProfileContext();
   };
 
   const toggleVrijeDag = async (dag: number) => {
@@ -64,6 +64,7 @@ export default function Profiel() {
     const next = current.includes(dag) ? current.filter(d => d !== dag) : [...current, dag];
     await mutate(supabase.from("profiles").update({ vaste_vrije_dagen: next } as any).eq("id", profile.id));
     setProfile({ ...profile, vaste_vrije_dagen: next });
+    refetchProfileContext();
   };
 
   const addCertificaat = async () => {
