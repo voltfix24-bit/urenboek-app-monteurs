@@ -24,6 +24,8 @@ export default function Dashboard() {
   const [expiringCerts, setExpiringCerts] = useState<any[]>([]);
   const [todayPlanning, setTodayPlanning] = useState<any[]>([]);
   const [projectsWithMarge, setProjectsWithMarge] = useState<any[]>([]);
+  const [overurenMeldingen, setOverurenMeldingen] = useState<any[]>([]);
+  const [overurenCount, setOverurenCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [afkeurReden, setAfkeurReden] = useState("");
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
