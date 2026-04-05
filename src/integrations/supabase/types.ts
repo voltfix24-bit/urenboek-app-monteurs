@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_setup: {
+        Row: {
+          created_at: string
+          id: string
+          setup_done: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          setup_done?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          setup_done?: boolean
+        }
+        Relationships: []
+      }
       beschikbaarheid: {
         Row: {
           behandeld_door: string | null
@@ -402,11 +420,17 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string
+          activated_at: string | null
           adres: string
           avatar_url: string | null
+          contract_einddatum: string | null
           created_at: string
           full_name: string
           id: string
+          invited_at: string | null
+          noodcontact_naam: string | null
+          noodcontact_tel: string | null
           rijbewijs: boolean
           telefoon: string
           updated_at: string
@@ -415,11 +439,17 @@ export type Database = {
           vaste_vrije_dagen: number[]
         }
         Insert: {
+          account_status?: string
+          activated_at?: string | null
           adres?: string
           avatar_url?: string | null
+          contract_einddatum?: string | null
           created_at?: string
           full_name: string
           id?: string
+          invited_at?: string | null
+          noodcontact_naam?: string | null
+          noodcontact_tel?: string | null
           rijbewijs?: boolean
           telefoon?: string
           updated_at?: string
@@ -428,11 +458,17 @@ export type Database = {
           vaste_vrije_dagen?: number[]
         }
         Update: {
+          account_status?: string
+          activated_at?: string | null
           adres?: string
           avatar_url?: string | null
+          contract_einddatum?: string | null
           created_at?: string
           full_name?: string
           id?: string
+          invited_at?: string | null
+          noodcontact_naam?: string | null
+          noodcontact_tel?: string | null
           rijbewijs?: boolean
           telefoon?: string
           updated_at?: string
