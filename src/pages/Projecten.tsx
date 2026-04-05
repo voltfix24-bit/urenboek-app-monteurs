@@ -310,7 +310,7 @@ export default function Projecten() {
                   <div className="space-y-1.5 mb-4">
                     <p className="text-[10px] font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>Actief ({filteredActive.length})</p>
                     {filteredActive.map(p => (
-                      <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => selectProject(p)} />
+                      <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => selectProject(p)} marge={margeMap.get(p.id)} />
                     ))}
                   </div>
                 )}
@@ -318,7 +318,7 @@ export default function Projecten() {
                   <div className="space-y-1.5">
                     <p className="text-[10px] font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>Inactief ({filteredInactive.length})</p>
                     {filteredInactive.map(p => (
-                      <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => selectProject(p)} />
+                      <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => selectProject(p)} marge={margeMap.get(p.id)} />
                     ))}
                   </div>
                 )}
