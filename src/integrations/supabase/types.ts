@@ -268,6 +268,13 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "planning_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -312,29 +319,47 @@ export type Database = {
       projects: {
         Row: {
           active: boolean
+          adres: string | null
+          case_type: string | null
+          contactpersoon_email: string | null
+          contactpersoon_naam: string | null
+          contactpersoon_tel: string | null
           created_at: string
           id: string
           naam: string
           nummer: string
           opdrachtgever_id: string | null
+          stationsnaam: string | null
           updated_at: string
         }
         Insert: {
           active?: boolean
+          adres?: string | null
+          case_type?: string | null
+          contactpersoon_email?: string | null
+          contactpersoon_naam?: string | null
+          contactpersoon_tel?: string | null
           created_at?: string
           id?: string
           naam: string
           nummer: string
           opdrachtgever_id?: string | null
+          stationsnaam?: string | null
           updated_at?: string
         }
         Update: {
           active?: boolean
+          adres?: string | null
+          case_type?: string | null
+          contactpersoon_email?: string | null
+          contactpersoon_naam?: string | null
+          contactpersoon_tel?: string | null
           created_at?: string
           id?: string
           naam?: string
           nummer?: string
           opdrachtgever_id?: string | null
+          stationsnaam?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -406,7 +431,53 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      projects_public: {
+        Row: {
+          active: boolean | null
+          adres: string | null
+          case_type: string | null
+          created_at: string | null
+          id: string | null
+          naam: string | null
+          nummer: string | null
+          opdrachtgever_id: string | null
+          stationsnaam: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          adres?: string | null
+          case_type?: string | null
+          created_at?: string | null
+          id?: string | null
+          naam?: string | null
+          nummer?: string | null
+          opdrachtgever_id?: string | null
+          stationsnaam?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          adres?: string | null
+          case_type?: string | null
+          created_at?: string | null
+          id?: string | null
+          naam?: string | null
+          nummer?: string | null
+          opdrachtgever_id?: string | null
+          stationsnaam?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_opdrachtgever_id_fkey"
+            columns: ["opdrachtgever_id"]
+            isOneToOne: false
+            referencedRelation: "opdrachtgevers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
