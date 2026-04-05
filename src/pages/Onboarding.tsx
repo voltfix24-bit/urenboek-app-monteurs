@@ -42,7 +42,7 @@ export default function Onboarding() {
         noodcontact_tel: (profile as any).noodcontact_tel || "",
       });
       setVrijeDagen((profile as any).vaste_vrije_dagen || []);
-
+    }
     setLoading(false);
   };
 
