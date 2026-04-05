@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { LogIn, Mail, Lock, User } from "lucide-react";
-import terrevoltLogo from "@/assets/terrevolt-logo.png";
+import terrevoltLogo from "@/assets/terrevolt-logo.svg";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
