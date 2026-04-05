@@ -158,14 +158,14 @@ export type Database = {
         Row: {
           aantal: number | null
           created_at: string
+          eigen_kosten: number | null
           forecast_id: string
           geplande_uren: number | null
           id: string
           medewerker_id: string | null
           spec_code: string | null
           spec_omschrijving: string | null
-          tarief_inkoop: number | null
-          tarief_terrevolt: number | null
+          tarief: number | null
           type: string
           updated_at: string
           uurtarief_snap: number | null
@@ -173,14 +173,14 @@ export type Database = {
         Insert: {
           aantal?: number | null
           created_at?: string
+          eigen_kosten?: number | null
           forecast_id: string
           geplande_uren?: number | null
           id?: string
           medewerker_id?: string | null
           spec_code?: string | null
           spec_omschrijving?: string | null
-          tarief_inkoop?: number | null
-          tarief_terrevolt?: number | null
+          tarief?: number | null
           type: string
           updated_at?: string
           uurtarief_snap?: number | null
@@ -188,14 +188,14 @@ export type Database = {
         Update: {
           aantal?: number | null
           created_at?: string
+          eigen_kosten?: number | null
           forecast_id?: string
           geplande_uren?: number | null
           id?: string
           medewerker_id?: string | null
           spec_code?: string | null
           spec_omschrijving?: string | null
-          tarief_inkoop?: number | null
-          tarief_terrevolt?: number | null
+          tarief?: number | null
           type?: string
           updated_at?: string
           uurtarief_snap?: number | null
@@ -971,6 +971,57 @@ export type Database = {
           volgorde?: number
         }
         Relationships: []
+      }
+      spec_code_tarieven: {
+        Row: {
+          actief: boolean
+          code: string
+          eenheid: string
+          groep: string | null
+          id: string
+          omschrijving: string
+          tarief: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          actief?: boolean
+          code: string
+          eenheid: string
+          groep?: string | null
+          id?: string
+          omschrijving: string
+          tarief: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          actief?: boolean
+          code?: string
+          eenheid?: string
+          groep?: string | null
+          id?: string
+          omschrijving?: string
+          tarief?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spec_code_tarieven_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spec_code_tarieven_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       time_entries: {
         Row: {
