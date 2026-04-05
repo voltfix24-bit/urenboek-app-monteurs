@@ -66,16 +66,15 @@ export default function Projecten() {
       const { data: forecasts } = await supabase.from("project_forecast").select("id, project_id");
       if (forecasts && forecasts.length > 0) {
         const fIds = forecasts.map((f: any) => f.id);
-        const { data: regels } = await supabase.from("forecast_regels").select("forecast_id, tarief_terrevolt, tarief_inkoop, aantal, geplande_uren, uurtarief_snap, type").in("forecast_id", fIds);
+        const { data: regels } = await supabase.from("forecast_regels").select("forecast_id, tarief, eigen_kosten, aantal, geplande_uren, uurtarief_snap, type").in("forecast_id", fIds);
         const fProject = new Map(forecasts.map((f: any) => [f.id, f.project_id]));
         const m = new Map<string, { omzet: number; kosten: number; marge: number }>();
         (regels ?? []).forEach((r: any) => {
           const pid = fProject.get(r.forecast_id);
           if (!pid) return;
           const cur = m.get(pid) || { omzet: 0, kosten: 0, marge: 0 };
-          if (r.type === "spec") {
-            cur.omzet += (r.tarief_terrevolt || 0) * (r.aantal || 1);
-            cur.kosten += (r.tarief_inkoop || 0) * (r.aantal || 1);
+          if (r.type === "spec" || r.type === "stuks") {
+            cur.omzet += (r.tarief || 0) * (r.aantal || 1);
           } else if (r.type === "uren") {
             cur.kosten += (r.geplande_uren || 0) * (r.uurtarief_snap || 0);
           }
