@@ -7,7 +7,8 @@ import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
-import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck, CheckCircle } from "lucide-react";
+import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck, CheckCircle, AlertTriangle } from "lucide-react";
+import { checkOveruren } from "@/lib/overurenCheck";
 import { useNavigate } from "react-router-dom";
 import { format, startOfWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -15,6 +16,7 @@ import { nl } from "date-fns/locale";
 interface EntryWithProfile {
   id: string; datum: string; project_naam: string; project_nummer: string; beschrijving: string;
   uren: number; status: string; medewerker_id: string; full_name: string; afkeur_reden: string | null;
+  project_id: string;
 }
 
 export default function Goedkeuring() {
@@ -57,7 +59,7 @@ export default function Goedkeuring() {
         id: e.id, datum: e.datum, project_naam: proj.naam, project_nummer: proj.nummer,
         beschrijving: e.beschrijving || e.type || "", uren: Number(e.uren), status: e.status,
         medewerker_id: e.medewerker_id, full_name: profileMap.get(e.medewerker_id) || "Onbekend",
-        afkeur_reden: e.afkeur_reden,
+        afkeur_reden: e.afkeur_reden, project_id: e.project_id,
       };
     });
     setEntries(merged);
@@ -67,10 +69,15 @@ export default function Goedkeuring() {
   useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
   const updateStatus = async (id: string, status: string, reden?: string) => {
+    const entry = entries.find(e => e.id === id);
     const update: any = { status, approved_by: myProfileId };
     if (reden) update.afkeur_reden = reden;
     if (!await mutate(supabase.from("uren_boekingen").update(update).eq("id", id))) return;
     toast.success(status === "goedgekeurd" ? "Goedgekeurd!" : "Afgekeurd");
+    // Check overuren after approval
+    if (status === "goedgekeurd" && entry) {
+      checkOveruren(entry.medewerker_id, entry.datum, entry.project_id, entry.uren).catch(() => {});
+    }
     fetchEntries();
     setAfkeurId(null);
     setAfkeurReden("");

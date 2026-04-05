@@ -405,7 +405,7 @@ const Index = () => {
                       {DAGEN[i]} {d.getDate()} {MAANDEN[d.getMonth()]}
                     </p>
                     {dayEntries.map((entry) => (
-                      <EntryCard key={entry.id} entry={entry} onSubmit={submitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
+                      <EntryCard key={entry.id} entry={entry} onSubmit={handleSubmitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
                     ))}
                   </div>
                 );
@@ -439,7 +439,7 @@ const Index = () => {
 
             <div className="space-y-2">
               {allEntries.map((entry) => (
-                <EntryCard key={entry.id} entry={entry} showDate onSubmit={submitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
+                <EntryCard key={entry.id} entry={entry} showDate onSubmit={handleSubmitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
               ))}
               {allEntries.length === 0 && (
                 <div className="text-center py-12">
