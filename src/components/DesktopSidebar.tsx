@@ -95,7 +95,7 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
             return (
               <button key={item.path} onClick={() => navigate(item.path)}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors text-left"
-                style={{ background: active ? "var(--accent-light)" : "transparent", color: active ? "var(--text-primary)" : "var(--text-secondary)", fontWeight: active ? 500 : 400, borderLeft: active ? "3px solid #4A7C2F" : "3px solid transparent" }}>
+                style={{ background: active ? "var(--accent-light)" : "transparent", color: active ? "var(--text-primary)" : "var(--text-secondary)", fontWeight: active ? 500 : 400, borderLeft: active ? "3px solid var(--accent)" : "3px solid transparent" }}>
                 <span className="relative shrink-0">
                   <Icon style={{ width: 18, height: 18 }} />
                   {badgeCount > 0 && <NavBadge count={badgeCount} />}
@@ -116,7 +116,7 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
               <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>{displayName}</p>
             </div>
           </div>
-          <button onClick={signOut} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium" style={{ border: "1px solid #E8A09A", color: "var(--danger)", background: "var(--danger-light)" }}>
+          <button onClick={signOut} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--danger-border)", color: "var(--danger)", background: "var(--danger-light)" }}>
             <LogOut className="h-3.5 w-3.5" /> Uitloggen
           </button>
         </div>

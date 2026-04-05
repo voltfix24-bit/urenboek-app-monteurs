@@ -155,7 +155,7 @@ export default function Planning() {
                 {besch && (
                   <div className="rounded-2xl p-4 flex items-center gap-3" style={{
                     background: besch.type === "ziek" ? "var(--danger-light)" : "var(--warn-light)",
-                    border: besch.type === "ziek" ? "1px solid #E8A09A" : "1px solid #E8D070",
+                    border: besch.type === "ziek" ? "1px solid var(--danger-border)" : "1px solid var(--warn-border)",
                   }}>
                     <span className="text-xl flex items-center justify-center">{besch.type === "ziek" ? <ThermometerSun className="h-5 w-5" style={{ color: "var(--danger)" }} /> : <Palmtree className="h-5 w-5" style={{ color: "var(--warn-text)" }} />}</span>
                     <div>
@@ -175,7 +175,7 @@ export default function Planning() {
                   return (
                     <div key={item.id} className="rounded-2xl p-4 space-y-2" style={{
                       background: "var(--bg-surface)",
-                      border: isToday ? "1px solid #9DC87A" : "1px solid var(--border)",
+                      border: isToday ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                       opacity: item.is_definitief ? 1 : 0.5,
                     }}>
                       {!item.is_definitief && (
@@ -193,7 +193,7 @@ export default function Planning() {
                         </span>
                       </div>
                       {item.notitie && (
-                        <p className="text-xs flex items-center gap-1" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070", color: "var(--warn-text)", padding: "6px 10px", borderRadius: 10 }}>
+                        <p className="text-xs flex items-center gap-1" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)", color: "var(--warn-text)", padding: "6px 10px", borderRadius: 10 }}>
                           <MessageSquare className="h-3 w-3 shrink-0" /> {item.notitie}
                         </p>
                       )}
@@ -211,7 +211,7 @@ export default function Planning() {
                             </span>
                           </div>
                         ) : (
-                          <button onClick={() => openUrenModal(item)} className="w-full mt-2 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors active:scale-[0.98]" style={{ background: "var(--accent-light)", border: "1px solid #9DC87A", color: "var(--text-primary)" }}>
+                          <button onClick={() => openUrenModal(item)} className="w-full mt-2 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors active:scale-[0.98]" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--text-primary)" }}>
                             <Clock className="h-3.5 w-3.5" /> Uren boeken voor deze dag →
                           </button>
                         )
@@ -282,7 +282,7 @@ export default function Planning() {
                 {["schakelen", "monteren"].map(w => (
                   <button key={w} onClick={() => setUrenForm(f => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{
                     background: urenForm.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)",
-                    border: urenForm.werkzaamheden === w ? "1px solid #9DC87A" : "1px solid var(--border)",
+                    border: urenForm.werkzaamheden === w ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                     color: urenForm.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)",
                   }}>
                     {w}
@@ -302,7 +302,7 @@ export default function Planning() {
                 {[4, 6, 8, 9, 10].map(h => (
                   <button key={h} onClick={() => setUrenForm(f => ({ ...f, uren: h }))} className="px-3 py-1 rounded-lg text-xs font-medium transition-colors" style={{
                     background: urenForm.uren === h ? "var(--accent-light)" : "var(--bg-base)",
-                    border: urenForm.uren === h ? "1px solid #9DC87A" : "1px solid var(--border)",
+                    border: urenForm.uren === h ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                     color: urenForm.uren === h ? "var(--accent)" : "var(--text-muted)",
                   }}>
                     {h}u
@@ -315,7 +315,7 @@ export default function Planning() {
               <button onClick={() => saveUren(false)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
                 Opslaan als concept
               </button>
-              <button onClick={() => saveUren(true)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--bg-surface)", border: "1.5px solid #4A7C2F", color: "var(--accent)" }}>
+              <button onClick={() => saveUren(true)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--bg-surface)", border: "1.5px solid var(--accent)", color: "var(--accent)" }}>
                 Direct indienen
               </button>
             </div>

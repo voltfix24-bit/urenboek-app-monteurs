@@ -51,7 +51,7 @@ export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDa
         </div>
       </div>
       {entry.status === "concept" && onSubmit && (
-        <button onClick={() => onSubmit(entry.id)} className="mt-3 w-full py-2 rounded-xl text-xs font-semibold transition-colors" style={{ background: "var(--success-light)", border: "1px solid #8DC99A", color: "var(--success)" }}>
+        <button onClick={() => onSubmit(entry.id)} className="mt-3 w-full py-2 rounded-xl text-xs font-semibold transition-colors" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)", color: "var(--success)" }}>
           Indienen ter goedkeuring →
         </button>
       )}
@@ -59,7 +59,7 @@ export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDa
         <div className="mt-3 space-y-2">
           <p className="text-[11px] italic flex items-center gap-1" style={{ color: "var(--danger)" }}><X className="h-3 w-3" /> Afgekeurd — pas aan en dien opnieuw in.</p>
           {onRevertToConcept && (
-            <button onClick={() => onRevertToConcept(entry.id)} className="w-full py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1" style={{ background: "var(--warn-light)", border: "1px solid #E8D070", color: "var(--warn-text)" }}>
+            <button onClick={() => onRevertToConcept(entry.id)} className="w-full py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)", color: "var(--warn-text)" }}>
               <Pencil className="h-3 w-3" /> Aanpassen en opnieuw indienen
             </button>
           )}

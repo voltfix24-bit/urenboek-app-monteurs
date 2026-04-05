@@ -513,7 +513,7 @@ export default function ProjectPlanning() {
             <div className="grid grid-cols-4 gap-2">
               {COLORS.map(c => (
                 <button key={c.id} title={c.name} onClick={() => setCell(selectedCell, { color: c.hex })}
-                  className="w-7 h-7 rounded-lg transition-all" style={{ background: c.hex, outline: cell?.color === c.hex ? "2px solid #2D4A1E" : "none", outlineOffset: 2 }} />
+                  className="w-7 h-7 rounded-lg transition-all" style={{ background: c.hex, outline: cell?.color === c.hex ? "2px solid var(--text-primary)" : "none", outlineOffset: 2 }} />
               ))}
             </div>
           </div>
@@ -545,7 +545,7 @@ export default function ProjectPlanning() {
 
         <div className="p-4 space-y-2" style={{ borderTop: "1px solid var(--border)" }}>
           <button onClick={() => setSelectedCell(null)} className="w-full py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: "var(--accent)" }}>Opslaan</button>
-          <button onClick={() => { clearCell(selectedCell); setSelectedCell(null); }} className="w-full py-2 rounded-xl text-xs font-medium" style={{ border: "1px solid #E8A09A", color: "var(--danger)" }}>Cel leegmaken</button>
+          <button onClick={() => { clearCell(selectedCell); setSelectedCell(null); }} className="w-full py-2 rounded-xl text-xs font-medium" style={{ border: "1px solid var(--danger-border)", color: "var(--danger)" }}>Cel leegmaken</button>
         </div>
       </div>
     );
@@ -589,7 +589,7 @@ export default function ProjectPlanning() {
         <button onClick={() => setShowTemplates(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
           <FileText className="h-3.5 w-3.5 inline mr-1" />Templates
         </button>
-        <button onClick={() => saveState(state)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid #4A7C2F", color: "var(--accent)" }}>
+        <button onClick={() => saveState(state)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--accent)", color: "var(--accent)" }}>
           <Save className="h-3.5 w-3.5 inline mr-1" />Opslaan
         </button>
 
@@ -638,7 +638,7 @@ export default function ProjectPlanning() {
         </div>
 
         {/* Notes */}
-        <div className="rounded-2xl p-4" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070" }}>
+        <div className="rounded-2xl p-4" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
           <label className="text-xs font-bold block mb-2" style={{ color: "var(--warn-text)" }}>Notities</label>
           <textarea value={state.notes} onChange={e => updateState(s => ({ ...s, notes: e.target.value }))}
             placeholder="Aandachtspunten, bijzonderheden..." rows={5}
@@ -718,14 +718,14 @@ export default function ProjectPlanning() {
               </div>
             ))}
             <button onClick={() => updateState(s => ({ ...s, activities: [...s.activities, ""] }))}
-              className="w-full text-center py-2 text-[11px] font-medium" style={{ color: "var(--accent)", borderBottom: "1px dashed #C5D4B2" }}>
+              className="w-full text-center py-2 text-[11px] font-medium" style={{ color: "var(--accent)", borderBottom: "1px dashed var(--border)" }}>
               <Plus className="h-3 w-3 inline mr-1" />Activiteit toevoegen
             </button>
           </div>
 
           {/* Grid body */}
           <div ref={bodyScrollRef} className="flex-1 overflow-x-auto" onScroll={() => syncScroll("body")}
-            style={{ scrollbarWidth: "thin", scrollbarColor: "#C5D4B2 #EBF0E4" }}>
+            style={{ scrollbarWidth: "thin", scrollbarColor: "var(--border) var(--bg-surface)" }}>
             <div style={{ width: totalW }}>
               {/* Spacer for activity header */}
               <div style={{ height: 30 }} />
@@ -807,12 +807,12 @@ export default function ProjectPlanning() {
             const lastWn = s.weekNrs[s.weekNrs.length - 1] || 1;
             const nextWn = lastWn >= 52 ? 1 : lastWn + 1;
             return { ...s, weekNrs: [...s.weekNrs, nextWn], numWeeks: s.numWeeks + 1 };
-          })} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid #4A7C2F", color: "var(--accent)" }}>
+          })} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--accent)", color: "var(--accent)" }}>
             <Plus className="h-3 w-3" /> Week toevoegen
           </button>
           <button disabled={state.numWeeks <= 1} onClick={() => updateState(s => ({
             ...s, weekNrs: s.weekNrs.slice(0, -1), numWeeks: s.numWeeks - 1,
-          }))} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 disabled:opacity-30" style={{ border: "1px solid #8AAD6E", color: "var(--text-muted)" }}>
+          }))} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 disabled:opacity-30" style={{ border: "1px solid var(--text-muted)", color: "var(--text-muted)" }}>
             <Minus className="h-3 w-3" /> Week verwijderen
           </button>
         </div>
@@ -820,7 +820,7 @@ export default function ProjectPlanning() {
 
       {/* Overplanning warnings */}
       {overplanningWarnings.length > 0 && (
-        <div className="mx-4 mb-3 rounded-xl p-3 space-y-1" style={{ background: "var(--warn-light)", border: "1px solid #E8D070" }}>
+        <div className="mx-4 mb-3 rounded-xl p-3 space-y-1" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
           <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: "var(--warn-text)" }}>
             ⚠️ Overplanning gedetecteerd
           </p>
@@ -927,7 +927,7 @@ export default function ProjectPlanning() {
             onChange={e => setCell(contextMenu.key, { note: e.target.value })}
             className="w-full rounded-lg px-2 py-1 text-[10px] resize-none" rows={2}
             style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-          <button onClick={() => { clearCell(contextMenu.key); setContextMenu(null); }} className="w-full text-center text-[10px] font-medium py-1 rounded-lg" style={{ color: "var(--danger)", border: "1px solid #E8A09A" }}>
+          <button onClick={() => { clearCell(contextMenu.key); setContextMenu(null); }} className="w-full text-center text-[10px] font-medium py-1 rounded-lg" style={{ color: "var(--danger)", border: "1px solid var(--danger-border)" }}>
             Cel leegmaken
           </button>
         </div>
@@ -985,7 +985,7 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
         <div className="space-y-3">
           {TEMPLATES.map((t, i) => (
             <button key={i} onClick={() => setSelected(i)} className="w-full text-left p-4 rounded-xl transition-all"
-              style={{ background: selected === i ? "var(--accent-light)" : "var(--bg-surface)", border: selected === i ? "1.5px solid #4A7C2F" : "1px solid var(--border)" }}>
+              style={{ background: selected === i ? "var(--accent-light)" : "var(--bg-surface)", border: selected === i ? "1.5px solid var(--accent)" : "1px solid var(--border)" }}>
               <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{t.name}</p>
               <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{t.desc}</p>
               <div className="flex flex-wrap gap-1 mt-2">
@@ -998,7 +998,7 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
         </div>
 
         {confirmLoad ? (
-          <div className="p-3 rounded-xl" style={{ background: "var(--warn-light)", border: "1px solid #E8D070" }}>
+          <div className="p-3 rounded-xl" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
             <p className="text-xs font-medium mb-2" style={{ color: "var(--warn-text)" }}>Huidige activiteiten worden vervangen. Doorgaan?</p>
             <div className="flex gap-2">
               <button onClick={() => setConfirmLoad(false)} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>

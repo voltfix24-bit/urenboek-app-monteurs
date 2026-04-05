@@ -58,7 +58,7 @@ export function BottomNav({ badges }: BottomNavProps) {
               style={{
                 background: "none",
                 color: active ? "var(--accent)" : "var(--text-muted)",
-                borderTop: active ? "2px solid #4A7C2F" : "2px solid transparent",
+                borderTop: active ? "2px solid var(--accent)" : "2px solid transparent",
               }}
             >
               <span className="relative">

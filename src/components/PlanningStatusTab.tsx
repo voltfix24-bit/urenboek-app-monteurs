@@ -59,7 +59,7 @@ export function PlanningStatusTab({ projectId, profileId }: { projectId: string;
             <button onClick={() => navigate(`/projecten/${projectId}/planning`)} className="w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
               <CalendarDays className="h-4 w-4" /> Planning bekijken <ArrowRight className="h-3.5 w-3.5" />
             </button>
-            <button onClick={() => toggleDefinitief(false)} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid #E8A09A", color: "var(--danger)" }}>
+            <button onClick={() => toggleDefinitief(false)} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
               <RotateCcw className="h-3.5 w-3.5" /> Terug naar concept
             </button>
           </>

@@ -176,7 +176,7 @@ export default function ManagerPlanning() {
 
 
           {overplanned.length > 0 && (
-            <div className="rounded-xl px-3 py-2.5 flex items-start gap-2" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070" }}>
+            <div className="rounded-xl px-3 py-2.5 flex items-start gap-2" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
               <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--warn-text)" }} />
               <div>
                 <p className="text-xs font-semibold" style={{ color: "var(--warn-text)" }}>Overplanning</p>
@@ -209,7 +209,7 @@ export default function ManagerPlanning() {
                 return (
                   <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] flex flex-col items-center justify-center text-center transition-colors active:scale-95" style={{
                     background: hasConflict && !entry ? "var(--danger-light)" : entry ? "var(--accent-light)" : "var(--bg-base)",
-                    border: hasConflict ? "1px solid #E8A09A" : entry ? "1px solid #9DC87A" : "1px solid #DFE8D6",
+                    border: hasConflict ? "1px solid var(--danger-border)" : entry ? "1px solid var(--accent-border)" : "1px solid var(--bg-surface-2)",
                   }}>
                     {entry ? (
                       <>
@@ -271,7 +271,7 @@ export default function ManagerPlanning() {
             {modalConflicts.length > 0 && (
               <div className="space-y-1.5">
                 {modalConflicts.map((c, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
+                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }}>
                     <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--danger)" }} />
                     <span className="text-xs font-medium" style={{ color: "var(--danger)" }}>Conflict: {c}</span>
                   </div>
@@ -305,7 +305,7 @@ export default function ManagerPlanning() {
               </button>
 
               {editId && (
-                <button onClick={deletePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A", color: "var(--danger)" }}>
+                <button onClick={deletePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
                   Verwijderen
                 </button>
               )}

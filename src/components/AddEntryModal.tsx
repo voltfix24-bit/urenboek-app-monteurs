@@ -108,7 +108,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
               {weekDays.map((d, i) => {
                 const isToday = dateKey(d) === today;
                 return (
-                  <button key={i} onClick={() => { setSelectedDate(d); setStep(2); }} className="w-full flex items-center justify-between transition-colors active:scale-[0.97]" style={{ padding: "14px 16px", borderRadius: 14, background: isToday ? "var(--accent-light)" : "var(--bg-base)", border: isToday ? "1px solid #9DC87A" : "1px solid var(--border)", color: "var(--text-primary)", fontSize: 14, fontWeight: 500 }}>
+                  <button key={i} onClick={() => { setSelectedDate(d); setStep(2); }} className="w-full flex items-center justify-between transition-colors active:scale-[0.97]" style={{ padding: "14px 16px", borderRadius: 14, background: isToday ? "var(--accent-light)" : "var(--bg-base)", border: isToday ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: "var(--text-primary)", fontSize: 14, fontWeight: 500 }}>
                     <span>{DAGEN[i]} {d.getDate()} {MAANDEN[d.getMonth()]}</span>
                     {isToday && <span className="text-[11px] font-medium" style={{ color: "var(--accent)" }}>Vandaag</span>}
                   </button>
@@ -158,7 +158,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
               <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Soort werkzaamheden</label>
               <div className="flex gap-2">
                 {["schakelen", "monteren"].map((w) => (
-                  <button key={w} onClick={() => setForm((f) => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{ background: form.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)", border: form.werkzaamheden === w ? "1px solid #9DC87A" : "1px solid var(--border)", color: form.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)" }}>
+                  <button key={w} onClick={() => setForm((f) => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{ background: form.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)", border: form.werkzaamheden === w ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: form.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)" }}>
                     {w}
                   </button>
                 ))}
@@ -174,7 +174,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
               </div>
               <div className="flex justify-center gap-2 mt-2">
                 {[4, 6, 8, 9, 10].map((h) => (
-                  <button key={h} onClick={() => setForm((f) => ({ ...f, uren: h }))} className="px-3 py-1 rounded-lg text-xs font-medium transition-colors" style={{ background: form.uren === h ? "var(--accent-light)" : "var(--bg-base)", border: form.uren === h ? "1px solid #9DC87A" : "1px solid var(--border)", color: form.uren === h ? "var(--accent)" : "var(--text-muted)" }}>
+                  <button key={h} onClick={() => setForm((f) => ({ ...f, uren: h }))} className="px-3 py-1 rounded-lg text-xs font-medium transition-colors" style={{ background: form.uren === h ? "var(--accent-light)" : "var(--bg-base)", border: form.uren === h ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: form.uren === h ? "var(--accent)" : "var(--text-muted)" }}>
                     {h}u
                   </button>
                 ))}

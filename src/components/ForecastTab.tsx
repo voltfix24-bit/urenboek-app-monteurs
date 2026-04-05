@@ -115,7 +115,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
             { key: "stuksprijzen", Icon: ClipboardList, label: "Stuksprijzen", desc: "Vergoeding per spec-code (R320010 etc.)", sub: "Liander tarieven als basis" },
             { key: "uren", Icon: Clock, label: "Op uren", desc: "Vergoeding per gewerkt uur", sub: "Op basis van monteurtarief" },
           ].map(o => (
-            <button key={o.key} onClick={() => selectMethode(o.key)} className="p-5 rounded-[14px] text-center space-y-2 transition-colors hover:border-[#4A7C2F]" style={{ background: "var(--bg-surface)", border: "1.5px solid #C5D4B2", cursor: "pointer" }}>
+            <button key={o.key} onClick={() => selectMethode(o.key)} className="p-5 rounded-[14px] text-center space-y-2 transition-colors hover:border-[var(--accent)]" style={{ background: "var(--bg-surface)", border: "1.5px solid var(--border)", cursor: "pointer" }}>
               <o.Icon className="h-6 w-6 mx-auto" style={{ color: "var(--accent)" }} />
               <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{o.label}</p>
               <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{o.desc}</p>
@@ -301,7 +301,7 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
             <option key={m.id} value={m.id}>{m.full_name} ({m.uurtarief != null ? `€${m.uurtarief}/u` : "geen tarief"})</option>
           ))}
         </select>
-        <button onClick={addMonteur} disabled={!selectedMonteur} className="px-3 py-2 rounded-xl text-sm font-semibold" style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid #9DC87A" }}>
+        <button onClick={addMonteur} disabled={!selectedMonteur} className="px-3 py-2 rounded-xl text-sm font-semibold" style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
           <Plus className="h-4 w-4" />
         </button>
       </div>
