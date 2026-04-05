@@ -59,7 +59,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: profile } = await adminClient
       .from("profiles")
