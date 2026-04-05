@@ -39,7 +39,6 @@ export default function Mededelingen() {
     setLoading(false);
   }, [user, profileId]);
 
-  useEffect(() => { fetchProfileId(); }, [fetchProfileId]);
   useEffect(() => { if (profileId) fetchMededelingen(); }, [fetchMededelingen, profileId]);
 
   useEffect(() => {

@@ -76,11 +76,10 @@ export default function Goedkeuring() {
   };
 
   const approveAllForUser = async (userName: string) => {
-    const profileId = await getMyProfileId();
     const userEntries = entries.filter((e) => e.full_name === userName && e.status === "ingediend");
     if (userEntries.length === 0) return;
     const ids = userEntries.map((e) => e.id);
-    const { error } = await supabase.from("uren_boekingen").update({ status: "goedgekeurd", approved_by: profileId }).in("id", ids);
+    const { error } = await supabase.from("uren_boekingen").update({ status: "goedgekeurd", approved_by: myProfileId }).in("id", ids);
     if (error) toast.error("Fout bij bulk-goedkeuring");
     else { toast.success(`${userEntries.length} uren goedgekeurd voor ${userName}`); fetchEntries(); }
   };
