@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import React from "react";
 
 export interface NavBadges {
   openGoedkeuringen: number;
@@ -10,14 +11,24 @@ export interface NavBadges {
   afgekeurdeUren: number;
 }
 
-// Module-level unique ID to prevent channel name collisions
-// when multiple components mount this hook simultaneously
-let globalCounter = 0;
+const defaultBadges: NavBadges = { openGoedkeuringen: 0, ongelezen: 0, verlofAanvragen: 0, afgekeurdeUren: 0 };
 
-export function useNavBadges() {
+interface NavBadgesContextValue {
+  badges: NavBadges;
+  isManager: boolean;
+  profileId: string | null;
+}
+
+const NavBadgesContext = createContext<NavBadgesContextValue>({
+  badges: defaultBadges,
+  isManager: false,
+  profileId: null,
+});
+
+export function NavBadgesProvider({ children }: { children: ReactNode }) {
   const { user, isManager } = useAuth();
   const { profileId } = useProfile();
-  const [badges, setBadges] = useState<NavBadges>({ openGoedkeuringen: 0, ongelezen: 0, verlofAanvragen: 0, afgekeurdeUren: 0 });
+  const [badges, setBadges] = useState<NavBadges>(defaultBadges);
 
   const fetchBadges = useCallback(async () => {
     if (!user || !profileId) return;
@@ -48,8 +59,8 @@ export function useNavBadges() {
     return () => clearInterval(interval);
   }, [fetchBadges]);
 
-  // Realtime subscriptions — each hook instance gets a guaranteed-unique channel name
-  const instanceId = useRef(`${++globalCounter}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  // Single realtime subscription
+  const instanceId = useRef(`${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
   useEffect(() => {
     if (!user) return;
@@ -71,5 +82,9 @@ export function useNavBadges() {
     };
   }, [user, fetchBadges]);
 
-  return { badges, isManager, profileId };
+  return React.createElement(NavBadgesContext.Provider, { value: { badges, isManager, profileId } }, children);
+}
+
+export function useNavBadges() {
+  return useContext(NavBadgesContext);
 }
