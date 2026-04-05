@@ -102,8 +102,8 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
           type: "stuks" as const,
           spec_code: r.spec_code,
           spec_omschrijving: r.label,
-          tarief_terrevolt: r.tarief_terrevolt,
-          tarief_inkoop: r.tarief_inkoop,
+          tarief: r.tarief,
+          eigen_kosten: r.eigen_kosten,
           aantal: r.aantal,
         }));
         await supabase.from("forecast_regels").insert(rows);
@@ -444,10 +444,7 @@ function Step5Overig({ answers, update, caseType }: any) {
 
 /* ──── STEP 6 — Overzicht ──── */
 function Step6Overzicht({ regels, setRegels }: { regels: BerekendeRegel[]; setRegels: (r: BerekendeRegel[]) => void }) {
-  const totOmzet = regels.reduce((s, r) => s + r.tarief_terrevolt * r.aantal, 0);
-  const totKosten = regels.reduce((s, r) => s + r.tarief_inkoop * r.aantal, 0);
-  const marge = totOmzet > 0 ? ((totOmzet - totKosten) / totOmzet) * 100 : 0;
-  const margeColor = marge >= 30 ? "var(--success)" : marge >= 15 ? "var(--warn-dot)" : "var(--danger)";
+  const totOmzet = regels.reduce((s, r) => s + r.tarief * r.aantal, 0);
 
   function updateAantal(i: number, delta: number) {
     setRegels(regels.map((r, idx) => idx === i ? { ...r, aantal: Math.max(r.min_aantal, Math.min(r.max_aantal, r.aantal + delta)) } : r));
@@ -464,15 +461,14 @@ function Step6Overzicht({ regels, setRegels }: { regels: BerekendeRegel[]; setRe
       <div className="rounded-[14px] overflow-hidden" style={{ border: "1px solid var(--border)" }}>
         <div className="grid grid-cols-12 gap-1 px-3.5 py-2" style={{ background: "var(--bg-surface-2)" }}>
           <span className="col-span-2 text-[10px] uppercase font-semibold" style={{ color: "var(--text-muted)" }}>Code</span>
-          <span className="col-span-4 text-[10px] uppercase font-semibold" style={{ color: "var(--text-muted)" }}>Omschrijving</span>
+          <span className="col-span-5 text-[10px] uppercase font-semibold" style={{ color: "var(--text-muted)" }}>Omschrijving</span>
           <span className="col-span-2 text-[10px] uppercase font-semibold text-center" style={{ color: "var(--text-muted)" }}>Aantal</span>
-          <span className="col-span-2 text-[10px] uppercase font-semibold text-right" style={{ color: "var(--text-muted)" }}>Liander</span>
-          <span className="col-span-2 text-[10px] uppercase font-semibold text-right" style={{ color: "var(--text-muted)" }}>Kosten</span>
+          <span className="col-span-3 text-[10px] uppercase font-semibold text-right" style={{ color: "var(--text-muted)" }}>Omzet</span>
         </div>
         {regels.map((r, i) => (
           <div key={i} className="grid grid-cols-12 gap-1 px-3.5 py-2.5 items-center group" style={{ background: "var(--bg-surface)", borderTop: "1px solid var(--border)" }}>
             <span className="col-span-2 text-xs font-mono font-semibold" style={{ color: "var(--accent)" }}>{r.spec_code}</span>
-            <div className="col-span-4">
+            <div className="col-span-5">
               <span className="text-xs truncate block" style={{ color: "var(--text-primary)" }}>{r.label}</span>
               {r.waarschuwing && <span className="text-[10px] block" style={{ color: "var(--warn-text)" }}>⚠ {r.waarschuwing}</span>}
             </div>
@@ -487,9 +483,8 @@ function Step6Overzicht({ regels, setRegels }: { regels: BerekendeRegel[]; setRe
                 <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{r.aantal}</span>
               )}
             </div>
-            <span className="col-span-2 text-xs text-right" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{fmt(r.tarief_terrevolt * r.aantal)}</span>
-            <div className="col-span-2 flex items-center justify-end gap-1">
-              <span className="text-xs text-right" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{fmt(r.tarief_inkoop * r.aantal)}</span>
+            <div className="col-span-3 flex items-center justify-end gap-1">
+              <span className="text-xs text-right" style={{ fontFamily: "DM Mono, monospace", color: "var(--success)" }}>{fmt(r.tarief * r.aantal)}</span>
               <button onClick={() => removeRegel(i)} className="w-5 h-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--danger)" }}><X className="h-3 w-3" /></button>
             </div>
           </div>
@@ -497,11 +492,9 @@ function Step6Overzicht({ regels, setRegels }: { regels: BerekendeRegel[]; setRe
       </div>
 
       <div className="rounded-xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-        <div className="flex justify-between text-sm"><span style={{ color: "var(--text-secondary)" }}>Totaal omzet (Liander)</span><span className="font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{fmt(totOmzet)}</span></div>
-        <div className="flex justify-between text-sm"><span style={{ color: "var(--text-secondary)" }}>Totaal kosten</span><span className="font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{fmt(totKosten)}</span></div>
-        <div className="flex justify-between text-sm pt-1" style={{ borderTop: "1px solid var(--border)" }}>
-          <span className="font-semibold" style={{ color: "var(--text-primary)" }}>Marge</span>
-          <span className="font-bold" style={{ fontFamily: "DM Mono, monospace", color: margeColor }}>{fmt(totOmzet - totKosten)} ({marge.toFixed(1)}%)</span>
+        <div className="flex justify-between text-sm font-semibold">
+          <span style={{ color: "var(--text-primary)" }}>Totaal omzet (Van Gelder)</span>
+          <span className="font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--success)" }}>{fmt(totOmzet)}</span>
         </div>
       </div>
     </div>
