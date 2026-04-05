@@ -55,11 +55,15 @@ export default function Setup() {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("setup-first-manager", {
+      const res = await supabase.functions.invoke("setup-first-manager", {
         body: { email: form.email, password: form.password, fullName },
       });
+      const data = res.data;
+      const error = res.error;
+      // When edge function returns non-2xx, data may contain the error message
+      const errorMsg = data?.error || error?.message || "Fout bij setup";
       if (error || data?.error) {
-        toast.error(data?.error || error?.message || "Fout bij setup");
+        toast.error(errorMsg);
         setSubmitting(false);
         return;
       }
