@@ -3,7 +3,7 @@ import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck } from "lucide-react";
+import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, startOfWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -132,7 +132,7 @@ export default function Goedkeuring() {
           </div>
         ) : Object.keys(grouped).length === 0 ? (
           <div className="text-center py-10 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-            <p className="text-3xl mb-2">✅</p>
+            <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: "#4A7C2F" }} />
             <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen uren gevonden</p>
             <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Geen uren met deze filter voor deze week</p>
           </div>

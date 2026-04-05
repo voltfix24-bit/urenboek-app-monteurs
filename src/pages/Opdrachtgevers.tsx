@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, X, Phone, Mail, User } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, X, Phone, Mail, User, Building2 } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 
 interface Opdrachtgever { id: string; naam: string; contactpersoon: string; telefoon: string; email: string; }
@@ -47,7 +47,7 @@ export default function Opdrachtgevers() {
           </div>
         )}
         {loading ? <p className="text-sm text-center py-8" style={{ color: "#8AAD6E" }}>Laden...</p> : items.length === 0 ? (
-          <div className="text-center py-12"><p className="text-3xl mb-2">🏢</p><p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen opdrachtgevers</p><p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Druk op + om er een toe te voegen</p></div>
+          <div className="text-center py-12"><Building2 className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} /><p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen opdrachtgevers</p><p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Druk op + om er een toe te voegen</p></div>
         ) : (
           <div className="space-y-2">
             {items.map(item => confirmDeleteId === item.id ? (

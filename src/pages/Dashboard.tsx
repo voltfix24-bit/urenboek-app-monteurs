@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { format, startOfISOWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass } from "lucide-react";
+import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass, CheckCircle } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 
 export default function Dashboard() {
@@ -214,7 +214,7 @@ export default function Dashboard() {
             {/* Empty state */}
             {pendingEntries.length === 0 && verlofAanvragen.length === 0 && todayPlanning.length === 0 && (
               <div className="text-center py-10 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <p className="text-3xl mb-2">✅</p>
+                <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: "#4A7C2F" }} />
                 <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Alles bijgewerkt</p>
                 <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Geen openstaande items</p>
               </div>
