@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 
 export async function query<T>(
-  promise: Promise<{ data: T | null; error: any }>
+  promise: PromiseLike<{ data: T | null; error: any }>
 ): Promise<T | null> {
   const { data, error } = await promise;
   if (error) {
@@ -13,7 +13,7 @@ export async function query<T>(
 }
 
 export async function mutate(
-  promise: Promise<{ error: any }>
+  promise: PromiseLike<{ error: any }>
 ): Promise<boolean> {
   const { error } = await promise;
   if (error) {
