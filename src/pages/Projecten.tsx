@@ -89,10 +89,10 @@ export default function Projecten() {
 
   async function handleAdd() {
     if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
-    const insert: any = { nummer: form.nummer.trim(), naam: form.naam.trim() };
+    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
+    const insert: any = { nummer: form.nummer.trim(), naam: form.naam.trim(), straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(), adres: `${form.straat.trim()}, ${form.postcode.trim()} ${form.stad.trim()}` };
     if (form.opdrachtgever_id) insert.opdrachtgever_id = form.opdrachtgever_id;
     if (form.stationsnaam.trim()) insert.stationsnaam = form.stationsnaam.trim();
-    if (form.adres.trim()) insert.adres = form.adres.trim();
     if (form.case_type) insert.case_type = form.case_type;
     if (isManager) {
       if (form.contactpersoon_naam.trim()) insert.contactpersoon_naam = form.contactpersoon_naam.trim();
@@ -105,11 +105,13 @@ export default function Projecten() {
 
   async function handleUpdate(id: string) {
     if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
+    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
     const update: any = {
       nummer: form.nummer.trim(), naam: form.naam.trim(),
       opdrachtgever_id: form.opdrachtgever_id || null,
       stationsnaam: form.stationsnaam.trim() || null,
-      adres: form.adres.trim() || null,
+      straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(),
+      adres: `${form.straat.trim()}, ${form.postcode.trim()} ${form.stad.trim()}`,
       case_type: form.case_type || null,
     };
     if (isManager) {
@@ -137,7 +139,7 @@ export default function Projecten() {
     setEditId(p.id); setExpandedId(null); setShowAdd(false);
     setForm({
       nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id,
-      stationsnaam: p.stationsnaam || "", adres: p.adres || "", case_type: p.case_type || "",
+      stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "",
       contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "",
       contactpersoon_email: p.contactpersoon_email || "",
     });
