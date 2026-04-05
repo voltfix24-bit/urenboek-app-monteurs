@@ -19,6 +19,7 @@ interface Project {
   stationsnaam: string | null; adres: string | null; case_type: string | null;
   contactpersoon_naam: string | null; contactpersoon_tel: string | null; contactpersoon_email: string | null;
   straat: string | null; postcode: string | null; stad: string | null;
+  intake_gedaan: boolean; rmu_merk: string | null; rmu_configuratie_id: string | null;
 }
 type FormState = {
   nummer: string; naam: string; opdrachtgever_id: string | null;
