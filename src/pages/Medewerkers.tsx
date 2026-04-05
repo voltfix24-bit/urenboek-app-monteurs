@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
@@ -18,6 +19,7 @@ const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)',
 
 export default function Medewerkers() {
   const { isManager, user } = useAuth();
+  const { refetch: refetchProfile } = useProfile();
   const navigate = useNavigate();
   const [email, setEmail] = useState(""); const [fullName, setFullName] = useState(""); const [role, setRole] = useState(""); const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false); const [deletingId, setDeletingId] = useState<string | null>(null); const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
@@ -64,6 +66,8 @@ export default function Medewerkers() {
   const handleTariefChange = async (userId: string, tarief: number | null) => {
     if (!await mutate(supabase.from("profiles").update({ uurtarief: tarief } as any).eq("user_id", userId))) return;
     toast.success("Uurtarief opgeslagen"); loadEmployees();
+    // Refetch profile context so cached data stays in sync
+    refetchProfile();
   };
 
   const copyCredentials = (user: CreatedUser) => {
