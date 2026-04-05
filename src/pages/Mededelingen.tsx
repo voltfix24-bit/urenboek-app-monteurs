@@ -59,7 +59,10 @@ export default function Mededelingen() {
 
   const sendMededeling = async () => {
     if (!profileId || !titel.trim()) return;
-    if (!await mutate(supabase.from("mededelingen").insert({ titel: titel.trim(), inhoud: inhoud.trim(), urgentie, ontvanger_type: ontvangerType, verzonden_door: profileId }))) return;
+    const { data, error } = await supabase.functions.invoke("mededeling-verzenden", {
+      body: { titel: titel.trim(), inhoud: inhoud.trim(), urgentie, ontvangerType, profileId },
+    });
+    if (error || !data?.success) { toast.error("Er ging iets mis. Probeer opnieuw."); return; }
     toast.success("Mededeling verzonden!"); setShowCompose(false); setTitel(""); setInhoud(""); setUrgentie("normaal"); setOntvangerType("iedereen"); fetchMededelingen();
   };
 

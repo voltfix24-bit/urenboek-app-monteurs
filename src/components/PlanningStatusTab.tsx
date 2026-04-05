@@ -28,14 +28,10 @@ export function PlanningStatusTab({ projectId, profileId }: { projectId: string;
   useEffect(() => { load(); }, [load]);
 
   async function toggleDefinitief(val: boolean) {
-    // Upsert
-    const { error } = await supabase.from("project_planning_status").upsert({
-      project_id: projectId,
-      is_definitief: val,
-      definitief_op: val ? new Date().toISOString() : null,
-      definitief_door: val ? profileId : null,
-    }, { onConflict: "project_id" });
-    if (error) { toast.error("Fout bij wijzigen status"); return; }
+    const { data, error } = await supabase.functions.invoke("definitief-maken", {
+      body: { projectId, profileId, makeConcept: !val },
+    });
+    if (error || !data?.success) { toast.error("Fout bij wijzigen status"); return; }
     toast.success(val ? "Planning gepubliceerd" : "Terug naar concept");
     load();
   }
