@@ -22,7 +22,7 @@ export async function checkOveruren(
   if (dagTotaal > 8) {
     const { data: existing } = await supabase
       .from("overuren_meldingen")
-      .select("id")
+      .select("id, geboekte_uren")
       .eq("medewerker_id", medewerker_id)
       .eq("datum", datum)
       .eq("type", "dag_overschrijding")
@@ -37,6 +37,11 @@ export async function checkOveruren(
         limiet_uren: 8,
         status: "open",
       });
+    } else if (Number(existing[0].geboekte_uren) !== dagTotaal) {
+      await supabase
+        .from("overuren_meldingen")
+        .update({ geboekte_uren: dagTotaal })
+        .eq("id", existing[0].id);
     }
   }
 
