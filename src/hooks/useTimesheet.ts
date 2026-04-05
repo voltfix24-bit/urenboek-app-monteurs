@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
+import { query, mutate } from "@/lib/supabaseHelpers";
 
 export interface TimeEntry {
   id: string;
@@ -35,26 +36,23 @@ export function useTimesheet() {
   const fetchEntries = useCallback(async () => {
     if (!user || !profileId) return;
     setLoading(true);
-    const { data, error } = await supabase
+    const data = await query(supabase
       .from("uren_boekingen")
       .select("id, datum, project_id, beschrijving, uren, status, type")
       .eq("medewerker_id", profileId)
       .gte("datum", weekStartStr)
       .lte("datum", weekEndStr)
-      .order("datum");
+      .order("datum"));
 
-    if (error) {
-      toast.error("Fout bij ophalen uren");
-    } else {
-      // Fetch project numbers for display
-      const projectIds = [...new Set((data ?? []).map(e => e.project_id))];
+    if (data) {
+      const projectIds = [...new Set(data.map(e => e.project_id))];
       let projMap = new Map<string, string>();
       if (projectIds.length > 0) {
-        const { data: projs } = await supabase.from("projects").select("id, nummer").in("id", projectIds);
+        const projs = await query(supabase.from("projects").select("id, nummer").in("id", projectIds));
         projMap = new Map(projs?.map(p => [p.id, p.nummer]) ?? []);
       }
       setEntries(
-        (data ?? []).map((e) => ({
+        data.map((e) => ({
           id: e.id,
           date: e.datum,
           projectId: e.project_id,
@@ -70,18 +68,18 @@ export function useTimesheet() {
 
   const fetchAllEntries = useCallback(async () => {
     if (!user || !profileId) return;
-    const { data, error } = await supabase
+    const data = await query(supabase
       .from("uren_boekingen")
       .select("id, datum, project_id, beschrijving, uren, status, type")
       .eq("medewerker_id", profileId)
       .order("datum", { ascending: false })
-      .limit(100);
+      .limit(100));
 
-    if (!error && data) {
+    if (data) {
       const projectIds = [...new Set(data.map(e => e.project_id))];
       let projMap = new Map<string, string>();
       if (projectIds.length > 0) {
-        const { data: projs } = await supabase.from("projects").select("id, nummer").in("id", projectIds);
+        const projs = await query(supabase.from("projects").select("id, nummer").in("id", projectIds));
         projMap = new Map(projs?.map(p => [p.id, p.nummer]) ?? []);
       }
       setAllEntries(
@@ -108,7 +106,7 @@ export function useTimesheet() {
   const addEntry = useCallback(
     async (entry: { date: string; projectId: string; description: string; hours: number }) => {
       if (!user || !profileId) return;
-      const { error } = await supabase.from("uren_boekingen").insert({
+      if (!await mutate(supabase.from("uren_boekingen").insert({
         medewerker_id: profileId,
         datum: entry.date,
         project_id: entry.projectId,
@@ -116,61 +114,39 @@ export function useTimesheet() {
         type: entry.description || "monteren",
         uren: entry.hours,
         status: "concept",
-      });
-      if (error) {
-        toast.error("Fout bij toevoegen");
-      } else {
-        toast.success("Uren opgeslagen als concept");
-        fetchEntries();
-        fetchAllEntries();
-      }
+      }))) return;
+      toast.success("Uren opgeslagen als concept");
+      fetchEntries();
+      fetchAllEntries();
     },
     [user, profileId, fetchEntries, fetchAllEntries]
   );
 
   const removeEntry = useCallback(
     async (id: string) => {
-      const { error } = await supabase.from("uren_boekingen").delete().eq("id", id);
-      if (error) {
-        toast.error("Fout bij verwijderen");
-      } else {
-        fetchEntries();
-        fetchAllEntries();
-      }
+      if (!await mutate(supabase.from("uren_boekingen").delete().eq("id", id))) return;
+      fetchEntries();
+      fetchAllEntries();
     },
     [fetchEntries, fetchAllEntries]
   );
 
   const submitEntry = useCallback(
     async (id: string) => {
-      const { error } = await supabase
-        .from("uren_boekingen")
-        .update({ status: "ingediend" })
-        .eq("id", id);
-      if (error) {
-        toast.error("Fout bij indienen");
-      } else {
-        toast.success("Ingediend ter goedkeuring");
-        fetchEntries();
-        fetchAllEntries();
-      }
+      if (!await mutate(supabase.from("uren_boekingen").update({ status: "ingediend" }).eq("id", id))) return;
+      toast.success("Ingediend ter goedkeuring");
+      fetchEntries();
+      fetchAllEntries();
     },
     [fetchEntries, fetchAllEntries]
   );
 
   const revertToConcept = useCallback(
     async (id: string) => {
-      const { error } = await supabase
-        .from("uren_boekingen")
-        .update({ status: "concept", approved_by: null, afkeur_reden: null })
-        .eq("id", id);
-      if (error) {
-        toast.error("Fout bij terugzetten");
-      } else {
-        toast.success("Teruggezet als concept — pas aan en dien opnieuw in");
-        fetchEntries();
-        fetchAllEntries();
-      }
+      if (!await mutate(supabase.from("uren_boekingen").update({ status: "concept", approved_by: null, afkeur_reden: null }).eq("id", id))) return;
+      toast.success("Teruggezet als concept — pas aan en dien opnieuw in");
+      fetchEntries();
+      fetchAllEntries();
     },
     [fetchEntries, fetchAllEntries]
   );
