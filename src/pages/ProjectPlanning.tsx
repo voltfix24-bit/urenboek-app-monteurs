@@ -313,6 +313,29 @@ export default function ProjectPlanning() {
 
   const monteurMap = useMemo(() => new Map(monteurs.map(m => [m.id, m])), [monteurs]);
 
+  // ── Overplanning warnings (>5 days per week per monteur) ──
+  const overplanningWarnings = useMemo(() => {
+    // Count days per monteur per week
+    const countMap: Record<string, Record<number, Set<number>>> = {}; // mId -> weekIdx -> Set<dayIdx>
+    for (const [key, cell] of Object.entries(state.cells)) {
+      if (!cell.medewerker_id) continue;
+      const [, weekIdx, dayIdx] = key.split("-").map(Number);
+      if (!countMap[cell.medewerker_id]) countMap[cell.medewerker_id] = {};
+      if (!countMap[cell.medewerker_id][weekIdx]) countMap[cell.medewerker_id][weekIdx] = new Set();
+      countMap[cell.medewerker_id][weekIdx].add(dayIdx);
+    }
+    const warnings: { name: string; weekNr: number; days: number }[] = [];
+    for (const [mId, weeks] of Object.entries(countMap)) {
+      for (const [weekIdx, daySet] of Object.entries(weeks)) {
+        if (daySet.size > 5) {
+          const m = monteurMap.get(mId);
+          warnings.push({ name: m?.full_name ?? "Onbekend", weekNr: state.weekNrs[Number(weekIdx)] ?? 0, days: daySet.size });
+        }
+      }
+    }
+    return warnings;
+  }, [state.cells, state.weekNrs, monteurMap]);
+
   // ── Cost estimate breakdown per monteur ──
   const planningCostBreakdown = useMemo(() => {
     const cellsPerMonteur: Record<string, number> = {};
