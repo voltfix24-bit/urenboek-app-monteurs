@@ -24,7 +24,7 @@ export default function Setup() {
       setSetupDone(true);
     }
     // Check app_setup
-    const { data: setup } = await supabase.from("app_setup" as any).select("setup_done").limit(1).maybeSingle();
+    const { data: setup } = await supabase.from("app_setup" as any).select("setup_done").limit(1).maybeSingle() as any;
     if (setup?.setup_done) {
       setSetupDone(true);
     }
