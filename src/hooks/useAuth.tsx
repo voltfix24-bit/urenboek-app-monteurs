@@ -23,7 +23,7 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 // DEV BYPASS: set devBypass to false to re-enable real auth
-const devBypass = true;
+const devBypass = false;
 const mockUser = devBypass ? ({ id: "dev-manager-user", email: "dev@terrevolt.local" } as User) : null;
 const mockSession = devBypass ? ({ user: mockUser } as Session) : null;
 

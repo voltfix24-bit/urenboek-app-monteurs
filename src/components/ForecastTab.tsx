@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SPEC_CODES, SPEC_CODE_GROEPEN, type SpecCode } from "@/lib/specCodes";
-import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, Check } from "lucide-react";
+import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, Check, Info } from "lucide-react";
 
 const mono = "font-mono tracking-tight";
 const fmt = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(n);
@@ -68,7 +68,6 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
   async function saveRegels(newRegels: ForecastRegel[]) {
     if (!forecastId) return;
-    // Delete existing, insert new
     await supabase.from("forecast_regels").delete().eq("forecast_id", forecastId);
     if (newRegels.length > 0) {
       const inserts = newRegels.map(r => ({
@@ -89,7 +88,6 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     toast.success("Forecast opgeslagen");
   }
 
-  // Debounced save
   const [saveTimer, setSaveTimer] = useState<NodeJS.Timeout | null>(null);
   function debouncedSave(newRegels: ForecastRegel[]) {
     if (saveTimer) clearTimeout(saveTimer);
@@ -102,7 +100,11 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     debouncedSave(newRegels);
   }
 
-  if (loading) return <p className="text-sm py-8 text-center" style={{ color: "#8AAD6E" }}>Laden...</p>;
+  if (loading) return (
+    <div className="text-center py-8">
+      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} />
+    </div>
+  );
 
   if (!methode) {
     return (
@@ -110,13 +112,14 @@ export function ForecastTab({ projectId }: { projectId: string }) {
         <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Hoe wordt dit project vergoed?</p>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { key: "stuksprijzen", Icon: ClipboardList, label: "Stuksprijzen", desc: "Vergoeding per spec-code (R320010 etc.)" },
-            { key: "uren", Icon: Clock, label: "Op uren", desc: "Vergoeding per gewerkt uur" },
+            { key: "stuksprijzen", Icon: ClipboardList, label: "Stuksprijzen", desc: "Vergoeding per spec-code (R320010 etc.)", sub: "Liander tarieven als basis" },
+            { key: "uren", Icon: Clock, label: "Op uren", desc: "Vergoeding per gewerkt uur", sub: "Op basis van monteurtarief" },
           ].map(o => (
             <button key={o.key} onClick={() => selectMethode(o.key)} className="p-5 rounded-[14px] text-center space-y-2 transition-colors hover:border-[#4A7C2F]" style={{ background: "#EBF0E4", border: "1.5px solid #C5D4B2", cursor: "pointer" }}>
               <o.Icon className="h-6 w-6 mx-auto" style={{ color: "#4A7C2F" }} />
               <p className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>{o.label}</p>
               <p className="text-[11px]" style={{ color: "#8AAD6E" }}>{o.desc}</p>
+              <p className="text-[10px]" style={{ color: "#C5D4B2" }}>{o.sub}</p>
             </button>
           ))}
         </div>
@@ -160,8 +163,8 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
 
   const totaalOmzet = regels.reduce((s, r) => s + (r.tarief_terrevolt || 0) * (r.aantal || 1), 0);
   const totaalKosten = regels.reduce((s, r) => s + (r.tarief_inkoop || 0) * (r.aantal || 1), 0);
-  const marge = totaalOmzet - totaalKosten;
-  const margePerc = totaalOmzet > 0 ? (marge / totaalOmzet) * 100 : 0;
+  const margeEuro = totaalOmzet - totaalKosten;
+  const margePerc = totaalOmzet > 0 ? (margeEuro / totaalOmzet) * 100 : 0;
   const margeColor = margePerc > 30 ? "#2D7A3A" : margePerc >= 15 ? "#8B6914" : "#C0392B";
 
   const selectedCodes = new Set(regels.map(r => r.spec_code));
@@ -201,12 +204,12 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
       </div>
 
       {/* Selected codes table */}
-      {regels.length > 0 && (
+      {regels.length > 0 ? (
         <>
           <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Geselecteerde codes</p>
           <div className="rounded-xl overflow-hidden" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
             <div className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "#DFE8D6", color: "#8AAD6E" }}>
-              <span>Code</span><span>Omschrijving</span><span>Aantal</span><span>Liander</span><span>TerreVolt</span><span></span>
+              <span>Code</span><span>Omschrijving</span><span>Aantal</span><span>Liander betaalt</span><span>TerreVolt kosten</span><span></span>
             </div>
             {regels.map(r => (
               <div key={r.spec_code} className="grid grid-cols-[80px_1fr_70px_80px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid #C5D4B2" }}>
@@ -227,7 +230,7 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
           {/* Totals */}
           <div className="rounded-xl p-3.5 space-y-1.5" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2" }}>
             <div className="flex justify-between text-[12px]">
-              <span style={{ color: "#5A7A42" }}>Totaal omzet (Liander)</span>
+              <span style={{ color: "#5A7A42" }}>Totaal omzet (Liander betaalt)</span>
               <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(totaalOmzet)}</span>
             </div>
             <div className="flex justify-between text-[12px]">
@@ -237,7 +240,7 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
             <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid #C5D4B2" }}>
               <span style={{ color: "#2D4A1E" }}>Marge</span>
               <div className="flex items-center gap-2">
-                <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(marge)}</span>
+                <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(margeEuro)}</span>
                 <span className="px-3 py-0.5 rounded-full text-[13px] font-semibold" style={{ background: margeColor + "18", color: margeColor }}>{margePerc.toFixed(1)}%</span>
               </div>
             </div>
@@ -247,6 +250,11 @@ function StuksprijzenEditor({ regels, onUpdate, onSave }: { regels: ForecastRege
             Forecast opslaan
           </button>
         </>
+      ) : (
+        <div className="text-center py-8 rounded-xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+          <Info className="h-6 w-6 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
+          <p className="text-sm" style={{ color: "#8AAD6E" }}>Voeg spec-codes toe om de forecast te berekenen.</p>
+        </div>
       )}
     </div>
   );
@@ -276,8 +284,8 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
 
   const totaalUren = regels.reduce((s, r) => s + (r.geplande_uren || 0), 0);
   const totaalKosten = regels.reduce((s, r) => s + (r.geplande_uren || 0) * (r.uurtarief_snap || 0), 0);
-  const marge = verwachteOmzet - totaalKosten;
-  const margePerc = verwachteOmzet > 0 ? (marge / verwachteOmzet) * 100 : 0;
+  const margeEuro = verwachteOmzet - totaalKosten;
+  const margePerc = verwachteOmzet > 0 ? (margeEuro / verwachteOmzet) * 100 : 0;
   const margeColor = margePerc > 30 ? "#2D7A3A" : margePerc >= 15 ? "#8B6914" : "#C0392B";
 
   const usedIds = new Set(regels.map(r => r.medewerker_id));
@@ -337,7 +345,7 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
               <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid #C5D4B2" }}>
                 <span style={{ color: "#2D4A1E" }}>Marge</span>
                 <div className="flex items-center gap-2">
-                  <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(marge)}</span>
+                  <span className={mono} style={{ color: "#2D4A1E" }}>{fmt(margeEuro)}</span>
                   <span className="px-3 py-0.5 rounded-full text-[13px] font-semibold" style={{ background: margeColor + "18", color: margeColor }}>{margePerc.toFixed(1)}%</span>
                 </div>
               </div>
