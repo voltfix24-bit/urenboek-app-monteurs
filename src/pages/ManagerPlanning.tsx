@@ -213,12 +213,12 @@ export default function ManagerPlanning() {
 
           {medewerkers.map((med, mi) => (
             <div key={med.id} className="flex gap-1 items-stretch">
-              <div className="w-16 shrink-0 flex items-center">
+              <div className="w-16 lg:w-40 shrink-0 flex items-center">
                 <div className="flex items-center gap-1.5">
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
                     {med.full_name.charAt(0)}
                   </div>
-                  <span className="text-[10px] font-medium truncate max-w-[44px]" style={{ color: "var(--text-primary)" }}>{med.full_name.split(" ")[0]}</span>
+                  <span className="text-[10px] lg:text-xs font-medium truncate max-w-[44px] lg:max-w-[120px]" style={{ color: "var(--text-primary)" }}>{med.full_name.split(" ")[0]}<span className="hidden lg:inline"> {med.full_name.split(" ").slice(1).join(" ")}</span></span>
                 </div>
               </div>
               {weekDates.map((d, i) => {
@@ -229,14 +229,17 @@ export default function ManagerPlanning() {
                 const hasConflict = conflicts.length > 0;
 
                 return (
-                  <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] flex flex-col items-center justify-center text-center transition-colors active:scale-95" style={{
+                  <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] lg:min-h-[64px] flex flex-col items-center justify-center text-center transition-colors active:scale-95" style={{
                     background: hasConflict && !entry ? "var(--danger-light)" : entry ? "var(--accent-light)" : "var(--bg-base)",
                     border: hasConflict ? "1px solid var(--danger-border)" : entry ? "1px solid var(--accent-border)" : "1px solid var(--bg-surface-2)",
                   }}>
                     {entry ? (
                       <>
-                        <span className="text-[8px] font-bold truncate w-full" style={{ color: "var(--text-primary)" }}>{proj?.nummer?.slice(-3) || "?"}</span>
-                        <span className="text-[7px]" style={{ color: "var(--text-muted)" }}>{entry.starttijd}</span>
+                        <span className="text-[8px] lg:text-[11px] font-bold truncate lg:whitespace-normal w-full" style={{ color: "var(--text-primary)" }}>
+                          <span className="lg:hidden">{proj?.nummer?.slice(-3) || "?"}</span>
+                          <span className="hidden lg:inline">{proj?.naam || proj?.nummer || "?"}</span>
+                        </span>
+                        <span className="text-[7px] lg:text-[10px]" style={{ color: "var(--text-muted)" }}>{entry.starttijd}–{entry.eindtijd}</span>
                       </>
                     ) : hasConflict ? (
                       <AlertTriangle className="h-3 w-3" style={{ color: "var(--danger)", opacity: 0.6 }} />
@@ -275,8 +278,11 @@ export default function ManagerPlanning() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
+        <>
+        {/* Mobile: bottom sheet */}
+        <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
           <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
           <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
             <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
