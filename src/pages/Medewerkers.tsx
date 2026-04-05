@@ -10,7 +10,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
 
 interface CreatedUser { email: string; fullName: string; role: string; password: string; }
-interface Employee { user_id: string; full_name: string; role: string; }
+interface Employee { user_id: string; full_name: string; role: string; uurtarief: number | null; }
 
 const roleLabels: Record<string, string> = { monteur: "Monteur", schakelmonteur: "Schakelmonteur", uitvoerder: "Uitvoerder", wv: "WV", manager: "Manager" };
 const AVATAR_COLORS = ['#4A7C2F', '#6B9E4A', '#2D6B8A', '#8B6914', '#5A4A7C'];
@@ -26,10 +26,10 @@ export default function Medewerkers() {
   useEffect(() => { loadEmployees(); }, []);
 
   const loadEmployees = async () => {
-    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name");
+    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, uurtarief");
     const { data: roles } = await supabase.from("user_roles").select("user_id, role");
     if (profiles && roles) {
-      setEmployees(profiles.map((p) => ({ user_id: p.user_id, full_name: p.full_name, role: roles.find((r) => r.user_id === p.user_id)?.role || "–" })));
+      setEmployees(profiles.map((p) => ({ user_id: p.user_id, full_name: p.full_name, uurtarief: (p as any).uurtarief, role: roles.find((r) => r.user_id === p.user_id)?.role || "–" })));
     }
   };
 
