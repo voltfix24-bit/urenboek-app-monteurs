@@ -224,6 +224,72 @@ export type Database = {
           },
         ]
       }
+      intake_regels: {
+        Row: {
+          aanpasbaar: boolean
+          actief: boolean
+          created_at: string
+          hint: string | null
+          id: string
+          label: string
+          max_aantal: number
+          min_aantal: number
+          sluit_uit_code: string | null
+          sluit_uit_reden: string | null
+          spec_code: string
+          standaard_aantal: number
+          trigger_type: string
+          trigger_veld: string | null
+          trigger_waarde: string | null
+          updated_at: string
+          vereist_code: string | null
+          volgorde: number
+          waarschuwing: string | null
+        }
+        Insert: {
+          aanpasbaar?: boolean
+          actief?: boolean
+          created_at?: string
+          hint?: string | null
+          id?: string
+          label: string
+          max_aantal?: number
+          min_aantal?: number
+          sluit_uit_code?: string | null
+          sluit_uit_reden?: string | null
+          spec_code: string
+          standaard_aantal?: number
+          trigger_type: string
+          trigger_veld?: string | null
+          trigger_waarde?: string | null
+          updated_at?: string
+          vereist_code?: string | null
+          volgorde?: number
+          waarschuwing?: string | null
+        }
+        Update: {
+          aanpasbaar?: boolean
+          actief?: boolean
+          created_at?: string
+          hint?: string | null
+          id?: string
+          label?: string
+          max_aantal?: number
+          min_aantal?: number
+          sluit_uit_code?: string | null
+          sluit_uit_reden?: string | null
+          spec_code?: string
+          standaard_aantal?: number
+          trigger_type?: string
+          trigger_veld?: string | null
+          trigger_waarde?: string | null
+          updated_at?: string
+          vereist_code?: string | null
+          volgorde?: number
+          waarschuwing?: string | null
+        }
+        Relationships: []
+      }
       mededeling_leesstatus: {
         Row: {
           gelezen_op: string | null
