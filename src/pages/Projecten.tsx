@@ -44,13 +44,41 @@ export default function Projecten() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
+  const [margeMap, setMargeMap] = useState<Map<string, { omzet: number; kosten: number; marge: number }>>(new Map());
+
   const fetchData = useCallback(async () => {
     const [p, o] = await Promise.all([
       supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email").order("nummer"),
       supabase.from("opdrachtgevers").select("id, naam").order("naam"),
     ]);
-    if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data); setLoading(false);
-  }, []);
+    if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data);
+
+    // Fetch forecast marge data for managers
+    if (isManager) {
+      const { data: forecasts } = await supabase.from("project_forecast").select("id, project_id");
+      if (forecasts && forecasts.length > 0) {
+        const fIds = forecasts.map((f: any) => f.id);
+        const { data: regels } = await supabase.from("forecast_regels").select("forecast_id, tarief_terrevolt, tarief_inkoop, aantal, geplande_uren, uurtarief_snap, type").in("forecast_id", fIds);
+        const fProject = new Map(forecasts.map((f: any) => [f.id, f.project_id]));
+        const m = new Map<string, { omzet: number; kosten: number; marge: number }>();
+        (regels ?? []).forEach((r: any) => {
+          const pid = fProject.get(r.forecast_id);
+          if (!pid) return;
+          const cur = m.get(pid) || { omzet: 0, kosten: 0, marge: 0 };
+          if (r.type === "spec") {
+            cur.omzet += (r.tarief_terrevolt || 0) * (r.aantal || 1);
+            cur.kosten += (r.tarief_inkoop || 0) * (r.aantal || 1);
+          } else if (r.type === "uren") {
+            cur.kosten += (r.geplande_uren || 0) * (r.uurtarief_snap || 0);
+          }
+          m.set(pid, cur);
+        });
+        m.forEach((v, k) => { v.marge = v.omzet > 0 ? ((v.omzet - v.kosten) / v.omzet) * 100 : 0; });
+        setMargeMap(m);
+      }
+    }
+    setLoading(false);
+  }, [isManager]);
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => { if (!isManager) navigate("/"); }, [isManager, navigate]);
 
@@ -282,7 +310,7 @@ export default function Projecten() {
                   <div className="space-y-1.5 mb-4">
                     <p className="text-[10px] font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>Actief ({filteredActive.length})</p>
                     {filteredActive.map(p => (
-                      <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => selectProject(p)} />
+                      <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => selectProject(p)} marge={margeMap.get(p.id)} />
                     ))}
                   </div>
                 )}
@@ -290,7 +318,7 @@ export default function Projecten() {
                   <div className="space-y-1.5">
                     <p className="text-[10px] font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>Inactief ({filteredInactive.length})</p>
                     {filteredInactive.map(p => (
-                      <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => selectProject(p)} />
+                      <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => selectProject(p)} marge={margeMap.get(p.id)} />
                     ))}
                   </div>
                 )}
@@ -488,7 +516,9 @@ function DetailLine({ label, value }: { label: string; value: string }) {
 
 /* ===== Desktop-only components ===== */
 
-function DesktopListCard({ project, ogNaam, selected, onClick }: { project: any; ogNaam: string | null; selected: boolean; onClick: () => void }) {
+function DesktopListCard({ project, ogNaam, selected, onClick, marge }: { project: any; ogNaam: string | null; selected: boolean; onClick: () => void; marge?: { omzet: number; kosten: number; marge: number } }) {
+  const margeColor = (m: number) => m >= 30 ? "#2D7A3A" : m >= 15 ? "#D4A017" : "#C0392B";
+  const margeBg = (m: number) => m >= 30 ? "#D4EDD8" : m >= 15 ? "#FFF3CD" : "#FDECEA";
   return (
     <button
       onClick={onClick}
@@ -500,7 +530,14 @@ function DesktopListCard({ project, ogNaam, selected, onClick }: { project: any;
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-[13px] font-semibold truncate" style={{ color: "#2D4A1E" }}>{project.naam}</p>
-        <CaseTypeBadge type={project.case_type} />
+        <div className="flex items-center gap-1.5 shrink-0">
+          {marge && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: margeBg(marge.marge), color: margeColor(marge.marge), fontFamily: "DM Mono, monospace" }}>
+              {marge.marge.toFixed(1)}%
+            </span>
+          )}
+          <CaseTypeBadge type={project.case_type} />
+        </div>
       </div>
       <div className="flex items-center justify-between gap-2 mt-0.5">
         <span className="text-[11px] font-mono" style={{ color: "#4A7C2F" }}>{project.nummer}</span>

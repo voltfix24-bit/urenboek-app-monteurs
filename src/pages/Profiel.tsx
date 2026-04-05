@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
 import { toast } from "sonner";
-import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun } from "lucide-react";
+import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO } from "date-fns";
+import { nl } from "date-fns/locale";
 
 interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; }
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string; }
@@ -14,6 +15,13 @@ interface BeschikbaarheidItem { id: string; type: string; datum_van: string; dat
 const CERT_COLORS: Record<string, string> = { VCA: "#2D7A3A", NEN3140: "#2D6B8A", rijbewijs_BE: "#8B6914", overig: "#5A4A7C" };
 const DAGEN_LABEL = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"];
 const AVATAR_COLORS = ['#4A7C2F', '#6B9E4A', '#2D6B8A', '#8B6914', '#5A4A7C'];
+
+const TYPE_COLORS: Record<string, { bg: string; border: string; dot: string }> = {
+  vakantie: { bg: "#FFF3CD", border: "#E8D070", dot: "#D4A017" },
+  verlof: { bg: "#D4E8F5", border: "#7AAADE", dot: "#2D5A8A" },
+  ziek: { bg: "#FDECEA", border: "#E8A09A", dot: "#C0392B" },
+  anders: { bg: "#EBF0E4", border: "#C5D4B2", dot: "#8AAD6E" },
+};
 
 export default function Profiel() {
   const { user, roles, signOut } = useAuth();
@@ -27,6 +35,7 @@ export default function Profiel() {
   const [certForm, setCertForm] = useState({ type: "VCA", naam: "", vervaldatum: "" });
   const [verlofForm, setVerlofForm] = useState({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" });
   const [loading, setLoading] = useState(true);
+  const [calMonth, setCalMonth] = useState(new Date());
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
@@ -36,7 +45,7 @@ export default function Profiel() {
   }, [user]);
 
   const fetchCerts = useCallback(async () => { if (!profile) return; const { data } = await supabase.from("certificaten").select("id, type, naam, vervaldatum").eq("medewerker_id", profile.id).order("vervaldatum"); if (data) setCerts(data as any); }, [profile]);
-  const fetchBeschikbaarheid = useCallback(async () => { if (!profile) return; const { data } = await supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, reden, status").eq("medewerker_id", profile.id).order("datum_van", { ascending: false }).limit(20); if (data) setBeschikbaarheid(data as any); }, [profile]);
+  const fetchBeschikbaarheid = useCallback(async () => { if (!profile) return; const { data } = await supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, reden, status").eq("medewerker_id", profile.id).order("datum_van", { ascending: false }).limit(50); if (data) setBeschikbaarheid(data as any); }, [profile]);
 
   useEffect(() => { fetchProfile(); }, [fetchProfile]);
   useEffect(() => { if (profile) { fetchCerts(); fetchBeschikbaarheid(); } }, [profile, fetchCerts, fetchBeschikbaarheid]);
@@ -88,6 +97,31 @@ export default function Profiel() {
     afgekeurd: { bg: "#FDECEA", text: "#C0392B" },
   };
 
+  // Calendar helpers
+  const monthStart = startOfMonth(calMonth);
+  const monthEnd = endOfMonth(calMonth);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const startPad = getDay(monthStart); // 0=Sun
+
+  const getDayStatus = (day: Date): { type: string; status: string } | null => {
+    // Check vaste vrije dagen
+    const dayOfWeek = getDay(day);
+    if (profile?.vaste_vrije_dagen?.includes(dayOfWeek)) {
+      return { type: "vrij", status: "vast" };
+    }
+    // Check beschikbaarheid
+    for (const b of beschikbaarheid) {
+      try {
+        const van = parseISO(b.datum_van);
+        const tot = parseISO(b.datum_tot);
+        if (isWithinInterval(day, { start: van, end: tot }) || isSameDay(day, van) || isSameDay(day, tot)) {
+          return { type: b.type, status: b.status };
+        }
+      } catch { /* skip */ }
+    }
+    return null;
+  };
+
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#F5F7F0" }}><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>;
 
   return (
@@ -112,6 +146,7 @@ export default function Profiel() {
           </div>
         </div>
 
+        {/* Mijn gegevens */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Mijn gegevens</p>
@@ -137,22 +172,89 @@ export default function Profiel() {
           )}
         </div>
 
+        {/* Beschikbaarheid & Kalender */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Vaste vrije dagen</p>
-          <div className="flex gap-1.5">
-            {[1, 2, 3, 4, 5, 6, 0].map(dag => {
-              const active = profile?.vaste_vrije_dagen?.includes(dag);
-              return (
-                <button key={dag} onClick={() => toggleVrijeDag(dag)} className="flex-1 py-2 rounded-xl text-[11px] font-semibold" style={{
-                  background: active ? "#D4E8C2" : "#F5F7F0",
-                  border: active ? "1px solid #9DC87A" : "1px solid #C5D4B2",
-                  color: active ? "#4A7C2F" : "#8AAD6E",
-                }}>{DAGEN_LABEL[dag]}</button>
-              );
-            })}
+          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Beschikbaarheid</p>
+
+          {/* Vaste vrije dagen */}
+          <div>
+            <p className="text-[10px] font-medium mb-1.5" style={{ color: "#8AAD6E" }}>Vaste vrije dagen</p>
+            <div className="flex gap-1.5">
+              {[1, 2, 3, 4, 5, 6, 0].map(dag => {
+                const active = profile?.vaste_vrije_dagen?.includes(dag);
+                return (
+                  <button key={dag} onClick={() => toggleVrijeDag(dag)} className="flex-1 py-2 rounded-xl text-[11px] font-semibold" style={{
+                    background: active ? "#D4E8C2" : "#F5F7F0",
+                    border: active ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                    color: active ? "#4A7C2F" : "#8AAD6E",
+                  }}>{DAGEN_LABEL[dag]}</button>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="flex gap-2 pt-2">
+          {/* Calendar */}
+          <div className="rounded-xl p-3" style={{ background: "#F5F7F0", border: "1px solid #DFE8D6" }}>
+            <div className="flex items-center justify-between mb-3">
+              <button onClick={() => setCalMonth(subMonths(calMonth, 1))} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#EBF0E4" }}>
+                <ChevronLeft className="h-4 w-4" style={{ color: "#5A7A42" }} />
+              </button>
+              <span className="text-sm font-semibold capitalize" style={{ color: "#2D4A1E" }}>
+                {format(calMonth, "MMMM yyyy", { locale: nl })}
+              </span>
+              <button onClick={() => setCalMonth(addMonths(calMonth, 1))} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#EBF0E4" }}>
+                <ChevronRight className="h-4 w-4" style={{ color: "#5A7A42" }} />
+              </button>
+            </div>
+            {/* Day headers */}
+            <div className="grid grid-cols-7 gap-0.5 mb-1">
+              {["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"].map(d => (
+                <div key={d} className="text-center text-[9px] font-semibold py-1" style={{ color: "#8AAD6E" }}>{d}</div>
+              ))}
+            </div>
+            {/* Day cells */}
+            <div className="grid grid-cols-7 gap-0.5">
+              {/* Padding for start of month (convert Sun=0 to Mon-based) */}
+              {Array.from({ length: (startPad + 6) % 7 }).map((_, i) => (
+                <div key={`pad-${i}`} className="h-9" />
+              ))}
+              {days.map(day => {
+                const status = getDayStatus(day);
+                const isToday = isSameDay(day, new Date());
+                const tc = status ? (TYPE_COLORS[status.type] || TYPE_COLORS.anders) : null;
+                return (
+                  <div key={day.toISOString()} className="h-9 flex flex-col items-center justify-center rounded-lg relative" style={{
+                    background: tc ? tc.bg : isToday ? "#D4E8C2" : "transparent",
+                    border: isToday ? "1.5px solid #4A7C2F" : tc ? `1px solid ${tc.border}` : "1px solid transparent",
+                  }}>
+                    <span className="text-[11px] font-medium" style={{ color: tc ? tc.dot : isToday ? "#2D4A1E" : "#5A7A42" }}>
+                      {format(day, "d")}
+                    </span>
+                    {tc && (
+                      <span className="w-1.5 h-1.5 rounded-full absolute bottom-1" style={{ background: tc.dot }} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {/* Legend */}
+            <div className="flex flex-wrap gap-3 mt-3 pt-2" style={{ borderTop: "1px solid #DFE8D6" }}>
+              {[
+                { label: "Vrije dag", color: "#8AAD6E" },
+                { label: "Vakantie", color: "#D4A017" },
+                { label: "Ziek", color: "#C0392B" },
+                { label: "Verlof", color: "#2D5A8A" },
+              ].map(l => (
+                <div key={l.label} className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full" style={{ background: l.color }} />
+                  <span className="text-[9px]" style={{ color: "#8AAD6E" }}>{l.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-2">
             <button onClick={() => setShowVerlof(true)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#FFF3CD", border: "1px solid #E8D070", color: "#8B6914" }}>
               Verlof aanvragen
             </button>
@@ -161,15 +263,19 @@ export default function Profiel() {
             </button>
           </div>
 
+          {/* Recent items */}
           {beschikbaarheid.length > 0 && (
-            <div className="space-y-1.5 pt-2">
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-medium" style={{ color: "#8AAD6E" }}>Recente aanvragen</p>
               {beschikbaarheid.slice(0, 5).map(b => {
                 const sc = statusColors[b.status] || statusColors.aangevraagd;
                 return (
                   <div key={b.id} className="flex items-center justify-between py-2 px-3 rounded-xl" style={{ background: "#F5F7F0" }}>
                     <div>
                       <span className="text-xs font-medium capitalize" style={{ color: "#2D4A1E" }}>{b.type}</span>
-                      <span className="text-[10px] ml-2" style={{ color: "#8AAD6E" }}>{b.datum_van} → {b.datum_tot}</span>
+                      <span className="text-[10px] ml-2" style={{ color: "#8AAD6E" }}>
+                        {format(parseISO(b.datum_van), "d MMM", { locale: nl })} → {format(parseISO(b.datum_tot), "d MMM", { locale: nl })}
+                      </span>
                     </div>
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>{b.status}</span>
                   </div>
@@ -179,6 +285,7 @@ export default function Profiel() {
           )}
         </div>
 
+        {/* Certificaten */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Certificaten</p>
@@ -196,7 +303,7 @@ export default function Profiel() {
                   <Shield className="h-4 w-4" style={{ color: CERT_COLORS[c.type] || "#5A4A7C" }} />
                   <div>
                     <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>{c.naam}</p>
-                    <p className="text-[10px]" style={{ color: "#8AAD6E" }}>{c.type} · Verloopt {c.vervaldatum}</p>
+                    <p className="text-[10px]" style={{ color: "#8AAD6E" }}>{c.type} · Verloopt {format(parseISO(c.vervaldatum), "d MMM yyyy", { locale: nl })}</p>
                   </div>
                 </div>
                 <span className="text-[10px] font-bold" style={{ color: s.color }}>{s.label}</span>
@@ -210,6 +317,7 @@ export default function Profiel() {
         </button>
       </main>
 
+      {/* Verlof modal */}
       {showVerlof && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowVerlof(false)}>
           <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
@@ -245,6 +353,7 @@ export default function Profiel() {
         </div>
       )}
 
+      {/* Cert modal */}
       {showAddCert && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowAddCert(false)}>
           <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
