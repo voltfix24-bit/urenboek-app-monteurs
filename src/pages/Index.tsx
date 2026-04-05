@@ -107,13 +107,29 @@ const Index = () => {
     setShowFridayBanner(isFridayAfternoon() && viewingCurrentWeek && conceptEntries.length > 0);
   }, [conceptEntries.length, currentWeekStart]);
 
+  const handleSubmitEntry = useCallback(async (id: string) => {
+    const entry = [...weekEntries, ...allEntries].find(e => e.id === id);
+    await submitEntry(id);
+    if (entry && profileId) {
+      checkOveruren(profileId, entry.date, entry.projectId, entry.hours).catch(() => {});
+    }
+  }, [weekEntries, allEntries, submitEntry, profileId]);
+
   const submitAllConcepts = useCallback(async () => {
     if (!user || conceptEntries.length === 0) return;
     setSubmittingAll(true);
     const count = await submitAll();
-    if (count > 0) setShowFridayBanner(false);
+    if (count > 0) {
+      setShowFridayBanner(false);
+      // Check overuren for all submitted entries
+      if (profileId) {
+        for (const entry of conceptEntries) {
+          checkOveruren(profileId, entry.date, entry.projectId, entry.hours).catch(() => {});
+        }
+      }
+    }
     setSubmittingAll(false);
-  }, [user, conceptEntries, submitAll]);
+  }, [user, conceptEntries, submitAll, profileId]);
 
   const handleRefresh = async () => {
     window.location.reload();
