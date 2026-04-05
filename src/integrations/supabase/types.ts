@@ -608,6 +608,80 @@ export type Database = {
         }
         Relationships: []
       }
+      uren_boekingen: {
+        Row: {
+          afkeur_reden: string | null
+          approved_by: string | null
+          beschrijving: string
+          created_at: string
+          datum: string
+          id: string
+          medewerker_id: string
+          project_id: string
+          status: string
+          type: string
+          updated_at: string
+          uren: number
+        }
+        Insert: {
+          afkeur_reden?: string | null
+          approved_by?: string | null
+          beschrijving?: string
+          created_at?: string
+          datum: string
+          id?: string
+          medewerker_id: string
+          project_id: string
+          status?: string
+          type?: string
+          updated_at?: string
+          uren: number
+        }
+        Update: {
+          afkeur_reden?: string | null
+          approved_by?: string | null
+          beschrijving?: string
+          created_at?: string
+          datum?: string
+          id?: string
+          medewerker_id?: string
+          project_id?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          uren?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uren_boekingen_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uren_boekingen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uren_boekingen_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uren_boekingen_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
