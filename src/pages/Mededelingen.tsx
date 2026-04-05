@@ -75,20 +75,20 @@ export default function Mededelingen() {
     return (
       <PageShell>
         <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
-          <button onClick={() => setSelected(null)} className="flex items-center gap-2 text-sm font-medium" style={{ color: "#5A7A42" }}>
+          <button onClick={() => setSelected(null)} className="flex items-center gap-2 text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
             <ArrowLeft className="h-4 w-4" /> Terug
           </button>
         </header>
         <div className="px-4 py-4 space-y-3">
           {selected.urgentie === "urgent" && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "#FDECEA", border: "1px solid #E8A09A" }}>
-              <AlertTriangle className="h-4 w-4" style={{ color: "#C0392B" }} />
-              <span className="text-xs font-semibold" style={{ color: "#C0392B" }}>Urgent bericht</span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
+              <AlertTriangle className="h-4 w-4" style={{ color: "var(--danger)" }} />
+              <span className="text-xs font-semibold" style={{ color: "var(--danger)" }}>Urgent bericht</span>
             </div>
           )}
-          <h1 className="text-lg font-bold" style={{ color: "#2D4A1E" }}>{selected.titel}</h1>
-          <p className="text-xs" style={{ color: "#8AAD6E" }}>{selected.verzender_naam} · {formatDistanceToNow(new Date(selected.created_at), { locale: nl, addSuffix: true })}</p>
-          <div className="text-sm leading-relaxed whitespace-pre-wrap rounded-2xl p-4" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#2D4A1E" }}>
+          <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{selected.titel}</h1>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>{selected.verzender_naam} · {formatDistanceToNow(new Date(selected.created_at), { locale: nl, addSuffix: true })}</p>
+          <div className="text-sm leading-relaxed whitespace-pre-wrap rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }}>
             {selected.inhoud || "Geen inhoud"}
           </div>
         </div>
@@ -99,28 +99,28 @@ export default function Mededelingen() {
   const listContent = (
     <main className="px-4 py-4 space-y-2">
       {loading ? (
-        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
+        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
       ) : items.length === 0 ? (
-        <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-          <Bell className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-          <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen mededelingen</p>
+        <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+          <Bell className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
+          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen mededelingen</p>
         </div>
       ) : (
         items.map(item => (
           <button key={item.id} onClick={() => openDetail(item)} className="w-full text-left rounded-2xl p-4 transition-colors active:scale-[0.98]" style={{
-            background: item.gelezen ? "#F5F7F0" : "#EBF0E4",
+            background: item.gelezen ? "var(--bg-base)" : "var(--bg-surface)",
             border: item.urgentie === "urgent" ? "1px solid #E8A09A" : "1px solid #C5D4B2",
           }}>
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  {!item.gelezen && <div className="w-2 h-2 rounded-full shrink-0" style={{ background: "#4A7C2F" }} />}
-                  {item.urgentie === "urgent" && <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#C0392B" }} />}
-                  <p className={`text-sm font-semibold truncate`} style={{ color: item.gelezen ? "#8AAD6E" : "#2D4A1E" }}>{item.titel}</p>
+                  {!item.gelezen && <div className="w-2 h-2 rounded-full shrink-0" style={{ background: "var(--accent)" }} />}
+                  {item.urgentie === "urgent" && <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--danger)" }} />}
+                  <p className={`text-sm font-semibold truncate`} style={{ color: item.gelezen ? "var(--text-muted)" : "var(--text-primary)" }}>{item.titel}</p>
                 </div>
-                <p className="text-xs mt-1 line-clamp-2" style={{ color: "#8AAD6E" }}>{item.inhoud || "Geen inhoud"}</p>
+                <p className="text-xs mt-1 line-clamp-2" style={{ color: "var(--text-muted)" }}>{item.inhoud || "Geen inhoud"}</p>
               </div>
-              <span className="text-[10px] shrink-0 mt-1" style={{ color: "#8AAD6E" }}>
+              <span className="text-[10px] shrink-0 mt-1" style={{ color: "var(--text-muted)" }}>
                 {formatDistanceToNow(new Date(item.created_at), { locale: nl, addSuffix: true })}
               </span>
             </div>
@@ -136,10 +136,10 @@ export default function Mededelingen() {
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <HeaderLogo />
-            <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>Mededelingen</span>
+            <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Mededelingen</span>
           </div>
           {unreadCount > 0 && (
-            <div className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ background: "#FDECEA", color: "#C0392B" }}>
+            <div className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ background: "var(--danger-light)", color: "var(--danger)" }}>
               {unreadCount} nieuw
             </div>
           )}
@@ -169,20 +169,20 @@ export default function Mededelingen() {
       {showCompose && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowCompose(false)}>
           <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "#EBF0E4", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "#C5D4B2" }} />
-            <h2 className="text-base font-bold" style={{ color: "#2D4A1E" }}>Nieuwe mededeling</h2>
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
+            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Nieuwe mededeling</h2>
 
             <div className="space-y-3">
-              <input value={titel} onChange={e => setTitel(e.target.value)} placeholder="Titel" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
-              <textarea value={inhoud} onChange={e => setInhoud(e.target.value)} placeholder="Inhoud..." rows={4} className="w-full px-3 py-2.5 rounded-xl text-sm resize-none" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2", color: "#2D4A1E" }} />
+              <input value={titel} onChange={e => setTitel(e.target.value)} placeholder="Titel" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
+              <textarea value={inhoud} onChange={e => setInhoud(e.target.value)} placeholder="Inhoud..." rows={4} className="w-full px-3 py-2.5 rounded-xl text-sm resize-none" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2", color: "var(--text-primary)" }} />
 
               <div className="flex gap-2">
                 {(["normaal", "urgent"] as const).map(u => (
                   <button key={u} onClick={() => setUrgentie(u)} className="flex-1 py-2 rounded-xl text-xs font-semibold capitalize" style={{
-                    background: urgentie === u ? (u === "urgent" ? "#FDECEA" : "#D4EDD8") : "#F5F7F0",
+                    background: urgentie === u ? (u === "urgent" ? "var(--danger-light)" : "var(--success-light)") : "var(--bg-base)",
                     border: urgentie === u ? (u === "urgent" ? "1px solid #E8A09A" : "1px solid #8DC99A") : "1px solid #C5D4B2",
-                    color: urgentie === u ? (u === "urgent" ? "#C0392B" : "#2D7A3A") : "#8AAD6E",
+                    color: urgentie === u ? (u === "urgent" ? "var(--danger)" : "var(--success)") : "var(--text-muted)",
                   }}>{u}</button>
                 ))}
               </div>
@@ -190,9 +190,9 @@ export default function Mededelingen() {
               <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
                 {(["iedereen", "monteurs", "persoon"] as const).map(t => (
                   <button key={t} onClick={() => setOntvangerType(t)} className="shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold capitalize" style={{
-                    background: ontvangerType === t ? "#D4E8C2" : "#F5F7F0",
+                    background: ontvangerType === t ? "var(--accent-light)" : "var(--bg-base)",
                     border: ontvangerType === t ? "1px solid #9DC87A" : "1px solid #C5D4B2",
-                    color: ontvangerType === t ? "#4A7C2F" : "#8AAD6E",
+                    color: ontvangerType === t ? "var(--accent)" : "var(--text-muted)",
                   }}>{t}</button>
                 ))}
               </div>

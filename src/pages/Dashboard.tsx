@@ -174,11 +174,11 @@ export default function Dashboard() {
     else { toast.success(status === "goedgekeurd" ? "Goedgekeurd" : "Afgekeurd"); fetchDashboard(); }
   };
 
-  const margeColor = (m: number) => m >= 30 ? "#2D7A3A" : m >= 15 ? "#D4A017" : "#C0392B";
-  const margeBg = (m: number) => m >= 30 ? "#D4EDD8" : m >= 15 ? "#FFF3CD" : "#FDECEA";
+  const margeColor = (m: number) => m >= 30 ? "var(--success)" : m >= 15 ? "var(--warn-dot)" : "var(--danger)";
+  const margeBg = (m: number) => m >= 30 ? "var(--success-light)" : m >= 15 ? "var(--warn-light)" : "var(--danger-light)";
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "#F5F7F0" }}><p style={{ color: "#8AAD6E" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   return (
@@ -187,56 +187,56 @@ export default function Dashboard() {
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <HeaderLogo />
-            <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>Dashboard</span>
+            <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Dashboard</span>
           </div>
-          <span className="text-xs" style={{ color: "#8AAD6E" }}>{format(new Date(), "d MMMM yyyy", { locale: nl })}</span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{format(new Date(), "d MMMM yyyy", { locale: nl })}</span>
         </div>
       </header>
 
       <main className="px-4 py-4 space-y-4">
         {loading ? (
-          <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
+          <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
         ) : (
           <>
             {/* KPI strip */}
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: "Open keuring", value: String(pendingCount), color: "#D4A017", Icon: Hourglass, onClick: () => navigate("/goedkeuring") },
-                { label: "Uren (week)", value: weekHours + "u", color: "#2D7A3A", Icon: Clock },
-                { label: "Projecten", value: String(activeProjects), color: "#2D5A8A", Icon: FolderOpen, onClick: () => navigate("/projecten") },
-                { label: "Team", value: String(teamCount), color: "#5A4A7C", Icon: Users, onClick: () => navigate("/medewerkers") },
+                { label: "Open keuring", value: String(pendingCount), color: "var(--warn-dot)", Icon: Hourglass, onClick: () => navigate("/goedkeuring") },
+                { label: "Uren (week)", value: weekHours + "u", color: "var(--success)", Icon: Clock },
+                { label: "Projecten", value: String(activeProjects), color: "var(--info)", Icon: FolderOpen, onClick: () => navigate("/projecten") },
+                { label: "Team", value: String(teamCount), color: "var(--purple)", Icon: Users, onClick: () => navigate("/medewerkers") },
               ].map((k, i) => (
-                <div key={i} onClick={k.onClick} className="rounded-2xl p-3 text-center" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", cursor: k.onClick ? "pointer" : "default" }}>
+                <div key={i} onClick={k.onClick} className="rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", cursor: k.onClick ? "pointer" : "default" }}>
                   <k.Icon className="h-5 w-5 mx-auto mb-1" style={{ color: k.color }} />
                   <p className="text-xl font-extrabold" style={{ color: k.color, fontFamily: "DM Mono, monospace" }}>{k.value}</p>
-                  <p className="text-[10px] font-medium mt-0.5" style={{ color: "#8AAD6E" }}>{k.label}</p>
+                  <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{k.label}</p>
                 </div>
               ))}
             </div>
 
             {/* Today planning */}
             {todayPlanning.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "#8AAD6E" }}>
+                  <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
                     <CalendarDays className="h-3.5 w-3.5" /> Vandaag ingepland
                   </p>
-                  <button onClick={() => navigate("/manager-planning")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "#4A7C2F" }}>
+                  <button onClick={() => navigate("/manager-planning")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
                     Alle <ChevronRight className="h-3 w-3" />
                   </button>
                 </div>
                 {todayPlanning.map(p => (
                   <div key={p.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "#4A7C2F", color: "#fff" }}>
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
                         {p.naam?.charAt(0)}
                       </div>
                       <div>
-                        <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>{p.naam}</p>
-                        <p className="text-[10px]" style={{ color: "#8AAD6E" }}>{p.project}</p>
+                        <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{p.naam}</p>
+                        <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{p.project}</p>
                       </div>
                     </div>
-                    <span className="text-[11px] font-medium" style={{ color: "#4A7C2F", fontFamily: "DM Mono, monospace" }}>{p.starttijd}–{p.eindtijd}</span>
+                    <span className="text-[11px] font-medium" style={{ color: "var(--accent)", fontFamily: "DM Mono, monospace" }}>{p.starttijd}–{p.eindtijd}</span>
                   </div>
                 ))}
               </div>
@@ -244,10 +244,10 @@ export default function Dashboard() {
 
             {/* Pending approvals with inline actions */}
             {pendingEntries.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Openstaande goedkeuringen ({pendingCount})</p>
-                  <button onClick={() => navigate("/goedkeuring")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "#4A7C2F" }}>
+                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Openstaande goedkeuringen ({pendingCount})</p>
+                  <button onClick={() => navigate("/goedkeuring")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
                     Alle <ChevronRight className="h-3 w-3" />
                   </button>
                 </div>
@@ -255,18 +255,18 @@ export default function Dashboard() {
                   <div key={e.id} className="py-2.5" style={{ borderBottom: "1px solid #DFE8D6" }}>
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>{e.full_name}</p>
-                        <p className="text-[10px]" style={{ color: "#8AAD6E" }}>
+                        <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{e.full_name}</p>
+                        <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
                           {e.project_nummer} · {e.uren}u · {format(new Date(e.datum), "d MMM", { locale: nl })}
                           {e.beschrijving && ` · ${e.beschrijving}`}
                         </p>
                       </div>
                       <div className="flex gap-1 shrink-0 ml-2">
-                        <button onClick={() => handleApprove(e.id)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#D4EDD8", border: "1px solid #8DC99A" }}>
-                          <Check className="h-4 w-4" style={{ color: "#2D7A3A" }} />
+                        <button onClick={() => handleApprove(e.id)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid #8DC99A" }}>
+                          <Check className="h-4 w-4" style={{ color: "var(--success)" }} />
                         </button>
-                        <button onClick={() => { setAfkeurId(e.id); setAfkeurReden(""); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#FDECEA", border: "1px solid #E8A09A" }}>
-                          <X className="h-4 w-4" style={{ color: "#C0392B" }} />
+                        <button onClick={() => { setAfkeurId(e.id); setAfkeurReden(""); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
+                          <X className="h-4 w-4" style={{ color: "var(--danger)" }} />
                         </button>
                       </div>
                     </div>
@@ -277,12 +277,12 @@ export default function Dashboard() {
                           onChange={ev => setAfkeurReden(ev.target.value)}
                           placeholder="Reden voor afkeuring..."
                           className="flex-1 px-3 py-2 rounded-xl text-xs"
-                          style={{ background: "#F5F7F0", border: "1px solid #E8A09A", color: "#2D4A1E" }}
+                          style={{ background: "var(--bg-base)", border: "1px solid #E8A09A", color: "var(--text-primary)" }}
                           autoFocus
                           onKeyDown={ev => ev.key === "Enter" && handleReject()}
                         />
-                        <button onClick={handleReject} className="px-3 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "#C0392B" }}>Afkeuren</button>
-                        <button onClick={() => setAfkeurId(null)} className="px-2 py-2 rounded-xl text-xs" style={{ color: "#8AAD6E" }}>×</button>
+                        <button onClick={handleReject} className="px-3 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "var(--danger)" }}>Afkeuren</button>
+                        <button onClick={() => setAfkeurId(null)} className="px-2 py-2 rounded-xl text-xs" style={{ color: "var(--text-muted)" }}>×</button>
                       </div>
                     )}
                   </div>
@@ -292,21 +292,21 @@ export default function Dashboard() {
 
             {/* Verlof requests with inline actions */}
             {verlofAanvragen.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Verlofaanvragen</p>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Verlofaanvragen</p>
                 {verlofAanvragen.map(v => (
                   <div key={v.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
                     <div>
-                      <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>{v.naam}</p>
-                      <p className="text-[10px] capitalize" style={{ color: "#8AAD6E" }}>{v.type} · {format(new Date(v.datum_van), "d MMM", { locale: nl })} → {format(new Date(v.datum_tot), "d MMM", { locale: nl })}</p>
-                      {v.reden && <p className="text-[10px] italic" style={{ color: "#8AAD6E" }}>{v.reden}</p>}
+                      <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{v.naam}</p>
+                      <p className="text-[10px] capitalize" style={{ color: "var(--text-muted)" }}>{v.type} · {format(new Date(v.datum_van), "d MMM", { locale: nl })} → {format(new Date(v.datum_tot), "d MMM", { locale: nl })}</p>
+                      {v.reden && <p className="text-[10px] italic" style={{ color: "var(--text-muted)" }}>{v.reden}</p>}
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => handleVerlof(v.id, "goedgekeurd")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#D4EDD8", border: "1px solid #8DC99A" }}>
-                        <Check className="h-4 w-4" style={{ color: "#2D7A3A" }} />
+                      <button onClick={() => handleVerlof(v.id, "goedgekeurd")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid #8DC99A" }}>
+                        <Check className="h-4 w-4" style={{ color: "var(--success)" }} />
                       </button>
-                      <button onClick={() => handleVerlof(v.id, "afgekeurd")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#FDECEA", border: "1px solid #E8A09A" }}>
-                        <X className="h-4 w-4" style={{ color: "#C0392B" }} />
+                      <button onClick={() => handleVerlof(v.id, "afgekeurd")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--danger-light)", border: "1px solid #E8A09A" }}>
+                        <X className="h-4 w-4" style={{ color: "var(--danger)" }} />
                       </button>
                     </div>
                   </div>
@@ -316,20 +316,20 @@ export default function Dashboard() {
 
             {/* Active projects with marge */}
             {projectsWithMarge.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "#8AAD6E" }}>
+                  <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
                     <TrendingUp className="h-3.5 w-3.5" /> Projecten marge
                   </p>
-                  <button onClick={() => navigate("/projecten")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "#4A7C2F" }}>
+                  <button onClick={() => navigate("/projecten")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
                     Alle <ChevronRight className="h-3 w-3" />
                   </button>
                 </div>
                 {projectsWithMarge.map(p => (
                   <div key={p.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: "#2D4A1E" }}>{p.naam}</p>
-                      <p className="text-[10px]" style={{ color: "#8AAD6E", fontFamily: "DM Mono, monospace" }}>
+                      <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{p.naam}</p>
+                      <p className="text-[10px]" style={{ color: "var(--text-muted)", fontFamily: "DM Mono, monospace" }}>
                         Omzet {euro(p.omzet)} · Kosten {euro(p.kosten)}
                       </p>
                     </div>
@@ -343,9 +343,9 @@ export default function Dashboard() {
 
             {/* Expiring certs */}
             {expiringCerts.length > 0 && (
-              <div className="rounded-2xl p-4 space-y-2" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "#8AAD6E" }}>
-                  <AlertTriangle className="h-3.5 w-3.5" style={{ color: "#D4A017" }} />
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+                <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                  <AlertTriangle className="h-3.5 w-3.5" style={{ color: "var(--warn-dot)" }} />
                   Certificaten verlopen binnenkort
                 </p>
                 {expiringCerts.map(c => {
@@ -353,13 +353,13 @@ export default function Dashboard() {
                   return (
                     <div key={c.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #DFE8D6" }}>
                       <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4" style={{ color: expired ? "#C0392B" : "#D4A017" }} />
+                        <Shield className="h-4 w-4" style={{ color: expired ? "var(--danger)" : "var(--warn-dot)" }} />
                         <div>
-                          <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>{c.medewerker}</p>
-                          <p className="text-[10px]" style={{ color: "#8AAD6E" }}>{c.naam} ({c.type})</p>
+                          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{c.medewerker}</p>
+                          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{c.naam} ({c.type})</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold" style={{ color: expired ? "#C0392B" : "#D4A017" }}>
+                      <span className="text-[10px] font-bold" style={{ color: expired ? "var(--danger)" : "var(--warn-dot)" }}>
                         {format(new Date(c.vervaldatum), "d MMM yyyy", { locale: nl })}
                       </span>
                     </div>
@@ -370,10 +370,10 @@ export default function Dashboard() {
 
             {/* Empty state */}
             {pendingEntries.length === 0 && verlofAanvragen.length === 0 && todayPlanning.length === 0 && projectsWithMarge.length === 0 && (
-              <div className="text-center py-10 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: "#4A7C2F" }} />
-                <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Alles bijgewerkt</p>
-                <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Geen openstaande items</p>
+              <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+                <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
+                <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Alles bijgewerkt</p>
+                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Geen openstaande items</p>
               </div>
             )}
           </>

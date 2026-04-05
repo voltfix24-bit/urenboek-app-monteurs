@@ -44,7 +44,7 @@ function isFridayAfternoon(): boolean {
   }
 }
 
-const AVATAR_COLORS = ['#4A7C2F', '#6B9E4A', '#2D6B8A', '#8B6914', '#5A4A7C'];
+const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)', 'var(--warn-text)', 'var(--purple)'];
 
 const Index = () => {
   const { user, profile, isManager } = useAuth();
@@ -128,9 +128,9 @@ const Index = () => {
             <HeaderLogo />
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "#D4E8C2", border: "1px solid #9DC87A" }}>
-                <span className="text-lg font-extrabold" style={{ color: "#4A7C2F" }}>{totalHours}</span>
-                <span className="text-[10px] font-semibold" style={{ color: "#8AAD6E" }}>uur</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "var(--accent-light)", border: "1px solid #9DC87A" }}>
+                <span className="text-lg font-extrabold" style={{ color: "var(--accent)" }}>{totalHours}</span>
+                <span className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>uur</span>
               </div>
 
               <div className="hidden sm:flex items-center gap-1.5">
@@ -143,7 +143,7 @@ const Index = () => {
                       { path: "/projecten", label: "Projecten" },
                       { path: "/opdrachtgevers", label: "Opdrachtgevers" },
                     ].map(n => (
-                      <button key={n.path} onClick={() => navigate(n.path)} className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+                      <button key={n.path} onClick={() => navigate(n.path)} className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
                         {n.label}
                       </button>
                     ))}
@@ -159,10 +159,10 @@ const Index = () => {
 
           {isManager && (
             <div className="flex gap-1.5 mt-2.5 sm:hidden overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-              <button onClick={() => navigate("/projecten")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+              <button onClick={() => navigate("/projecten")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
                 <FolderOpen className="h-3 w-3" /> Projecten
               </button>
-              <button onClick={() => navigate("/opdrachtgevers")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+              <button onClick={() => navigate("/opdrachtgevers")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
                 <Building2 className="h-3 w-3" /> Opdrachtgevers
               </button>
             </div>
@@ -176,7 +176,7 @@ const Index = () => {
                 onClick={() => setActiveTab(key as "week" | "overzicht")}
                 className="flex-1 py-2.5 text-sm font-medium transition-colors"
                 style={{
-                  color: activeTab === key ? "#4A7C2F" : "#8AAD6E",
+                  color: activeTab === key ? "var(--accent)" : "var(--text-muted)",
                   borderBottom: activeTab === key ? "2px solid #4A7C2F" : "2px solid transparent",
                   background: "transparent",
                   marginBottom: -1,
@@ -226,11 +226,11 @@ const Index = () => {
       <>
         {/* Onboarding banner */}
         {showOnboarding && !isManager && (
-          <div className="mx-4 mt-3 rounded-2xl p-5 space-y-4" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: "#D4E8C2" }}>👋</div>
+          <div className="mx-4 mt-3 rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: "var(--accent-light)" }}>👋</div>
             <div>
-              <p className="text-base font-bold" style={{ color: "#2D4A1E" }}>Welkom bij TerreVolt Urenregistratie</p>
-              <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Boek hier je gewerkte uren per project. Je manager plant je in en keurt je uren goed.</p>
+              <p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Welkom bij TerreVolt Urenregistratie</p>
+              <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Boek hier je gewerkte uren per project. Je manager plant je in en keurt je uren goed.</p>
             </div>
             <div className="space-y-2">
               {[
@@ -239,12 +239,12 @@ const Index = () => {
                 { step: "3", text: "Dien je uren in ter goedkeuring" },
               ].map(s => (
                 <div key={s.step} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#4A7C2F", color: "#fff" }}>{s.step}</div>
-                  <span className="text-sm" style={{ color: "#2D4A1E" }}>{s.text}</span>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "var(--accent)", color: "#fff" }}>{s.step}</div>
+                  <span className="text-sm" style={{ color: "var(--text-primary)" }}>{s.text}</span>
                 </div>
               ))}
             </div>
-            <button onClick={dismissOnboarding} style={{ marginTop: 12, fontSize: 11, color: "#8AAD6E", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+            <button onClick={dismissOnboarding} style={{ marginTop: 12, fontSize: 11, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
               Niet meer tonen
             </button>
           </div>
@@ -252,15 +252,15 @@ const Index = () => {
 
         {/* Friday afternoon banner */}
         {showFridayBanner && (
-          <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
-            <p className="text-xs font-medium flex items-center gap-1" style={{ color: "#8B6914" }}>
+          <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070" }}>
+            <p className="text-xs font-medium flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Je hebt nog {conceptHours}u niet ingediend deze week.
             </p>
             <button
               onClick={submitAllConcepts}
               disabled={submittingAll}
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0 transition-colors disabled:opacity-50"
-              style={{ background: "#4A7C2F", color: "#fff" }}
+              style={{ background: "var(--accent)", color: "#fff" }}
             >
               Alles indienen <ArrowRight className="h-3 w-3" />
             </button>
@@ -272,16 +272,16 @@ const Index = () => {
           <div className="px-4 py-4 space-y-4 animate-fade-in">
             {/* Week navigation */}
             <div className="flex items-center justify-between">
-              <button onClick={goToPreviousWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+              <button onClick={goToPreviousWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
                 ‹
               </button>
               <div className="text-center">
-                <p className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>{weekLabel}</p>
-                <p className="text-[11px] mt-0.5" style={{ color: "#8AAD6E" }}>
+                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{weekLabel}</p>
+                <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
                   {totalHours}u geboekt deze week
                 </p>
               </div>
-              <button onClick={goToNextWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+              <button onClick={goToNextWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2", color: "var(--text-secondary)" }}>
                 ›
               </button>
             </div>
@@ -302,12 +302,12 @@ const Index = () => {
                     style={{
                       padding: "10px 0",
                       borderRadius: 12,
-                      background: isToday ? "#D4E8C2" : "#EBF0E4",
+                      background: isToday ? "var(--accent-light)" : "var(--bg-surface)",
                       border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2",
                     }}
                   >
-                    <span className="text-[10px] font-medium" style={{ color: "#8AAD6E" }}>{DAGEN[i]}</span>
-                    <span className={`text-sm font-bold`} style={{ color: isToday ? "#4A7C2F" : "#2D4A1E" }}>
+                    <span className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{DAGEN[i]}</span>
+                    <span className={`text-sm font-bold`} style={{ color: isToday ? "var(--accent)" : "var(--text-primary)" }}>
                       {d.getDate()}
                     </span>
                     {hasEntries ? (
@@ -316,16 +316,16 @@ const Index = () => {
                           className="w-1.5 h-1.5 rounded-full"
                           style={{
                             background: dayEntries.some((e) => e.status === "afgekeurd")
-                              ? "#C0392B"
+                              ? "var(--danger)"
                               : dayEntries.some((e) => e.status === "goedgekeurd")
-                              ? "#2D7A3A"
-                              : "#D4A017",
+                              ? "var(--success)"
+                              : "var(--warn-dot)",
                           }}
                         />
-                        <span className="text-[9px] font-bold" style={{ color: "#8AAD6E" }}>{dayHours}u</span>
+                        <span className="text-[9px] font-bold" style={{ color: "var(--text-muted)" }}>{dayHours}u</span>
                       </div>
                     ) : (
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#C5D4B2" }} />
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--border)" }} />
                     )}
                   </button>
                 );
@@ -340,7 +340,7 @@ const Index = () => {
                 if (dayEntries.length === 0) return null;
                 return (
                   <div key={key} className="space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>
+                    <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>
                       {DAGEN[i]} {d.getDate()} {MAANDEN[d.getMonth()]}
                     </p>
                     {dayEntries.map((entry) => (
@@ -351,9 +351,9 @@ const Index = () => {
               })}
               {weekEntries.length === 0 && !showOnboarding && (
                 <div className="text-center py-12">
-                  <ClipboardList className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-                  <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen uren geboekt</p>
-                  <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Druk op + om uren toe te voegen</p>
+                  <ClipboardList className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
+                  <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen uren geboekt</p>
+                  <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Druk op + om uren toe te voegen</p>
                 </div>
               )}
             </div>
@@ -365,13 +365,13 @@ const Index = () => {
           <div className="px-4 py-4 space-y-4 animate-fade-in">
             <div className="flex gap-2">
               {[
-                { label: "Goedgekeurd", value: goedgekeurdUren + "u", color: "#2D7A3A" },
-                { label: "In behandeling", value: String(ingediendCount), color: "#D4A017" },
-                { label: "Afgekeurd", value: String(afgekeurdCount), color: "#C0392B" },
+                { label: "Goedgekeurd", value: goedgekeurdUren + "u", color: "var(--success)" },
+                { label: "In behandeling", value: String(ingediendCount), color: "var(--warn-dot)" },
+                { label: "Afgekeurd", value: String(afgekeurdCount), color: "var(--danger)" },
               ].map((s, i) => (
-                <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+                <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
                   <p className="text-lg font-bold" style={{ color: s.color }}>{s.value}</p>
-                  <p className="text-[10px] mt-0.5 font-medium" style={{ color: "#8AAD6E" }}>{s.label}</p>
+                  <p className="text-[10px] mt-0.5 font-medium" style={{ color: "var(--text-muted)" }}>{s.label}</p>
                 </div>
               ))}
             </div>
@@ -382,7 +382,7 @@ const Index = () => {
               ))}
               {allEntries.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="text-sm" style={{ color: "#8AAD6E" }}>Nog geen uren geregistreerd</p>
+                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>Nog geen uren geregistreerd</p>
                 </div>
               )}
             </div>

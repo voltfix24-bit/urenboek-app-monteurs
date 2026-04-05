@@ -111,10 +111,10 @@ export default function Planning() {
   };
 
   const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-    concept: { bg: "#DFE8D6", text: "#5A7A42", label: "Concept" },
-    ingediend: { bg: "#FFF3CD", text: "#8B6914", label: "Ingediend" },
-    goedgekeurd: { bg: "#D4EDD8", text: "#2D7A3A", label: "Goedgekeurd" },
-    afgekeurd: { bg: "#FDECEA", text: "#C0392B", label: "Afgekeurd" },
+    concept: { bg: "var(--bg-surface-2)", text: "var(--text-secondary)", label: "Concept" },
+    ingediend: { bg: "var(--warn-light)", text: "var(--warn-text)", label: "Ingediend" },
+    goedgekeurd: { bg: "var(--success-light)", text: "var(--success)", label: "Goedgekeurd" },
+    afgekeurd: { bg: "var(--danger-light)", text: "var(--danger)", label: "Afgekeurd" },
   };
 
   const definitiefItems = items.filter(it => it.is_definitief);
@@ -122,23 +122,23 @@ export default function Planning() {
 
   const content = (
     <main className="px-4 py-4 space-y-4">
-      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
           <ChevronLeft className="h-4 w-4" />
         </button>
         <div className="text-center">
-          <p className="text-lg font-extrabold" style={{ color: "#2D4A1E" }}>Week {weekNumber}</p>
-          <p className="text-[11px]" style={{ color: "#8AAD6E" }}>
+          <p className="text-lg font-extrabold" style={{ color: "var(--text-primary)" }}>Week {weekNumber}</p>
+          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
             {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 6), "d MMM", { locale: nl })}
           </p>
         </div>
-        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
       {loading ? (
-        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
+        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
       ) : (
         <>
           {weekDates.map((date, i) => {
@@ -150,21 +150,21 @@ export default function Planning() {
 
             return (
               <div key={dateStr} className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: isToday ? "#4A7C2F" : "#8AAD6E" }}>
+                <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: isToday ? "var(--accent)" : "var(--text-muted)" }}>
                   {DAGEN[i]} {format(date, "d MMM", { locale: nl })} {isToday && "· Vandaag"}
                 </p>
 
                 {besch && (
                   <div className="rounded-2xl p-4 flex items-center gap-3" style={{
-                    background: besch.type === "ziek" ? "#FDECEA" : "#FFF3CD",
+                    background: besch.type === "ziek" ? "var(--danger-light)" : "var(--warn-light)",
                     border: besch.type === "ziek" ? "1px solid #E8A09A" : "1px solid #E8D070",
                   }}>
-                    <span className="text-xl flex items-center justify-center">{besch.type === "ziek" ? <ThermometerSun className="h-5 w-5" style={{ color: "#C0392B" }} /> : <Palmtree className="h-5 w-5" style={{ color: "#8B6914" }} />}</span>
+                    <span className="text-xl flex items-center justify-center">{besch.type === "ziek" ? <ThermometerSun className="h-5 w-5" style={{ color: "var(--danger)" }} /> : <Palmtree className="h-5 w-5" style={{ color: "var(--warn-text)" }} />}</span>
                     <div>
-                      <p className="text-sm font-bold" style={{ color: besch.type === "ziek" ? "#C0392B" : "#8B6914" }}>
+                      <p className="text-sm font-bold" style={{ color: besch.type === "ziek" ? "var(--danger)" : "var(--warn-text)" }}>
                         {besch.type === "ziek" ? "Ziekmelding geregistreerd" : "Vakantie goedgekeurd"}
                       </p>
-                      <p className="text-[11px] mt-0.5" style={{ color: "#8AAD6E" }}>{besch.datum_van} → {besch.datum_tot}</p>
+                      <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{besch.datum_van} → {besch.datum_tot}</p>
                     </div>
                   </div>
                 )}
@@ -176,26 +176,26 @@ export default function Planning() {
 
                   return (
                     <div key={item.id} className="rounded-2xl p-4 space-y-2" style={{
-                      background: "#EBF0E4",
+                      background: "var(--bg-surface)",
                       border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2",
                       opacity: item.is_definitief ? 1 : 0.5,
                     }}>
                       {!item.is_definitief && (
-                        <div className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-lg mb-1" style={{ background: "#DFE8D6", color: "#8AAD6E" }}>
+                        <div className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-lg mb-1" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
                           <Lock className="h-3 w-3" /> {item.project_naam} — Planning nog concept
                         </div>
                       )}
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm font-bold" style={{ color: "#2D4A1E" }}>{item.project_naam}</p>
-                          <p className="text-[11px] font-mono mt-0.5" style={{ color: "#8AAD6E" }}>{item.project_nummer}</p>
+                          <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{item.project_naam}</p>
+                          <p className="text-[11px] font-mono mt-0.5" style={{ color: "var(--text-muted)" }}>{item.project_nummer}</p>
                         </div>
-                        <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: "#D4E8C2", color: "#4A7C2F" }}>
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
                           {item.starttijd} – {item.eindtijd}
                         </span>
                       </div>
                       {item.notitie && (
-                        <p className="text-xs flex items-center gap-1" style={{ background: "#FFF8DC", border: "1px solid #E8D070", color: "#8B6914", padding: "6px 10px", borderRadius: 10 }}>
+                        <p className="text-xs flex items-center gap-1" style={{ background: "var(--warn-bg)", border: "1px solid #E8D070", color: "var(--warn-text)", padding: "6px 10px", borderRadius: 10 }}>
                           <MessageSquare className="h-3 w-3 shrink-0" /> {item.notitie}
                         </p>
                       )}
@@ -213,7 +213,7 @@ export default function Planning() {
                             </span>
                           </div>
                         ) : (
-                          <button onClick={() => openUrenModal(item)} className="w-full mt-2 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors active:scale-[0.98]" style={{ background: "#D4E8C2", border: "1px solid #9DC87A", color: "#2D4A1E" }}>
+                          <button onClick={() => openUrenModal(item)} className="w-full mt-2 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors active:scale-[0.98]" style={{ background: "var(--accent-light)", border: "1px solid #9DC87A", color: "var(--text-primary)" }}>
                             <Clock className="h-3.5 w-3.5" /> Uren boeken voor deze dag →
                           </button>
                         )
@@ -226,18 +226,18 @@ export default function Planning() {
           })}
 
           {items.length === 0 && beschikbaarheid.length === 0 && (
-            <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-              <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-              <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen bevestigde planning deze week</p>
-              <p className="text-xs mt-1 px-6" style={{ color: "#8AAD6E" }}>Je manager heeft de planning nog niet gepubliceerd voor deze week.</p>
+            <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
+              <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen bevestigde planning deze week</p>
+              <p className="text-xs mt-1 px-6" style={{ color: "var(--text-muted)" }}>Je manager heeft de planning nog niet gepubliceerd voor deze week.</p>
             </div>
           )}
 
           {allConcept && beschikbaarheid.length === 0 && (
-            <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-              <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-              <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Planning in voorbereiding</p>
-              <p className="text-xs mt-1 px-6" style={{ color: "#8AAD6E" }}>Je manager werkt nog aan de planning voor deze week. Je ziet hem zodra deze definitief is gemaakt.</p>
+            <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid #C5D4B2" }}>
+              <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
+              <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Planning in voorbereiding</p>
+              <p className="text-xs mt-1 px-6" style={{ color: "var(--text-muted)" }}>Je manager werkt nog aan de planning voor deze week. Je ziet hem zodra deze definitief is gemaakt.</p>
             </div>
           )}
         </>
@@ -250,7 +250,7 @@ export default function Planning() {
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
         <div className="px-4 py-3 flex items-center gap-2.5">
           <HeaderLogo />
-          <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>Mijn planning</span>
+          <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Mijn planning</span>
         </div>
       </header>
 
@@ -267,25 +267,25 @@ export default function Planning() {
       {showUrenModal && modalItem && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowUrenModal(false)}>
           <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "#EBF0E4", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "#C5D4B2" }} />
-            <h2 className="text-base font-bold" style={{ color: "#2D4A1E" }}>Uren boeken</h2>
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "var(--bg-surface)", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
+            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Uren boeken</h2>
 
-            <div className="space-y-1 rounded-xl p-3" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2" }}>
-              <p className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>{modalItem.project_naam}</p>
-              <p className="text-[11px]" style={{ color: "#8AAD6E" }}>
+            <div className="space-y-1 rounded-xl p-3" style={{ background: "var(--bg-base)", border: "1px solid #C5D4B2" }}>
+              <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{modalItem.project_naam}</p>
+              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
                 {format(new Date(modalItem.datum + "T12:00:00"), "EEEE d MMMM", { locale: nl })} · {modalItem.starttijd} – {modalItem.eindtijd}
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Werkzaamheden</label>
+              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Werkzaamheden</label>
               <div className="flex gap-2">
                 {["schakelen", "monteren"].map(w => (
                   <button key={w} onClick={() => setUrenForm(f => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{
-                    background: urenForm.werkzaamheden === w ? "#D4E8C2" : "#F5F7F0",
+                    background: urenForm.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)",
                     border: urenForm.werkzaamheden === w ? "1px solid #9DC87A" : "1px solid #C5D4B2",
-                    color: urenForm.werkzaamheden === w ? "#4A7C2F" : "#8AAD6E",
+                    color: urenForm.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)",
                   }}>
                     {w}
                   </button>
@@ -294,18 +294,18 @@ export default function Planning() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Aantal uren</label>
+              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Aantal uren</label>
               <div className="flex items-center justify-center gap-6">
-                <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.max(0.5, f.uren - 0.5) }))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "#DFE8D6", color: "#5A7A42" }}>−</button>
-                <span className="text-3xl font-bold tabular-nums" style={{ color: "#2D4A1E" }}>{urenForm.uren}u</span>
-                <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "#DFE8D6", color: "#5A7A42" }}>+</button>
+                <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.max(0.5, f.uren - 0.5) }))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>−</button>
+                <span className="text-3xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{urenForm.uren}u</span>
+                <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>+</button>
               </div>
               <div className="flex justify-center gap-2 mt-2">
                 {[4, 6, 8, 9, 10].map(h => (
                   <button key={h} onClick={() => setUrenForm(f => ({ ...f, uren: h }))} className="px-3 py-1 rounded-lg text-xs font-medium transition-colors" style={{
-                    background: urenForm.uren === h ? "#D4E8C2" : "#F5F7F0",
+                    background: urenForm.uren === h ? "var(--accent-light)" : "var(--bg-base)",
                     border: urenForm.uren === h ? "1px solid #9DC87A" : "1px solid #C5D4B2",
-                    color: urenForm.uren === h ? "#4A7C2F" : "#8AAD6E",
+                    color: urenForm.uren === h ? "var(--accent)" : "var(--text-muted)",
                   }}>
                     {h}u
                   </button>
@@ -317,7 +317,7 @@ export default function Planning() {
               <button onClick={() => saveUren(false)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)", color: "#fff" }}>
                 Opslaan als concept
               </button>
-              <button onClick={() => saveUren(true)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "#EBF0E4", border: "1.5px solid #4A7C2F", color: "#4A7C2F" }}>
+              <button onClick={() => saveUren(true)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--bg-surface)", border: "1.5px solid #4A7C2F", color: "var(--accent)" }}>
                 Direct indienen
               </button>
             </div>
