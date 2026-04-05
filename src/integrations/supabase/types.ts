@@ -279,6 +279,66 @@ export type Database = {
         }
         Relationships: []
       }
+      overuren_meldingen: {
+        Row: {
+          behandeld_door: string | null
+          behandeld_op: string | null
+          created_at: string
+          datum: string
+          geboekte_uren: number
+          id: string
+          ingeplande_uren: number | null
+          limiet_uren: number
+          medewerker_id: string
+          status: string
+          toelichting: string | null
+          type: string
+        }
+        Insert: {
+          behandeld_door?: string | null
+          behandeld_op?: string | null
+          created_at?: string
+          datum: string
+          geboekte_uren: number
+          id?: string
+          ingeplande_uren?: number | null
+          limiet_uren: number
+          medewerker_id: string
+          status?: string
+          toelichting?: string | null
+          type: string
+        }
+        Update: {
+          behandeld_door?: string | null
+          behandeld_op?: string | null
+          created_at?: string
+          datum?: string
+          geboekte_uren?: number
+          id?: string
+          ingeplande_uren?: number | null
+          limiet_uren?: number
+          medewerker_id?: string
+          status?: string
+          toelichting?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "overuren_meldingen_behandeld_door_fkey"
+            columns: ["behandeld_door"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overuren_meldingen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       planning: {
         Row: {
           created_at: string
