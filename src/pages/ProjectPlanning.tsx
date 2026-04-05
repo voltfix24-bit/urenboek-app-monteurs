@@ -96,6 +96,7 @@ export default function ProjectPlanning() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
+  const [otherMatrices, setOtherMatrices] = useState<{ projectNaam: string; projectNummer: string; year: number; weekNrs: number[]; cells: Record<string, CellData> }[]>([]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; key: string } | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDefinitiefDialog, setShowDefinitiefDialog] = useState(false);
