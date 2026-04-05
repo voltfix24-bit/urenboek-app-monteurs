@@ -760,6 +760,20 @@ export default function ProjectPlanning() {
         </div>
       </div>
 
+      {/* Overplanning warnings */}
+      {overplanningWarnings.length > 0 && (
+        <div className="mx-4 mb-3 rounded-xl p-3 space-y-1" style={{ background: "var(--warn-light)", border: "1px solid #E8D070" }}>
+          <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: "var(--warn-text)" }}>
+            ⚠️ Overplanning gedetecteerd
+          </p>
+          {overplanningWarnings.map((w, i) => (
+            <p key={i} className="text-[11px]" style={{ color: "var(--warn-text)" }}>
+              <span className="font-semibold">{w.name}</span> is {w.days} dagen ingepland in week {w.weekNr} (max 5)
+            </p>
+          ))}
+        </div>
+      )}
+
       {/* Cost estimate */}
       {planningCostBreakdown.total > 0 && (
         <div className="mx-4 mb-20 lg:mb-4 rounded-xl overflow-hidden" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
