@@ -306,6 +306,39 @@ export default function Dashboard() {
               </div>
             )}
 
+            {/* Overuren meldingen section */}
+            {overurenMeldingen.length > 0 && (
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                    <AlertTriangle className="h-3.5 w-3.5" style={{ color: "var(--warn-dot)" }} /> Overuren meldingen
+                  </p>
+                  <button onClick={() => navigate("/overuren")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
+                    Bekijk alle <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+                {overurenMeldingen.map((m: any) => {
+                  const typeLabel = m.type === "dag_overschrijding" ? "Dag > 8u" : m.type === "week_overschrijding" ? "Week > 40u" : "Meer dan ingepland";
+                  return (
+                    <div key={m.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: "var(--warn-dot)" }} />
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{m.full_name}</p>
+                          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                            {format(new Date(m.datum), "d MMM", { locale: nl })} · {typeLabel}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold" style={{ fontFamily: "DM Mono, monospace", color: m.geboekte_uren > m.limiet_uren ? "var(--danger)" : "var(--text-primary)" }}>
+                        {m.geboekte_uren}u / {m.limiet_uren}u
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Verlof requests with inline actions */}
             {verlofAanvragen.length > 0 && (
               <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
