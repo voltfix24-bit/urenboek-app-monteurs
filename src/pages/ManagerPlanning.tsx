@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
@@ -132,6 +132,82 @@ export default function ManagerPlanning() {
     return <div className="min-h-screen flex items-center justify-center" style={{ background: "#F5F7F0" }}><p style={{ color: "#8AAD6E" }}>Alleen managers hebben toegang.</p></div>;
   }
 
+  const gridContent = (
+    <main className="px-4 py-4 space-y-4">
+      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <div className="text-center">
+          <p className="text-lg font-extrabold" style={{ color: "#2D4A1E" }}>Week {weekNumber}</p>
+          <p className="text-[11px]" style={{ color: "#8AAD6E" }}>
+            {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 4), "d MMM", { locale: nl })}
+          </p>
+        </div>
+        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
+      ) : (
+        <>
+          <div className="flex gap-1">
+            <div className="w-16 shrink-0" />
+            {weekDates.map((d, i) => (
+              <div key={i} className="flex-1 text-center">
+                <p className="text-[10px] font-semibold" style={{ color: "#8AAD6E" }}>{DAGEN[i]}</p>
+                <p className="text-xs font-bold" style={{ color: "#2D4A1E" }}>{d.getDate()}</p>
+              </div>
+            ))}
+          </div>
+
+          {medewerkers.map((med, mi) => (
+            <div key={med.id} className="flex gap-1 items-stretch">
+              <div className="w-16 shrink-0 flex items-center">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
+                    {med.full_name.charAt(0)}
+                  </div>
+                  <span className="text-[10px] font-medium truncate max-w-[44px]" style={{ color: "#2D4A1E" }}>{med.full_name.split(" ")[0]}</span>
+                </div>
+              </div>
+              {weekDates.map((d, i) => {
+                const dateStr = format(d, "yyyy-MM-dd");
+                const entry = entries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
+                const proj = entry ? projMap.get(entry.project_id) : null;
+                const conflicts = getConflicts(med.id, dateStr, i, entries, medewerkers, beschikbaarheid, null);
+                const hasConflict = conflicts.length > 0;
+
+                return (
+                  <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] flex flex-col items-center justify-center text-center transition-colors active:scale-95" style={{
+                    background: hasConflict && !entry ? "#FDECEA" : entry ? "#D4E8C2" : "#F5F7F0",
+                    border: hasConflict ? "1px solid #E8A09A" : entry ? "1px solid #9DC87A" : "1px solid #DFE8D6",
+                  }}>
+                    {entry ? (
+                      <>
+                        <span className="text-[8px] font-bold truncate w-full" style={{ color: "#2D4A1E" }}>{proj?.nummer?.slice(-3) || "?"}</span>
+                        <span className="text-[7px]" style={{ color: "#8AAD6E" }}>{entry.starttijd}</span>
+                      </>
+                    ) : hasConflict ? (
+                      <AlertTriangle className="h-3 w-3" style={{ color: "#C0392B", opacity: 0.6 }} />
+                    ) : (
+                      <Plus className="h-3 w-3" style={{ color: "#C5D4B2" }} />
+                    )}
+                    {hasConflict && entry && (
+                      <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "#C0392B" }} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </>
+      )}
+    </main>
+  );
+
   return (
     <PageShell>
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
@@ -141,79 +217,14 @@ export default function ManagerPlanning() {
         </div>
       </header>
 
-      <main className="px-4 py-4 space-y-4">
-        <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-          <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div className="text-center">
-            <p className="text-lg font-extrabold" style={{ color: "#2D4A1E" }}>Week {weekNumber}</p>
-            <p className="text-[11px]" style={{ color: "#8AAD6E" }}>
-              {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 4), "d MMM", { locale: nl })}
-            </p>
-          </div>
-          <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-
-        {loading ? (
-          <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
-        ) : (
-          <>
-            <div className="flex gap-1">
-              <div className="w-16 shrink-0" />
-              {weekDates.map((d, i) => (
-                <div key={i} className="flex-1 text-center">
-                  <p className="text-[10px] font-semibold" style={{ color: "#8AAD6E" }}>{DAGEN[i]}</p>
-                  <p className="text-xs font-bold" style={{ color: "#2D4A1E" }}>{d.getDate()}</p>
-                </div>
-              ))}
-            </div>
-
-            {medewerkers.map((med, mi) => (
-              <div key={med.id} className="flex gap-1 items-stretch">
-                <div className="w-16 shrink-0 flex items-center">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
-                      {med.full_name.charAt(0)}
-                    </div>
-                    <span className="text-[10px] font-medium truncate max-w-[44px]" style={{ color: "#2D4A1E" }}>{med.full_name.split(" ")[0]}</span>
-                  </div>
-                </div>
-                {weekDates.map((d, i) => {
-                  const dateStr = format(d, "yyyy-MM-dd");
-                  const entry = entries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
-                  const proj = entry ? projMap.get(entry.project_id) : null;
-                  const conflicts = getConflicts(med.id, dateStr, i, entries, medewerkers, beschikbaarheid, null);
-                  const hasConflict = conflicts.length > 0;
-
-                  return (
-                    <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] flex flex-col items-center justify-center text-center transition-colors active:scale-95" style={{
-                      background: hasConflict && !entry ? "#FDECEA" : entry ? "#D4E8C2" : "#F5F7F0",
-                      border: hasConflict ? "1px solid #E8A09A" : entry ? "1px solid #9DC87A" : "1px solid #DFE8D6",
-                    }}>
-                      {entry ? (
-                        <>
-                          <span className="text-[8px] font-bold truncate w-full" style={{ color: "#2D4A1E" }}>{proj?.nummer?.slice(-3) || "?"}</span>
-                          <span className="text-[7px]" style={{ color: "#8AAD6E" }}>{entry.starttijd}</span>
-                        </>
-                      ) : hasConflict ? (
-                        <AlertTriangle className="h-3 w-3" style={{ color: "#C0392B", opacity: 0.6 }} />
-                      ) : (
-                        <Plus className="h-3 w-3" style={{ color: "#C5D4B2" }} />
-                      )}
-                      {hasConflict && entry && (
-                        <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "#C0392B" }} />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
-          </>
-        )}
-      </main>
+      <div className="lg:hidden">
+        <PullToRefresh onRefresh={async () => { await fetchAll(); }}>
+          {gridContent}
+        </PullToRefresh>
+      </div>
+      <div className="hidden lg:block">
+        {gridContent}
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
