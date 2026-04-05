@@ -1,14 +1,17 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavBadges } from "@/hooks/useNavBadges";
+import type { NavBadges } from "@/hooks/useNavBadges";
 import { NavBadge } from "./NavBadge";
 import { Clock, CheckCircle, BarChart3, Users, CalendarDays, Bell, User, LayoutDashboard } from "lucide-react";
 
-export function BottomNav() {
+interface BottomNavProps {
+  badges: NavBadges;
+}
+
+export function BottomNav({ badges }: BottomNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { isManager } = useAuth();
-  const { badges } = useNavBadges();
 
   const monteurTabs = [
     { key: "/", icon: Clock, label: "Uren", badge: badges.afgekeurdeUren },

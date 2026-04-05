@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { DesktopSidebar } from "./DesktopSidebar";
 import { BottomNav } from "./BottomNav";
+import { useNavBadges } from "@/hooks/useNavBadges";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -15,9 +16,11 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children, title, subtitle, headerActions, rawDesktop }: AppLayoutProps) {
+  const { badges } = useNavBadges();
+
   return (
     <>
-      <DesktopSidebar />
+      <DesktopSidebar badges={badges} />
 
       {/* Desktop content area */}
       <div className="hidden lg:block" style={{ marginLeft: 240, minHeight: "100vh", background: "var(--bg-base)" }}>
@@ -38,7 +41,7 @@ export function AppLayout({ children, title, subtitle, headerActions, rawDesktop
       {/* Mobile content area */}
       <div className="lg:hidden">
         {children}
-        <BottomNav />
+        <BottomNav badges={badges} />
       </div>
     </>
   );

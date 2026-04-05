@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { DesktopSidebar } from "./DesktopSidebar";
 import { BottomNav } from "./BottomNav";
+import { useNavBadges } from "@/hooks/useNavBadges";
 
 interface PageShellProps {
   children: ReactNode;
@@ -15,9 +16,11 @@ interface PageShellProps {
  * - Content shifts right on desktop, centered on mobile
  */
 export function PageShell({ children, mobileConstrained = true }: PageShellProps) {
+  const { badges } = useNavBadges();
+
   return (
     <>
-      <DesktopSidebar />
+      <DesktopSidebar badges={badges} />
       <div
         className="min-h-screen overflow-x-hidden"
         style={{ background: "var(--bg-base)" }}
@@ -37,7 +40,7 @@ export function PageShell({ children, mobileConstrained = true }: PageShellProps
           {children}
         </div>
       </div>
-      <BottomNav />
+      <BottomNav badges={badges} />
     </>
   );
 }
