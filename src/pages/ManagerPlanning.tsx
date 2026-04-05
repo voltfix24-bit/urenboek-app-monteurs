@@ -307,6 +307,19 @@ export default function ManagerPlanning() {
                 <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
                 </select>
+                {(() => {
+                  const selProj = projects.find(p => p.id === modalForm.project_id);
+                  if (!selProj) return null;
+                  const addr = volledigAdres(selProj);
+                  return (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
+                      <MapPin className="h-3 w-3 shrink-0" style={{ color: "var(--text-muted)" }} />
+                      <span className="text-[11px]" style={{ color: addr ? "var(--text-secondary)" : "var(--warn-text)" }}>
+                        {addr || "⚠ Geen adres ingevuld"}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
               <div className="flex gap-3">
                 <div className="flex-1 space-y-1">
