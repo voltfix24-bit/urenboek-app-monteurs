@@ -43,10 +43,16 @@ export function useNavBadges() {
     return () => clearInterval(interval);
   }, [fetchBadges]);
 
+  const subId = useRef(0);
   useEffect(() => {
     if (!user) return;
-    const ch1 = supabase.channel(`badge-ub-${Date.now()}`).on("postgres_changes", { event: "*", schema: "public", table: "uren_boekingen" }, fetchBadges).subscribe();
-    const ch2 = supabase.channel(`badge-ls-${Date.now()}`).on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges).subscribe();
+    const id = ++subId.current;
+    const ch1 = supabase.channel(`badge-ub-${id}-${Date.now()}`);
+    const ch2 = supabase.channel(`badge-ls-${id}-${Date.now()}`);
+    ch1.on("postgres_changes", { event: "*", schema: "public", table: "uren_boekingen" }, fetchBadges);
+    ch2.on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges);
+    ch1.subscribe();
+    ch2.subscribe();
     return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
   }, [fetchBadges]);
 
