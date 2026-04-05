@@ -261,7 +261,16 @@ const Index = () => {
   function renderContent() {
     return (
       <>
-        {/* Onboarding banner */}
+        {/* Offline banner */}
+        {isOffline && (
+          <div className="mx-4 mt-3 flex items-center gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
+            <WifiOff className="h-4 w-4 shrink-0" style={{ color: "var(--warn-text)" }} />
+            <p className="text-xs font-medium" style={{ color: "var(--warn-text)" }}>
+              📡 Geen verbinding — je kunt nog wel uren boeken. Ze worden ingediend als je weer online bent.
+              {pendingOffline > 0 && ` (${pendingOffline} wachtend)`}
+            </p>
+          </div>
+        )}
         {showOnboarding && !isManager && (
           <div className="mx-4 mt-3 rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: "var(--accent-light)" }}>👋</div>
