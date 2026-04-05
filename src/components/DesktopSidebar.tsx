@@ -35,12 +35,16 @@ interface DesktopSidebarProps {
 export function DesktopSidebar({ badges }: DesktopSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isManager, signOut } = useAuth();
+  const { isManager, canManagePlanning, signOut } = useAuth();
   const { profile: profileCtx } = useProfile();
   const [showSearch, setShowSearch] = useState(false);
   const displayName = profileCtx?.full_name || "Gebruiker";
 
-  const items = isManager ? managerItems : monteurItems;
+  const items = isManager
+    ? managerItems
+    : canManagePlanning
+      ? managerItems.filter(i => ["/dashboard", "/manager-planning", "/projecten", "/mededelingen", "/profiel"].includes(i.path))
+      : monteurItems;
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";

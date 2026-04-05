@@ -11,7 +11,7 @@ interface BottomNavProps {
 export function BottomNav({ badges }: BottomNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isManager } = useAuth();
+  const { isManager, canManagePlanning } = useAuth();
 
   const monteurTabs = [
     { key: "/", icon: Clock, label: "Uren", badge: badges.afgekeurdeUren },
@@ -28,7 +28,14 @@ export function BottomNav({ badges }: BottomNavProps) {
     { key: "/medewerkers", icon: Users, label: "Team" },
   ];
 
-  const tabs = isManager ? managerTabs : monteurTabs;
+  const uitvoerderTabs = [
+    { key: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { key: "/manager-planning", icon: CalendarDays, label: "Planning" },
+    { key: "/mededelingen", icon: Bell, label: "Berichten", badge: badges.ongelezen },
+    { key: "/profiel", icon: User, label: "Profiel" },
+  ];
+
+  const tabs = isManager ? managerTabs : canManagePlanning ? uitvoerderTabs : monteurTabs;
 
   const isActive = (key: string) => {
     if (key === "/") return location.pathname === "/";
