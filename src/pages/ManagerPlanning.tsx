@@ -7,13 +7,14 @@ import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle, MapPin } from "lucide-react";
+import { volledigAdres } from "@/lib/utils";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 
 interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; }
 interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; }
-interface ProjectInfo { id: string; naam: string; nummer: string; }
+interface ProjectInfo { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
 interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_tot: string; type: string; status: string; }
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
@@ -80,7 +81,7 @@ export default function ManagerPlanning() {
     const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }] = await Promise.all([
       supabase.from("planning").select("*").gte("datum", startStr).lte("datum", endStr),
       supabase.from("profiles").select("id, full_name, vaste_vrije_dagen").order("full_name"),
-      supabase.from("projects").select("id, naam, nummer").eq("active", true).order("nummer"),
+      supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
     ]);
     setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "" })));
