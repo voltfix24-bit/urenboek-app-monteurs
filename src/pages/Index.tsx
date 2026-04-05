@@ -7,6 +7,7 @@ import { EntryCard } from "@/components/EntryCard";
 import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { FolderOpen, Building2, ArrowRight, ClipboardList, AlertTriangle } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,16 +54,31 @@ const Index = () => {
   const [modalDate, setModalDate] = useState<Date | null>(null);
   const [showFridayBanner, setShowFridayBanner] = useState(false);
   const [submittingAll, setSubmittingAll] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   const {
     weekDates, weekEntries, allEntries, addEntry, removeEntry, submitEntry,
     revertToConcept, goToPreviousWeek, goToNextWeek, totalHours, currentWeekStart,
+    loading, profileId,
   } = useTimesheet();
 
   const swipeHandlers = useSwipe({ onSwipeLeft: goToNextWeek, onSwipeRight: goToPreviousWeek });
 
   const conceptEntries = weekEntries.filter(e => e.status === "concept");
   const conceptHours = conceptEntries.reduce((s, e) => s + e.hours, 0);
+
+  // Onboarding check
+  useEffect(() => {
+    if (!profileId || onboardingChecked) return;
+    const dismissed = localStorage.getItem("onboarding_dismissed");
+    if (dismissed === "true") { setOnboardingChecked(true); return; }
+    (async () => {
+      const { count } = await supabase.from("uren_boekingen").select("id", { count: "exact", head: true }).eq("medewerker_id", profileId);
+      if (count === 0) setShowOnboarding(true);
+      setOnboardingChecked(true);
+    })();
+  }, [profileId, onboardingChecked]);
 
   useEffect(() => {
     const now = new Date();
@@ -81,6 +97,10 @@ const Index = () => {
     setSubmittingAll(false);
   }, [user, conceptEntries]);
 
+  const handleRefresh = async () => {
+    window.location.reload();
+  };
+
   const today = dateKey(new Date());
   const weekLabel = `${fmt(weekDates[0])} – ${fmt(weekDates[6])}`;
 
@@ -92,6 +112,11 @@ const Index = () => {
   const goedgekeurdUren = allEntries.filter((e) => e.status === "goedgekeurd").reduce((a, b) => a + b.hours, 0);
   const ingediendCount = allEntries.filter((e) => e.status === "ingediend").length;
   const afgekeurdCount = allEntries.filter((e) => e.status === "afgekeurd").length;
+
+  const dismissOnboarding = () => {
+    localStorage.setItem("onboarding_dismissed", "true");
+    setShowOnboarding(false);
+  };
 
   return (
     <PageShell>
@@ -164,144 +189,14 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Friday afternoon banner */}
-      {showFridayBanner && (
-        <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
-          <p className="text-xs font-medium flex items-center gap-1" style={{ color: "#8B6914" }}>
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Je hebt nog {conceptHours}u niet ingediend deze week.
-          </p>
-          <button
-            onClick={submitAllConcepts}
-            disabled={submittingAll}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0 transition-colors disabled:opacity-50"
-            style={{ background: "#4A7C2F", color: "#fff" }}
-          >
-            Alles indienen <ArrowRight className="h-3 w-3" />
-          </button>
-        </div>
-      )}
-
-      {/* Week tab */}
-      {activeTab === "week" && (
-        <div className="px-4 py-4 space-y-4 animate-fade-in">
-          {/* Week navigation */}
-          <div className="flex items-center justify-between">
-            <button onClick={goToPreviousWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
-              ‹
-            </button>
-            <div className="text-center">
-              <p className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>{weekLabel}</p>
-              <p className="text-[11px] mt-0.5" style={{ color: "#8AAD6E" }}>
-                {totalHours}u geboekt deze week
-              </p>
-            </div>
-            <button onClick={goToNextWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
-              ›
-            </button>
-          </div>
-
-          {/* Week strip */}
-          <div className="flex gap-1.5">
-            {weekDates.map((d, i) => {
-              const key = dateKey(d);
-              const dayEntries = weekEntries.filter((e) => e.date === key);
-              const isToday = key === today;
-              const hasEntries = dayEntries.length > 0;
-              const dayHours = dayEntries.reduce((a, b) => a + b.hours, 0);
-              return (
-                <button
-                  key={i}
-                  onClick={() => openModal(d)}
-                  className="flex-1 flex flex-col items-center gap-1 transition-colors active:scale-[0.94]"
-                  style={{
-                    padding: "10px 0",
-                    borderRadius: 12,
-                    background: isToday ? "#D4E8C2" : "#EBF0E4",
-                    border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2",
-                  }}
-                >
-                  <span className="text-[10px] font-medium" style={{ color: "#8AAD6E" }}>{DAGEN[i]}</span>
-                  <span className={`text-sm font-bold`} style={{ color: isToday ? "#4A7C2F" : "#2D4A1E" }}>
-                    {d.getDate()}
-                  </span>
-                  {hasEntries ? (
-                    <div className="flex items-center gap-1">
-                      <div
-                        className="w-1.5 h-1.5 rounded-full"
-                        style={{
-                          background: dayEntries.some((e) => e.status === "afgekeurd")
-                            ? "#C0392B"
-                            : dayEntries.some((e) => e.status === "goedgekeurd")
-                            ? "#2D7A3A"
-                            : "#D4A017",
-                        }}
-                      />
-                      <span className="text-[9px] font-bold" style={{ color: "#8AAD6E" }}>{dayHours}u</span>
-                    </div>
-                  ) : (
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#C5D4B2" }} />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Week entries by day */}
-          <div className="space-y-3">
-            {weekDates.map((d, i) => {
-              const key = dateKey(d);
-              const dayEntries = weekEntries.filter((e) => e.date === key);
-              if (dayEntries.length === 0) return null;
-              return (
-                <div key={key} className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>
-                    {DAGEN[i]} {d.getDate()} {MAANDEN[d.getMonth()]}
-                  </p>
-                  {dayEntries.map((entry) => (
-                    <EntryCard key={entry.id} entry={entry} onSubmit={submitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
-                  ))}
-                </div>
-              );
-            })}
-            {weekEntries.length === 0 && (
-              <div className="text-center py-12">
-                <ClipboardList className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-                <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen uren geboekt</p>
-                <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Druk op + om uren toe te voegen</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Overzicht tab */}
-      {activeTab === "overzicht" && (
-        <div className="px-4 py-4 space-y-4 animate-fade-in">
-          <div className="flex gap-2">
-            {[
-              { label: "Goedgekeurd", value: goedgekeurdUren + "u", color: "#2D7A3A" },
-              { label: "In behandeling", value: String(ingediendCount), color: "#D4A017" },
-              { label: "Afgekeurd", value: String(afgekeurdCount), color: "#C0392B" },
-            ].map((s, i) => (
-              <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <p className="text-lg font-bold" style={{ color: s.color }}>{s.value}</p>
-                <p className="text-[10px] mt-0.5 font-medium" style={{ color: "#8AAD6E" }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="space-y-2">
-            {allEntries.map((entry) => (
-              <EntryCard key={entry.id} entry={entry} showDate onSubmit={submitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
-            ))}
-            {allEntries.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-sm" style={{ color: "#8AAD6E" }}>Nog geen uren geregistreerd</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <div className="lg:hidden">
+        <PullToRefresh onRefresh={handleRefresh}>
+          {renderContent()}
+        </PullToRefresh>
+      </div>
+      <div className="hidden lg:block">
+        {renderContent()}
+      </div>
 
       {/* FAB */}
       <button
@@ -325,6 +220,177 @@ const Index = () => {
     </div>
     </PageShell>
   );
+
+  function renderContent() {
+    return (
+      <>
+        {/* Onboarding banner */}
+        {showOnboarding && !isManager && (
+          <div className="mx-4 mt-3 rounded-2xl p-5 space-y-4" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: "#D4E8C2" }}>👋</div>
+            <div>
+              <p className="text-base font-bold" style={{ color: "#2D4A1E" }}>Welkom bij TerreVolt Urenregistratie</p>
+              <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Boek hier je gewerkte uren per project. Je manager plant je in en keurt je uren goed.</p>
+            </div>
+            <div className="space-y-2">
+              {[
+                { step: "1", text: "Druk op + om uren te boeken" },
+                { step: "2", text: "Kies je project en vul je uren in" },
+                { step: "3", text: "Dien je uren in ter goedkeuring" },
+              ].map(s => (
+                <div key={s.step} className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#4A7C2F", color: "#fff" }}>{s.step}</div>
+                  <span className="text-sm" style={{ color: "#2D4A1E" }}>{s.text}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={dismissOnboarding} style={{ marginTop: 12, fontSize: 11, color: "#8AAD6E", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+              Niet meer tonen
+            </button>
+          </div>
+        )}
+
+        {/* Friday afternoon banner */}
+        {showFridayBanner && (
+          <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "#FFF8DC", border: "1px solid #E8D070" }}>
+            <p className="text-xs font-medium flex items-center gap-1" style={{ color: "#8B6914" }}>
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Je hebt nog {conceptHours}u niet ingediend deze week.
+            </p>
+            <button
+              onClick={submitAllConcepts}
+              disabled={submittingAll}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0 transition-colors disabled:opacity-50"
+              style={{ background: "#4A7C2F", color: "#fff" }}
+            >
+              Alles indienen <ArrowRight className="h-3 w-3" />
+            </button>
+          </div>
+        )}
+
+        {/* Week tab */}
+        {activeTab === "week" && (
+          <div className="px-4 py-4 space-y-4 animate-fade-in">
+            {/* Week navigation */}
+            <div className="flex items-center justify-between">
+              <button onClick={goToPreviousWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+                ‹
+              </button>
+              <div className="text-center">
+                <p className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>{weekLabel}</p>
+                <p className="text-[11px] mt-0.5" style={{ color: "#8AAD6E" }}>
+                  {totalHours}u geboekt deze week
+                </p>
+              </div>
+              <button onClick={goToNextWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2", color: "#5A7A42" }}>
+                ›
+              </button>
+            </div>
+
+            {/* Week strip */}
+            <div className="flex gap-1.5">
+              {weekDates.map((d, i) => {
+                const key = dateKey(d);
+                const dayEntries = weekEntries.filter((e) => e.date === key);
+                const isToday = key === today;
+                const hasEntries = dayEntries.length > 0;
+                const dayHours = dayEntries.reduce((a, b) => a + b.hours, 0);
+                return (
+                  <button
+                    key={i}
+                    onClick={() => openModal(d)}
+                    className="flex-1 flex flex-col items-center gap-1 transition-colors active:scale-[0.94]"
+                    style={{
+                      padding: "10px 0",
+                      borderRadius: 12,
+                      background: isToday ? "#D4E8C2" : "#EBF0E4",
+                      border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                    }}
+                  >
+                    <span className="text-[10px] font-medium" style={{ color: "#8AAD6E" }}>{DAGEN[i]}</span>
+                    <span className={`text-sm font-bold`} style={{ color: isToday ? "#4A7C2F" : "#2D4A1E" }}>
+                      {d.getDate()}
+                    </span>
+                    {hasEntries ? (
+                      <div className="flex items-center gap-1">
+                        <div
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{
+                            background: dayEntries.some((e) => e.status === "afgekeurd")
+                              ? "#C0392B"
+                              : dayEntries.some((e) => e.status === "goedgekeurd")
+                              ? "#2D7A3A"
+                              : "#D4A017",
+                          }}
+                        />
+                        <span className="text-[9px] font-bold" style={{ color: "#8AAD6E" }}>{dayHours}u</span>
+                      </div>
+                    ) : (
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#C5D4B2" }} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Week entries by day */}
+            <div className="space-y-3">
+              {weekDates.map((d, i) => {
+                const key = dateKey(d);
+                const dayEntries = weekEntries.filter((e) => e.date === key);
+                if (dayEntries.length === 0) return null;
+                return (
+                  <div key={key} className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "#8AAD6E" }}>
+                      {DAGEN[i]} {d.getDate()} {MAANDEN[d.getMonth()]}
+                    </p>
+                    {dayEntries.map((entry) => (
+                      <EntryCard key={entry.id} entry={entry} onSubmit={submitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
+                    ))}
+                  </div>
+                );
+              })}
+              {weekEntries.length === 0 && !showOnboarding && (
+                <div className="text-center py-12">
+                  <ClipboardList className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
+                  <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen uren geboekt</p>
+                  <p className="text-xs mt-1" style={{ color: "#8AAD6E" }}>Druk op + om uren toe te voegen</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Overzicht tab */}
+        {activeTab === "overzicht" && (
+          <div className="px-4 py-4 space-y-4 animate-fade-in">
+            <div className="flex gap-2">
+              {[
+                { label: "Goedgekeurd", value: goedgekeurdUren + "u", color: "#2D7A3A" },
+                { label: "In behandeling", value: String(ingediendCount), color: "#D4A017" },
+                { label: "Afgekeurd", value: String(afgekeurdCount), color: "#C0392B" },
+              ].map((s, i) => (
+                <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+                  <p className="text-lg font-bold" style={{ color: s.color }}>{s.value}</p>
+                  <p className="text-[10px] mt-0.5 font-medium" style={{ color: "#8AAD6E" }}>{s.label}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              {allEntries.map((entry) => (
+                <EntryCard key={entry.id} entry={entry} showDate onSubmit={submitEntry} onRemove={removeEntry} onRevertToConcept={revertToConcept} />
+              ))}
+              {allEntries.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-sm" style={{ color: "#8AAD6E" }}>Nog geen uren geregistreerd</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
 };
 
 export default Index;

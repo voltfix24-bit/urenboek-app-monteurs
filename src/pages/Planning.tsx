@@ -2,14 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
-import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare } from "lucide-react";
+import { PullToRefresh } from "@/components/PullToRefresh";
+import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare, Clock, Check } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
+import { toast } from "sonner";
 
 interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
+interface ExistingBoeking { id: string; uren: number; status: string; }
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
@@ -19,6 +21,11 @@ export default function Planning() {
   const [items, setItems] = useState<PlanningItem[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [existingBoekingen, setExistingBoekingen] = useState<Map<string, ExistingBoeking>>(new Map());
+  const [showUrenModal, setShowUrenModal] = useState(false);
+  const [modalItem, setModalItem] = useState<PlanningItem | null>(null);
+  const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8 });
   const weekNumber = getISOWeek(weekStart);
 
   const fetchPlanning = useCallback(async () => {
@@ -26,14 +33,24 @@ export default function Planning() {
     setLoading(true);
     const { data: profile } = await supabase.from("profiles").select("id").eq("user_id", user.id).single();
     if (!profile) { setLoading(false); return; }
+    setProfileId(profile.id);
     const startStr = format(weekStart, "yyyy-MM-dd");
     const endStr = format(addDays(weekStart, 6), "yyyy-MM-dd");
 
-    const [{ data }, { data: beschData }] = await Promise.all([
+    const [{ data }, { data: beschData }, { data: boekData }] = await Promise.all([
       supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id").eq("medewerker_id", profile.id).gte("datum", startStr).lte("datum", endStr).order("datum"),
       supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", profile.id).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
+      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status").eq("medewerker_id", profile.id).gte("datum", startStr).lte("datum", endStr),
     ]);
     setBeschikbaarheid((beschData ?? []) as any);
+
+    // Map existing boekingen by datum+project_id
+    const boekMap = new Map<string, ExistingBoeking>();
+    (boekData ?? []).forEach((b: any) => {
+      boekMap.set(`${b.datum}|${b.project_id}`, { id: b.id, uren: Number(b.uren), status: b.status });
+    });
+    setExistingBoekingen(boekMap);
+
     if (data) {
       const projectIds = [...new Set(data.map((d: any) => d.project_id))];
       let projMap = new Map();
@@ -63,68 +80,101 @@ export default function Planning() {
     return beschikbaarheid.find(b => dateStr >= b.datum_van && dateStr <= b.datum_tot) || null;
   }
 
-  // Determine empty state type
+  function calcDefaultUren(starttijd: string, eindtijd: string): number {
+    const [sh, sm] = starttijd.split(":").map(Number);
+    const [eh, em] = eindtijd.split(":").map(Number);
+    const diff = (eh * 60 + em - sh * 60 - sm) / 60;
+    return Math.max(0.5, Math.round(diff * 2) / 2);
+  }
+
+  function openUrenModal(item: PlanningItem) {
+    setModalItem(item);
+    setUrenForm({ werkzaamheden: "monteren", uren: calcDefaultUren(item.starttijd, item.eindtijd) });
+    setShowUrenModal(true);
+  }
+
+  const saveUren = async (submitDirect: boolean) => {
+    if (!profileId || !modalItem) return;
+    const { error } = await supabase.from("uren_boekingen").insert({
+      medewerker_id: profileId,
+      project_id: modalItem.project_id,
+      datum: modalItem.datum,
+      uren: urenForm.uren,
+      type: urenForm.werkzaamheden,
+      beschrijving: urenForm.werkzaamheden,
+      status: submitDirect ? "ingediend" : "concept",
+    });
+    if (error) { toast.error("Fout bij opslaan"); return; }
+    toast.success("Uren geboekt ✓");
+    setShowUrenModal(false);
+    fetchPlanning();
+  };
+
+  const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
+    concept: { bg: "#DFE8D6", text: "#5A7A42", label: "Concept" },
+    ingediend: { bg: "#FFF3CD", text: "#8B6914", label: "Ingediend" },
+    goedgekeurd: { bg: "#D4EDD8", text: "#2D7A3A", label: "Goedgekeurd" },
+    afgekeurd: { bg: "#FDECEA", text: "#C0392B", label: "Afgekeurd" },
+  };
+
   const definitiefItems = items.filter(it => it.is_definitief);
   const allConcept = items.length > 0 && definitiefItems.length === 0;
 
-  return (
-    <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
-        <div className="px-4 py-3 flex items-center gap-2.5">
-          <HeaderLogo />
-          <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>Mijn planning</span>
+  const content = (
+    <main className="px-4 py-4 space-y-4">
+      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <div className="text-center">
+          <p className="text-lg font-extrabold" style={{ color: "#2D4A1E" }}>Week {weekNumber}</p>
+          <p className="text-[11px]" style={{ color: "#8AAD6E" }}>
+            {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 6), "d MMM", { locale: nl })}
+          </p>
         </div>
-      </header>
+        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
 
-      <main className="px-4 py-4 space-y-4">
-        <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-          <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <div className="text-center">
-            <p className="text-lg font-extrabold" style={{ color: "#2D4A1E" }}>Week {weekNumber}</p>
-            <p className="text-[11px]" style={{ color: "#8AAD6E" }}>
-              {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 6), "d MMM", { locale: nl })}
-            </p>
-          </div>
-          <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#DFE8D6", color: "#5A7A42" }}>
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+      {loading ? (
+        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
+      ) : (
+        <>
+          {weekDates.map((date, i) => {
+            const dateStr = format(date, "yyyy-MM-dd");
+            const dayItems = items.filter(it => it.datum === dateStr);
+            const besch = getBeschikbaarheidForDate(dateStr);
+            if (!dayItems.length && !besch) return null;
+            const isToday = dateStr === today;
 
-        {loading ? (
-          <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
-        ) : (
-          <>
-            {weekDates.map((date, i) => {
-              const dateStr = format(date, "yyyy-MM-dd");
-              const dayItems = items.filter(it => it.datum === dateStr);
-              const besch = getBeschikbaarheidForDate(dateStr);
-              if (!dayItems.length && !besch) return null;
-              const isToday = dateStr === today;
+            return (
+              <div key={dateStr} className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: isToday ? "#4A7C2F" : "#8AAD6E" }}>
+                  {DAGEN[i]} {format(date, "d MMM", { locale: nl })} {isToday && "· Vandaag"}
+                </p>
 
-              return (
-                <div key={dateStr} className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: isToday ? "#4A7C2F" : "#8AAD6E" }}>
-                    {DAGEN[i]} {format(date, "d MMM", { locale: nl })} {isToday && "· Vandaag"}
-                  </p>
-
-                  {besch && (
-                    <div className="rounded-2xl p-4 flex items-center gap-3" style={{
-                      background: besch.type === "ziek" ? "#FDECEA" : "#FFF3CD",
-                      border: besch.type === "ziek" ? "1px solid #E8A09A" : "1px solid #E8D070",
-                    }}>
-                      <span className="text-xl flex items-center justify-center">{besch.type === "ziek" ? <ThermometerSun className="h-5 w-5" style={{ color: "#C0392B" }} /> : <Palmtree className="h-5 w-5" style={{ color: "#8B6914" }} />}</span>
-                      <div>
-                        <p className="text-sm font-bold" style={{ color: besch.type === "ziek" ? "#C0392B" : "#8B6914" }}>
-                          {besch.type === "ziek" ? "Ziekmelding geregistreerd" : "Vakantie goedgekeurd"}
-                        </p>
-                        <p className="text-[11px] mt-0.5" style={{ color: "#8AAD6E" }}>{besch.datum_van} → {besch.datum_tot}</p>
-                      </div>
+                {besch && (
+                  <div className="rounded-2xl p-4 flex items-center gap-3" style={{
+                    background: besch.type === "ziek" ? "#FDECEA" : "#FFF3CD",
+                    border: besch.type === "ziek" ? "1px solid #E8A09A" : "1px solid #E8D070",
+                  }}>
+                    <span className="text-xl flex items-center justify-center">{besch.type === "ziek" ? <ThermometerSun className="h-5 w-5" style={{ color: "#C0392B" }} /> : <Palmtree className="h-5 w-5" style={{ color: "#8B6914" }} />}</span>
+                    <div>
+                      <p className="text-sm font-bold" style={{ color: besch.type === "ziek" ? "#C0392B" : "#8B6914" }}>
+                        {besch.type === "ziek" ? "Ziekmelding geregistreerd" : "Vakantie goedgekeurd"}
+                      </p>
+                      <p className="text-[11px] mt-0.5" style={{ color: "#8AAD6E" }}>{besch.datum_van} → {besch.datum_tot}</p>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {dayItems.map(item => (
+                {dayItems.map(item => {
+                  const boekingKey = `${item.datum}|${item.project_id}`;
+                  const existing = existingBoekingen.get(boekingKey);
+                  const sc = existing ? (statusConfig[existing.status] || statusConfig.concept) : null;
+
+                  return (
                     <div key={item.id} className="rounded-2xl p-4 space-y-2" style={{
                       background: "#EBF0E4",
                       border: isToday ? "1px solid #9DC87A" : "1px solid #C5D4B2",
@@ -149,32 +199,131 @@ export default function Planning() {
                           <MessageSquare className="h-3 w-3 shrink-0" /> {item.notitie}
                         </p>
                       )}
+
+                      {/* Uren boeken section */}
+                      {item.is_definitief && (
+                        existing ? (
+                          <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-xl" style={{ background: sc!.bg, border: `1px solid ${sc!.text}33` }}>
+                            <Check className="h-3.5 w-3.5" style={{ color: sc!.text }} />
+                            <span className="text-xs font-semibold" style={{ color: sc!.text }}>
+                              {existing.uren}u geboekt
+                            </span>
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full ml-auto" style={{ background: sc!.bg, color: sc!.text }}>
+                              {sc!.label}
+                            </span>
+                          </div>
+                        ) : (
+                          <button onClick={() => openUrenModal(item)} className="w-full mt-2 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors active:scale-[0.98]" style={{ background: "#D4E8C2", border: "1px solid #9DC87A", color: "#2D4A1E" }}>
+                            <Clock className="h-3.5 w-3.5" /> Uren boeken voor deze dag →
+                          </button>
+                        )
+                      )}
                     </div>
-                  ))}
-                </div>
-              );
-            })}
-
-            {/* Empty state: no items at all */}
-            {items.length === 0 && beschikbaarheid.length === 0 && (
-              <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-                <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen bevestigde planning deze week</p>
-                <p className="text-xs mt-1 px-6" style={{ color: "#8AAD6E" }}>Je manager heeft de planning nog niet gepubliceerd voor deze week.</p>
+                  );
+                })}
               </div>
-            )}
+            );
+          })}
 
-            {/* Empty state: items exist but all concept */}
-            {allConcept && beschikbaarheid.length === 0 && (
-              <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-                <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-                <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Planning in voorbereiding</p>
-                <p className="text-xs mt-1 px-6" style={{ color: "#8AAD6E" }}>Je manager werkt nog aan de planning voor deze week. Je ziet hem zodra deze definitief is gemaakt.</p>
+          {items.length === 0 && beschikbaarheid.length === 0 && (
+            <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+              <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
+              <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen bevestigde planning deze week</p>
+              <p className="text-xs mt-1 px-6" style={{ color: "#8AAD6E" }}>Je manager heeft de planning nog niet gepubliceerd voor deze week.</p>
+            </div>
+          )}
+
+          {allConcept && beschikbaarheid.length === 0 && (
+            <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+              <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
+              <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Planning in voorbereiding</p>
+              <p className="text-xs mt-1 px-6" style={{ color: "#8AAD6E" }}>Je manager werkt nog aan de planning voor deze week. Je ziet hem zodra deze definitief is gemaakt.</p>
+            </div>
+          )}
+        </>
+      )}
+    </main>
+  );
+
+  return (
+    <PageShell>
+      <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
+        <div className="px-4 py-3 flex items-center gap-2.5">
+          <HeaderLogo />
+          <span className="text-base font-bold tracking-tight" style={{ color: "#2D4A1E" }}>Mijn planning</span>
+        </div>
+      </header>
+
+      <div className="lg:hidden">
+        <PullToRefresh onRefresh={async () => { await fetchPlanning(); }}>
+          {content}
+        </PullToRefresh>
+      </div>
+      <div className="hidden lg:block">
+        {content}
+      </div>
+
+      {/* Uren boeken modal */}
+      {showUrenModal && modalItem && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowUrenModal(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(45,74,30,0.35)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "#EBF0E4", border: "1px solid #C5D4B2", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "#C5D4B2" }} />
+            <h2 className="text-base font-bold" style={{ color: "#2D4A1E" }}>Uren boeken</h2>
+
+            <div className="space-y-1 rounded-xl p-3" style={{ background: "#F5F7F0", border: "1px solid #C5D4B2" }}>
+              <p className="text-sm font-semibold" style={{ color: "#2D4A1E" }}>{modalItem.project_naam}</p>
+              <p className="text-[11px]" style={{ color: "#8AAD6E" }}>
+                {format(new Date(modalItem.datum + "T12:00:00"), "EEEE d MMMM", { locale: nl })} · {modalItem.starttijd} – {modalItem.eindtijd}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Werkzaamheden</label>
+              <div className="flex gap-2">
+                {["schakelen", "monteren"].map(w => (
+                  <button key={w} onClick={() => setUrenForm(f => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{
+                    background: urenForm.werkzaamheden === w ? "#D4E8C2" : "#F5F7F0",
+                    border: urenForm.werkzaamheden === w ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                    color: urenForm.werkzaamheden === w ? "#4A7C2F" : "#8AAD6E",
+                  }}>
+                    {w}
+                  </button>
+                ))}
               </div>
-            )}
-          </>
-        )}
-      </main>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#8AAD6E" }}>Aantal uren</label>
+              <div className="flex items-center justify-center gap-6">
+                <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.max(0.5, f.uren - 0.5) }))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "#DFE8D6", color: "#5A7A42" }}>−</button>
+                <span className="text-3xl font-bold tabular-nums" style={{ color: "#2D4A1E" }}>{urenForm.uren}u</span>
+                <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "#DFE8D6", color: "#5A7A42" }}>+</button>
+              </div>
+              <div className="flex justify-center gap-2 mt-2">
+                {[4, 6, 8, 9, 10].map(h => (
+                  <button key={h} onClick={() => setUrenForm(f => ({ ...f, uren: h }))} className="px-3 py-1 rounded-lg text-xs font-medium transition-colors" style={{
+                    background: urenForm.uren === h ? "#D4E8C2" : "#F5F7F0",
+                    border: urenForm.uren === h ? "1px solid #9DC87A" : "1px solid #C5D4B2",
+                    color: urenForm.uren === h ? "#4A7C2F" : "#8AAD6E",
+                  }}>
+                    {h}u
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button onClick={() => saveUren(false)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, #4A7C2F, #3D6826)", color: "#fff" }}>
+                Opslaan als concept
+              </button>
+              <button onClick={() => saveUren(true)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "#EBF0E4", border: "1.5px solid #4A7C2F", color: "#4A7C2F" }}>
+                Direct indienen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageShell>
   );
 }

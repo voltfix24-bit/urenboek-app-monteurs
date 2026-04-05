@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { Send, ArrowLeft, AlertTriangle, Bell } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -96,6 +96,40 @@ export default function Mededelingen() {
     );
   }
 
+  const listContent = (
+    <main className="px-4 py-4 space-y-2">
+      {loading ? (
+        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
+      ) : items.length === 0 ? (
+        <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
+          <Bell className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
+          <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen mededelingen</p>
+        </div>
+      ) : (
+        items.map(item => (
+          <button key={item.id} onClick={() => openDetail(item)} className="w-full text-left rounded-2xl p-4 transition-colors active:scale-[0.98]" style={{
+            background: item.gelezen ? "#F5F7F0" : "#EBF0E4",
+            border: item.urgentie === "urgent" ? "1px solid #E8A09A" : "1px solid #C5D4B2",
+          }}>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  {!item.gelezen && <div className="w-2 h-2 rounded-full shrink-0" style={{ background: "#4A7C2F" }} />}
+                  {item.urgentie === "urgent" && <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#C0392B" }} />}
+                  <p className={`text-sm font-semibold truncate`} style={{ color: item.gelezen ? "#8AAD6E" : "#2D4A1E" }}>{item.titel}</p>
+                </div>
+                <p className="text-xs mt-1 line-clamp-2" style={{ color: "#8AAD6E" }}>{item.inhoud || "Geen inhoud"}</p>
+              </div>
+              <span className="text-[10px] shrink-0 mt-1" style={{ color: "#8AAD6E" }}>
+                {formatDistanceToNow(new Date(item.created_at), { locale: nl, addSuffix: true })}
+              </span>
+            </div>
+          </button>
+        ))
+      )}
+    </main>
+  );
+
   return (
     <PageShell>
       <header className="sticky top-0 z-30" style={{ background: "rgba(235,240,228,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #C5D4B2" }}>
@@ -112,37 +146,14 @@ export default function Mededelingen() {
         </div>
       </header>
 
-      <main className="px-4 py-4 space-y-2">
-        {loading ? (
-          <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#4A7C2F", borderTopColor: "transparent" }} /></div>
-        ) : items.length === 0 ? (
-          <div className="text-center py-12 rounded-2xl" style={{ background: "#EBF0E4", border: "1px solid #C5D4B2" }}>
-            <Bell className="h-8 w-8 mx-auto mb-2" style={{ color: "#8AAD6E" }} />
-            <p className="text-sm font-medium" style={{ color: "#2D4A1E" }}>Geen mededelingen</p>
-          </div>
-        ) : (
-          items.map(item => (
-            <button key={item.id} onClick={() => openDetail(item)} className="w-full text-left rounded-2xl p-4 transition-colors active:scale-[0.98]" style={{
-              background: item.gelezen ? "#F5F7F0" : "#EBF0E4",
-              border: item.urgentie === "urgent" ? "1px solid #E8A09A" : "1px solid #C5D4B2",
-            }}>
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    {!item.gelezen && <div className="w-2 h-2 rounded-full shrink-0" style={{ background: "#4A7C2F" }} />}
-                    {item.urgentie === "urgent" && <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#C0392B" }} />}
-                    <p className={`text-sm font-semibold truncate`} style={{ color: item.gelezen ? "#8AAD6E" : "#2D4A1E" }}>{item.titel}</p>
-                  </div>
-                  <p className="text-xs mt-1 line-clamp-2" style={{ color: "#8AAD6E" }}>{item.inhoud || "Geen inhoud"}</p>
-                </div>
-                <span className="text-[10px] shrink-0 mt-1" style={{ color: "#8AAD6E" }}>
-                  {formatDistanceToNow(new Date(item.created_at), { locale: nl, addSuffix: true })}
-                </span>
-              </div>
-            </button>
-          ))
-        )}
-      </main>
+      <div className="lg:hidden">
+        <PullToRefresh onRefresh={async () => { await fetchMededelingen(); }}>
+          {listContent}
+        </PullToRefresh>
+      </div>
+      <div className="hidden lg:block">
+        {listContent}
+      </div>
 
       {isManager && (
         <button onClick={() => setShowCompose(true)} className="fixed z-40 flex items-center justify-center active:scale-93 transition-transform" style={{
