@@ -96,6 +96,7 @@ export default function ProjectPlanning() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
+  const [otherMatrices, setOtherMatrices] = useState<{ projectNaam: string; projectNummer: string; year: number; weekNrs: number[]; cells: Record<string, CellData> }[]>([]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; key: string } | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDefinitiefDialog, setShowDefinitiefDialog] = useState(false);
@@ -139,6 +140,19 @@ export default function ProjectPlanning() {
       const monteurUserIds = new Set((rolesRes.data || []).filter((r: any) => r.role === "monteur").map((r: any) => r.user_id));
       const allProfiles = profilesRes.data || [];
       setMonteurs(allProfiles.filter((p: any) => monteurUserIds.has(p.user_id)).map((p: any) => ({ id: p.id, full_name: p.full_name, uurtarief: p.uurtarief })));
+
+      // Fetch other project matrices for cross-project conflict detection
+      const { data: otherData } = await supabase
+        .from("project_planning_matrix")
+        .select("project_id, state_json, projects!project_planning_matrix_project_id_fkey(naam, nummer)")
+        .neq("project_id", projectId);
+      if (otherData) {
+        setOtherMatrices(otherData.filter((d: any) => d.state_json).map((d: any) => {
+          const s = d.state_json as unknown as MatrixState;
+          return { projectNaam: d.projects?.naam ?? "", projectNummer: d.projects?.nummer ?? "", year: s.year, weekNrs: s.weekNrs, cells: s.cells };
+        }));
+      }
+
       setLoading(false);
     })();
   }, [projectId, user]);
@@ -335,6 +349,48 @@ export default function ProjectPlanning() {
     }
     return warnings;
   }, [state.cells, state.weekNrs, monteurMap]);
+
+  // ── Cross-project conflict warnings ──
+  const crossProjectConflicts = useMemo(() => {
+    // Build set of (medewerker_id, year, weekNr, dayIdx) for current project
+    const currentAssignments: Record<string, Set<string>> = {}; // mId -> Set<"year-week-day">
+    for (const [key, cell] of Object.entries(state.cells)) {
+      if (!cell.medewerker_id) continue;
+      const [, weekIdx, dayIdx] = key.split("-").map(Number);
+      const weekNr = state.weekNrs[weekIdx];
+      if (weekNr == null) continue;
+      const dateKey = `${state.year}-${weekNr}-${dayIdx}`;
+      if (!currentAssignments[cell.medewerker_id]) currentAssignments[cell.medewerker_id] = new Set();
+      currentAssignments[cell.medewerker_id].add(dateKey);
+    }
+
+    const conflicts: { name: string; datum: string; otherProject: string }[] = [];
+    for (const other of otherMatrices) {
+      for (const [key, cell] of Object.entries(other.cells)) {
+        if (!cell.medewerker_id) continue;
+        const myDates = currentAssignments[cell.medewerker_id];
+        if (!myDates) continue;
+        const [, weekIdx, dayIdx] = key.split("-").map(Number);
+        const weekNr = other.weekNrs[weekIdx];
+        if (weekNr == null) continue;
+        const dateKey = `${other.year}-${weekNr}-${dayIdx}`;
+        if (myDates.has(dateKey)) {
+          const m = monteurMap.get(cell.medewerker_id);
+          const d = dateFromWeek(other.year, weekNr, dayIdx);
+          const datumStr = format(d, "EEE d MMM", { locale: nl });
+          conflicts.push({ name: m?.full_name ?? "Onbekend", datum: datumStr, otherProject: `${other.projectNummer} ${other.projectNaam}` });
+        }
+      }
+    }
+    // Deduplicate
+    const seen = new Set<string>();
+    return conflicts.filter(c => {
+      const k = `${c.name}-${c.datum}-${c.otherProject}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [state.cells, state.year, state.weekNrs, otherMatrices, monteurMap]);
 
   // ── Cost estimate breakdown per monteur ──
   const planningCostBreakdown = useMemo(() => {
@@ -774,7 +830,25 @@ export default function ProjectPlanning() {
         </div>
       )}
 
-      {/* Cost estimate */}
+      {/* Cross-project conflict warnings */}
+      {crossProjectConflicts.length > 0 && (
+        <div className="mx-4 mb-3 rounded-xl p-3 space-y-1" style={{ background: "hsl(0 60% 15%)", border: "1px solid hsl(0 50% 35%)" }}>
+          <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: "hsl(0 80% 70%)" }}>
+            🔴 Dubbele inplanning gedetecteerd
+          </p>
+          {crossProjectConflicts.slice(0, 10).map((c, i) => (
+            <p key={i} className="text-[11px]" style={{ color: "hsl(0 60% 75%)" }}>
+              <span className="font-semibold">{c.name}</span> is op <span className="font-mono">{c.datum}</span> ook ingepland bij <span className="font-semibold">{c.otherProject}</span>
+            </p>
+          ))}
+          {crossProjectConflicts.length > 10 && (
+            <p className="text-[10px] italic" style={{ color: "hsl(0 40% 60%)" }}>
+              ...en {crossProjectConflicts.length - 10} meer
+            </p>
+          )}
+        </div>
+      )}
+
       {planningCostBreakdown.total > 0 && (
         <div className="mx-4 mb-20 lg:mb-4 rounded-xl overflow-hidden" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
           <div className="px-4 py-3 flex items-center justify-between gap-2" style={{ borderBottom: "1px solid var(--accent-border)" }}>
