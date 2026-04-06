@@ -162,11 +162,32 @@ export default function Medewerkers() {
 
   if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
 
-  const monteurs = employees.filter(e => e.role !== "manager" && e.role !== "–");
-  const managers = employees.filter(e => e.role === "manager");
+  const verificatieNodig = employees.filter(e => e.account_status === "onboarding");
+  const verificatieCount = verificatieNodig.length;
+
+  const filteredMonteurs = filter === "verificatie"
+    ? monteurs.filter(e => e.account_status === "onboarding")
+    : monteurs;
 
   const listContent = (
     <>
+      {/* Filter chips */}
+      <div className="flex gap-2">
+        {(["alle", "verificatie"] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-colors"
+            style={{
+              background: filter === f ? (f === "verificatie" ? "var(--warn-light)" : "var(--accent-light)") : "var(--bg-surface)",
+              border: filter === f ? (f === "verificatie" ? "1px solid var(--warn-border)" : "1px solid var(--accent-border)") : "1px solid var(--border)",
+              color: filter === f ? (f === "verificatie" ? "var(--warn-text)" : "var(--accent)") : "var(--text-muted)",
+            }}
+          >
+            {f === "alle" ? `Alle (${monteurs.length + managers.length})` : `Verificatie nodig (${verificatieCount})`}
+          </button>
+        ))}
+      </div>
       {showAdd && (
         <>
           <div className="rounded-xl px-3 py-2.5 flex items-start gap-2 animate-slide-up" style={{ background: "var(--warning-light)", border: "1px solid var(--warning-border)" }}>
