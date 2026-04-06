@@ -229,6 +229,175 @@ export type Database = {
           },
         ]
       }
+      contract_tokens: {
+        Row: {
+          contract_id: string
+          gebruikt: boolean
+          gebruikt_op: string | null
+          geldig_tot: string
+          id: string
+          token: string
+        }
+        Insert: {
+          contract_id: string
+          gebruikt?: boolean
+          gebruikt_op?: string | null
+          geldig_tot: string
+          id?: string
+          token: string
+        }
+        Update: {
+          contract_id?: string
+          gebruikt?: boolean
+          gebruikt_op?: string | null
+          geldig_tot?: string
+          id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_tokens_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracten"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracten: {
+        Row: {
+          aangemaakt_door: string
+          aangemaakt_op: string
+          contract_data: Json
+          contract_nummer: string
+          einddatum: string | null
+          herinnering_verstuurd: boolean
+          id: string
+          kandidaat_id: string | null
+          og_handtekening: string | null
+          og_ip: string | null
+          og_naam: string | null
+          og_profiel_id: string | null
+          og_timestamp: string | null
+          og_user_agent: string | null
+          ot_handtekening: string | null
+          ot_ip: string | null
+          ot_naam: string | null
+          ot_timestamp: string | null
+          ot_user_agent: string | null
+          pdf_hash: string | null
+          pdf_path: string | null
+          profiel_id: string | null
+          startdatum: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          aangemaakt_door: string
+          aangemaakt_op?: string
+          contract_data?: Json
+          contract_nummer: string
+          einddatum?: string | null
+          herinnering_verstuurd?: boolean
+          id?: string
+          kandidaat_id?: string | null
+          og_handtekening?: string | null
+          og_ip?: string | null
+          og_naam?: string | null
+          og_profiel_id?: string | null
+          og_timestamp?: string | null
+          og_user_agent?: string | null
+          ot_handtekening?: string | null
+          ot_ip?: string | null
+          ot_naam?: string | null
+          ot_timestamp?: string | null
+          ot_user_agent?: string | null
+          pdf_hash?: string | null
+          pdf_path?: string | null
+          profiel_id?: string | null
+          startdatum?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          aangemaakt_door?: string
+          aangemaakt_op?: string
+          contract_data?: Json
+          contract_nummer?: string
+          einddatum?: string | null
+          herinnering_verstuurd?: boolean
+          id?: string
+          kandidaat_id?: string | null
+          og_handtekening?: string | null
+          og_ip?: string | null
+          og_naam?: string | null
+          og_profiel_id?: string | null
+          og_timestamp?: string | null
+          og_user_agent?: string | null
+          ot_handtekening?: string | null
+          ot_ip?: string | null
+          ot_naam?: string | null
+          ot_timestamp?: string | null
+          ot_user_agent?: string | null
+          pdf_hash?: string | null
+          pdf_path?: string | null
+          profiel_id?: string | null
+          startdatum?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracten_aangemaakt_door_fkey"
+            columns: ["aangemaakt_door"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracten_aangemaakt_door_fkey"
+            columns: ["aangemaakt_door"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracten_kandidaat_id_fkey"
+            columns: ["kandidaat_id"]
+            isOneToOne: false
+            referencedRelation: "kandidaten"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracten_og_profiel_id_fkey"
+            columns: ["og_profiel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracten_og_profiel_id_fkey"
+            columns: ["og_profiel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracten_profiel_id_fkey"
+            columns: ["profiel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracten_profiel_id_fkey"
+            columns: ["profiel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forecast_regels: {
         Row: {
           aantal: number | null
@@ -531,6 +700,116 @@ export type Database = {
           waarschuwing?: string | null
         }
         Relationships: []
+      }
+      kandidaten: {
+        Row: {
+          aangemaakt_door: string
+          aangemaakt_op: string
+          achternaam: string
+          afgesproken_tarief: number | null
+          email: string
+          id: string
+          notities: string | null
+          profiel_id: string | null
+          status: string
+          telefoon: string | null
+          voornaam: string
+        }
+        Insert: {
+          aangemaakt_door: string
+          aangemaakt_op?: string
+          achternaam: string
+          afgesproken_tarief?: number | null
+          email: string
+          id?: string
+          notities?: string | null
+          profiel_id?: string | null
+          status?: string
+          telefoon?: string | null
+          voornaam: string
+        }
+        Update: {
+          aangemaakt_door?: string
+          aangemaakt_op?: string
+          achternaam?: string
+          afgesproken_tarief?: number | null
+          email?: string
+          id?: string
+          notities?: string | null
+          profiel_id?: string | null
+          status?: string
+          telefoon?: string | null
+          voornaam?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kandidaten_aangemaakt_door_fkey"
+            columns: ["aangemaakt_door"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kandidaten_aangemaakt_door_fkey"
+            columns: ["aangemaakt_door"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kandidaten_profiel_id_fkey"
+            columns: ["profiel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kandidaten_profiel_id_fkey"
+            columns: ["profiel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manager_handtekeningen: {
+        Row: {
+          aangemaakt_op: string
+          handtekening: string
+          id: string
+          profiel_id: string
+          updated_op: string | null
+        }
+        Insert: {
+          aangemaakt_op?: string
+          handtekening: string
+          id?: string
+          profiel_id: string
+          updated_op?: string | null
+        }
+        Update: {
+          aangemaakt_op?: string
+          handtekening?: string
+          id?: string
+          profiel_id?: string
+          updated_op?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manager_handtekeningen_profiel_id_fkey"
+            columns: ["profiel_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manager_handtekeningen_profiel_id_fkey"
+            columns: ["profiel_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mededeling_leesstatus: {
         Row: {
@@ -1615,6 +1894,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      next_contract_nummer: { Args: never; Returns: string }
     }
     Enums: {
       app_role: "monteur" | "schakelmonteur" | "uitvoerder" | "wv" | "manager"
