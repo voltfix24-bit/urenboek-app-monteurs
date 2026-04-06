@@ -162,8 +162,9 @@ export default function Medewerkers() {
 
   if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
 
-  const verificatieNodig = employees.filter(e => e.account_status === "onboarding");
-  const verificatieCount = verificatieNodig.length;
+  const monteurs = employees.filter(e => e.role !== "manager" && e.role !== "–");
+  const managers = employees.filter(e => e.role === "manager");
+  const verificatieCount = employees.filter(e => e.account_status === "onboarding").length;
 
   const filteredMonteurs = filter === "verificatie"
     ? monteurs.filter(e => e.account_status === "onboarding")
