@@ -229,6 +229,47 @@ export type Database = {
           },
         ]
       }
+      contract_berichten: {
+        Row: {
+          aangemaakt_op: string
+          bericht_type: string
+          contract_id: string
+          gelezen_op: string | null
+          id: string
+          richting: string
+          toelichting: string | null
+          wat_klopt_niet: string[] | null
+        }
+        Insert: {
+          aangemaakt_op?: string
+          bericht_type: string
+          contract_id: string
+          gelezen_op?: string | null
+          id?: string
+          richting: string
+          toelichting?: string | null
+          wat_klopt_niet?: string[] | null
+        }
+        Update: {
+          aangemaakt_op?: string
+          bericht_type?: string
+          contract_id?: string
+          gelezen_op?: string | null
+          id?: string
+          richting?: string
+          toelichting?: string | null
+          wat_klopt_niet?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_berichten_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracten"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_tokens: {
         Row: {
           contract_id: string
