@@ -246,7 +246,7 @@ export default function Medewerkers() {
         </div>
       )}
 
-      {managers.length > 0 && (
+      {filter === "alle" && managers.length > 0 && (
         <>
           <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Managers ({managers.length})</p>
           <div className="space-y-1.5">
