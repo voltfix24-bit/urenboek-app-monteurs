@@ -38,7 +38,7 @@ export default function IntakeRegelBeheer() {
   const [filterType, setFilterType] = useState<string>("alle");
   const [showSim, setShowSim] = useState(false);
   const [simCaseType, setSimCaseType] = useState<string>("");
-  const [simAnswers, setSimAnswers] = useState<IntakeAntwoorden>(defaultAntwoorden);
+  const [simAnswers, setSimAnswers] = useState<IntakeAntwoorden>(LEGE_ANTWOORDEN);
   const [simResult, setSimResult] = useState<BerekendeRegel[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -147,7 +147,8 @@ export default function IntakeRegelBeheer() {
                 <input type="checkbox" checked={simAnswers.rmu_vervangen} onChange={e => setSimAnswers(a => ({ ...a, rmu_vervangen: e.target.checked }))} style={{ accentColor: "var(--accent)" }} /> RMU
               </label>
               <label className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-primary)" }}>
-                <input type="checkbox" checked={simAnswers.vereffeningsleiding} onChange={e => setSimAnswers(a => ({ ...a, vereffeningsleiding: e.target.checked }))} style={{ accentColor: "var(--accent)" }} /> Vereff.
+                Vereff:
+                <input type="number" value={simAnswers.vereffeningsleiding} onChange={e => setSimAnswers(a => ({ ...a, vereffeningsleiding: parseInt(e.target.value) || 0 }))} min={0} max={10} className="w-14 px-2 py-1 rounded text-center" style={inputStyle} />
               </label>
               <label className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-primary)" }}>
                 <input type="checkbox" checked={simAnswers.wv} onChange={e => setSimAnswers(a => ({ ...a, wv: e.target.checked }))} style={{ accentColor: "var(--accent)" }} /> WV
