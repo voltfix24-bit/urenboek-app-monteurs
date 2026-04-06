@@ -8,9 +8,12 @@ import CertificatenOverzicht from "@/components/CertificatenOverzicht";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
 import { valideer, profielSchema } from "@/lib/validatie";
-import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight } from "lucide-react";
+import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO } from "date-fns";
+import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
+import { formatDatum } from "@/lib/formatting";
+import { CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO, differenceInDays } from "date-fns";
 import { nl } from "date-fns/locale";
 
 interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; }
@@ -52,6 +55,115 @@ function PasswordChange() {
       <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} className="w-full py-2.5 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)" }}>
         {saving ? "Bezig..." : "Wachtwoord wijzigen"}
       </button>
+    </div>
+  );
+}
+
+function ManagerHandtekeningSection({ profileId }: { profileId: string | null }) {
+  const [htData, setHtData] = useState<{ handtekening: string; updated_op: string | null } | null>(null);
+  const [showCanvas, setShowCanvas] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!profileId) return;
+    supabase.from("manager_handtekeningen").select("handtekening, aangemaakt_op, updated_op").eq("profiel_id", profileId).maybeSingle()
+      .then(({ data }) => { setHtData(data as any); setLoading(false); });
+  }, [profileId]);
+
+  if (loading) return null;
+
+  return (
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Jouw handtekening</p>
+      <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Voor digitale ondertekening van contracten</p>
+
+      {htData?.handtekening && !showCanvas ? (
+        <>
+          <div style={{ maxWidth: 300 }}>
+            <img src={htData.handtekening} alt="Handtekening" style={{ width: "100%", height: 80, objectFit: "contain", background: "#fff", borderRadius: 8, border: "1px solid var(--border)" }} />
+          </div>
+          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Opgeslagen op {htData.updated_op ? formatDatum(htData.updated_op) : "–"}</p>
+          <button onClick={() => setShowCanvas(true)} className="text-xs underline" style={{ color: "var(--accent)" }}>Nieuwe handtekening tekenen</button>
+        </>
+      ) : (
+        <>
+          {!htData?.handtekening && (
+            <div className="rounded-xl p-2.5" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+              <p className="text-xs" style={{ color: "var(--warn-text)" }}>⚠ Sla je handtekening op om contracten digitaal te kunnen ondertekenen</p>
+            </div>
+          )}
+          <HandtekeningCanvas hoogte={120} bestaande={htData?.handtekening} onSave={async (b64) => {
+            await supabase.from("manager_handtekeningen").upsert({ profiel_id: profileId!, handtekening: b64, updated_op: new Date().toISOString() }, { onConflict: "profiel_id" });
+            toast.success("Handtekening opgeslagen ✓");
+            setHtData({ handtekening: b64, updated_op: new Date().toISOString() });
+            setShowCanvas(false);
+          }} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function MonteurContractSection({ profileId }: { profileId: string | null }) {
+  const [contract, setContract] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!profileId) return;
+    supabase.from("contracten").select("*").eq("profiel_id", profileId)
+      .in("status", ["ondertekend_beiden", "ondertekend_ot", "verstuurd"])
+      .order("aangemaakt_op", { ascending: false }).limit(1).maybeSingle()
+      .then(({ data }) => { setContract(data); setLoading(false); });
+  }, [profileId]);
+
+  if (loading) return null;
+
+  async function downloadPdf() {
+    if (!contract?.pdf_path) return;
+    const { data } = await supabase.storage.from("contracten").createSignedUrl(contract.pdf_path, 3600);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  }
+
+  const contractDays = contract?.einddatum ? differenceInDays(parseISO(contract.einddatum), new Date()) : null;
+
+  return (
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Mijn contract</p>
+
+      {contract?.status === "ondertekend_beiden" && (
+        <div className="rounded-xl p-3.5 space-y-2" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--success)" }}>✅ Actief contract</p>
+          <p className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{contract.contract_nummer}</p>
+          {contract.startdatum && contract.einddatum && (
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Geldig: {formatDatum(contract.startdatum)} — {formatDatum(contract.einddatum)}</p>
+          )}
+          {contractDays !== null && contractDays <= 30 && contractDays >= 0 && (
+            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}>⚠ Verloopt binnenkort</span>
+          )}
+          <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium mt-1" style={{ color: "var(--accent)" }}>
+            <Download className="h-3.5 w-3.5" /> Download contract PDF
+          </button>
+        </div>
+      )}
+
+      {contract?.status === "ondertekend_ot" && (
+        <div className="rounded-xl p-3.5 space-y-1" style={{ background: "var(--info-light)", border: "1px solid var(--info-border)" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--info)" }}>⏳ Wacht op TerreVolt</p>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Je hebt ondertekend. TerreVolt rondt dit zo snel mogelijk af.</p>
+        </div>
+      )}
+
+      {contract?.status === "verstuurd" && (
+        <div className="rounded-xl p-3.5 space-y-1" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--warn-text)" }}>📧 Wacht op jouw handtekening</p>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Bekijk je e-mail voor de ondertekeningslink.</p>
+          <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>Geen e-mail ontvangen? Neem contact op via info@terrevolt.nl</p>
+        </div>
+      )}
+
+      {!contract && (
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>Geen actief contract</p>
+      )}
     </div>
   );
 }
@@ -234,6 +346,12 @@ export default function Profiel() {
             <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Betalingstermijn</span><span style={{ color: "var(--text-primary)" }}>{profile?.betalingstermijn || 14} dagen</span></div>
           </div>
         </div>
+
+        {/* Manager handtekening section */}
+        {permissies.zietDashboard && <ManagerHandtekeningSection profileId={profile?.id || null} />}
+
+        {/* Monteur contract section */}
+        {!permissies.zietDashboard && <MonteurContractSection profileId={profile?.id || null} />}
 
         {/* Beschikbaarheid & Kalender */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
