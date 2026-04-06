@@ -194,8 +194,9 @@ export default function Profiel() {
             <div className="space-y-2">
               {[{ label: "Naam", key: "full_name" as const }, { label: "Telefoon", key: "telefoon" as const }, { label: "Adres", key: "adres" as const }].map(f => (
                 <div key={f.key}>
-                  <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{f.label}</label>
-                  <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                  <label className="text-[10px] font-medium" style={{ color: profileErrors[f.key] ? "var(--danger)" : "var(--text-muted)" }}>{f.label}</label>
+                  <input value={editForm[f.key]} onChange={e => { setEditForm({ ...editForm, [f.key]: e.target.value }); if (profileErrors[f.key]) setProfileErrors(prev => { const n = { ...prev }; delete n[f.key]; return n; }); }} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: profileErrors[f.key] ? "1.5px solid var(--danger)" : "1px solid var(--border)", color: "var(--text-primary)" }} />
+                  {profileErrors[f.key] && <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--danger)" }}>⚠ {profileErrors[f.key]}</p>}
                 </div>
               ))}
             </div>
