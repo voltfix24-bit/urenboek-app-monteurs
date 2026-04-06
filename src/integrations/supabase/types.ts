@@ -169,6 +169,7 @@ export type Database = {
           type: string
           updated_at: string
           uurtarief_snap: number | null
+          werkelijk_aantal: number | null
         }
         Insert: {
           aantal?: number | null
@@ -184,6 +185,7 @@ export type Database = {
           type: string
           updated_at?: string
           uurtarief_snap?: number | null
+          werkelijk_aantal?: number | null
         }
         Update: {
           aantal?: number | null
@@ -199,6 +201,7 @@ export type Database = {
           type?: string
           updated_at?: string
           uurtarief_snap?: number | null
+          werkelijk_aantal?: number | null
         }
         Relationships: [
           {
@@ -217,6 +220,170 @@ export type Database = {
           },
           {
             foreignKeyName: "forecast_regels_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inkooporder_regels: {
+        Row: {
+          activiteit: string | null
+          bedrag: number
+          datum: string
+          id: string
+          inkooporder_id: string
+          project_id: string | null
+          project_naam: string | null
+          uren: number
+          uren_boeking_id: string | null
+          uurtarief: number
+        }
+        Insert: {
+          activiteit?: string | null
+          bedrag: number
+          datum: string
+          id?: string
+          inkooporder_id: string
+          project_id?: string | null
+          project_naam?: string | null
+          uren: number
+          uren_boeking_id?: string | null
+          uurtarief: number
+        }
+        Update: {
+          activiteit?: string | null
+          bedrag?: number
+          datum?: string
+          id?: string
+          inkooporder_id?: string
+          project_id?: string | null
+          project_naam?: string | null
+          uren?: number
+          uren_boeking_id?: string | null
+          uurtarief?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inkooporder_regels_inkooporder_id_fkey"
+            columns: ["inkooporder_id"]
+            isOneToOne: false
+            referencedRelation: "inkooporders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporder_regels_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporder_regels_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_monteur"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporder_regels_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporder_regels_uren_boeking_id_fkey"
+            columns: ["uren_boeking_id"]
+            isOneToOne: false
+            referencedRelation: "uren_boekingen"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inkooporders: {
+        Row: {
+          aangemaakt_door: string | null
+          aangemaakt_op: string
+          betaald_op: string | null
+          btw_bedrag: number | null
+          factuur_datum: string | null
+          factuur_nummer: string | null
+          id: string
+          medewerker_id: string
+          notitie: string | null
+          order_nummer: string
+          periode_tot: string
+          periode_van: string
+          status: string
+          totaal_excl_btw: number | null
+          totaal_incl_btw: number | null
+          totaal_uren: number | null
+          verzonden_op: string | null
+        }
+        Insert: {
+          aangemaakt_door?: string | null
+          aangemaakt_op?: string
+          betaald_op?: string | null
+          btw_bedrag?: number | null
+          factuur_datum?: string | null
+          factuur_nummer?: string | null
+          id?: string
+          medewerker_id: string
+          notitie?: string | null
+          order_nummer: string
+          periode_tot: string
+          periode_van: string
+          status?: string
+          totaal_excl_btw?: number | null
+          totaal_incl_btw?: number | null
+          totaal_uren?: number | null
+          verzonden_op?: string | null
+        }
+        Update: {
+          aangemaakt_door?: string | null
+          aangemaakt_op?: string
+          betaald_op?: string | null
+          btw_bedrag?: number | null
+          factuur_datum?: string | null
+          factuur_nummer?: string | null
+          id?: string
+          medewerker_id?: string
+          notitie?: string | null
+          order_nummer?: string
+          periode_tot?: string
+          periode_van?: string
+          status?: string
+          totaal_excl_btw?: number | null
+          totaal_incl_btw?: number | null
+          totaal_uren?: number | null
+          verzonden_op?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inkooporders_aangemaakt_door_fkey"
+            columns: ["aangemaakt_door"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporders_aangemaakt_door_fkey"
+            columns: ["aangemaakt_door"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporders_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporders_medewerker_id_fkey"
             columns: ["medewerker_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
@@ -629,11 +796,17 @@ export type Database = {
           activated_at: string | null
           adres: string
           avatar_url: string | null
+          bedrijfsnaam: string | null
+          betalingstermijn: number
+          btw_nummer: string | null
           contract_einddatum: string | null
           created_at: string
+          factuuradres: string | null
           full_name: string
+          iban: string | null
           id: string
           invited_at: string | null
+          kvk_nummer: string | null
           noodcontact_naam: string | null
           noodcontact_tel: string | null
           rijbewijs: boolean
@@ -648,11 +821,17 @@ export type Database = {
           activated_at?: string | null
           adres?: string
           avatar_url?: string | null
+          bedrijfsnaam?: string | null
+          betalingstermijn?: number
+          btw_nummer?: string | null
           contract_einddatum?: string | null
           created_at?: string
+          factuuradres?: string | null
           full_name: string
+          iban?: string | null
           id?: string
           invited_at?: string | null
+          kvk_nummer?: string | null
           noodcontact_naam?: string | null
           noodcontact_tel?: string | null
           rijbewijs?: boolean
@@ -667,11 +846,17 @@ export type Database = {
           activated_at?: string | null
           adres?: string
           avatar_url?: string | null
+          bedrijfsnaam?: string | null
+          betalingstermijn?: number
+          btw_nummer?: string | null
           contract_einddatum?: string | null
           created_at?: string
+          factuuradres?: string | null
           full_name?: string
+          iban?: string | null
           id?: string
           invited_at?: string | null
+          kvk_nummer?: string | null
           noodcontact_naam?: string | null
           noodcontact_tel?: string | null
           rijbewijs?: boolean
@@ -868,6 +1053,9 @@ export type Database = {
           rmu_merk: string | null
           stad: string | null
           stationsnaam: string | null
+          status: string
+          status_gewijzigd_door: string | null
+          status_gewijzigd_op: string | null
           straat: string | null
           updated_at: string
         }
@@ -889,6 +1077,9 @@ export type Database = {
           rmu_merk?: string | null
           stad?: string | null
           stationsnaam?: string | null
+          status?: string
+          status_gewijzigd_door?: string | null
+          status_gewijzigd_op?: string | null
           straat?: string | null
           updated_at?: string
         }
@@ -910,6 +1101,9 @@ export type Database = {
           rmu_merk?: string | null
           stad?: string | null
           stationsnaam?: string | null
+          status?: string
+          status_gewijzigd_door?: string | null
+          status_gewijzigd_op?: string | null
           straat?: string | null
           updated_at?: string
         }
@@ -926,6 +1120,20 @@ export type Database = {
             columns: ["rmu_configuratie_id"]
             isOneToOne: false
             referencedRelation: "rmu_configuraties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_status_gewijzigd_door_fkey"
+            columns: ["status_gewijzigd_door"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_status_gewijzigd_door_fkey"
+            columns: ["status_gewijzigd_door"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
