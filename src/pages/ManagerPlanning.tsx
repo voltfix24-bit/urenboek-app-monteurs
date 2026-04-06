@@ -93,6 +93,12 @@ export default function ManagerPlanning() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
+  // Realtime subscription
+  useEffect(() => {
+    const channel = supabase.channel('manager-planning-rt').on('postgres_changes', { event: '*', schema: 'public', table: 'planning' }, fetchAll).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchAll]);
+
 
 
   const openAddModal = (medewerker_id: string, datum: string) => {
