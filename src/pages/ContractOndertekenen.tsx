@@ -53,15 +53,27 @@ export default function ContractOndertekenen() {
     async function load() {
       if (!token) { setError("Geen token"); setLoading(false); return; }
 
+      // Also check ondertekend_ot to detect already-signed contracts on reload
       const { data: contracten } = await supabase
         .from("contracten")
         .select("*")
-        .in("status", ["verstuurd", "correctie_gevraagd"]);
+        .in("status", ["verstuurd", "correctie_gevraagd", "ondertekend_ot", "ondertekend_beiden"]);
 
-      const contract = contracten?.find((c: any) => {
+      // First try to find by token in contract_data
+      let contract = contracten?.find((c: any) => {
         const cd = c.contract_data as any;
         return cd?._token === token;
       });
+
+      // If not found by token (token was cleared after signing), check URL token against any
+      // recently signed contract — but we can't match without the token.
+      // Instead, store the contract ID in sessionStorage after signing.
+      if (!contract) {
+        const storedContractId = sessionStorage.getItem(`contract_signed_${token}`);
+        if (storedContractId) {
+          contract = contracten?.find((c: any) => c.id === storedContractId);
+        }
+      }
 
       if (!contract) {
         setError("Deze link is verlopen of ongeldig");
@@ -70,16 +82,44 @@ export default function ContractOndertekenen() {
       }
 
       const cd = (contract as any).contract_data as any;
+      const status = (contract as any).status;
+
+      // Already signed — check if account exists
+      if (status === "ondertekend_ot" || status === "ondertekend_beiden") {
+        const kandidaatIdVal = (contract as any).kandidaat_id;
+        if (kandidaatIdVal) {
+          const { data: kand } = await supabase
+            .from("kandidaten")
+            .select("email, profiel_id")
+            .eq("id", kandidaatIdVal)
+            .single();
+
+          if (kand?.profiel_id) {
+            // Account already created
+            setAccountAangemaakt(true);
+            setKlaar(true);
+            setContractData(cd as ContractData);
+            setLoading(false);
+            return;
+          }
+          // Signed but no account yet — show account creation
+          setKandidaatEmail(kand?.email || "");
+          setKandidaatId(kandidaatIdVal);
+        }
+        setKlaar(true);
+        setContractData(cd as ContractData);
+        setLoading(false);
+        return;
+      }
+
+      // Check token expiry for unsigned contracts
       if (cd._token_geldig_tot && new Date(cd._token_geldig_tot) < new Date()) {
         setError("Deze link is verlopen");
         setLoading(false);
         return;
       }
 
-      // Load berichten thread for this contract (public access via contract_data match)
-      // We can't query contract_berichten directly (RLS), but the edge function handles that
-      // For display purposes, the candidate sees the contract status
-      if ((contract as any).status === "correctie_gevraagd") {
+      if (status === "correctie_gevraagd") {
         setCorrectieVerstuurd(true);
       }
 
