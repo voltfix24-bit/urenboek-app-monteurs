@@ -9,6 +9,7 @@ import { volledigAdres } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare, Clock, Check, MapPin, Navigation, Users, Info } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
+import { useNavigate } from "react-router-dom";
 import { nl } from "date-fns/locale";
 import { toast } from "sonner";
 import { cachePlanning, getCachedPlanning } from "@/lib/offlineQueue";
@@ -23,7 +24,8 @@ const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
 export default function Planning() {
   const { user } = useAuth();
-  const { profileId } = useProfile();
+  const { profileId, profile: profileData } = useProfile();
+  const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [items, setItems] = useState<PlanningItem[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
@@ -166,6 +168,33 @@ export default function Planning() {
 
   const definitiefItems = items.filter(it => it.is_definitief);
   const allConcept = items.length > 0 && definitiefItems.length === 0;
+  // Blokkade voor onboarding accounts
+  if (profileData?.account_status === 'onboarding') {
+    return (
+      <PageShell>
+        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
+          <div className="px-4 py-3 flex items-center gap-2.5">
+            <HeaderLogo />
+            <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Planning</span>
+          </div>
+        </header>
+        <div style={{ padding: "48px 20px", textAlign: "center" }}>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
+          <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)", marginBottom: 8 }}>Account nog niet actief</h2>
+          <p className="text-sm" style={{ color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 20 }}>
+            Je kunt je planning bekijken zodra je account door een manager is geverifieerd.
+          </p>
+          <button
+            onClick={() => navigate("/onboarding-welkom")}
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold"
+            style={{ background: "var(--accent)", color: "#fff", border: "none", cursor: "pointer" }}
+          >
+            Naar onboarding →
+          </button>
+        </div>
+      </PageShell>
+    );
+  }
 
   const content = (
     <main className="px-4 py-4 space-y-4">

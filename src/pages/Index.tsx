@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { subWeeks } from "date-fns";
+import { useProfile } from "@/hooks/useProfile";
 import { useTimesheet } from "@/hooks/useTimesheet";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -52,6 +53,7 @@ const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)',
 
 const Index = () => {
   const { user, profile, isManager } = useAuth();
+  const { profile: profileCtx } = useProfile();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"week" | "overzicht">("week");
   const [showModal, setShowModal] = useState(false);
@@ -255,21 +257,35 @@ const Index = () => {
         {renderContent()}
       </div>
 
-      {/* FAB */}
-      <button
-        onClick={() => openModal()}
-        className="fixed z-40 flex items-center justify-center active:scale-[0.93] transition-transform sm:bottom-8"
-        style={{
-          bottom: 90,
-          right: "max(24px, calc(50% - 215px + 24px))",
-          width: 56, height: 56, borderRadius: "50%",
-          background: "linear-gradient(135deg, var(--accent), var(--accent-dark))",
-          color: "#fff", fontSize: 26, fontWeight: 300,
-          boxShadow: "0 8px 28px color-mix(in srgb, var(--accent) 35%, transparent)",
-        }}
-      >
-        +
-      </button>
+      {/* Onboarding banner */}
+      {profileCtx?.account_status === 'onboarding' && (
+        <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
+          <p className="text-xs font-medium flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Uren boeken is nog niet mogelijk. Je account moet eerst worden geverifieerd door een manager.
+          </p>
+          <button onClick={() => navigate("/onboarding-welkom")} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0" style={{ background: "var(--accent)", color: "#fff" }}>
+            Naar onboarding →
+          </button>
+        </div>
+      )}
+
+      {/* FAB — hidden during onboarding */}
+      {profileCtx?.account_status !== 'onboarding' && (
+        <button
+          onClick={() => openModal()}
+          className="fixed z-40 flex items-center justify-center active:scale-[0.93] transition-transform sm:bottom-8"
+          style={{
+            bottom: 90,
+            right: "max(24px, calc(50% - 215px + 24px))",
+            width: 56, height: 56, borderRadius: "50%",
+            background: "linear-gradient(135deg, var(--accent), var(--accent-dark))",
+            color: "#fff", fontSize: 26, fontWeight: 300,
+            boxShadow: "0 8px 28px color-mix(in srgb, var(--accent) 35%, transparent)",
+          }}
+        >
+          +
+        </button>
+      )}
 
       {showModal && (
         <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} onSubmit={async (entry) => {

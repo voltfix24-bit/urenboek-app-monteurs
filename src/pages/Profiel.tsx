@@ -16,7 +16,7 @@ import { CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO, differenceInDays } from "date-fns";
 import { nl } from "date-fns/locale";
 
-interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; }
+interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; geboortedatum?: string | null; account_status?: string; }
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; reden: string | null; status: string; }
 
@@ -175,7 +175,7 @@ export default function Profiel() {
   const [certs, setCerts] = useState<Certificaat[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ full_name: "", telefoon: "", adres: "" });
+  const [editForm, setEditForm] = useState({ full_name: "", telefoon: "", adres: "", geboortedatum: "" });
   const [showVerlof, setShowVerlof] = useState(false);
   const [verlofForm, setVerlofForm] = useState({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" });
   const [loading, setLoading] = useState(true);
@@ -184,8 +184,8 @@ export default function Profiel() {
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("profiles").select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, uurtarief, betalingstermijn, factuuradres").eq("user_id", user.id).single();
-    if (data) { setProfile(data as any); setEditForm({ full_name: data.full_name, telefoon: (data as any).telefoon || "", adres: (data as any).adres || "" }); }
+    const { data } = await supabase.from("profiles").select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, uurtarief, betalingstermijn, factuuradres, geboortedatum, account_status").eq("user_id", user.id).single();
+    if (data) { setProfile(data as any); setEditForm({ full_name: data.full_name, telefoon: (data as any).telefoon || "", adres: (data as any).adres || "", geboortedatum: (data as any).geboortedatum || "" }); }
     setLoading(false);
   }, [user]);
 
@@ -204,7 +204,7 @@ export default function Profiel() {
       return;
     }
     setProfileErrors({});
-    if (!await mutate(supabase.from("profiles").update({ full_name: editForm.full_name, telefoon: editForm.telefoon, adres: editForm.adres } as any).eq("id", profile.id))) return;
+    if (!await mutate(supabase.from("profiles").update({ full_name: editForm.full_name, telefoon: editForm.telefoon, adres: editForm.adres, geboortedatum: editForm.geboortedatum || null } as any).eq("id", profile.id))) return;
     toast.success("Profiel opgeslagen"); setEditing(false); fetchProfile(); refetchProfileContext();
   };
 
@@ -294,6 +294,19 @@ export default function Profiel() {
           </div>
         </div>
 
+        {/* Onboarding banner */}
+        {profile?.account_status === 'onboarding' && (
+          <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: "var(--warn-text)" }}>⚠ Je account is nog niet actief</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Vul je gegevens aan en rond je onboarding af.</p>
+            </div>
+            <button onClick={() => window.location.href = "/onboarding-welkom"} className="px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0" style={{ background: "var(--accent)", color: "#fff" }}>
+              Naar onboarding →
+            </button>
+          </div>
+        )}
+
         {/* Mijn gegevens */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <div className="flex items-center justify-between">
@@ -311,12 +324,18 @@ export default function Profiel() {
                   {profileErrors[f.key] && <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--danger)" }}>⚠ {profileErrors[f.key]}</p>}
                 </div>
               ))}
+              {/* Geboortedatum */}
+              <div>
+                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Geboortedatum</label>
+                <input type="date" value={editForm.geboortedatum} onChange={e => setEditForm({ ...editForm, geboortedatum: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              </div>
             </div>
           ) : (
             <div className="space-y-2 text-sm">
               <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Email</span><span style={{ color: "var(--text-primary)" }}>{user?.email}</span></div>
               <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Telefoon</span><span style={{ color: "var(--text-primary)" }}>{profile?.telefoon || "–"}</span></div>
               <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Adres</span><span style={{ color: "var(--text-primary)" }}>{profile?.adres || "–"}</span></div>
+              <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Geboortedatum</span><span style={{ color: "var(--text-primary)" }}>{profile?.geboortedatum ? formatDatum(profile.geboortedatum) : "–"}</span></div>
             </div>
           )}
         </div>
