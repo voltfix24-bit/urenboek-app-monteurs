@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { AlertTriangle, CheckCircle } from "lucide-react";
+import { ListSkeleton, OverurenCardSkeleton } from "@/components/ui/Skeletons";
 
 interface Melding {
   id: string;
