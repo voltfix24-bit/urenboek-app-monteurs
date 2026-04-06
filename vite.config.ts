@@ -48,6 +48,23 @@ export default defineConfig(({ mode }) => ({
               expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 },
             },
           },
+          {
+            urlPattern: /\/rest\/v1\/uren_boekingen/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "uren-cache",
+              expiration: { maxEntries: 100, maxAgeSeconds: 24 * 60 * 60 },
+              networkTimeoutSeconds: 5,
+            },
+          },
+          {
+            urlPattern: /\/rest\/v1\/beschikbaarheid/,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "beschikbaarheid-cache",
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
+            },
+          },
         ],
       },
       manifest: {
