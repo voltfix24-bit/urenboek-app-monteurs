@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
       if (kand) kandidaatEmail = kand.email;
     }
 
-    return new Response(JSON.stringify({ success: true, email: kandidaatEmail, kandidaat_id: contract.kandidaat_id }), {
+    return new Response(JSON.stringify({ success: true, email: kandidaatEmail, kandidaat_id: contract.kandidaat_id, contract_id: contractId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
