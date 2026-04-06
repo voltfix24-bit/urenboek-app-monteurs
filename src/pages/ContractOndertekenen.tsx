@@ -107,7 +107,7 @@ export default function ContractOndertekenen() {
       }
 
       setCorrectieVerstuurd(true);
-      toast.success("Correctie verstuurd");
+      setShowCorrectie(false);
     } catch (err: any) {
       toast.error(err.message || "Er ging iets mis");
     }
