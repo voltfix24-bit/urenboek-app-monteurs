@@ -110,8 +110,14 @@ export default function Medewerkers() {
       return;
     }
     setFormErrors({});
-    const fullName = `${voornaam.trim()} ${achternaam.trim()}`.trim();
     if (inviteMode === "password" && !password) { toast.error("Vul een wachtwoord in"); return; }
+    setPendingEvent(e);
+    setShowConfirm(true);
+  };
+
+  const doCreate = async () => {
+    setShowConfirm(false);
+    const fullName = `${voornaam.trim()} ${achternaam.trim()}`.trim();
     setLoading(true);
     const body: any = { email, fullName, role, telefoon: telefoon || null, adres: adres || null, rijbewijs, uurtarief: uurtarief ? parseFloat(uurtarief) : null, noodcontact_naam: noodcontactNaam || null, noodcontact_tel: noodcontactTel || null, contract_einddatum: contractEinddatum || null };
     if (inviteMode === "invite") body.invite_only = true; else body.password = password;
