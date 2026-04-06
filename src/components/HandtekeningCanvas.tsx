@@ -46,7 +46,7 @@ export function HandtekeningCanvas({ onSave, bestaande, readonly = false, hoogte
     ctx.lineJoin = 'round';
   }, [bestaande, hoogte]);
 
-  const getPos = useCallback((e: MouseEvent | Touch, canvas: HTMLCanvasElement) => {
+  const getPos = useCallback((e: { clientX: number; clientY: number }, canvas: HTMLCanvasElement) => {
     const rect = canvas.getBoundingClientRect();
     return {
       x: e.clientX - rect.left,
