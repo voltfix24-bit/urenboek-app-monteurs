@@ -72,7 +72,11 @@ export default function Profiel() {
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("profiles").select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, uurtarief, betalingstermijn, factuuradres").eq("user_id", user.id).single();
+    const { permissies: p } = useAuth.getState?.() ?? { permissies };
+    const velden = permissies.zietProjectFinancien
+      ? "id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, uurtarief, betalingstermijn, factuuradres"
+      : "id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, betalingstermijn, factuuradres";
+    const { data } = await supabase.from("profiles").select(velden).eq("user_id", user.id).single();
     if (data) { setProfile(data as any); setEditForm({ full_name: data.full_name, telefoon: (data as any).telefoon || "", adres: (data as any).adres || "" }); }
     setLoading(false);
   }, [user]);
@@ -218,7 +222,7 @@ export default function Profiel() {
               {profile?.kvk_nummer && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>KvK-nummer</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile.kvk_nummer}</span></div>}
               {profile?.btw_nummer && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>BTW-nummer</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile.btw_nummer}</span></div>}
               {profile?.iban && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>IBAN</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile.iban}</span></div>}
-              {profile?.uurtarief != null && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Uurtarief</span><span className="font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(profile.uurtarief).toFixed(2)}</span></div>}
+              {permissies.zietProjectFinancien && profile?.uurtarief != null && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Uurtarief</span><span className="font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(profile.uurtarief).toFixed(2)}</span></div>}
               {profile?.factuuradres && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Factuuradres</span><span style={{ color: "var(--text-primary)" }}>{profile.factuuradres}</span></div>}
               {profile?.betalingstermijn && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Betalingstermijn</span><span style={{ color: "var(--text-primary)" }}>{profile.betalingstermijn} dagen</span></div>}
             </div>
