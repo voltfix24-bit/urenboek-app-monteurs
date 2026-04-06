@@ -209,7 +209,8 @@ export type KandidaatStatus =
   | 'tarief_afgesproken'
   | 'uitgenodigd'
   | 'gecontracteerd'
-  | 'afgewezen';
+  | 'afgewezen'
+  | 'on_hold';
 
 export interface Kandidaat {
   id: string;

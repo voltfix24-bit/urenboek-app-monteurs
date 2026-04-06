@@ -97,4 +97,10 @@ export const KANDIDAAT_STATUS_CONFIG: Record<string, StatusConfig> = {
     bg: 'var(--danger-light)',
     border: 'var(--danger-border)',
   },
+  on_hold: {
+    label: 'On hold',
+    color: 'var(--warning)',
+    bg: 'var(--warning-light)',
+    border: 'var(--warning-border)',
+  },
 };

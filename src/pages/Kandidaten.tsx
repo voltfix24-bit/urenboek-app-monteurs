@@ -12,16 +12,18 @@ import { KANDIDAAT_STATUS_CONFIG, CONTRACT_STATUS_CONFIG } from "@/lib/contractS
 import { generateContractPdf } from "@/lib/contractPdf";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { toast } from "sonner";
-import { UserPlus, MoreHorizontal, ChevronRight, Copy, AlertTriangle } from "lucide-react";
+import { UserPlus, MoreHorizontal, ChevronRight, Copy, AlertTriangle, Trash2, Pause, Play } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import type { Kandidaat, ContractData } from "@/types/app";
 
-const STATUSSEN = ["alle", "gesprek", "tarief_afgesproken", "uitgenodigd", "gecontracteerd", "afgewezen"] as const;
+const STATUSSEN = ["alle", "gesprek", "tarief_afgesproken", "uitgenodigd", "gecontracteerd", "on_hold", "afgewezen"] as const;
 const STATUS_LABELS: Record<string, string> = {
   alle: "Alle",
   gesprek: "Gesprek",
   tarief_afgesproken: "Tarief",
   uitgenodigd: "Uitgenodigd",
   gecontracteerd: "Gecontracteerd",
+  on_hold: "On hold",
   afgewezen: "Afgewezen",
 };
 
