@@ -99,10 +99,7 @@ const L = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<PageLoader />}><RB>{children}</RB></Suspense>
 );
 
-function TestErrorPage() {
-  throw new Error("Test error: dit is een geforceerde fout voor error boundary test");
-  return null;
-}
+
 
 const App = () => (
   <AppErrorBoundary>
