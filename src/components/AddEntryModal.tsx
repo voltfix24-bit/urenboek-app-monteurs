@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { format } from "date-fns";
 import { useProjects } from "@/hooks/useProjects";
+import { valideer, urenBoekingSchema } from "@/lib/validatie";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
@@ -21,6 +22,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
   const [step, setStep] = useState(initialDate ? 2 : 1);
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate || null);
   const [form, setForm] = useState({ projectId: null as string | null, werkzaamheden: null as string | null, uren: 8 });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
@@ -50,11 +52,21 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
   const today = dateKey(new Date());
 
   function handleSubmit() {
-    if (!selectedDate || !proj || !form.werkzaamheden) return;
+    if (!selectedDate) return;
+    const vResult = valideer(urenBoekingSchema, {
+      projectId: form.projectId || "",
+      werkzaamheden: form.werkzaamheden || "",
+      uren: form.uren,
+    });
+    if (!vResult.success) {
+      setFormErrors(vResult.errors);
+      return;
+    }
+    setFormErrors({});
     onSubmit({
       date: format(selectedDate, "yyyy-MM-dd"),
-      projectId: proj.id,
-      description: form.werkzaamheden,
+      projectId: form.projectId!,
+      description: form.werkzaamheden!,
       hours: form.uren,
     });
     onClose();
@@ -155,14 +167,15 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
             </p>
 
             <div className="space-y-2">
-              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Soort werkzaamheden</label>
+              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: formErrors.werkzaamheden ? "var(--danger)" : "var(--text-muted)" }}>Soort werkzaamheden</label>
               <div className="flex gap-2">
                 {["schakelen", "monteren"].map((w) => (
-                  <button key={w} onClick={() => setForm((f) => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{ background: form.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)", border: form.werkzaamheden === w ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: form.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)" }}>
+                  <button key={w} onClick={() => { setForm((f) => ({ ...f, werkzaamheden: w })); setFormErrors(prev => { const n = { ...prev }; delete n.werkzaamheden; return n; }); }} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{ background: form.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)", border: form.werkzaamheden === w ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: form.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)" }}>
                     {w}
                   </button>
                 ))}
               </div>
+              {formErrors.werkzaamheden && <p className="text-[10px] font-medium" style={{ color: "var(--danger)" }}>⚠ {formErrors.werkzaamheden}</p>}
             </div>
 
             <div className="space-y-2">

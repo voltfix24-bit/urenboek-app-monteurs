@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { valideer, nieuweMedewerkerSchema } from "@/lib/validatie";
 import { useMedewerkers } from "@/hooks/useMedewerkers";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,6 +44,7 @@ export default function Medewerkers() {
   const [inviteMode, setInviteMode] = useState<"invite" | "password">("invite");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const handler = () => setIsDesktop(window.innerWidth >= 768);
@@ -93,8 +95,18 @@ export default function Medewerkers() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    const vResult = valideer(nieuweMedewerkerSchema, {
+      voornaam: voornaam.trim(), achternaam: achternaam.trim(),
+      email, role: role || undefined, uurtarief: uurtarief || undefined, telefoon: telefoon || undefined,
+    });
+    if (!vResult.success) {
+      setFormErrors(vResult.errors);
+      toast.error("Controleer de ingevulde gegevens");
+      setLoading(false);
+      return;
+    }
+    setFormErrors({});
     const fullName = `${voornaam.trim()} ${achternaam.trim()}`.trim();
-    if (!email || !fullName || !role) { toast.error("Vul alle verplichte velden in"); return; }
     if (inviteMode === "password" && !password) { toast.error("Vul een wachtwoord in"); return; }
     setLoading(true);
     const body: any = { email, fullName, role, telefoon: telefoon || null, adres: adres || null, rijbewijs, uurtarief: uurtarief ? parseFloat(uurtarief) : null, noodcontact_naam: noodcontactNaam || null, noodcontact_tel: noodcontactTel || null, contract_einddatum: contractEinddatum || null };
@@ -153,7 +165,8 @@ export default function Medewerkers() {
         noodcontactTel={noodcontactTel} setNoodcontactTel={setNoodcontactTel}
         inviteMode={inviteMode} setInviteMode={setInviteMode}
         password={password} setPassword={setPassword} showPw={showPw} setShowPw={setShowPw}
-        generatePassword={generatePassword} loading={loading} onSubmit={handleCreate} />}
+        generatePassword={generatePassword} loading={loading} onSubmit={handleCreate}
+        formErrors={formErrors} clearError={(f: string) => setFormErrors(prev => { const n = { ...prev }; delete n[f]; return n; })} />}
 
       {createdUsers.length > 0 && (
         <div className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>

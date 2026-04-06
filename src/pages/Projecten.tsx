@@ -13,6 +13,7 @@ import { ProjectFormFields, FormState, emptyForm } from "@/components/projecten/
 import { ProjectCard } from "@/components/projecten/ProjectCard";
 import { DesktopProjectLijst } from "@/components/projecten/DesktopProjectLijst";
 import { DesktopProjectDetail, DesktopFormPanel } from "@/components/projecten/DesktopProjectDetail";
+import { valideer, projectSchema } from "@/lib/validatie";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
@@ -41,6 +42,7 @@ export default function Projecten() {
   const [searchQuery, setSearchQuery] = useState("");
   const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
   const [statusFilter, setStatusFilter] = useState("alle");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const fetchData = useCallback(async () => {
     const [p, o] = await Promise.all([
@@ -82,8 +84,13 @@ export default function Projecten() {
   function getOgNaam(id: string | null) { return id ? opdrachtgevers.find(o => o.id === id)?.naam || null : null; }
 
   async function handleSubmit(isNew: boolean, id?: string) {
-    if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
-    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
+    const vResult = valideer(projectSchema, form);
+    if (!vResult.success) {
+      setFormErrors(vResult.errors);
+      toast.error("Controleer de ingevulde gegevens");
+      return;
+    }
+    setFormErrors({});
     const data: any = {
       nummer: form.nummer.trim(), naam: form.naam.trim(),
       straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(),
@@ -147,7 +154,8 @@ export default function Projecten() {
   const filteredInactive = filteredProjects.filter(p => !p.active);
   const selectedProject = selectedId ? projects.find(p => p.id === selectedId) || null : null;
 
-  const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} />;
+  const clearError = (field: string) => setFormErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+  const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} />;
 
   return (
     <>

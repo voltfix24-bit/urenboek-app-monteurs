@@ -7,6 +7,7 @@ import { PageShell } from "@/components/PageShell";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
+import { valideer, profielSchema } from "@/lib/validatie";
 import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO } from "date-fns";
@@ -67,6 +68,7 @@ export default function Profiel() {
   const [verlofForm, setVerlofForm] = useState({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" });
   const [loading, setLoading] = useState(true);
   const [calMonth, setCalMonth] = useState(new Date());
+  const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
@@ -83,6 +85,13 @@ export default function Profiel() {
 
   const saveProfile = async () => {
     if (!profile) return;
+    const vResult = valideer(profielSchema, editForm);
+    if (!vResult.success) {
+      setProfileErrors(vResult.errors);
+      toast.error("Controleer de ingevulde gegevens");
+      return;
+    }
+    setProfileErrors({});
     if (!await mutate(supabase.from("profiles").update({ full_name: editForm.full_name, telefoon: editForm.telefoon, adres: editForm.adres } as any).eq("id", profile.id))) return;
     toast.success("Profiel opgeslagen"); setEditing(false); fetchProfile(); refetchProfileContext();
   };
@@ -185,8 +194,9 @@ export default function Profiel() {
             <div className="space-y-2">
               {[{ label: "Naam", key: "full_name" as const }, { label: "Telefoon", key: "telefoon" as const }, { label: "Adres", key: "adres" as const }].map(f => (
                 <div key={f.key}>
-                  <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{f.label}</label>
-                  <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                  <label className="text-[10px] font-medium" style={{ color: profileErrors[f.key] ? "var(--danger)" : "var(--text-muted)" }}>{f.label}</label>
+                  <input value={editForm[f.key]} onChange={e => { setEditForm({ ...editForm, [f.key]: e.target.value }); if (profileErrors[f.key]) setProfileErrors(prev => { const n = { ...prev }; delete n[f.key]; return n; }); }} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: profileErrors[f.key] ? "1.5px solid var(--danger)" : "1px solid var(--border)", color: "var(--text-primary)" }} />
+                  {profileErrors[f.key] && <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--danger)" }}>⚠ {profileErrors[f.key]}</p>}
                 </div>
               ))}
             </div>
