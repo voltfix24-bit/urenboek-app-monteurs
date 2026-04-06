@@ -32,6 +32,81 @@ export type Database = {
         }
         Relationships: []
       }
+      bedrijfsgegevens: {
+        Row: {
+          bedrijfsnaam: string
+          betalingstermijn: number
+          btw_nummer: string | null
+          email: string | null
+          iban: string | null
+          iban_naam: string | null
+          id: string
+          kvk_nummer: string | null
+          land: string
+          postcode: string | null
+          rechtsvorm: string | null
+          stad: string | null
+          straat: string | null
+          telefoon: string | null
+          updated_at: string
+          updated_by: string | null
+          website: string | null
+        }
+        Insert: {
+          bedrijfsnaam: string
+          betalingstermijn?: number
+          btw_nummer?: string | null
+          email?: string | null
+          iban?: string | null
+          iban_naam?: string | null
+          id?: string
+          kvk_nummer?: string | null
+          land?: string
+          postcode?: string | null
+          rechtsvorm?: string | null
+          stad?: string | null
+          straat?: string | null
+          telefoon?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          website?: string | null
+        }
+        Update: {
+          bedrijfsnaam?: string
+          betalingstermijn?: number
+          btw_nummer?: string | null
+          email?: string | null
+          iban?: string | null
+          iban_naam?: string | null
+          id?: string
+          kvk_nummer?: string | null
+          land?: string
+          postcode?: string | null
+          rechtsvorm?: string | null
+          stad?: string | null
+          straat?: string | null
+          telefoon?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bedrijfsgegevens_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bedrijfsgegevens_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       beschikbaarheid: {
         Row: {
           behandeld_door: string | null

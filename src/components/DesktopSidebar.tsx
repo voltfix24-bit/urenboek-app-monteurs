@@ -60,6 +60,7 @@ const MANAGER_GROEPEN: NavGroep[] = [
 const BEHEER_ITEMS: NavItem[] = [
   { path: "/beheer/intake-regels", icon: Cpu, label: "Intake regelmotor" },
   { path: "/beheer/tarieven", icon: Euro, label: "Tarieven" },
+  { path: "/beheer/bedrijf", icon: Building2, label: "Bedrijfsgegevens" },
 ];
 
 const PATH_PERMISSION_MAP: Record<string, keyof RolPermissies> = {

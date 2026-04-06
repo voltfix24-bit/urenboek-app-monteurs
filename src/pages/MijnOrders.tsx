@@ -11,6 +11,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
+import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 
@@ -42,21 +43,33 @@ export default function MijnOrders() {
     setOrderRegels(data || []);
   };
 
-  const downloadPdf = () => {
+  const downloadPdf = async () => {
     if (!selectedOrder) return;
+    const bedrijf = await getBedrijfsgegevens();
+    const bNaam = bedrijf?.bedrijfsnaam || "TerreVolt BV";
     const doc = new jsPDF();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.setTextColor(74, 124, 47);
-    doc.text("TerreVolt BV", 14, 20);
+    doc.text(bNaam, 14, 20);
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text("Inkooporder", 14, 28);
+
+    let yLeft = 36;
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    if (bedrijf?.straat) { doc.text(bedrijf.straat, 14, yLeft); yLeft += 5; }
+    if (bedrijf?.postcode || bedrijf?.stad) { doc.text([bedrijf.postcode, bedrijf.stad].filter(Boolean).join(" "), 14, yLeft); yLeft += 5; }
+    if (bedrijf?.kvk_nummer) { doc.text(`KVK: ${bedrijf.kvk_nummer}`, 14, yLeft); yLeft += 5; }
+
     doc.setFontSize(12);
     doc.setTextColor(0);
-    doc.text(selectedOrder.order_nummer, 14, 40);
+    doc.setFont("helvetica", "bold");
+    doc.text(selectedOrder.order_nummer, 14, yLeft + 6);
     doc.setFontSize(9);
-    doc.text(`Periode: ${selectedOrder.periode_van} t/m ${selectedOrder.periode_tot}`, 14, 47);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Periode: ${selectedOrder.periode_van} t/m ${selectedOrder.periode_tot}`, 14, yLeft + 13);
 
     if (profile) {
       doc.setFontSize(10);
@@ -85,6 +98,13 @@ export default function MijnOrders() {
       headStyles: { fillColor: [74, 124, 47], textColor: 255 },
       footStyles: { fillColor: [245, 247, 240], textColor: [0, 0, 0], fontStyle: "bold" },
     });
+
+    const finalY = (doc as any).lastAutoTable?.finalY || 200;
+    doc.setFontSize(8);
+    doc.setTextColor(130);
+    if (bedrijf?.iban) doc.text(`IBAN: ${bedrijf.iban}${bedrijf.iban_naam ? ` t.n.v. ${bedrijf.iban_naam}` : ""}`, 14, finalY + 15);
+    doc.text(`${bNaam}`, 14, finalY + 22);
+
     doc.save(`Inkooporder_${selectedOrder.order_nummer}.pdf`);
   };
 

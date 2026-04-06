@@ -1,4 +1,4 @@
-import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard } from "lucide-react";
+import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
@@ -90,6 +90,14 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts }: Props) {
             )}
           </div>
         </Section>
+      )}
+
+      {/* ZZP incomplete warning */}
+      {(!emp.kvk_nummer || !emp.iban) && (
+        <div className="flex items-start gap-2 rounded-xl p-3" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--warn-text)" }} />
+          <span className="text-xs" style={{ color: "var(--warn-text)" }}>ZZP gegevens incompleet — inkooporder kan niet aangemaakt worden</span>
+        </div>
       )}
 
       {/* ZZP Business details */}
