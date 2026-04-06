@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import terrevoltLogo from "@/assets/terrevolt-logo.svg";
+import { Spinner } from "@/components/ui/Spinner";
 
 export default function Setup() {
   const navigate = useNavigate();
@@ -87,7 +88,7 @@ export default function Setup() {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
-      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
+      <Spinner center={false} />
     </div>
   );
 
