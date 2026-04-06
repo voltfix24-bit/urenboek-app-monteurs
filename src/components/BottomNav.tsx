@@ -2,7 +2,15 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import type { NavBadges } from "@/hooks/useNavBadges";
 import { NavBadge } from "./NavBadge";
-import { Clock, CheckCircle, BarChart3, Users, CalendarDays, Bell, User, LayoutDashboard, AlertTriangle, FileText } from "lucide-react";
+import { Clock, CheckCircle, CalendarDays, Bell, User, LayoutDashboard, FolderOpen, FileText, type LucideIcon } from "lucide-react";
+
+interface TabDef {
+  key: string;
+  icon: LucideIcon;
+  label: string;
+  badge?: number;
+  dot?: boolean;
+}
 
 interface BottomNavProps {
   badges: NavBadges;
@@ -11,32 +19,33 @@ interface BottomNavProps {
 export function BottomNav({ badges }: BottomNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isManager, canManagePlanning } = useAuth();
+  const { permissies, isManager, isUitvoerder } = useAuth();
 
-  const monteurTabs = [
+  const monteurTabs: TabDef[] = [
     { key: "/", icon: Clock, label: "Uren", badge: badges.afgekeurdeUren },
     { key: "/planning", icon: CalendarDays, label: "Planning" },
+    { key: "/mijn-orders", icon: FileText, label: "Orders", badge: badges.nieuweOrders },
     { key: "/mededelingen", icon: Bell, label: "Berichten", badge: badges.ongelezen },
-    { key: "/mijn-orders", icon: FileText, label: "Orders" },
     { key: "/profiel", icon: User, label: "Profiel" },
   ];
 
-  const managerTabs = [
+  const uitvoerderTabs: TabDef[] = [
+    { key: "/dashboard", icon: LayoutDashboard, label: "Overzicht" },
+    { key: "/manager-planning", icon: CalendarDays, label: "Planning" },
+    { key: "/projecten", icon: FolderOpen, label: "Projecten" },
+    { key: "/mededelingen", icon: Bell, label: "Berichten", badge: badges.ongelezen },
+    { key: "/profiel", icon: User, label: "Profiel" },
+  ];
+
+  const managerTabs: TabDef[] = [
     { key: "/dashboard", icon: LayoutDashboard, label: "Dashboard", dot: badges.verlofAanvragen > 0 },
     { key: "/goedkeuring", icon: CheckCircle, label: "Keuren", badge: badges.openGoedkeuringen },
-    { key: "/overuren", icon: AlertTriangle, label: "Overuren", badge: badges.openOveruren },
     { key: "/manager-planning", icon: CalendarDays, label: "Planning" },
-    { key: "/medewerkers", icon: Users, label: "Team" },
-  ];
-
-  const uitvoerderTabs = [
-    { key: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { key: "/manager-planning", icon: CalendarDays, label: "Planning" },
+    { key: "/projecten", icon: FolderOpen, label: "Projecten" },
     { key: "/mededelingen", icon: Bell, label: "Berichten", badge: badges.ongelezen },
-    { key: "/profiel", icon: User, label: "Profiel" },
   ];
 
-  const tabs = isManager ? managerTabs : canManagePlanning ? uitvoerderTabs : monteurTabs;
+  const tabs = isManager ? managerTabs : isUitvoerder ? uitvoerderTabs : monteurTabs;
 
   const isActive = (key: string) => {
     if (key === "/") return location.pathname === "/";
@@ -55,26 +64,41 @@ export function BottomNav({ badges }: BottomNavProps) {
       }}
     >
       <div className="flex items-center">
-        {tabs.map((t: any) => {
+        {tabs.map((t) => {
           const active = isActive(t.key);
           const Icon = t.icon;
           return (
             <button
               key={t.key}
               onClick={() => navigate(t.key)}
-              className="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors"
-              style={{
-                background: "none",
-                color: active ? "var(--accent)" : "var(--text-muted)",
-                borderTop: active ? "2px solid var(--accent)" : "2px solid transparent",
-              }}
+              className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-colors"
+              style={{ background: "none" }}
             >
-              <span className="relative">
-                <Icon className="h-5 w-5" />
-                {t.badge > 0 && <NavBadge count={t.badge} />}
-                {t.dot && <NavBadge count={1} dot />}
+              <div
+                className="flex items-center justify-center transition-all"
+                style={{
+                  width: 44, height: 28, borderRadius: 14,
+                  background: active ? "var(--accent-light)" : "transparent",
+                }}
+              >
+                <span className="relative">
+                  <Icon style={{
+                    width: active ? 22 : 20, height: active ? 22 : 20,
+                    color: active ? "var(--accent)" : "var(--text-muted)",
+                    transition: "all 0.15s",
+                  }} />
+                  {(t.badge ?? 0) > 0 && <NavBadge count={t.badge!} />}
+                  {t.dot && <NavBadge count={1} dot />}
+                </span>
+              </div>
+              <span style={{
+                fontSize: 10,
+                color: active ? "var(--accent)" : "var(--text-muted)",
+                fontWeight: active ? 700 : 400,
+                marginTop: 2,
+              }}>
+                {t.label}
               </span>
-              <span className="text-[10px] font-semibold">{t.label}</span>
             </button>
           );
         })}

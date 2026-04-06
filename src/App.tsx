@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { AuthProvider, useAuth, type RolPermissies } from "@/hooks/useAuth";
 import { ProfileProvider } from "@/hooks/useProfile";
 import { NavBadgesProvider } from "@/hooks/useNavBadges";
 import Index from "./pages/Index";
@@ -32,21 +32,33 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
-  if (loading) return (
+function LoadingSpinner() {
+  return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
       <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
     </div>
   );
+}
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { session, loading } = useAuth();
+  if (loading) return <LoadingSpinner />;
   if (!session) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
+function RoleRoute({ children, check }: { children: React.ReactNode; check: (p: RolPermissies) => boolean }) {
+  const { permissies, loading, session } = useAuth();
+  if (loading) return <LoadingSpinner />;
+  if (!session) return <Navigate to="/login" replace />;
+  if (!check(permissies)) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
+  const { session, loading, permissies } = useAuth();
   if (loading) return null;
-  if (session) return <Navigate to="/" replace />;
+  if (session) return <Navigate to={permissies.zietDashboard ? "/dashboard" : "/"} replace />;
   return <>{children}</>;
 }
 
@@ -65,23 +77,30 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+
+            {/* Always accessible for logged-in users */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/medewerkers" element={<ProtectedRoute><Medewerkers /></ProtectedRoute>} />
-            <Route path="/goedkeuring" element={<ProtectedRoute><Goedkeuring /></ProtectedRoute>} />
-            <Route path="/rapportage" element={<ProtectedRoute><Rapportage /></ProtectedRoute>} />
-            <Route path="/projecten" element={<ProtectedRoute><Projecten /></ProtectedRoute>} />
-            <Route path="/opdrachtgevers" element={<ProtectedRoute><Opdrachtgevers /></ProtectedRoute>} />
-            <Route path="/planning" element={<ProtectedRoute><Planning /></ProtectedRoute>} />
-            <Route path="/manager-planning" element={<ProtectedRoute><ManagerPlanning /></ProtectedRoute>} />
-            <Route path="/mededelingen" element={<ProtectedRoute><Mededelingen /></ProtectedRoute>} />
+            <Route path="/planning" element={<RoleRoute check={p => p.zietPlanning}><Planning /></RoleRoute>} />
+            <Route path="/mededelingen" element={<RoleRoute check={p => p.zietMededelingen}><Mededelingen /></RoleRoute>} />
             <Route path="/profiel" element={<ProtectedRoute><Profiel /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/projecten/:projectId/planning" element={<ProtectedRoute><ProjectPlanning /></ProtectedRoute>} />
-            <Route path="/overuren" element={<ProtectedRoute><Overuren /></ProtectedRoute>} />
-            <Route path="/beheer/intake-regels" element={<ProtectedRoute><IntakeRegelBeheer /></ProtectedRoute>} />
-            <Route path="/beheer/tarieven" element={<ProtectedRoute><TarievenBeheer /></ProtectedRoute>} />
-            <Route path="/inkooporders" element={<ProtectedRoute><Inkooporders /></ProtectedRoute>} />
-            <Route path="/mijn-orders" element={<ProtectedRoute><MijnOrders /></ProtectedRoute>} />
+            <Route path="/mijn-orders" element={<RoleRoute check={p => p.zietInkooporders}><MijnOrders /></RoleRoute>} />
+
+            {/* Role-gated routes */}
+            <Route path="/dashboard" element={<RoleRoute check={p => p.zietDashboard}><Dashboard /></RoleRoute>} />
+            <Route path="/goedkeuring" element={<RoleRoute check={p => p.zietGoedkeuring}><Goedkeuring /></RoleRoute>} />
+            <Route path="/overuren" element={<RoleRoute check={p => p.zietOveruren}><Overuren /></RoleRoute>} />
+            <Route path="/rapportage" element={<RoleRoute check={p => p.zietRapportage}><Rapportage /></RoleRoute>} />
+            <Route path="/manager-planning" element={<RoleRoute check={p => p.zietManagerPlanning}><ManagerPlanning /></RoleRoute>} />
+            <Route path="/projecten" element={<RoleRoute check={p => p.zietProjecten}><Projecten /></RoleRoute>} />
+            <Route path="/projecten/:projectId/planning" element={<RoleRoute check={p => p.zietProjecten}><ProjectPlanning /></RoleRoute>} />
+            <Route path="/opdrachtgevers" element={<RoleRoute check={p => p.magTeamBeheren}><Opdrachtgevers /></RoleRoute>} />
+            <Route path="/medewerkers" element={<RoleRoute check={p => p.zietTeam}><Medewerkers /></RoleRoute>} />
+            <Route path="/inkooporders" element={<RoleRoute check={p => p.zietAlleInkooporders}><Inkooporders /></RoleRoute>} />
+
+            {/* Beheer */}
+            <Route path="/beheer/intake-regels" element={<RoleRoute check={p => p.zietBeheer}><IntakeRegelBeheer /></RoleRoute>} />
+            <Route path="/beheer/tarieven" element={<RoleRoute check={p => p.zietBeheer}><TarievenBeheer /></RoleRoute>} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
           </NavBadgesProvider>

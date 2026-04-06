@@ -10,9 +10,14 @@ export interface NavBadges {
   verlofAanvragen: number;
   afgekeurdeUren: number;
   openOveruren: number;
+  nieuweOrders: number;
+  openOrders: number;
 }
 
-const defaultBadges: NavBadges = { openGoedkeuringen: 0, ongelezen: 0, verlofAanvragen: 0, afgekeurdeUren: 0, openOveruren: 0 };
+const defaultBadges: NavBadges = {
+  openGoedkeuringen: 0, ongelezen: 0, verlofAanvragen: 0,
+  afgekeurdeUren: 0, openOveruren: 0, nieuweOrders: 0, openOrders: 0,
+};
 
 interface NavBadgesContextValue {
   badges: NavBadges;
@@ -21,9 +26,7 @@ interface NavBadgesContextValue {
 }
 
 const NavBadgesContext = createContext<NavBadgesContextValue>({
-  badges: defaultBadges,
-  isManager: false,
-  profileId: null,
+  badges: defaultBadges, isManager: false, profileId: null,
 });
 
 export function NavBadgesProvider({ children }: { children: ReactNode }) {
@@ -36,17 +39,23 @@ export function NavBadgesProvider({ children }: { children: ReactNode }) {
     const next: Partial<NavBadges> = {};
 
     if (isManager) {
-      const [{ count: c1 }, { count: c2 }, { count: c3 }] = await Promise.all([
+      const [{ count: c1 }, { count: c2 }, { count: c3 }, { count: c4 }] = await Promise.all([
         supabase.from("uren_boekingen").select("id", { count: "exact", head: true }).eq("status", "ingediend"),
         supabase.from("beschikbaarheid").select("id", { count: "exact", head: true }).eq("status", "aangevraagd"),
         supabase.from("overuren_meldingen").select("id", { count: "exact", head: true }).eq("status", "open"),
+        supabase.from("inkooporders").select("id", { count: "exact", head: true }).eq("status", "factuur_ontvangen"),
       ]);
       next.openGoedkeuringen = c1 || 0;
       next.verlofAanvragen = c2 || 0;
       next.openOveruren = c3 || 0;
+      next.openOrders = c4 || 0;
     } else {
-      const { count } = await supabase.from("uren_boekingen").select("id", { count: "exact", head: true }).eq("medewerker_id", profileId).eq("status", "afgekeurd");
-      next.afgekeurdeUren = count || 0;
+      const [{ count: afgekeurd }, { count: nieuw }] = await Promise.all([
+        supabase.from("uren_boekingen").select("id", { count: "exact", head: true }).eq("medewerker_id", profileId).eq("status", "afgekeurd"),
+        supabase.from("inkooporders").select("id", { count: "exact", head: true }).eq("medewerker_id", profileId).eq("status", "verzonden"),
+      ]);
+      next.afgekeurdeUren = afgekeurd || 0;
+      next.nieuweOrders = nieuw || 0;
     }
 
     const { count: unread } = await supabase.from("mededeling_leesstatus").select("id", { count: "exact", head: true }).eq("medewerker_id", profileId).is("gelezen_op", null);
@@ -62,33 +71,16 @@ export function NavBadgesProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [fetchBadges]);
 
-  // Single realtime subscription
   const instanceId = useRef(`${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
   useEffect(() => {
     if (!user) return;
-
     const uid = instanceId.current;
-    const chUb = supabase
-      .channel(`nb-ub-${uid}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "uren_boekingen" }, fetchBadges)
-      .subscribe();
-
-    const chLs = supabase
-      .channel(`nb-ls-${uid}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges)
-      .subscribe();
-
-    const chOu = supabase
-      .channel(`nb-ou-${uid}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "overuren_meldingen" }, fetchBadges)
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(chUb);
-      supabase.removeChannel(chLs);
-      supabase.removeChannel(chOu);
-    };
+    const chUb = supabase.channel(`nb-ub-${uid}`).on("postgres_changes", { event: "*", schema: "public", table: "uren_boekingen" }, fetchBadges).subscribe();
+    const chLs = supabase.channel(`nb-ls-${uid}`).on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges).subscribe();
+    const chOu = supabase.channel(`nb-ou-${uid}`).on("postgres_changes", { event: "*", schema: "public", table: "overuren_meldingen" }, fetchBadges).subscribe();
+    const chIo = supabase.channel(`nb-io-${uid}`).on("postgres_changes", { event: "*", schema: "public", table: "inkooporders" }, fetchBadges).subscribe();
+    return () => { supabase.removeChannel(chUb); supabase.removeChannel(chLs); supabase.removeChannel(chOu); supabase.removeChannel(chIo); };
   }, [user, fetchBadges]);
 
   return React.createElement(NavBadgesContext.Provider, { value: { badges, isManager, profileId } }, children);
