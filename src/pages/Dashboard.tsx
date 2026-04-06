@@ -86,12 +86,22 @@ function ContractAttentionSection({ navigate }: { navigate: (p: string) => void 
 function NieuweMedewerkersSection({ navigate }: { navigate: (p: string) => void }) {
   const [medewerkers, setMedewerkers] = useState<any[]>([]);
 
-  useEffect(() => {
+  const fetchNieuw = useCallback(() => {
     supabase.from("profiles").select("id, full_name, activated_at")
       .eq("account_status", "onboarding").eq("onboarding_voltooid", true)
       .order("activated_at", { ascending: false }).limit(10)
       .then(({ data }) => setMedewerkers(data || []));
   }, []);
+
+  useEffect(() => { fetchNieuw(); }, [fetchNieuw]);
+
+  // Realtime: herlaad als een profiel wijzigt
+  useEffect(() => {
+    const channel = supabase.channel('dash-nieuwe-mw')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, fetchNieuw)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchNieuw]);
 
   if (medewerkers.length === 0) return null;
 
