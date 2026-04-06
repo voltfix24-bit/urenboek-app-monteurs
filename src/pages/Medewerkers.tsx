@@ -27,6 +27,7 @@ export default function Medewerkers() {
   const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [showAdd, setShowAdd] = useState(false);
+  const [filter, setFilter] = useState<"alle" | "verificatie">("alle");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [employeeCerts, setEmployeeCerts] = useState<any[]>([]);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
