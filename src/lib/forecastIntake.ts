@@ -94,6 +94,9 @@ export interface BerekendeRegel {
   eigen_kosten: number;
   eenheid: string;
   groep: string;
+  trigger_type?: string;
+  trigger_veld?: string | null;
+  trigger_waarde?: string | null;
 }
 
 export const LEGE_ANTWOORDEN: IntakeAntwoorden = {
