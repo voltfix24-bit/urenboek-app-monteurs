@@ -344,17 +344,21 @@ export default function Kandidaten() {
   const [deleteConfirm, setDeleteConfirm] = useState<Kandidaat | null>(null);
 
   async function verwijderKandidaat(id: string) {
-    // Also delete related contracts and berichten
-    const relatedContracts = contracten.filter(c => c.kandidaat_id === id);
-    for (const c of relatedContracts) {
-      await supabase.from("contract_berichten").delete().eq("contract_id", c.id);
-      await supabase.from("contract_tokens").delete().eq("contract_id", c.id);
-      await supabase.from("contracten").delete().eq("id", c.id);
+    try {
+      // Delete related contracts (cascade deletes tokens + berichten automatically)
+      const relatedContracts = contracten.filter(c => c.kandidaat_id === id);
+      for (const c of relatedContracts) {
+        const { error } = await supabase.from("contracten").delete().eq("id", c.id);
+        if (error) throw error;
+      }
+      const { error } = await supabase.from("kandidaten").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Kandidaat verwijderd");
+      setDeleteConfirm(null);
+      fetchKandidaten();
+    } catch (err: any) {
+      toast.error("Verwijderen mislukt: " + (err.message || "onbekende fout"));
     }
-    await supabase.from("kandidaten").delete().eq("id", id);
-    toast.success("Kandidaat verwijderd");
-    setDeleteConfirm(null);
-    fetchKandidaten();
   }
 
   return (
