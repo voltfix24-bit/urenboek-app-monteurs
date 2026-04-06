@@ -42,7 +42,7 @@ function CaseTypeBadge({ type }: { type: string | null }) {
 }
 
 export default function Projecten() {
-  const { isManager } = useAuth(); const navigate = useNavigate();
+  const { isManager, permissies } = useAuth(); const navigate = useNavigate();
   const { badges } = useNavBadges();
   const [projects, setProjects] = useState<Project[]>([]); const [opdrachtgevers, setOpdrachtgevers] = useState<Opdrachtgever[]>([]);
   const [loading, setLoading] = useState(true); const [showAdd, setShowAdd] = useState(false);
@@ -62,7 +62,7 @@ export default function Projecten() {
     if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data);
 
     // Fetch forecast marge data for managers
-    if (isManager) {
+    if (permissies.zietProjectFinancien) {
       const { data: forecasts } = await supabase.from("project_forecast").select("id, project_id");
       if (forecasts && forecasts.length > 0) {
         const fIds = forecasts.map((f: any) => f.id);

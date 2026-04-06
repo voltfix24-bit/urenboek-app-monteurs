@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, type RolPermissies } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import type { NavBadges } from "@/hooks/useNavBadges";
 import { NavBadge } from "./NavBadge";
@@ -8,26 +8,77 @@ import { GlobalSearch } from "./GlobalSearch";
 import terrevoltLogo from "@/assets/terrevolt-logo.svg";
 import {
   LayoutDashboard, CheckCircle, CalendarDays, FolderOpen, Users,
-  BarChart3, Clock, Bell, User, LogOut, Search, AlertTriangle, Settings, FileText,
+  BarChart3, Bell, LogOut, Search, AlertTriangle, Settings, Receipt,
+  Building2, Cpu, Euro, type LucideIcon,
 } from "lucide-react";
 
-const managerItems = [
-  { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard", badgeKey: "verlofDot" as const },
-  { path: "/goedkeuring", icon: CheckCircle, label: "Goedkeuring", badgeKey: "openGoedkeuringen" as const },
-  { path: "/overuren", icon: AlertTriangle, label: "Overuren", badgeKey: "openOveruren" as const },
-  { path: "/manager-planning", icon: CalendarDays, label: "Planning" },
-  { path: "/projecten", icon: FolderOpen, label: "Projecten" },
-  { path: "/medewerkers", icon: Users, label: "Team" },
-  { path: "/rapportage", icon: BarChart3, label: "Rapportage" },
-  { path: "/inkooporders", icon: FileText, label: "Inkooporders" },
+interface NavItem {
+  path: string;
+  icon: LucideIcon;
+  label: string;
+  badgeKey?: keyof NavBadges;
+}
+
+interface NavGroep {
+  label: string;
+  items: NavItem[];
+}
+
+const MANAGER_GROEPEN: NavGroep[] = [
+  {
+    label: "Overzicht",
+    items: [
+      { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard", badgeKey: "verlofAanvragen" },
+      { path: "/mededelingen", icon: Bell, label: "Berichten", badgeKey: "ongelezen" },
+    ],
+  },
+  {
+    label: "Uren & Goedkeuring",
+    items: [
+      { path: "/goedkeuring", icon: CheckCircle, label: "Goedkeuring", badgeKey: "openGoedkeuringen" },
+      { path: "/overuren", icon: AlertTriangle, label: "Overuren", badgeKey: "openOveruren" },
+      { path: "/rapportage", icon: BarChart3, label: "Rapportage" },
+      { path: "/inkooporders", icon: Receipt, label: "Inkooporders", badgeKey: "openOrders" },
+    ],
+  },
+  {
+    label: "Planning & Projecten",
+    items: [
+      { path: "/manager-planning", icon: CalendarDays, label: "Weekplanning" },
+      { path: "/projecten", icon: FolderOpen, label: "Projecten" },
+      { path: "/opdrachtgevers", icon: Building2, label: "Opdrachtgevers" },
+    ],
+  },
+  {
+    label: "Team",
+    items: [
+      { path: "/medewerkers", icon: Users, label: "Medewerkers" },
+    ],
+  },
 ];
 
-const monteurItems = [
-  { path: "/", icon: Clock, label: "Uren", badgeKey: "afgekeurdeUren" as const },
-  { path: "/planning", icon: CalendarDays, label: "Mijn planning" },
-  { path: "/mededelingen", icon: Bell, label: "Mededelingen", badgeKey: "ongelezen" as const },
-  { path: "/profiel", icon: User, label: "Profiel" },
+const BEHEER_ITEMS: NavItem[] = [
+  { path: "/beheer/intake-regels", icon: Cpu, label: "Intake regelmotor" },
+  { path: "/beheer/tarieven", icon: Euro, label: "Tarieven" },
 ];
+
+const PATH_PERMISSION_MAP: Record<string, keyof RolPermissies> = {
+  "/dashboard": "zietDashboard",
+  "/mededelingen": "zietMededelingen",
+  "/goedkeuring": "zietGoedkeuring",
+  "/overuren": "zietOveruren",
+  "/rapportage": "zietRapportage",
+  "/inkooporders": "zietAlleInkooporders",
+  "/manager-planning": "zietManagerPlanning",
+  "/projecten": "zietProjecten",
+  "/opdrachtgevers": "magTeamBeheren",
+  "/medewerkers": "zietTeam",
+};
+
+function isItemZichtbaar(path: string, p: RolPermissies): boolean {
+  const key = PATH_PERMISSION_MAP[path];
+  return key ? !!p[key] : false;
+}
 
 interface DesktopSidebarProps {
   badges: NavBadges;
@@ -36,23 +87,20 @@ interface DesktopSidebarProps {
 export function DesktopSidebar({ badges }: DesktopSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isManager, canManagePlanning, signOut } = useAuth();
+  const { permissies, rolLabel, signOut } = useAuth();
   const { profile: profileCtx } = useProfile();
   const [showSearch, setShowSearch] = useState(false);
   const displayName = profileCtx?.full_name || "Gebruiker";
 
-  const items = isManager
-    ? managerItems
-    : canManagePlanning
-      ? managerItems.filter(i => ["/dashboard", "/manager-planning", "/projecten", "/mededelingen", "/profiel"].includes(i.path))
-      : monteurItems;
+  const zichtbareGroepen = MANAGER_GROEPEN
+    .map(groep => ({ ...groep, items: groep.items.filter(item => isItemZichtbaar(item.path, permissies)) }))
+    .filter(groep => groep.items.length > 0);
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
-  // Cmd+K shortcut
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setShowSearch(true); }
@@ -61,26 +109,26 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const getBadgeCount = (item: any): number => {
+  const getBadgeCount = (item: NavItem): number => {
     if (!item.badgeKey) return 0;
-    if (item.badgeKey === "verlofDot") return 0; // handled as dot
+    if (item.badgeKey === "verlofAanvragen") return 0; // rendered as dot
     return (badges as any)[item.badgeKey] || 0;
   };
 
-  const hasDot = (item: any): boolean => {
-    return item.badgeKey === "verlofDot" && badges.verlofAanvragen > 0;
+  const hasDot = (item: NavItem): boolean => {
+    return item.badgeKey === "verlofAanvragen" && badges.verlofAanvragen > 0;
   };
 
   return (
     <>
       <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-40" style={{ width: 240, background: "var(--bg-surface)", borderRight: "1px solid var(--border)" }}>
         <div className="px-5 py-5">
-          <button onClick={() => navigate("/")} className="focus:outline-none">
+          <button onClick={() => navigate(permissies.zietDashboard ? "/dashboard" : "/")} className="focus:outline-none">
             <img src={terrevoltLogo} alt="TerreVolt" className="h-8" />
           </button>
           <div className="mt-2">
             <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "var(--accent-light)", color: "var(--text-primary)" }}>
-              {isManager ? "Manager" : "Monteur"}
+              {rolLabel}
             </span>
           </div>
         </div>
@@ -92,40 +140,52 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
           <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>⌘K</span>
         </button>
 
-        <nav className="flex-1 px-3 space-y-0.5">
-          {items.map(item => {
-            const active = isActive(item.path);
-            const Icon = item.icon;
-            const badgeCount = getBadgeCount(item);
-            const isDot = hasDot(item);
-            return (
-              <button key={item.path} onClick={() => navigate(item.path)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors text-left"
-                style={{ background: active ? "var(--accent-light)" : "transparent", color: active ? "var(--text-primary)" : "var(--text-secondary)", fontWeight: active ? 500 : 400, borderLeft: active ? "3px solid var(--accent)" : "3px solid transparent" }}>
-                <span className="relative shrink-0">
-                  <Icon style={{ width: 18, height: 18 }} />
-                  {badgeCount > 0 && <NavBadge count={badgeCount} />}
-                  {isDot && <NavBadge count={1} dot />}
-                </span>
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
+        <nav className="flex-1 px-3 overflow-y-auto">
+          {zichtbareGroepen.map((groep, gi) => (
+            <div key={groep.label}>
+              {gi > 0 && <div className="my-1.5" style={{ borderTop: "1px solid var(--border)" }} />}
+              <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5 mt-1" style={{ color: "var(--text-muted)" }}>
+                {groep.label}
+              </p>
+              {groep.items.map(item => {
+                const active = isActive(item.path);
+                const Icon = item.icon;
+                const badgeCount = getBadgeCount(item);
+                const isDot = hasDot(item);
+                return (
+                  <button key={item.path} onClick={() => navigate(item.path)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors text-left"
+                    style={{
+                      background: active ? "var(--accent-light)" : "transparent",
+                      color: active ? "var(--text-primary)" : "var(--text-secondary)",
+                      fontWeight: active ? 600 : 400,
+                    }}>
+                    <span className="relative shrink-0">
+                      <Icon style={{ width: 18, height: 18 }} />
+                      {badgeCount > 0 && <NavBadge count={badgeCount} />}
+                      {isDot && <NavBadge count={1} dot />}
+                    </span>
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
-        {/* Beheer section - managers only */}
-        {isManager && (
+        {/* Beheer section */}
+        {permissies.zietBeheer && (
           <div className="px-3 pb-2">
             <div className="mb-1 mt-1" style={{ borderTop: "1px solid var(--border)" }} />
-            <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5" style={{ color: "var(--text-muted)" }}>Beheer</p>
-            {[
-              { path: "/beheer/intake-regels", label: "Intake regels" },
-              { path: "/beheer/tarieven", label: "Tarieven" },
-            ].map(item => (
+            <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5" style={{ color: "var(--text-muted)" }}>Instellingen</p>
+            {BEHEER_ITEMS.map(item => (
               <button key={item.path} onClick={() => navigate(item.path)}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-colors text-left"
-                style={{ background: isActive(item.path) ? "var(--accent-light)" : "transparent", color: isActive(item.path) ? "var(--text-primary)" : "var(--text-muted)", opacity: 0.8 }}>
-                <Settings style={{ width: 14, height: 14 }} />
+                style={{
+                  background: isActive(item.path) ? "var(--accent-light)" : "transparent",
+                  color: isActive(item.path) ? "var(--text-primary)" : "var(--text-muted)",
+                }}>
+                <item.icon style={{ width: 14, height: 14 }} />
                 <span>{item.label}</span>
               </button>
             ))}

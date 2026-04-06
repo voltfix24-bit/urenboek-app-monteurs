@@ -14,7 +14,7 @@ import { nl } from "date-fns/locale";
 interface Mededeling { id: string; titel: string; inhoud: string; urgentie: string; created_at: string; verzender_naam: string; gelezen: boolean; }
 
 export default function Mededelingen() {
-  const { user, isManager } = useAuth();
+  const { user, isManager, permissies } = useAuth();
   const { profileId } = useProfile();
   const [items, setItems] = useState<Mededeling[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,7 +152,7 @@ export default function Mededelingen() {
         {listContent}
       </div>
 
-      {isManager && (
+      {permissies.magMededelingenVersturen && (
         <button onClick={() => setShowCompose(true)} className="fixed z-40 flex items-center justify-center active:scale-93 transition-transform" style={{
           bottom: 90, right: "max(24px, calc(50% - 215px + 24px))",
           width: 56, height: 56, borderRadius: "50%",
