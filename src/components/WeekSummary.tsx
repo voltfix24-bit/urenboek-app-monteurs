@@ -1,5 +1,4 @@
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
+import { formatDag } from "@/lib/formatting";
 
 interface WeekSummaryProps {
   totalHours: number;
@@ -59,7 +58,7 @@ export function WeekSummary({
                   />
                 </div>
                 <span className="text-[10px] text-muted-foreground font-medium capitalize">
-                  {format(date, "EEE", { locale: nl })}
+                  {formatDag(date)}
                 </span>
               </div>
             );

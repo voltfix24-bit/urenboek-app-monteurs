@@ -1,7 +1,6 @@
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
+import { formatDatumKort } from "@/lib/formatting";
 
 interface WeekNavigationProps {
   weekStart: Date;
@@ -26,7 +25,7 @@ export function WeekNavigation({
       </Button>
       <div className="text-center px-2">
         <p className="text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap tracking-tight">
-          {format(weekStart, "d MMM", { locale: nl })} – {format(weekEnd, "d MMM", { locale: nl })}
+          {formatDatumKort(weekStart)} – {formatDatumKort(weekEnd)}
         </p>
       </div>
       <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={onNext}>

@@ -10,8 +10,8 @@ import { nl } from "date-fns/locale";
 import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass, CheckCircle, Users, TrendingUp, CalendarDays, MapPin } from "lucide-react";
 import { volledigAdres } from "@/lib/utils";
 import { HeaderLogo } from "@/components/HeaderLogo";
-
-const euro = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+import { euro } from "@/lib/formatting";
+import { Spinner } from "@/components/ui/Spinner";
 
 export default function Dashboard() {
   const { isManager, user } = useAuth();
@@ -214,7 +214,7 @@ export default function Dashboard() {
 
       <main className="px-4 py-4 space-y-4">
         {loading ? (
-          <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
+          <Spinner />
         ) : (
           <>
             {/* KPI strip */}

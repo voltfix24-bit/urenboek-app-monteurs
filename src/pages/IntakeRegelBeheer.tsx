@@ -119,7 +119,7 @@ const SITUATIE_OPTIES = [
   { label: "VOP uren (aantal > 0)", type: "antwoord", veld: "vop_uren", waarde: "gt0" },
 ] as const;
 
-const euro = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 }).format(n);
+import { euroDecimals as euro } from "@/lib/formatting";
 
 // ─── Helpers ───
 

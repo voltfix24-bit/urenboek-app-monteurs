@@ -5,8 +5,10 @@ import { query, mutate } from "@/lib/supabaseHelpers";
 import { SPEC_CODES, GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/specCodes";
 import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, Check, Info } from "lucide-react";
 
+import { euroDecimals as fmt } from "@/lib/formatting";
+import { Spinner } from "@/components/ui/Spinner";
+
 const mono = "font-mono tracking-tight";
-const fmt = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(n);
 
 interface ForecastRegel {
   id?: string;
@@ -104,11 +106,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     debouncedSave(newRegels);
   }
 
-  if (loading) return (
-    <div className="text-center py-8">
-      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
-    </div>
-  );
+  if (loading) return <Spinner padding="py-8" />;
 
   if (!methode) {
     return (

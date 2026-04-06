@@ -1,6 +1,5 @@
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { Trash2, ClipboardList } from "lucide-react";
+import { formatDagLang } from "@/lib/formatting";
 import { Button } from "@/components/ui/button";
 import { TimeEntry } from "@/types/timesheet";
 
@@ -25,7 +24,7 @@ export function WeekOverview({ weekDates, entries, onRemove }: WeekOverviewProps
 
   const groupedByDate = weekDates
     .map((date) => {
-      const dateStr = format(date, "yyyy-MM-dd");
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
       const dayEntries = entries.filter((e) => e.date === dateStr);
       const dayTotal = dayEntries.reduce((sum, e) => sum + e.hours, 0);
       return { date, dateStr, dayEntries, dayTotal };
@@ -38,7 +37,7 @@ export function WeekOverview({ weekDates, entries, onRemove }: WeekOverviewProps
         <div key={date.toISOString()} className="rounded-2xl border bg-card shadow-card overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2.5 bg-secondary/40">
             <span className="font-semibold text-xs capitalize tracking-tight">
-              {format(date, "EEEE d MMMM", { locale: nl })}
+              {formatDagLang(date)}
             </span>
             <span className="text-xs font-bold text-primary tabular-nums">
               {dayTotal}u

@@ -17,8 +17,7 @@ interface Props {
 
 const STAPPEN = ["RMU", "MS extra", "Trafo", "LS-rek", "Bouwkundig", "MS kabels", "LS kabels", "Aansluit & OV", "Vrijschakelen", "Aarding & revisie", "WV & personeel", "Overzicht"];
 
-const euro = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 }).format(n);
-const euroShort = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+import { euroDecimals as euro, euro as euroShort } from "@/lib/formatting";
 
 const inputStyle = { background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" };
 

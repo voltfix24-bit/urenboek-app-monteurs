@@ -32,10 +32,12 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+import { Spinner } from "@/components/ui/Spinner";
+
 function LoadingSpinner() {
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
-      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
+      <Spinner center={false} />
     </div>
   );
 }

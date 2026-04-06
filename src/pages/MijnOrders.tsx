@@ -9,8 +9,8 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-
-const euro = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 }).format(n);
+import { euroDecimals as euro } from "@/lib/formatting";
+import { Spinner } from "@/components/ui/Spinner";
 
 const STATUS_INFO: Record<string, { label: string; color: string; bg: string; border: string; hint?: string }> = {
   concept: { label: "Wordt voorbereid", color: "var(--text-muted)", bg: "var(--bg-surface-2)", border: "var(--border)" },
@@ -93,7 +93,7 @@ export default function MijnOrders() {
     doc.save(`Inkooporder_${selectedOrder.order_nummer}.pdf`);
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><Spinner /></div>;
 
   return (
     <PageShell>

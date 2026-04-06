@@ -1,11 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingUp, TrendingDown, Users, Clock, Calendar } from "lucide-react";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
-
-const euro = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 }).format(n);
-const euroShort = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+import { euroDecimals as euro, euro as euroShort, formatDatum } from "@/lib/formatting";
+import { Spinner } from "@/components/ui/Spinner";
 
 interface Props {
   projectId: string;
@@ -85,7 +82,7 @@ export function NacalculatieTab({ projectId }: Props) {
     fetchData();
   };
 
-  if (loading) return <div className="text-center py-8"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>;
+  if (loading) return <Spinner padding="py-8" />;
 
   // Calculations
   const forecastOmzet = forecastRegels.filter(r => r.type === "stuksprijzen" || r.type === "spec").reduce((s, r) => s + (Number(r.tarief) || 0) * (Number(r.aantal) || 1), 0);
@@ -281,11 +278,11 @@ export function NacalculatieTab({ projectId }: Props) {
             <Calendar className="h-3.5 w-3.5" /> Tijdlijn
           </p>
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{format(new Date(eersteUren), "d MMM yyyy", { locale: nl })}</span>
+            <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{formatDatum(eersteUren)}</span>
             <div className="flex-1 h-1 rounded-full" style={{ background: "var(--accent-light)" }}>
               <div className="h-full rounded-full" style={{ width: "100%", background: "var(--accent)" }} />
             </div>
-            <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{format(new Date(laatsteUren), "d MMM yyyy", { locale: nl })}</span>
+            <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{formatDatum(laatsteUren)}</span>
           </div>
           <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Doorlooptijd: {doorlooptijdDagen} dagen ({Math.ceil(doorlooptijdDagen / 7)} weken)</p>
         </div>
