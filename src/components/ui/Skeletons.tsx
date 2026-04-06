@@ -142,15 +142,15 @@ export function OverurenCardSkeleton() {
 /** Generic list skeleton */
 export function ListSkeleton({
   count = 4,
-  ItemSkeleton,
+  children,
 }: {
   count?: number;
-  ItemSkeleton: React.ComponentType;
+  children: (index: number) => React.ReactNode;
 }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: count }).map((_, i) => (
-        <ItemSkeleton key={i} />
+        <React.Fragment key={i}>{children(i)}</React.Fragment>
       ))}
     </div>
   );
