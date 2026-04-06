@@ -8,6 +8,8 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 import { Send, ArrowLeft, AlertTriangle, Bell } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDistanceToNow } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -96,12 +98,9 @@ export default function Mededelingen() {
   const listContent = (
     <main className="px-4 py-4 space-y-2">
       {loading ? (
-        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
+        <Spinner />
       ) : items.length === 0 ? (
-        <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <Bell className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
-          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen mededelingen</p>
-        </div>
+        <EmptyState icoon="🔔" titel="Geen berichten" subtitel="Er zijn nog geen mededelingen." />
       ) : (
         items.map(item => (
           <button key={item.id} onClick={() => openDetail(item)} className="w-full text-left rounded-2xl p-4 transition-colors active:scale-[0.98]" style={{

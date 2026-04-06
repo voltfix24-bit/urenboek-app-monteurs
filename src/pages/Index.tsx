@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useSwipe } from "@/hooks/useSwipe";
 import { EntryCard } from "@/components/EntryCard";
+import { ListSkeleton, UrenCardSkeleton } from "@/components/ui/Skeletons";
 import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";

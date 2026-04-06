@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { ListSkeleton, GoedkeuringCardSkeleton } from "@/components/ui/Skeletons";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -140,11 +141,7 @@ export default function Goedkeuring() {
       {loading ? (
         <ListSkeleton count={3} ItemSkeleton={GoedkeuringCardSkeleton} />
       ) : Object.keys(grouped).length === 0 ? (
-        <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
-          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen uren gevonden</p>
-          <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Geen uren met deze filter voor deze week</p>
-        </div>
+        <EmptyState icoon="✓" titel="Geen openstaande goedkeuringen" subtitel="Alle uren zijn verwerkt." />
       ) : (
         <>
           {/* Mobile: stacked cards */}

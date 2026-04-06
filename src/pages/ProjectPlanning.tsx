@@ -5,7 +5,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { ArrowLeft, X, Save, Check, Plus, Minus, GripVertical, FileText, Trash2, Loader2, Download, Pencil } from "lucide-react";
+import { ArrowLeft, X, Save, Check, Plus, Minus, GripVertical, FileText, Trash2, Download, Pencil } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
@@ -490,7 +491,7 @@ export default function ProjectPlanning() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
-        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
+        <Spinner />
       </div>
     );
   }

@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
-import { ArrowLeft, Plus, Pencil, Trash2, X, Check, FlaskConical, Loader2, AlertTriangle, ChevronDown, ChevronRight, Settings, LayoutList } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, X, Check, FlaskConical, AlertTriangle, ChevronDown, ChevronRight, Settings, LayoutList } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 import { SPEC_CODES, GROEP_LABELS } from "@/lib/specCodes";
 import { IntakeRegel, IntakeAntwoorden, BerekendeRegel, LEGE_ANTWOORDEN, berekenRegels } from "@/lib/forecastIntake";
 import { euroDecimals as euro } from "@/lib/formatting";
@@ -541,7 +542,7 @@ export default function IntakeRegelBeheer() {
         {viewMode === "simple" && (
           <div className="px-6 lg:px-10 pb-24 space-y-3">
             {loading ? (
-              <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--accent)" }} /></div>
+              <Spinner size="sm" padding="py-8" />
             ) : grouped.map(([cat, catRegels]) => {
               const isOpen = openCats.has(cat);
               return (
@@ -619,7 +620,7 @@ export default function IntakeRegelBeheer() {
                 <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px] text-right" style={{ color: "var(--text-muted)" }}>Acties</span>
               </div>
               {loading ? (
-                <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--accent)" }} /></div>
+                <Spinner size="sm" padding="py-8" />
               ) : filtered.length === 0 ? (
                 <div className="py-8 text-center text-xs" style={{ color: "var(--text-muted)" }}>Geen regels gevonden</div>
               ) : filtered.map(r => (

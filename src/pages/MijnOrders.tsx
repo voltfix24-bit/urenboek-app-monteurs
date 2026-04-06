@@ -12,12 +12,7 @@ import autoTable from "jspdf-autotable";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 
-const STATUS_INFO: Record<string, { label: string; color: string; bg: string; border: string; hint?: string }> = {
-  concept: { label: "Wordt voorbereid", color: "var(--text-muted)", bg: "var(--bg-surface-2)", border: "var(--border)" },
-  verzonden: { label: "Klaar — maak je factuur", color: "var(--success)", bg: "var(--success-light)", border: "var(--success-border)", hint: "Gebruik dit document als basis voor je factuur aan TerreVolt BV." },
-  factuur_ontvangen: { label: "Factuur ontvangen ✓", color: "var(--info)", bg: "var(--info-light)", border: "var(--info-border)" },
-  betaald: { label: "Betaald ✓", color: "var(--accent)", bg: "var(--accent-light)", border: "var(--accent-border)" },
-};
+import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 
 export default function MijnOrders() {
   const { user } = useAuth();

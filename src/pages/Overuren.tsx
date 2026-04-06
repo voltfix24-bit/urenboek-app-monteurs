@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { AlertTriangle, CheckCircle } from "lucide-react";
 import { ListSkeleton, OverurenCardSkeleton } from "@/components/ui/Skeletons";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface Melding {
   id: string;
@@ -116,12 +117,7 @@ export default function Overuren() {
       {loading ? (
         <ListSkeleton count={3} ItemSkeleton={OverurenCardSkeleton} />
       ) : meldingen.length === 0 ? (
-        <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
-          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-            {filter === "open" ? "✓ Geen openstaande meldingen" : "Geen meldingen gevonden"}
-          </p>
-        </div>
+        <EmptyState icoon="✓" titel="Geen overuren meldingen" subtitel="Geen meldingen voor dit filter." />
       ) : (
         <div className="space-y-3">
           {meldingen.map(m => {

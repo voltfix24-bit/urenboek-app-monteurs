@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { volledigAdres } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare, Clock, Check, MapPin, Navigation, Users, Info } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -304,11 +305,7 @@ export default function Planning() {
           })}
 
           {items.length === 0 && beschikbaarheid.length === 0 && (
-            <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-              <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
-              <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen bevestigde planning deze week</p>
-              <p className="text-xs mt-1 px-6" style={{ color: "var(--text-muted)" }}>Je manager heeft de planning nog niet gepubliceerd voor deze week.</p>
-            </div>
+            <EmptyState icoon="📅" titel="Geen bevestigde planning" subtitel="Je manager heeft de planning nog niet gepubliceerd voor deze week." />
           )}
 
           {allConcept && beschikbaarheid.length === 0 && (
