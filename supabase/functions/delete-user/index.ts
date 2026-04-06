@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     if (profile) {
       const pid = profile.id;
 
-      const [orders, candidatesDirect, contractsByProfile] = await Promise.all([
+      const [orders, candidatesDirect, contractsByProfile, urenBoekingen] = await Promise.all([
         mustSucceed<IdRow[]>(
           "Inkooporders ophalen",
           adminClient.from("inkooporders").select("id").eq("medewerker_id", pid),
@@ -128,10 +128,15 @@ Deno.serve(async (req) => {
             .select("id")
             .or(`profiel_id.eq.${pid},aangemaakt_door.eq.${pid},og_profiel_id.eq.${pid}`),
         ),
+        mustSucceed<IdRow[]>(
+          "Uren boekingen ophalen",
+          adminClient.from("uren_boekingen").select("id").eq("medewerker_id", pid),
+        ),
       ]);
 
       const orderIds = [...new Set(orders.map((row) => row.id))];
       const candidateIds = [...new Set(candidatesDirect.map((row) => row.id))];
+      const urenBoekingIds = [...new Set(urenBoekingen.map((row) => row.id))];
       const contractIds = new Set(contractsByProfile.map((row) => row.id));
 
       if (candidateIds.length > 0) {
@@ -146,8 +151,15 @@ Deno.serve(async (req) => {
 
       if (orderIds.length > 0) {
         await mustSucceed(
-          "Inkooporder regels verwijderen",
+          "Inkooporder regels verwijderen via order",
           adminClient.from("inkooporder_regels").delete().in("inkooporder_id", orderIds),
+        );
+      }
+
+      if (urenBoekingIds.length > 0) {
+        await mustSucceed(
+          "Inkooporder regels verwijderen via urenboeking",
+          adminClient.from("inkooporder_regels").delete().in("uren_boeking_id", urenBoekingIds),
         );
       }
 
