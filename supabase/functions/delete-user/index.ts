@@ -5,12 +5,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type DbError = { message: string } | null;
-type DbResult<T> = { data: T; error: DbError };
-
 type IdRow = { id: string };
 
-async function mustSucceed<T>(label: string, operation: PromiseLike<DbResult<T>>) {
+async function mustSucceed<T = unknown>(label: string, operation: PromiseLike<any>): Promise<T> {
   const { data, error } = await operation;
   if (error) {
     console.error(`${label} failed:`, error);
