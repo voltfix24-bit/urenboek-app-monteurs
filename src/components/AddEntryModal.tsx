@@ -167,14 +167,15 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
             </p>
 
             <div className="space-y-2">
-              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Soort werkzaamheden</label>
+              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: formErrors.werkzaamheden ? "var(--danger)" : "var(--text-muted)" }}>Soort werkzaamheden</label>
               <div className="flex gap-2">
                 {["schakelen", "monteren"].map((w) => (
-                  <button key={w} onClick={() => setForm((f) => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{ background: form.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)", border: form.werkzaamheden === w ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: form.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)" }}>
+                  <button key={w} onClick={() => { setForm((f) => ({ ...f, werkzaamheden: w })); setFormErrors(prev => { const n = { ...prev }; delete n.werkzaamheden; return n; }); }} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{ background: form.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)", border: form.werkzaamheden === w ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: form.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)" }}>
                     {w}
                   </button>
                 ))}
               </div>
+              {formErrors.werkzaamheden && <p className="text-[10px] font-medium" style={{ color: "var(--danger)" }}>⚠ {formErrors.werkzaamheden}</p>}
             </div>
 
             <div className="space-y-2">
