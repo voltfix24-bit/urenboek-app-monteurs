@@ -257,11 +257,11 @@ export default function Medewerkers() {
         </>
       )}
 
-      {monteurs.length > 0 && (
+      {filteredMonteurs.length > 0 && (
         <>
-          <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Medewerkers ({monteurs.length})</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Medewerkers ({filteredMonteurs.length})</p>
           <div className="space-y-1.5">
-            {monteurs.map((emp, i) => (
+            {filteredMonteurs.map((emp, i) => (
               <MedewerkerKaart key={emp.user_id} emp={emp} idx={i + managers.length} isSelected={selectedEmployee?.user_id === emp.user_id} onSelect={() => selectEmployee(emp)} />
             ))}
           </div>
