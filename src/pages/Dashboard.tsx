@@ -56,18 +56,18 @@ export default function Dashboard() {
 
   const handleApprove = async (id: string) => {
     if (!await mutate(supabase.from("uren_boekingen").update({ status: "goedgekeurd" } as any).eq("id", id))) return;
-    toast.success("Goedgekeurd"); fetchDashboard();
+    toast.success("Goedgekeurd"); refetchDashboard();
   };
 
   const handleReject = async () => {
     if (!afkeurId || !afkeurReden.trim()) { toast.error("Vul een reden in"); return; }
     if (!await mutate(supabase.from("uren_boekingen").update({ status: "afgekeurd", afkeur_reden: afkeurReden.trim() } as any).eq("id", afkeurId))) return;
-    toast.success("Afgekeurd"); setAfkeurId(null); setAfkeurReden(""); fetchDashboard();
+    toast.success("Afgekeurd"); setAfkeurId(null); setAfkeurReden(""); refetchDashboard();
   };
 
   const handleVerlof = async (id: string, status: string) => {
     if (!await mutate(supabase.from("beschikbaarheid").update({ status } as any).eq("id", id))) return;
-    toast.success(status === "goedgekeurd" ? "Goedgekeurd" : "Afgekeurd"); fetchDashboard();
+    toast.success(status === "goedgekeurd" ? "Goedgekeurd" : "Afgekeurd"); refetchDashboard();
   };
 
   const margeColor = (m: number) => m >= 30 ? "var(--success)" : m >= 15 ? "var(--warn-dot)" : "var(--danger)";
