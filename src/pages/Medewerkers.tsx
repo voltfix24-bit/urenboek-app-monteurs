@@ -27,6 +27,7 @@ export default function Medewerkers() {
   const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [showAdd, setShowAdd] = useState(false);
+  const [filter, setFilter] = useState<"alle" | "verificatie">("alle");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [employeeCerts, setEmployeeCerts] = useState<any[]>([]);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
@@ -163,9 +164,31 @@ export default function Medewerkers() {
 
   const monteurs = employees.filter(e => e.role !== "manager" && e.role !== "–");
   const managers = employees.filter(e => e.role === "manager");
+  const verificatieCount = employees.filter(e => e.account_status === "onboarding").length;
+
+  const filteredMonteurs = filter === "verificatie"
+    ? monteurs.filter(e => e.account_status === "onboarding")
+    : monteurs;
 
   const listContent = (
     <>
+      {/* Filter chips */}
+      <div className="flex gap-2">
+        {(["alle", "verificatie"] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-colors"
+            style={{
+              background: filter === f ? (f === "verificatie" ? "var(--warn-light)" : "var(--accent-light)") : "var(--bg-surface)",
+              border: filter === f ? (f === "verificatie" ? "1px solid var(--warn-border)" : "1px solid var(--accent-border)") : "1px solid var(--border)",
+              color: filter === f ? (f === "verificatie" ? "var(--warn-text)" : "var(--accent)") : "var(--text-muted)",
+            }}
+          >
+            {f === "alle" ? `Alle (${monteurs.length + managers.length})` : `Verificatie nodig (${verificatieCount})`}
+          </button>
+        ))}
+      </div>
       {showAdd && (
         <>
           <div className="rounded-xl px-3 py-2.5 flex items-start gap-2 animate-slide-up" style={{ background: "var(--warning-light)", border: "1px solid var(--warning-border)" }}>
@@ -223,7 +246,7 @@ export default function Medewerkers() {
         </div>
       )}
 
-      {managers.length > 0 && (
+      {filter === "alle" && managers.length > 0 && (
         <>
           <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Managers ({managers.length})</p>
           <div className="space-y-1.5">
@@ -234,11 +257,11 @@ export default function Medewerkers() {
         </>
       )}
 
-      {monteurs.length > 0 && (
+      {filteredMonteurs.length > 0 && (
         <>
-          <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Medewerkers ({monteurs.length})</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Medewerkers ({filteredMonteurs.length})</p>
           <div className="space-y-1.5">
-            {monteurs.map((emp, i) => (
+            {filteredMonteurs.map((emp, i) => (
               <MedewerkerKaart key={emp.user_id} emp={emp} idx={i + managers.length} isSelected={selectedEmployee?.user_id === emp.user_id} onSelect={() => selectEmployee(emp)} />
             ))}
           </div>
