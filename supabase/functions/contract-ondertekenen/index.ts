@@ -28,35 +28,34 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Validate token
-    const { data: tokenData, error: tokenError } = await supabase
-      .from("contract_tokens")
-      .select("*, contracten(*)")
-      .eq("token", token)
-      .single();
+    // Find contract by token in contract_data (same approach as contract-correctie)
+    const { data: contracten } = await supabase
+      .from("contracten")
+      .select("id, contract_data, kandidaat_id, status")
+      .in("status", ["verstuurd", "correctie_gevraagd"]);
 
-    if (tokenError || !tokenData) {
-      return new Response(JSON.stringify({ error: "Ongeldige link" }), {
+    const contract = contracten?.find((c: any) => {
+      const cd = c.contract_data as any;
+      return cd?._token === token;
+    });
+
+    if (!contract) {
+      return new Response(JSON.stringify({ error: "Ongeldige of verlopen link" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (tokenData.gebruikt) {
-      return new Response(JSON.stringify({ error: "Deze link is al gebruikt" }), {
-        status: 410,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (new Date(tokenData.geldig_tot) < new Date()) {
+    // Check token expiry
+    const cd = (contract as any).contract_data as any;
+    if (cd._token_geldig_tot && new Date(cd._token_geldig_tot) < new Date()) {
       return new Response(JSON.stringify({ error: "Deze link is verlopen" }), {
         status: 410,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const contractId = tokenData.contract_id;
+    const contractId = contract.id;
 
     // Update contract with signature
     const { error: updateError } = await supabase
@@ -78,11 +77,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Mark token as used
+    // Invalidate token by removing it from contract_data
+    const updatedData = { ...cd, _token: null, _token_geldig_tot: null };
+    await supabase.from("contracten").update({ contract_data: updatedData }).eq("id", contractId);
+
+    // Also mark any matching contract_tokens as used (if they exist)
     await supabase
       .from("contract_tokens")
       .update({ gebruikt: true, gebruikt_op: new Date().toISOString() })
-      .eq("id", tokenData.id);
+      .eq("contract_id", contractId)
+      .eq("gebruikt", false);
 
     // Send notification to managers
     const { data: managers } = await supabase
@@ -108,7 +112,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    // Return kandidaat email for account creation
+    let kandidaatEmail = "";
+    if (contract.kandidaat_id) {
+      const { data: kand } = await supabase
+        .from("kandidaten")
+        .select("email")
+        .eq("id", contract.kandidaat_id)
+        .single();
+      if (kand) kandidaatEmail = kand.email;
+    }
+
+    return new Response(JSON.stringify({ success: true, email: kandidaatEmail, kandidaat_id: contract.kandidaat_id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
