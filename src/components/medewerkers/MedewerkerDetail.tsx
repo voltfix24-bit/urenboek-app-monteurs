@@ -41,6 +41,7 @@ interface Props {
   certs: any[];
   onRefreshCerts: () => void;
   onRefresh?: () => void;
+  onDelete?: (userId: string, name: string) => void;
 }
 
 function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
