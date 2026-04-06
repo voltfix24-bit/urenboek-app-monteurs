@@ -487,6 +487,9 @@ export type Database = {
       }
       planning: {
         Row: {
+          activiteit: string | null
+          activiteit_kleur: string | null
+          collega_ids: string[] | null
           created_at: string
           created_by: string
           datum: string
@@ -497,8 +500,12 @@ export type Database = {
           project_id: string
           starttijd: string
           updated_at: string
+          week_opmerking: string | null
         }
         Insert: {
+          activiteit?: string | null
+          activiteit_kleur?: string | null
+          collega_ids?: string[] | null
           created_at?: string
           created_by: string
           datum: string
@@ -509,8 +516,12 @@ export type Database = {
           project_id: string
           starttijd?: string
           updated_at?: string
+          week_opmerking?: string | null
         }
         Update: {
+          activiteit?: string | null
+          activiteit_kleur?: string | null
+          collega_ids?: string[] | null
           created_at?: string
           created_by?: string
           datum?: string
@@ -521,6 +532,7 @@ export type Database = {
           project_id?: string
           starttijd?: string
           updated_at?: string
+          week_opmerking?: string | null
         }
         Relationships: [
           {
