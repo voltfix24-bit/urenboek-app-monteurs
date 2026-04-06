@@ -55,7 +55,7 @@ function PasswordChange() {
 }
 
 export default function Profiel() {
-  const { user, roles, signOut } = useAuth();
+  const { user, roles, rolLabel, permissies, signOut } = useAuth();
   const { refetch: refetchProfileContext } = useProfile();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [certs, setCerts] = useState<Certificaat[]>([]);
@@ -166,8 +166,8 @@ export default function Profiel() {
           </div>
           <div className="text-center">
             <p className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{profile?.full_name}</p>
-            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full mt-1 inline-block capitalize" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
-              {roles[0] || "medewerker"}
+            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full mt-1 inline-block" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
+              {rolLabel}
             </span>
           </div>
         </div>
