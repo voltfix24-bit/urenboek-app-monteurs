@@ -30,6 +30,8 @@ export default function Medewerkers() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [employeeCerts, setEmployeeCerts] = useState<any[]>([]);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingEvent, setPendingEvent] = useState<React.FormEvent | null>(null);
 
   // Form state
   const [voornaam, setVoornaam] = useState("");
