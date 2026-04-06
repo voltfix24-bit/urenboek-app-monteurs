@@ -32,6 +32,9 @@ export default function AuthCallback() {
         // Activate account
         await supabase.functions.invoke("activate-account");
         navigate("/onboarding");
+      } else if (profile?.account_status === "onboarding") {
+        // Via contract binnengekomen — stuur naar onboarding dashboard
+        navigate("/onboarding-welkom");
       } else {
         navigate("/");
       }
