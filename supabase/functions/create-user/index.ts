@@ -83,32 +83,48 @@ Deno.serve(async (req) => {
       }
       newUser = data;
     } else {
-      const { data, error: createError } = await adminClient.auth.admin.createUser({
-        email, password, email_confirm: true,
-        user_metadata: { full_name: fullName },
+      const { data: existingUserData, error: existingUserError } = await adminClient.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
       });
-      if (createError) {
-        // If user already exists, look them up and reuse
-        if (createError.message.includes("already been registered")) {
-          const { data: { users }, error: listErr } = await adminClient.auth.admin.listUsers();
-          if (listErr) {
-            return new Response(JSON.stringify({ error: listErr.message }), {
-              status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
-          }
-          const existing = users.find((u: any) => u.email === email);
-          if (!existing) {
-            return new Response(JSON.stringify({ error: "Gebruiker niet gevonden" }), {
-              status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
-          }
-          newUser = { user: existing };
-        } else {
+
+      if (existingUserError) {
+        return new Response(JSON.stringify({ error: existingUserError.message }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const existingUser = existingUserData.users.find((u: any) =>
+        u.email?.toLowerCase() === email.toLowerCase(),
+      );
+
+      if (existingUser) {
+        const { data: updatedUser, error: updateError } = await adminClient.auth.admin.updateUserById(existingUser.id, {
+          password,
+          email_confirm: true,
+          user_metadata: {
+            ...(existingUser.user_metadata ?? {}),
+            full_name: fullName,
+          },
+        });
+
+        if (updateError) {
+          return new Response(JSON.stringify({ error: updateError.message }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        newUser = updatedUser;
+      } else {
+        const { data, error: createError } = await adminClient.auth.admin.createUser({
+          email, password, email_confirm: true,
+          user_metadata: { full_name: fullName },
+        });
+        if (createError) {
           return new Response(JSON.stringify({ error: createError.message }), {
             status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-      } else {
         newUser = data;
       }
     }
