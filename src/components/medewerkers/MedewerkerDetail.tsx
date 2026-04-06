@@ -1,8 +1,13 @@
-import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
 import { StatusBadge, roleLabels, type Employee } from "./MedewerkerKaart";
+import { CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
+import { supabase } from "@/integrations/supabase/client";
+import { formatDatum } from "@/lib/formatting";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -34,7 +39,29 @@ interface Props {
 }
 
 export function MedewerkerDetail({ emp, certs, onRefreshCerts }: Props) {
-  const contractDays = emp.contract_einddatum ? differenceInDays(parseISO(emp.contract_einddatum), new Date()) : null;
+  const navigate = useNavigate();
+  const [contract, setContract] = useState<any>(null);
+
+  useEffect(() => {
+    if (!emp.id) return;
+    supabase
+      .from("contracten")
+      .select("*")
+      .eq("profiel_id", emp.id)
+      .in("status", ["ondertekend_beiden", "ondertekend_ot", "verstuurd", "concept"])
+      .order("aangemaakt_op", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setContract(data));
+  }, [emp.id]);
+
+  const contractDays = contract?.einddatum ? differenceInDays(parseISO(contract.einddatum), new Date()) : null;
+
+  async function downloadPdf() {
+    if (!contract?.pdf_path) return;
+    const { data } = await supabase.storage.from("contracten").createSignedUrl(contract.pdf_path, 3600);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  }
 
   return (
     <div className="space-y-4">
@@ -73,23 +100,50 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts }: Props) {
         )}
       </div>
 
-      {emp.contract_einddatum && (
+      {/* Contract section */}
+      {contract ? (
         <Section title="Contract">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-3.5 w-3.5" style={{ color: "var(--text-muted)" }} />
-            <span className="text-sm" style={{ color: "var(--text-primary)" }}>
-              Einddatum: {format(parseISO(emp.contract_einddatum), "d MMMM yyyy", { locale: nl })}
-            </span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{contract.contract_nummer}</span>
+              {(() => {
+                const cfg = CONTRACT_STATUS_CONFIG[contract.status];
+                if (!cfg) return null;
+                return (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
+                    {cfg.icoon} {cfg.label}
+                  </span>
+                );
+              })()}
+            </div>
+            {contract.startdatum && contract.einddatum && (
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                Geldig: {formatDatum(contract.startdatum)} — {formatDatum(contract.einddatum)}
+              </p>
+            )}
             {contractDays !== null && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{
+              <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{
                 background: contractDays < 0 ? "var(--danger-light)" : contractDays <= 30 ? "var(--warn-bg)" : "var(--success-light)",
                 color: contractDays < 0 ? "var(--danger)" : contractDays <= 30 ? "var(--warn-text)" : "var(--success)",
               }}>
-                {contractDays < 0 ? "✕ Verlopen" : contractDays <= 30 ? "⚠ Verloopt binnenkort" : `${contractDays} dagen`}
+                {contractDays < 0 ? "✕ Verlopen" : contractDays <= 30 ? `⚠ Verloopt binnenkort (${contractDays} dagen)` : `${contractDays} dagen resterend`}
               </span>
+            )}
+            {contract.pdf_path && (
+              <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium mt-1" style={{ color: "var(--accent)" }}>
+                <Download className="h-3.5 w-3.5" /> PDF downloaden
+              </button>
             )}
           </div>
         </Section>
+      ) : (
+        <div className="rounded-xl p-3 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Contract</p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>Geen actief contract</p>
+          <button onClick={() => navigate("/kandidaten")} className="text-xs font-medium flex items-center gap-1" style={{ color: "var(--accent)" }}>
+            <FileText className="h-3.5 w-3.5" /> Contract aanmaken
+          </button>
+        </div>
       )}
 
       {/* ZZP incomplete warning */}

@@ -9,9 +9,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/input";
 import { formatDatumKort, euro } from "@/lib/formatting";
 import { KANDIDAAT_STATUS_CONFIG, CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
+import { generateContractPdf } from "@/lib/contractPdf";
+import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { toast } from "sonner";
 import { UserPlus, MoreHorizontal, ChevronRight } from "lucide-react";
-import type { Kandidaat } from "@/types/app";
+import type { Kandidaat, ContractData } from "@/types/app";
 
 const STATUSSEN = ["alle", "gesprek", "tarief_afgesproken", "uitgenodigd", "gecontracteerd", "afgewezen"] as const;
 const STATUS_LABELS: Record<string, string> = {
@@ -23,11 +25,21 @@ const STATUS_LABELS: Record<string, string> = {
   afgewezen: "Afgewezen",
 };
 
+function dataUriToBlob(dataUri: string): Blob {
+  const parts = dataUri.split(',');
+  const mime = parts[0].split(':')[1].split(';')[0];
+  const bytes = atob(parts[1]);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
 export default function Kandidaten() {
   const { permissies } = useAuth();
-  const { profileId } = useProfile();
+  const { profileId, profile: profileCtx } = useProfile();
   const navigate = useNavigate();
   const [kandidaten, setKandidaten] = useState<Kandidaat[]>([]);
+  const [contracten, setContracten] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("alle");
   const [showNieuw, setShowNieuw] = useState(false);
@@ -36,15 +48,120 @@ export default function Kandidaten() {
   const [tariefForm, setTariefForm] = useState({ tarief: "", notitie: "" });
   const [saving, setSaving] = useState(false);
 
+  // Manager signing state
+  const [signKandidaat, setSignKandidaat] = useState<Kandidaat | null>(null);
+  const [signContract, setSignContract] = useState<any>(null);
+  const [managerHt, setManagerHt] = useState<string | null>(null);
+  const [nieuweHt, setNieuweHt] = useState<string | null>(null);
+  const [useOpgeslagen, setUseOpgeslagen] = useState(true);
+  const [showCanvas, setShowCanvas] = useState(false);
+  const [saveHt, setSaveHt] = useState(true);
+  const [signing, setSigning] = useState(false);
+
   const fetchKandidaten = useCallback(async () => {
-    const { data } = await supabase.from("kandidaten").select("*").order("aangemaakt_op", { ascending: false });
-    setKandidaten((data as unknown as Kandidaat[]) || []);
+    const [{ data: kData }, { data: cData }] = await Promise.all([
+      supabase.from("kandidaten").select("*").order("aangemaakt_op", { ascending: false }),
+      supabase.from("contracten").select("id, contract_nummer, kandidaat_id, status, contract_data, ot_naam, ot_handtekening, profiel_id").in("status", ["verstuurd", "ondertekend_ot", "ondertekend_beiden"]),
+    ]);
+    setKandidaten((kData as unknown as Kandidaat[]) || []);
+    setContracten(cData || []);
     setLoading(false);
   }, []);
 
   useEffect(() => { fetchKandidaten(); }, [fetchKandidaten]);
 
   const gefilterd = filter === "alle" ? kandidaten : kandidaten.filter(k => k.status === filter);
+
+  function getContractForKandidaat(kandidaatId: string) {
+    return contracten.find(c => c.kandidaat_id === kandidaatId);
+  }
+
+  async function openSignModal(k: Kandidaat) {
+    const contract = getContractForKandidaat(k.id);
+    if (!contract) return;
+    setSignKandidaat(k);
+    setSignContract(contract);
+    setNieuweHt(null);
+    setShowCanvas(false);
+    setUseOpgeslagen(true);
+    setSaveHt(true);
+
+    // Load manager handtekening
+    if (profileId) {
+      const { data } = await supabase.from("manager_handtekeningen").select("handtekening").eq("profiel_id", profileId).maybeSingle();
+      setManagerHt(data?.handtekening || null);
+      if (!data?.handtekening) setShowCanvas(true);
+    }
+  }
+
+  async function voltooiContract() {
+    if (!signContract || !signKandidaat || !profileId) return;
+    const htToUse = (useOpgeslagen && managerHt && !showCanvas) ? managerHt : nieuweHt;
+    if (!htToUse) { toast.error("Teken eerst een handtekening"); return; }
+
+    setSigning(true);
+    try {
+      // 1. Save handtekening if requested
+      if (saveHt && (nieuweHt || showCanvas)) {
+        await supabase.from("manager_handtekeningen").upsert({
+          profiel_id: profileId,
+          handtekening: htToUse,
+          updated_op: new Date().toISOString(),
+        }, { onConflict: "profiel_id" });
+      }
+
+      // 2. Generate PDF
+      const managerNaam = profileCtx?.full_name || "";
+      const { dataUri, hash } = await generateContractPdf(
+        signContract.contract_data as ContractData,
+        htToUse,
+        signContract.ot_handtekening,
+        managerNaam,
+        signContract.ot_naam,
+      );
+
+      // 3. Upload PDF
+      const bestandsnaam = `${signContract.id}.pdf`;
+      const blob = dataUriToBlob(dataUri);
+      await supabase.storage.from("contracten").upload(bestandsnaam, blob, { contentType: "application/pdf", upsert: true });
+
+      // 4. Update contract
+      await supabase.from("contracten").update({
+        og_naam: managerNaam,
+        og_handtekening: htToUse,
+        og_profiel_id: profileId,
+        og_timestamp: new Date().toISOString(),
+        status: "ondertekend_beiden",
+        pdf_path: bestandsnaam,
+        pdf_hash: hash,
+      }).eq("id", signContract.id);
+
+      // 5. Update kandidaat
+      await supabase.from("kandidaten").update({ status: "gecontracteerd" }).eq("id", signKandidaat.id);
+
+      // 6. Link contract to profile + send mededeling
+      if (signKandidaat.profiel_id) {
+        await supabase.from("contracten").update({ profiel_id: signKandidaat.profiel_id }).eq("id", signContract.id);
+        await supabase.from("mededelingen").insert({
+          titel: "Jouw contract is getekend ✓",
+          inhoud: "TerreVolt heeft ook ondertekend. Download het definitieve contract via je profiel.",
+          verzonden_door: profileId,
+          ontvanger_type: "persoon",
+          ontvanger_id: signKandidaat.profiel_id,
+        });
+      }
+
+      setSignKandidaat(null);
+      setSignContract(null);
+      fetchKandidaten();
+      toast.success("Contract volledig ondertekend ✓");
+    } catch (err) {
+      toast.error("Fout bij ondertekenen");
+      console.error(err);
+    } finally {
+      setSigning(false);
+    }
+  }
 
   async function opslaan() {
     if (!nieuwForm.voornaam.trim() || !nieuwForm.achternaam.trim() || !nieuwForm.email.trim()) {
@@ -116,6 +233,8 @@ export default function Kandidaten() {
         <div className="space-y-3">
           {gefilterd.map(k => {
             const sc = KANDIDAAT_STATUS_CONFIG[k.status] || KANDIDAAT_STATUS_CONFIG.gesprek;
+            const contract = getContractForKandidaat(k.id);
+            const wachtOpManager = k.status === "uitgenodigd" && contract?.status === "ondertekend_ot";
             return (
               <div key={k.id} className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
                 <div className="flex items-start justify-between gap-3">
@@ -144,6 +263,19 @@ export default function Kandidaten() {
                       style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
                       {sc.label}
                     </span>
+                    {wachtOpManager && (
+                      <>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
+                          style={{ background: "var(--warn-light)", color: "var(--warn-text)", border: "1px solid var(--warn-border)" }}>
+                          ⏳ Wacht op jouw handtekening
+                        </span>
+                        <button onClick={() => openSignModal(k)}
+                          className="text-xs px-3 py-1.5 rounded-lg font-medium"
+                          style={{ background: "var(--accent)", color: "#fff" }}>
+                          Ondertekenen
+                        </button>
+                      </>
+                    )}
                     {k.status === "gesprek" && (
                       <button onClick={() => { setShowTarief(k.id); setTariefForm({ tarief: "", notitie: "" }); }}
                         className="text-xs px-3 py-1.5 rounded-lg font-medium"
@@ -158,12 +290,12 @@ export default function Kandidaten() {
                         Contract <ChevronRight className="w-3 h-3" />
                       </button>
                     )}
-                    {(k.status === "uitgenodigd" || k.status === "gecontracteerd") && (
+                    {!wachtOpManager && (k.status === "uitgenodigd" || k.status === "gecontracteerd") && (
                       <span className="text-[10px] font-medium" style={{ color: "var(--success)" }}>
                         {k.status === "gecontracteerd" ? "✓ Gecontracteerd" : "📧 Uitgenodigd"}
                       </span>
                     )}
-                    {k.status !== "afgewezen" && k.status !== "gecontracteerd" && (
+                    {k.status !== "afgewezen" && k.status !== "gecontracteerd" && !wachtOpManager && (
                       <button onClick={() => afwijzen(k.id)} className="text-[10px]" style={{ color: "var(--danger)" }}>
                         Afwijzen
                       </button>
@@ -220,6 +352,59 @@ export default function Kandidaten() {
                 {saving ? "Opslaan..." : "Toevoegen"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manager onderteken modal */}
+      {signKandidaat && signContract && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setSignKandidaat(null); setSignContract(null); }}>
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-in slide-in-from-bottom rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
+            <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Contract ondertekenen</h3>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+              {signKandidaat.voornaam} {signKandidaat.achternaam} · {signContract.contract_nummer}
+            </p>
+
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Jouw handtekening</p>
+
+              {managerHt && !showCanvas ? (
+                <>
+                  <div className="rounded-xl p-2" style={{ background: "#fff", border: "1px solid var(--border)" }}>
+                    <img src={managerHt} alt="Handtekening" style={{ width: "100%", height: 80, objectFit: "contain" }} />
+                  </div>
+                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Opgeslagen handtekening</p>
+                  <label className="flex items-center gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+                    <input type="checkbox" checked={useOpgeslagen} onChange={e => setUseOpgeslagen(e.target.checked)} />
+                    Gebruik opgeslagen handtekening
+                  </label>
+                  <button onClick={() => setShowCanvas(true)} className="text-xs underline" style={{ color: "var(--accent)" }}>
+                    Andere handtekening tekenen
+                  </button>
+                </>
+              ) : (
+                <>
+                  {!managerHt && (
+                    <div className="rounded-xl p-2.5" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+                      <p className="text-xs" style={{ color: "var(--warn-text)" }}>Je hebt nog geen handtekening opgeslagen. Teken hieronder.</p>
+                    </div>
+                  )}
+                  <HandtekeningCanvas hoogte={150} onSave={(b64) => setNieuweHt(b64)} />
+                  <label className="flex items-center gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+                    <input type="checkbox" checked={saveHt} onChange={e => setSaveHt(e.target.checked)} />
+                    Sla op voor toekomstige contracten
+                  </label>
+                </>
+              )}
+            </div>
+
+            <button onClick={voltooiContract} disabled={signing || (!(useOpgeslagen && managerHt && !showCanvas) && !nieuweHt)}
+              className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40"
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+              {signing ? "Bezig met ondertekenen..." : "Contract voltooien ✓"}
+            </button>
           </div>
         </div>
       )}
