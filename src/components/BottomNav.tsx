@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import type { NavBadges } from "@/hooks/useNavBadges";
 import { NavBadge } from "./NavBadge";
-import { Clock, CheckCircle, BarChart3, Users, CalendarDays, Bell, User, LayoutDashboard, AlertTriangle } from "lucide-react";
+import { Clock, CheckCircle, BarChart3, Users, CalendarDays, Bell, User, LayoutDashboard, AlertTriangle, FileText } from "lucide-react";
 
 interface BottomNavProps {
   badges: NavBadges;
@@ -17,6 +17,7 @@ export function BottomNav({ badges }: BottomNavProps) {
     { key: "/", icon: Clock, label: "Uren", badge: badges.afgekeurdeUren },
     { key: "/planning", icon: CalendarDays, label: "Planning" },
     { key: "/mededelingen", icon: Bell, label: "Berichten", badge: badges.ongelezen },
+    { key: "/mijn-orders", icon: FileText, label: "Orders" },
     { key: "/profiel", icon: User, label: "Profiel" },
   ];
 
