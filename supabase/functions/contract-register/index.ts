@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
       titel: "Welkom bij TerreVolt! 🎉",
       inhoud: `Hoi ${kandidaat.voornaam},\n\nWelkom bij het team van TerreVolt! Je account is aangemaakt en je contract is ondertekend.\n\nJe kunt nu inloggen en je planning, uren en berichten bekijken.\n\nHeb je vragen? Neem gerust contact op met je manager.\n\nSucces en tot snel!`,
       verzonden_door: kandidaat.aangemaakt_door,
-      ontvanger_type: "persoonlijk",
+      ontvanger_type: "persoon",
       ontvanger_id: profile!.id,
       urgentie: "normaal",
     });
