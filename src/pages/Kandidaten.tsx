@@ -488,9 +488,26 @@ export default function Kandidaten() {
                         ✓ Gecontracteerd
                       </span>
                     )}
-                    {k.status !== "afgewezen" && k.status !== "gecontracteerd" && !wachtOpManager && !heeftCorrectie && (
-                      <button onClick={() => afwijzen(k.id)} className="text-[10px]" style={{ color: "var(--danger)" }}>
-                        Afwijzen
+                    {k.status !== "afgewezen" && k.status !== "gecontracteerd" && k.status !== "on_hold" && !wachtOpManager && !heeftCorrectie && (
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => onHold(k.id)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--warning)" }}>
+                          <Pause className="w-3 h-3" /> On hold
+                        </button>
+                        <button onClick={() => afwijzen(k.id)} className="text-[10px]" style={{ color: "var(--danger)" }}>
+                          Afwijzen
+                        </button>
+                      </div>
+                    )}
+                    {k.status === "on_hold" && (
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => reactiveer(k.id)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--success)" }}>
+                          <Play className="w-3 h-3" /> Heractiveren
+                        </button>
+                      </div>
+                    )}
+                    {(k.status === "afgewezen" || k.status === "on_hold") && (
+                      <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--danger)" }}>
+                        <Trash2 className="w-3 h-3" /> Verwijderen
                       </button>
                     )}
                   </div>
