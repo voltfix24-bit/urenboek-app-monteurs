@@ -520,8 +520,8 @@ export default function IntakeRegelBeheer() {
                       <span className="col-span-2 text-xs text-right" style={{ color: "var(--text-muted)", fontFamily: "DM Mono, monospace" }}>{euro(r.tarief)}</span>
                       <span className="col-span-3 text-xs text-right font-bold" style={{ color: "var(--accent)", fontFamily: "DM Mono, monospace" }}>{euro(r.tarief * r.aantal)}</span>
                     </div>
-                    {findTriggerLabel(r.spec_code) && (
-                      <p className="px-3.5 pb-2 -mt-1 text-[10px] italic" style={{ color: "var(--text-muted)" }}>Toegevoegd door: {findTriggerLabel(r.spec_code)}</p>
+                    {resultTriggerLabel(r) && (
+                      <p className="px-3.5 pb-2 -mt-1 text-[10px] italic" style={{ color: "var(--text-muted)" }}>Toegevoegd door: {resultTriggerLabel(r)}</p>
                     )}
                   </div>
                 ))}
