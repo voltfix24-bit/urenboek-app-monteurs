@@ -210,20 +210,30 @@ export default function Profiel() {
         </div>
 
         {/* ZZP Gegevens */}
-        {(profile?.kvk_nummer || profile?.btw_nummer || profile?.iban || profile?.bedrijfsnaam) && (
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>ZZP Gegevens</p>
-            <div className="space-y-2 text-sm">
-              {profile?.bedrijfsnaam && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Bedrijfsnaam</span><span style={{ color: "var(--text-primary)" }}>{profile.bedrijfsnaam}</span></div>}
-              {profile?.kvk_nummer && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>KvK-nummer</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile.kvk_nummer}</span></div>}
-              {profile?.btw_nummer && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>BTW-nummer</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile.btw_nummer}</span></div>}
-              {profile?.iban && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>IBAN</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile.iban}</span></div>}
-              {permissies.zietProjectFinancien && profile?.uurtarief != null && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Uurtarief</span><span className="font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(profile.uurtarief).toFixed(2)}</span></div>}
-              {profile?.factuuradres && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Factuuradres</span><span style={{ color: "var(--text-primary)" }}>{profile.factuuradres}</span></div>}
-              {profile?.betalingstermijn && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Betalingstermijn</span><span style={{ color: "var(--text-primary)" }}>{profile.betalingstermijn} dagen</span></div>}
-            </div>
+            {profile?.kvk_nummer && profile?.iban ? (
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--success-light)", color: "var(--success)" }}>✓ ZZP profiel compleet</span>
+            ) : (
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}>⚠ Incompleet</span>
+            )}
           </div>
-        )}
+          {(!profile?.kvk_nummer || !profile?.iban) && (
+            <div className="rounded-xl p-2.5 flex items-start gap-2" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+              <span className="text-xs" style={{ color: "var(--warn-text)" }}>⚠ Vul je ZZP gegevens aan om inkooporders te kunnen ontvangen</span>
+            </div>
+          )}
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Bedrijfsnaam</span><span style={{ color: "var(--text-primary)" }}>{profile?.bedrijfsnaam || "–"}</span></div>
+            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>KvK-nummer</span><span className="font-mono" style={{ color: profile?.kvk_nummer ? "var(--text-primary)" : "var(--warn-text)" }}>{profile?.kvk_nummer || "Niet ingevuld"}</span></div>
+            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>BTW-nummer</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile?.btw_nummer || "–"}</span></div>
+            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>IBAN</span><span className="font-mono" style={{ color: profile?.iban ? "var(--text-primary)" : "var(--warn-text)" }}>{profile?.iban || "Niet ingevuld"}</span></div>
+            {permissies.zietProjectFinancien && profile?.uurtarief != null && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Uurtarief</span><span className="font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(profile.uurtarief).toFixed(2)}</span></div>}
+            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Factuuradres</span><span style={{ color: "var(--text-primary)" }}>{profile?.factuuradres || "–"}</span></div>
+            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Betalingstermijn</span><span style={{ color: "var(--text-primary)" }}>{profile?.betalingstermijn || 14} dagen</span></div>
+          </div>
+        </div>
 
         {/* Beschikbaarheid & Kalender */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
