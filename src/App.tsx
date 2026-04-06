@@ -26,6 +26,8 @@ import ProjectPlanning from "./pages/ProjectPlanning";
 import Overuren from "./pages/Overuren";
 import IntakeRegelBeheer from "./pages/IntakeRegelBeheer";
 import TarievenBeheer from "./pages/TarievenBeheer";
+import Inkooporders from "./pages/Inkooporders";
+import MijnOrders from "./pages/MijnOrders";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -78,6 +80,8 @@ const App = () => (
             <Route path="/overuren" element={<ProtectedRoute><Overuren /></ProtectedRoute>} />
             <Route path="/beheer/intake-regels" element={<ProtectedRoute><IntakeRegelBeheer /></ProtectedRoute>} />
             <Route path="/beheer/tarieven" element={<ProtectedRoute><TarievenBeheer /></ProtectedRoute>} />
+            <Route path="/inkooporders" element={<ProtectedRoute><Inkooporders /></ProtectedRoute>} />
+            <Route path="/mijn-orders" element={<ProtectedRoute><MijnOrders /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </NavBadgesProvider>
