@@ -255,8 +255,8 @@ function StuksprijzenEditor({ regels, onUpdate, onSave, specCodes }: { regels: F
   );
 }
 
-function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVerwachteOmzet }: {
-  regels: ForecastRegel[]; monteurs: MonteurOption[]; onUpdate: (r: ForecastRegel[]) => void; onSave: () => void;
+function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, onSave, verwachteOmzet, setVerwachteOmzet }: {
+  regels: ForecastRegel[]; monteurs: MonteurOption[]; alleProfielen: Map<string, string>; onUpdate: (r: ForecastRegel[]) => void; onSave: () => void;
   verwachteOmzet: number; setVerwachteOmzet: (v: number) => void;
 }) {
   const [selectedMonteur, setSelectedMonteur] = useState("");
