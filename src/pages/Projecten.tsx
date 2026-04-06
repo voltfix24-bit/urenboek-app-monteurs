@@ -84,8 +84,13 @@ export default function Projecten() {
   function getOgNaam(id: string | null) { return id ? opdrachtgevers.find(o => o.id === id)?.naam || null : null; }
 
   async function handleSubmit(isNew: boolean, id?: string) {
-    if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
-    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
+    const result = valideer(projectSchema, form);
+    if (!result.success) {
+      setFormErrors(result.errors);
+      toast.error("Controleer de ingevulde gegevens");
+      return;
+    }
+    setFormErrors({});
     const data: any = {
       nummer: form.nummer.trim(), naam: form.naam.trim(),
       straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(),
