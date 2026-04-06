@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,37 +8,48 @@ import { AuthProvider, useAuth, type RolPermissies } from "@/hooks/useAuth";
 import { ProfileProvider } from "@/hooks/useProfile";
 import { NavBadgesProvider } from "@/hooks/useNavBadges";
 import { AppErrorBoundary, RouteErrorBoundary } from "@/components/AppErrorBoundary";
+import { Spinner } from "@/components/ui/Spinner";
+
+// Critical pages — loaded eagerly
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Setup from "./pages/Setup";
 import ResetPassword from "./pages/ResetPassword";
 import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
-import Medewerkers from "./pages/Medewerkers";
-import Goedkeuring from "./pages/Goedkeuring";
-import Rapportage from "./pages/Rapportage";
-import Projecten from "./pages/Projecten";
-import Opdrachtgevers from "./pages/Opdrachtgevers";
-import Planning from "./pages/Planning";
-import ManagerPlanning from "./pages/ManagerPlanning";
-import Mededelingen from "./pages/Mededelingen";
-import Profiel from "./pages/Profiel";
-import Dashboard from "./pages/Dashboard";
-import ProjectPlanning from "./pages/ProjectPlanning";
-import Overuren from "./pages/Overuren";
-import IntakeRegelBeheer from "./pages/IntakeRegelBeheer";
-import TarievenBeheer from "./pages/TarievenBeheer";
-import Inkooporders from "./pages/Inkooporders";
-import MijnOrders from "./pages/MijnOrders";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Lazy-loaded pages
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Goedkeuring = lazy(() => import("./pages/Goedkeuring"));
+const Rapportage = lazy(() => import("./pages/Rapportage"));
+const Projecten = lazy(() => import("./pages/Projecten"));
+const Opdrachtgevers = lazy(() => import("./pages/Opdrachtgevers"));
+const Planning = lazy(() => import("./pages/Planning"));
+const ManagerPlanning = lazy(() => import("./pages/ManagerPlanning"));
+const Mededelingen = lazy(() => import("./pages/Mededelingen"));
+const Profiel = lazy(() => import("./pages/Profiel"));
+const ProjectPlanning = lazy(() => import("./pages/ProjectPlanning"));
+const Overuren = lazy(() => import("./pages/Overuren"));
+const Medewerkers = lazy(() => import("./pages/Medewerkers"));
+const IntakeRegelBeheer = lazy(() => import("./pages/IntakeRegelBeheer"));
+const TarievenBeheer = lazy(() => import("./pages/TarievenBeheer"));
+const Inkooporders = lazy(() => import("./pages/Inkooporders"));
+const MijnOrders = lazy(() => import("./pages/MijnOrders"));
 
-import { Spinner } from "@/components/ui/Spinner";
+const queryClient = new QueryClient();
 
 function LoadingSpinner() {
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
+      <Spinner center={false} />
+    </div>
+  );
+}
+
+function PageLoader() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
       <Spinner center={false} />
     </div>
   );
@@ -69,6 +81,10 @@ const RB = ({ children }: { children: React.ReactNode }) => (
   <RouteErrorBoundary>{children}</RouteErrorBoundary>
 );
 
+const L = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<PageLoader />}><RB>{children}</RB></Suspense>
+);
+
 const App = () => (
   <AppErrorBoundary>
     <QueryClientProvider client={queryClient}>
@@ -80,31 +96,35 @@ const App = () => (
             <ProfileProvider>
             <NavBadgesProvider>
             <Routes>
+              {/* Public — eager */}
               <Route path="/login" element={<PublicRoute><RB><Auth /></RB></PublicRoute>} />
               <Route path="/setup" element={<RB><Setup /></RB>} />
               <Route path="/reset-password" element={<RB><ResetPassword /></RB>} />
               <Route path="/auth/callback" element={<RB><AuthCallback /></RB>} />
               <Route path="/onboarding" element={<ProtectedRoute><RB><Onboarding /></RB></ProtectedRoute>} />
 
+              {/* Index — eager (monteur start page) */}
               <Route path="/" element={<ProtectedRoute><RB><Index /></RB></ProtectedRoute>} />
-              <Route path="/planning" element={<RoleRoute check={p => p.zietPlanning}><RB><Planning /></RB></RoleRoute>} />
-              <Route path="/mededelingen" element={<RoleRoute check={p => p.zietMededelingen}><RB><Mededelingen /></RB></RoleRoute>} />
-              <Route path="/profiel" element={<ProtectedRoute><RB><Profiel /></RB></ProtectedRoute>} />
-              <Route path="/mijn-orders" element={<RoleRoute check={p => p.zietInkooporders}><RB><MijnOrders /></RB></RoleRoute>} />
 
-              <Route path="/dashboard" element={<RoleRoute check={p => p.zietDashboard}><RB><Dashboard /></RB></RoleRoute>} />
-              <Route path="/goedkeuring" element={<RoleRoute check={p => p.zietGoedkeuring}><RB><Goedkeuring /></RB></RoleRoute>} />
-              <Route path="/overuren" element={<RoleRoute check={p => p.zietOveruren}><RB><Overuren /></RB></RoleRoute>} />
-              <Route path="/rapportage" element={<RoleRoute check={p => p.zietRapportage}><RB><Rapportage /></RB></RoleRoute>} />
-              <Route path="/manager-planning" element={<RoleRoute check={p => p.zietManagerPlanning}><RB><ManagerPlanning /></RB></RoleRoute>} />
-              <Route path="/projecten" element={<RoleRoute check={p => p.zietProjecten}><RB><Projecten /></RB></RoleRoute>} />
-              <Route path="/projecten/:projectId/planning" element={<RoleRoute check={p => p.zietProjecten}><RB><ProjectPlanning /></RB></RoleRoute>} />
-              <Route path="/opdrachtgevers" element={<RoleRoute check={p => p.magTeamBeheren}><RB><Opdrachtgevers /></RB></RoleRoute>} />
-              <Route path="/medewerkers" element={<RoleRoute check={p => p.zietTeam}><RB><Medewerkers /></RB></RoleRoute>} />
-              <Route path="/inkooporders" element={<RoleRoute check={p => p.zietAlleInkooporders}><RB><Inkooporders /></RB></RoleRoute>} />
+              {/* Lazy routes */}
+              <Route path="/planning" element={<RoleRoute check={p => p.zietPlanning}><L><Planning /></L></RoleRoute>} />
+              <Route path="/mededelingen" element={<RoleRoute check={p => p.zietMededelingen}><L><Mededelingen /></L></RoleRoute>} />
+              <Route path="/profiel" element={<ProtectedRoute><L><Profiel /></L></ProtectedRoute>} />
+              <Route path="/mijn-orders" element={<RoleRoute check={p => p.zietInkooporders}><L><MijnOrders /></L></RoleRoute>} />
 
-              <Route path="/beheer/intake-regels" element={<RoleRoute check={p => p.zietBeheer}><RB><IntakeRegelBeheer /></RB></RoleRoute>} />
-              <Route path="/beheer/tarieven" element={<RoleRoute check={p => p.zietBeheer}><RB><TarievenBeheer /></RB></RoleRoute>} />
+              <Route path="/dashboard" element={<RoleRoute check={p => p.zietDashboard}><L><Dashboard /></L></RoleRoute>} />
+              <Route path="/goedkeuring" element={<RoleRoute check={p => p.zietGoedkeuring}><L><Goedkeuring /></L></RoleRoute>} />
+              <Route path="/overuren" element={<RoleRoute check={p => p.zietOveruren}><L><Overuren /></L></RoleRoute>} />
+              <Route path="/rapportage" element={<RoleRoute check={p => p.zietRapportage}><L><Rapportage /></L></RoleRoute>} />
+              <Route path="/manager-planning" element={<RoleRoute check={p => p.zietManagerPlanning}><L><ManagerPlanning /></L></RoleRoute>} />
+              <Route path="/projecten" element={<RoleRoute check={p => p.zietProjecten}><L><Projecten /></L></RoleRoute>} />
+              <Route path="/projecten/:projectId/planning" element={<RoleRoute check={p => p.zietProjecten}><L><ProjectPlanning /></L></RoleRoute>} />
+              <Route path="/opdrachtgevers" element={<RoleRoute check={p => p.magTeamBeheren}><L><Opdrachtgevers /></L></RoleRoute>} />
+              <Route path="/medewerkers" element={<RoleRoute check={p => p.zietTeam}><L><Medewerkers /></L></RoleRoute>} />
+              <Route path="/inkooporders" element={<RoleRoute check={p => p.zietAlleInkooporders}><L><Inkooporders /></L></RoleRoute>} />
+
+              <Route path="/beheer/intake-regels" element={<RoleRoute check={p => p.zietBeheer}><L><IntakeRegelBeheer /></L></RoleRoute>} />
+              <Route path="/beheer/tarieven" element={<RoleRoute check={p => p.zietBeheer}><L><TarievenBeheer /></L></RoleRoute>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
