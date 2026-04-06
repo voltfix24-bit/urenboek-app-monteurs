@@ -510,11 +510,9 @@ export default function Kandidaten() {
                         </button>
                       </div>
                     )}
-                    {(k.status === "afgewezen" || k.status === "on_hold") && (
-                      <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--danger)" }}>
-                        <Trash2 className="w-3 h-3" /> Verwijderen
-                      </button>
-                    )}
+                    <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--danger)" }}>
+                      <Trash2 className="w-3 h-3" /> Verwijderen
+                    </button>
                   </div>
                 </div>
 
