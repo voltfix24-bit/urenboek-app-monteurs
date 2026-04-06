@@ -204,7 +204,7 @@ export default function Profiel() {
       return;
     }
     setProfileErrors({});
-    if (!await mutate(supabase.from("profiles").update({ full_name: editForm.full_name, telefoon: editForm.telefoon, adres: editForm.adres } as any).eq("id", profile.id))) return;
+    if (!await mutate(supabase.from("profiles").update({ full_name: editForm.full_name, telefoon: editForm.telefoon, adres: editForm.adres, geboortedatum: editForm.geboortedatum || null } as any).eq("id", profile.id))) return;
     toast.success("Profiel opgeslagen"); setEditing(false); fetchProfile(); refetchProfileContext();
   };
 
