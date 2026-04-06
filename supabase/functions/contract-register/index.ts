@@ -113,9 +113,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create profile
-    const { data: profile, error: profileError } = await supabase.from("profiles").insert({
-      user_id: newUser.user.id,
+    // Update the profile created by handle_new_user trigger
+    const { data: profile, error: profileError } = await supabase.from("profiles").update({
       full_name: `${kandidaat.voornaam} ${kandidaat.achternaam}`,
       telefoon: kandidaat.telefoon || "",
       adres: cd.ot_adres ? `${cd.ot_adres}, ${cd.ot_postcode || ""} ${cd.ot_stad || ""}` : "",
@@ -126,7 +125,7 @@ Deno.serve(async (req) => {
       contract_einddatum: contract.status === "ondertekend_beiden" ? (cd.einddatum_raw || null) : null,
       account_status: "onboarding",
       activated_at: new Date().toISOString(),
-    }).select("id").single();
+    }).eq("user_id", newUser.user.id).select("id").single();
 
     if (profileError) {
       // Rollback: delete the created user
