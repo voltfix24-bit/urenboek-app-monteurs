@@ -9,7 +9,6 @@ import { format, startOfISOWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass, CheckCircle, Users, TrendingUp, CalendarDays, MapPin, Layers, FileSignature } from "lucide-react";
 import { volledigAdres } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { euro } from "@/lib/formatting";
 import { DashboardSkeleton } from "@/components/ui/Skeletons";
