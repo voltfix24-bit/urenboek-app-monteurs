@@ -14,6 +14,9 @@ const DAGEN = [
   { key: 4, label: "Do" }, { key: 5, label: "Vr" }, { key: 6, label: "Za" }, { key: 0, label: "Zo" },
 ];
 
+const STAPPEN = ["Welkom", "Jouw gegevens", "Factuurgegevens", "Certificaten", "Vrije dagen"];
+const TOTAL_STEPS = STAPPEN.length;
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const { session, user, roles } = useAuth();
@@ -23,6 +26,8 @@ export default function Onboarding() {
   const [profileData, setProfileData] = useState<any>(null);
   
   const [form, setForm] = useState({ telefoon: "", adres: "", rijbewijs: false, noodcontact_naam: "", noodcontact_tel: "" });
+  const [zzpForm, setZzpForm] = useState({ bedrijfsnaam: "", kvk_nummer: "", btw_nummer: "", iban: "", factuuradres: "", betalingstermijn: 14 });
+  const [zzpErrors, setZzpErrors] = useState<Record<string, string>>({});
   const [vrijeDagen, setVrijeDagen] = useState<number[]>([]);
 
   useEffect(() => {
@@ -42,6 +47,14 @@ export default function Onboarding() {
         noodcontact_naam: (profile as any).noodcontact_naam || "",
         noodcontact_tel: (profile as any).noodcontact_tel || "",
       });
+      setZzpForm({
+        bedrijfsnaam: (profile as any).bedrijfsnaam || "",
+        kvk_nummer: (profile as any).kvk_nummer || "",
+        btw_nummer: (profile as any).btw_nummer || "",
+        iban: (profile as any).iban || "",
+        factuuradres: (profile as any).factuuradres || "",
+        betalingstermijn: (profile as any).betalingstermijn || 14,
+      });
       setVrijeDagen((profile as any).vaste_vrije_dagen || []);
     }
     setLoading(false);
@@ -59,21 +72,51 @@ export default function Onboarding() {
     setStep(3);
   };
 
+  const validateZzp = (): boolean => {
+    const e: Record<string, string> = {};
+    if (zzpForm.kvk_nummer && !/^\d{8}$/.test(zzpForm.kvk_nummer.trim())) e.kvk_nummer = "8 cijfers vereist";
+    if (zzpForm.btw_nummer && !/^NL\d{9}B\d{2}$/.test(zzpForm.btw_nummer.trim())) e.btw_nummer = "Format: NL123456789B01";
+    if (zzpForm.iban) {
+      const clean = zzpForm.iban.replace(/\s/g, "");
+      if (!/^NL[A-Z0-9]+$/.test(clean)) e.iban = "Moet beginnen met NL";
+    }
+    // Required: kvk + iban
+    if (!zzpForm.kvk_nummer.trim()) e.kvk_nummer = "KVK-nummer is verplicht";
+    if (!zzpForm.iban.trim()) e.iban = "IBAN is verplicht";
+    setZzpErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const saveZzp = async () => {
+    if (!profileData || !validateZzp()) return;
+    await supabase.from("profiles").update({
+      bedrijfsnaam: zzpForm.bedrijfsnaam.trim() || null,
+      kvk_nummer: zzpForm.kvk_nummer.trim() || null,
+      btw_nummer: zzpForm.btw_nummer.trim() || null,
+      iban: zzpForm.iban.replace(/\s/g, "").trim() || null,
+      factuuradres: zzpForm.factuuradres.trim() || null,
+      betalingstermijn: zzpForm.betalingstermijn,
+    } as any).eq("id", profileData.id);
+    toast.success("Factuurgegevens opgeslagen ✓");
+    setStep(4);
+  };
+
+  const skipZzp = () => {
+    toast.info("Je kunt dit later invullen via je Profiel → ZZP gegevens");
+    setStep(4);
+  };
+
   const finish = async () => {
     if (!profileData) return;
     await supabase.from("profiles").update({
       vaste_vrije_dagen: vrijeDagen,
     } as any).eq("id", profileData.id);
-
-    // Activate account
     await supabase.functions.invoke("activate-account");
-
     localStorage.setItem("onboarding_done", "true");
     refetchProfile();
     toast.success("Je profiel is compleet! Welkom bij TerreVolt 🎉");
     navigate("/");
   };
-
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
@@ -81,7 +124,7 @@ export default function Onboarding() {
     </div>
   );
 
-  const progress = (step / 4) * 100;
+  const progress = (step / TOTAL_STEPS) * 100;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-base)" }}>
@@ -97,7 +140,7 @@ export default function Onboarding() {
             <ChevronLeft className="h-4 w-4" /> Terug
           </button>
         ) : <div />}
-        <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Stap {step} van 4</span>
+        <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Stap {step} van {TOTAL_STEPS}</span>
       </div>
 
       <div className="flex-1 flex flex-col items-center px-6 pb-8" style={{ maxWidth: 440, margin: "0 auto", width: "100%" }}>
@@ -156,7 +199,82 @@ export default function Onboarding() {
           </div>
         )}
 
-        {step === 3 && profileData && (
+        {step === 3 && (
+          <div className="w-full space-y-4 mt-6">
+            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Jouw ZZP gegevens</p>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              TerreVolt heeft deze gegevens nodig om een inkooporder op jouw naam te kunnen opstellen. Je ontvangt dit document als basis voor je factuur.
+            </p>
+
+            {/* Info blokje */}
+            <div className="rounded-xl p-3" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
+              <p className="text-xs font-semibold mb-1" style={{ color: "var(--accent)" }}>✓ Wat is een inkooporder?</p>
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                Als jouw uren zijn goedgekeurd, maakt TerreVolt een inkooporder voor je aan. Jij stuurt daarna een factuur naar TerreVolt op basis van dat document.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Bedrijfsnaam</label>
+                <input value={zzpForm.bedrijfsnaam} onChange={e => setZzpForm({ ...zzpForm, bedrijfsnaam: e.target.value })} placeholder="Hassan el Garrat Elektrotechniek" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Of je volledige naam als je geen apart bedrijf hebt</p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium" style={{ color: zzpErrors.kvk_nummer ? "var(--danger)" : "var(--text-muted)" }}>KVK-nummer *</label>
+                <input value={zzpForm.kvk_nummer} onChange={e => { setZzpForm({ ...zzpForm, kvk_nummer: e.target.value }); if (zzpErrors.kvk_nummer) setZzpErrors(prev => { const n = { ...prev }; delete n.kvk_nummer; return n; }); }} placeholder="12345678" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-surface)", border: zzpErrors.kvk_nummer ? "1.5px solid var(--danger)" : "1px solid var(--border)", color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }} />
+                <p className="text-[10px]" style={{ color: zzpErrors.kvk_nummer ? "var(--danger)" : "var(--text-muted)" }}>{zzpErrors.kvk_nummer || "8 cijfers, te vinden op kvk.nl"}</p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium" style={{ color: zzpErrors.btw_nummer ? "var(--danger)" : "var(--text-muted)" }}>BTW-nummer</label>
+                <input value={zzpForm.btw_nummer} onChange={e => { setZzpForm({ ...zzpForm, btw_nummer: e.target.value }); if (zzpErrors.btw_nummer) setZzpErrors(prev => { const n = { ...prev }; delete n.btw_nummer; return n; }); }} placeholder="NL123456789B01" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-surface)", border: zzpErrors.btw_nummer ? "1.5px solid var(--danger)" : "1px solid var(--border)", color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }} />
+                <p className="text-[10px]" style={{ color: zzpErrors.btw_nummer ? "var(--danger)" : "var(--text-muted)" }}>{zzpErrors.btw_nummer || "Te vinden op kvk.nl of belastingdienst.nl (optioneel)"}</p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium" style={{ color: zzpErrors.iban ? "var(--danger)" : "var(--text-muted)" }}>IBAN *</label>
+                <input value={zzpForm.iban} onChange={e => { setZzpForm({ ...zzpForm, iban: e.target.value }); if (zzpErrors.iban) setZzpErrors(prev => { const n = { ...prev }; delete n.iban; return n; }); }} placeholder="NL49INGB0113028776" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-surface)", border: zzpErrors.iban ? "1.5px solid var(--danger)" : "1px solid var(--border)", color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }} />
+                <p className="text-[10px]" style={{ color: zzpErrors.iban ? "var(--danger)" : "var(--text-muted)" }}>{zzpErrors.iban || "Bankrekening waarop je betaald wilt worden"}</p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Factuuradres</label>
+                <input value={zzpForm.factuuradres} onChange={e => setZzpForm({ ...zzpForm, factuuradres: e.target.value })} placeholder="Zelfde als woonadres" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Laat leeg als hetzelfde als je woonadres</p>
+              </div>
+
+              {/* Betalingstermijn */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Betalingstermijn</label>
+                <div className="flex gap-2">
+                  {[14, 21, 30].map(d => (
+                    <button key={d} onClick={() => setZzpForm({ ...zzpForm, betalingstermijn: d })}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                      style={{
+                        background: zzpForm.betalingstermijn === d ? "var(--accent-light)" : "var(--bg-surface)",
+                        border: zzpForm.betalingstermijn === d ? "1.5px solid var(--accent-border)" : "1px solid var(--border)",
+                        color: zzpForm.betalingstermijn === d ? "var(--accent)" : "var(--text-muted)",
+                        fontWeight: zzpForm.betalingstermijn === d ? 700 : 400,
+                      }}>
+                      {d} dagen
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <button onClick={saveZzp} className="w-full py-3 rounded-xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+              Opslaan & doorgaan →
+            </button>
+            <button onClick={skipZzp} className="block mx-auto text-xs underline mt-2" style={{ color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>
+              Overslaan
+            </button>
+          </div>
+        )}
+
+        {step === 4 && profileData && (
           <div className="w-full space-y-4 mt-6">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Jouw certificaten</p>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
@@ -164,13 +282,13 @@ export default function Onboarding() {
             </p>
             <CertificatenForm
               medewerker_id={profileData.id}
-              onSaved={() => setStep(4)}
-              onCancel={() => setStep(4)}
+              onSaved={() => setStep(5)}
+              onCancel={() => setStep(5)}
             />
           </div>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <div className="w-full space-y-4 mt-6">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Vaste vrije dagen</p>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Welke dagen ben je standaard niet beschikbaar?</p>
