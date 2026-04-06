@@ -15,7 +15,8 @@ import { nl } from "date-fns/locale";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const euro = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 }).format(n);
+import { euroDecimals as euro } from "@/lib/formatting";
+import { Spinner } from "@/components/ui/Spinner";
 
 const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
   concept: { label: "Concept", color: "var(--text-muted)", bg: "var(--bg-surface-2)", border: "var(--border)" },
@@ -291,7 +292,7 @@ export default function Inkooporders() {
           </div>
 
           {loading ? (
-            <div className="text-center py-8"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
+            <Spinner padding="py-8" />
           ) : filteredOrders.length === 0 ? (
             <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
               <FileText className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />

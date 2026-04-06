@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Spinner } from "@/components/ui/Spinner";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -248,10 +249,7 @@ export default function Rapportage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-10">
-            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
-            <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>Laden...</p>
-          </div>
+          <Spinner />
         ) : (
           <>
             {medewerkerStats.length > 0 && (

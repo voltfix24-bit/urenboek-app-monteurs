@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ChevronLeft, Check } from "lucide-react";
 import terrevoltLogo from "@/assets/terrevolt-logo.svg";
 import CertificatenForm from "@/components/CertificatenForm";
+import { Spinner } from "@/components/ui/Spinner";
 
 const DAGEN = [
   { key: 1, label: "Ma" }, { key: 2, label: "Di" }, { key: 3, label: "Wo" },
@@ -76,7 +77,7 @@ export default function Onboarding() {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}>
-      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
+      <Spinner center={false} />
     </div>
   );
 

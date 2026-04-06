@@ -22,7 +22,8 @@ interface Tarief {
   updated_by: string | null;
 }
 
-const fmt = (n: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(n);
+import { euroDecimals as fmt } from "@/lib/formatting";
+import { Spinner } from "@/components/ui/Spinner";
 const origMap = new Map(SPEC_CODES.map(s => [s.code, s.tarief]));
 
 export default function TarievenBeheer() {
@@ -119,7 +120,7 @@ export default function TarievenBeheer() {
 
         <div className="px-6 lg:px-10 pb-10">
           {loading ? (
-            <div className="text-center py-8"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
+            <Spinner padding="py-8" />
           ) : (
             <Accordion type="multiple" className="space-y-2">
               {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)).map(([groep, items]) => (
