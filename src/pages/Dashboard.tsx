@@ -253,6 +253,35 @@ export default function Dashboard() {
               ))}
             </div>
 
+            {/* Project status groups */}
+            {Object.keys(statusGroups).length > 0 && (
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                    <Layers className="h-3.5 w-3.5" /> Projectstatus
+                  </p>
+                  <button onClick={() => navigate("/projecten")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
+                    Alle <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { key: "nieuw", label: "Nieuw", color: "var(--text-muted)", bg: "var(--bg-surface-2)" },
+                    { key: "gepland", label: "Gepland", color: "var(--info)", bg: "var(--info-light)" },
+                    { key: "in_uitvoering", label: "Uitvoering", color: "var(--warn-text)", bg: "var(--warn-light)" },
+                    { key: "opgeleverd", label: "Opgeleverd", color: "var(--success)", bg: "var(--success-light)" },
+                    { key: "gefactureerd", label: "Gefactureerd", color: "var(--accent)", bg: "var(--accent-light)" },
+                    { key: "gesloten", label: "Gesloten", color: "var(--text-muted)", bg: "var(--bg-surface-2)" },
+                  ] as const).filter(s => (statusGroups[s.key] || 0) > 0).map(s => (
+                    <div key={s.key} className="rounded-xl p-2.5 text-center" style={{ background: s.bg }}>
+                      <p className="text-lg font-extrabold" style={{ color: s.color, fontFamily: "DM Mono, monospace" }}>{statusGroups[s.key] || 0}</p>
+                      <p className="text-[9px] font-semibold mt-0.5" style={{ color: s.color }}>{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Today planning */}
             {todayPlanning.length > 0 && (
               <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
