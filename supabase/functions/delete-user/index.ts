@@ -152,7 +152,8 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    console.error("delete-user error:", err);
+    return new Response(JSON.stringify({ error: err.message || "Onbekende fout bij verwijderen" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
