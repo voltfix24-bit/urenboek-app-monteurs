@@ -113,9 +113,7 @@ export default function Overuren() {
       </div>
 
       {loading ? (
-        <div className="text-center py-10">
-          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
-        </div>
+        <ListSkeleton count={3} ItemSkeleton={OverurenCardSkeleton} />
       ) : meldingen.length === 0 ? (
         <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />

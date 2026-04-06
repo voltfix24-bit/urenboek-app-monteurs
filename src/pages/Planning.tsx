@@ -163,7 +163,7 @@ export default function Planning() {
       </div>
 
       {loading ? (
-        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
+        <ListSkeleton count={3} ItemSkeleton={PlanningCardSkeleton} />
       ) : (
         <>
           {weekDates.map((date, i) => {

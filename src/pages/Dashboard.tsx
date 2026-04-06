@@ -11,7 +11,7 @@ import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourg
 import { volledigAdres } from "@/lib/utils";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { euro } from "@/lib/formatting";
-import { Spinner } from "@/components/ui/Spinner";
+import { DashboardSkeleton } from "@/components/ui/Skeletons";
 import { useDashboardQuery } from "@/hooks/queries/useDashboardQuery";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
@@ -91,7 +91,7 @@ export default function Dashboard() {
 
       <main className="px-4 py-4 space-y-4">
         {loading ? (
-          <Spinner />
+          <DashboardSkeleton />
         ) : (
           <>
             {/* KPI strip */}
