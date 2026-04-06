@@ -83,6 +83,48 @@ function ContractAttentionSection({ navigate }: { navigate: (p: string) => void 
   );
 }
 
+function NieuweMedewerkersSection({ navigate }: { navigate: (p: string) => void }) {
+  const [medewerkers, setMedewerkers] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase.from("profiles").select("id, full_name, activated_at")
+      .eq("account_status", "onboarding").eq("onboarding_voltooid", true)
+      .order("activated_at", { ascending: false }).limit(10)
+      .then(({ data }) => setMedewerkers(data || []));
+  }, []);
+
+  if (medewerkers.length === 0) return null;
+
+  return (
+    <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+          <UserCheck className="h-3.5 w-3.5" /> Nieuwe medewerkers
+        </p>
+        <button onClick={() => navigate("/medewerkers")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
+          Alle <ChevronRight className="h-3 w-3" />
+        </button>
+      </div>
+      {medewerkers.map(m => (
+        <div key={m.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
+              {m.full_name?.charAt(0)?.toUpperCase() || "?"}
+            </div>
+            <div>
+              <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{m.full_name}</p>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--success-light)", color: "var(--success)", border: "1px solid var(--success-border)" }}>Klaar voor verificatie</span>
+            </div>
+          </div>
+          <button onClick={() => navigate("/medewerkers")} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold" style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
+            Verifiëren →
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { isManager, user } = useAuth();
   const navigate = useNavigate();
