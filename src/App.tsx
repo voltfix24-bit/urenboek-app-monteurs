@@ -37,7 +37,21 @@ const TarievenBeheer = lazy(() => import("./pages/TarievenBeheer"));
 const Inkooporders = lazy(() => import("./pages/Inkooporders"));
 const MijnOrders = lazy(() => import("./pages/MijnOrders"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      retry: 3,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 30000),
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
 function LoadingSpinner() {
   return (

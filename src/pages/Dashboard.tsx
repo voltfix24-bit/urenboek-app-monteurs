@@ -12,204 +12,62 @@ import { volledigAdres } from "@/lib/utils";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
+import { useDashboardQuery } from "@/hooks/queries/useDashboardQuery";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 
 export default function Dashboard() {
   const { isManager, user } = useAuth();
   const navigate = useNavigate();
-  const [pendingCount, setPendingCount] = useState(0);
-  const [weekHours, setWeekHours] = useState(0);
-  const [activeProjects, setActiveProjects] = useState(0);
-  const [teamCount, setTeamCount] = useState(0);
-  const [pendingEntries, setPendingEntries] = useState<any[]>([]);
-  const [verlofAanvragen, setVerlofAanvragen] = useState<any[]>([]);
-  const [expiringCerts, setExpiringCerts] = useState<any[]>([]);
-  const [todayPlanning, setTodayPlanning] = useState<any[]>([]);
-  const [projectsWithMarge, setProjectsWithMarge] = useState<any[]>([]);
-  const [overurenMeldingen, setOverurenMeldingen] = useState<any[]>([]);
-  const [overurenCount, setOverurenCount] = useState(0);
-  const [statusGroups, setStatusGroups] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: dashboardData, isLoading: loading } = useDashboardQuery();
+
+  const pendingCount = dashboardData?.pendingCount ?? 0;
+  const weekHours = dashboardData?.weekHours ?? 0;
+  const activeProjects = dashboardData?.activeProjects ?? 0;
+  const teamCount = dashboardData?.teamCount ?? 0;
+  const pendingEntries = dashboardData?.pendingEntries ?? [];
+  const verlofAanvragen = dashboardData?.verlofAanvragen ?? [];
+  const expiringCerts = dashboardData?.expiringCerts ?? [];
+  const todayPlanning = dashboardData?.todayPlanning ?? [];
+  const projectsWithMarge = dashboardData?.projectsWithMarge ?? [];
+  const overurenMeldingen = dashboardData?.overurenMeldingen ?? [];
+  const overurenCount = dashboardData?.overurenCount ?? 0;
+  const statusGroups = dashboardData?.statusGroups ?? {};
+
   const [afkeurReden, setAfkeurReden] = useState("");
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
 
-  const fetchDashboard = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    const weekStart = startOfISOWeek(new Date());
-    const weekEnd = addDays(weekStart, 6);
-    const today = format(new Date(), "yyyy-MM-dd");
-
-    // Pending approvals
-    const { data: pending } = await supabase
-      .from("uren_boekingen")
-      .select("id, datum, project_id, uren, beschrijving, medewerker_id, type")
-      .eq("status", "ingediend")
-      .order("datum")
-      .limit(10);
-    if (pending) {
-      const medIds = [...new Set(pending.map((p: any) => p.medewerker_id))];
-      const projIds = [...new Set(pending.map((p: any) => p.project_id))];
-      const [{ data: profiles }, { data: projects }] = await Promise.all([
-        medIds.length > 0 ? supabase.from("profiles").select("id, full_name").in("id", medIds) : { data: [] },
-        projIds.length > 0 ? supabase.from("projects").select("id, naam, nummer").in("id", projIds) : { data: [] },
-      ]);
-      const nameMap = new Map((profiles ?? []).map((p: any) => [p.id, p.full_name]));
-      const projMap = new Map((projects ?? []).map((p: any) => [p.id, p]));
-      setPendingEntries(pending.map(e => {
-        const proj = projMap.get(e.project_id) || { naam: "", nummer: "" };
-        return { ...e, full_name: nameMap.get(e.medewerker_id) || "Onbekend", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer };
-      }));
-      setPendingCount(pending.length);
-    }
-
-    // Week hours
-    const { data: weekData } = await supabase
-      .from("uren_boekingen")
-      .select("uren")
-      .eq("status", "goedgekeurd")
-      .gte("datum", format(weekStart, "yyyy-MM-dd"))
-      .lte("datum", format(weekEnd, "yyyy-MM-dd"));
-    setWeekHours(weekData?.reduce((s: number, e: any) => s + Number(e.uren), 0) || 0);
-
-    // Active projects count + status groups
-    const { data: allProjects } = await supabase.from("projects").select("id, status").eq("active", true);
-    setActiveProjects(allProjects?.length || 0);
-    const groups: Record<string, number> = {};
-    (allProjects || []).forEach((p: any) => {
-      const s = p.status || "nieuw";
-      groups[s] = (groups[s] || 0) + 1;
-    });
-    setStatusGroups(groups);
-
-    // Team count
-    const { count: tCount } = await supabase.from("profiles").select("id", { count: "exact", head: true });
-    setTeamCount(tCount || 0);
-
-    // Verlof aanvragen
-    const { data: verlof } = await supabase.from("beschikbaarheid").select("id, medewerker_id, type, datum_van, datum_tot, reden, status").eq("status", "aangevraagd").order("datum_van").limit(5);
-    if (verlof) {
-      const profIds = [...new Set(verlof.map((v: any) => v.medewerker_id))];
-      const { data: profs } = profIds.length > 0 ? await supabase.from("profiles").select("id, full_name").in("id", profIds) : { data: [] };
-      const profMap = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
-      setVerlofAanvragen(verlof.map((v: any) => ({ ...v, naam: profMap.get(v.medewerker_id) || "Onbekend" })));
-    }
-
-    // Expiring certs
-    const thirtyDays = format(addDays(new Date(), 30), "yyyy-MM-dd");
-    const { data: certs } = await supabase.from("certificaten").select("id, medewerker_id, naam, type, vervaldatum").lte("vervaldatum", thirtyDays).order("vervaldatum").limit(5);
-    if (certs) {
-      const profIds = [...new Set(certs.map((c: any) => c.medewerker_id))];
-      const { data: profs } = profIds.length > 0 ? await supabase.from("profiles").select("id, full_name").in("id", profIds) : { data: [] };
-      const profMap = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
-      setExpiringCerts(certs.map((c: any) => ({ ...c, medewerker: profMap.get(c.medewerker_id) || "Onbekend" })));
-    }
-
-    // Today planning
-    const { data: plan } = await supabase.from("planning").select("id, medewerker_id, project_id, starttijd, eindtijd, activiteit, activiteit_kleur").eq("datum", today);
-    if (plan) {
-      const profIds = [...new Set(plan.map((p: any) => p.medewerker_id))];
-      const projIds = [...new Set(plan.map((p: any) => p.project_id))];
-      const [{ data: profs }, { data: projs }, { data: boekData }] = await Promise.all([
-        profIds.length > 0 ? supabase.from("profiles").select("id, full_name").in("id", profIds) : { data: [] },
-        projIds.length > 0 ? supabase.from("projects").select("id, naam, straat, postcode, stad, adres").in("id", projIds) : { data: [] },
-        profIds.length > 0 ? supabase.from("uren_boekingen").select("medewerker_id, uren, status").eq("datum", today).in("medewerker_id", profIds).in("status", ["concept", "ingediend", "goedgekeurd"]) : { data: [] },
-      ]);
-      const profMap = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
-      const projMap = new Map((projs ?? []).map((p: any) => [p.id, p]));
-      const boekMap = new Map<string, { uren: number; status: string }>();
-      (boekData ?? []).forEach((b: any) => { boekMap.set(b.medewerker_id, { uren: Number(b.uren), status: b.status }); });
-      setTodayPlanning(plan.map((p: any) => { const proj = projMap.get(p.project_id) || {}; return { ...p, naam: profMap.get(p.medewerker_id) || "Onbekend", project: (proj as any).naam || "Onbekend", projectAdres: volledigAdres(proj as any), starttijd: p.starttijd?.slice(0, 5), eindtijd: p.eindtijd?.slice(0, 5), activiteit: p.activiteit || null, activiteit_kleur: p.activiteit_kleur || null, boeking: boekMap.get(p.medewerker_id) || null }; }));
-    }
-
-    // Projects with marge from forecast
-    const { data: forecasts } = await supabase.from("project_forecast").select("id, project_id, methode");
-    if (forecasts && forecasts.length > 0) {
-      const fIds = forecasts.map((f: any) => f.id);
-      const pIds = forecasts.map((f: any) => f.project_id);
-        const [{ data: regels }, { data: projs }] = await Promise.all([
-          supabase.from("forecast_regels").select("forecast_id, tarief, eigen_kosten, aantal, geplande_uren, uurtarief_snap, type").in("forecast_id", fIds),
-        supabase.from("projects").select("id, naam, nummer").in("id", pIds),
-      ]);
-      const projMap = new Map((projs ?? []).map((p: any) => [p.id, p]));
-      const fMethode = new Map(forecasts.map((f: any) => [f.id, f.methode]));
-      const fProject = new Map(forecasts.map((f: any) => [f.id, f.project_id]));
-
-      // Group regels by forecast
-      const regelsByForecast = new Map<string, any[]>();
-      (regels ?? []).forEach((r: any) => {
-        const arr = regelsByForecast.get(r.forecast_id) || [];
-        arr.push(r);
-        regelsByForecast.set(r.forecast_id, arr);
-      });
-
-      const result: any[] = [];
-      forecasts.forEach((f: any) => {
-        const rules = regelsByForecast.get(f.id) || [];
-        if (rules.length === 0) return;
-        let omzet = 0, kosten = 0;
-        rules.forEach((r: any) => {
-          if (r.type === "spec") {
-            omzet += (r.tarief || 0) * (r.aantal || 1);
-            kosten += (r.eigen_kosten || 0) * (r.aantal || 1);
-          } else if (r.type === "uren") {
-            kosten += (r.geplande_uren || 0) * (r.uurtarief_snap || 0);
-          }
-        });
-        const marge = omzet > 0 ? ((omzet - kosten) / omzet) * 100 : 0;
-        const proj = projMap.get(f.project_id);
-        if (proj) {
-          result.push({ ...proj, omzet, kosten, marge });
-        }
-      });
-      setProjectsWithMarge(result.sort((a, b) => a.marge - b.marge));
-    }
-
-    // Overuren meldingen
-    const { data: ouData, count: ouCount } = await supabase
-      .from("overuren_meldingen")
-      .select("id, medewerker_id, datum, type, geboekte_uren, limiet_uren", { count: "exact" })
-      .eq("status", "open")
-      .order("created_at", { ascending: false })
-      .limit(3);
-    if (ouData) {
-      const ouMedIds = [...new Set(ouData.map((m: any) => m.medewerker_id))];
-      const { data: ouProfs } = ouMedIds.length > 0 ? await supabase.from("profiles").select("id, full_name").in("id", ouMedIds) : { data: [] };
-      const ouNameMap = new Map((ouProfs ?? []).map((p: any) => [p.id, p.full_name]));
-      setOverurenMeldingen(ouData.map((m: any) => ({ ...m, full_name: ouNameMap.get(m.medewerker_id) || "Onbekend", geboekte_uren: Number(m.geboekte_uren), limiet_uren: Number(m.limiet_uren) })));
-    }
-    setOverurenCount(ouCount || 0);
-
-    setLoading(false);
-  }, [user]);
-
-  useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
+  const refetchDashboard = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard() });
+  }, [queryClient]);
 
   // Realtime subscriptions
   useEffect(() => {
     if (!user) return;
     const kanalen = [
-      supabase.channel('dash-ub').on('postgres_changes', { event: '*', schema: 'public', table: 'uren_boekingen' }, fetchDashboard).subscribe(),
-      supabase.channel('dash-pl').on('postgres_changes', { event: '*', schema: 'public', table: 'planning' }, fetchDashboard).subscribe(),
-      supabase.channel('dash-besch').on('postgres_changes', { event: '*', schema: 'public', table: 'beschikbaarheid' }, fetchDashboard).subscribe(),
-      supabase.channel('dash-cert').on('postgres_changes', { event: '*', schema: 'public', table: 'certificaten' }, fetchDashboard).subscribe(),
+      supabase.channel('dash-ub').on('postgres_changes', { event: '*', schema: 'public', table: 'uren_boekingen' }, refetchDashboard).subscribe(),
+      supabase.channel('dash-pl').on('postgres_changes', { event: '*', schema: 'public', table: 'planning' }, refetchDashboard).subscribe(),
+      supabase.channel('dash-besch').on('postgres_changes', { event: '*', schema: 'public', table: 'beschikbaarheid' }, refetchDashboard).subscribe(),
+      supabase.channel('dash-cert').on('postgres_changes', { event: '*', schema: 'public', table: 'certificaten' }, refetchDashboard).subscribe(),
     ];
     return () => { kanalen.forEach(k => supabase.removeChannel(k)); };
-  }, [user, fetchDashboard]);
+  }, [user, refetchDashboard]);
 
   const handleApprove = async (id: string) => {
     if (!await mutate(supabase.from("uren_boekingen").update({ status: "goedgekeurd" } as any).eq("id", id))) return;
-    toast.success("Goedgekeurd"); fetchDashboard();
+    toast.success("Goedgekeurd"); refetchDashboard();
   };
 
   const handleReject = async () => {
     if (!afkeurId || !afkeurReden.trim()) { toast.error("Vul een reden in"); return; }
     if (!await mutate(supabase.from("uren_boekingen").update({ status: "afgekeurd", afkeur_reden: afkeurReden.trim() } as any).eq("id", afkeurId))) return;
-    toast.success("Afgekeurd"); setAfkeurId(null); setAfkeurReden(""); fetchDashboard();
+    toast.success("Afgekeurd"); setAfkeurId(null); setAfkeurReden(""); refetchDashboard();
   };
 
   const handleVerlof = async (id: string, status: string) => {
     if (!await mutate(supabase.from("beschikbaarheid").update({ status } as any).eq("id", id))) return;
-    toast.success(status === "goedgekeurd" ? "Goedgekeurd" : "Afgekeurd"); fetchDashboard();
+    toast.success(status === "goedgekeurd" ? "Goedgekeurd" : "Afgekeurd"); refetchDashboard();
   };
 
   const margeColor = (m: number) => m >= 30 ? "var(--success)" : m >= 15 ? "var(--warn-dot)" : "var(--danger)";
