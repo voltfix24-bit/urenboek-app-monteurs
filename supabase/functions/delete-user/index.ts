@@ -5,10 +5,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type QueryResult<T> = { data: T | null; error: { message: string } | null };
+type DbError = { message: string } | null;
+type DbResult<T> = { data: T; error: DbError };
 
-async function mustSucceed<T>(label: string, query: Promise<QueryResult<T>>) {
-  const { data, error } = await query;
+type IdRow = { id: string };
+
+async function mustSucceed<T>(label: string, operation: PromiseLike<DbResult<T>>) {
+  const { data, error } = await operation;
   if (error) {
     console.error(`${label} failed:`, error);
     throw new Error(`${label}: ${error.message}`);
@@ -50,7 +53,7 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const allowed = await mustSucceed(
+    const allowed = await mustSucceed<boolean | null>(
       "Rate limit check",
       adminClient.rpc("check_rate_limit", {
         _key: caller.id,
@@ -67,12 +70,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    const roleData = await mustSucceed(
+    const roleData = await mustSucceed<Array<{ role: string }>>(
       "Manager role check",
       adminClient.from("user_roles").select("role").eq("user_id", caller.id).eq("role", "manager"),
     );
 
-    if (!roleData || roleData.length === 0) {
+    if (roleData.length === 0) {
       return new Response(JSON.stringify({ error: "Alleen managers mogen gebruikers verwijderen" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -104,7 +107,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const profile = await mustSucceed(
+    const profile = await mustSucceed<{ id: string } | null>(
       "Profiel ophalen",
       adminClient.from("profiles").select("id").eq("user_id", userId).maybeSingle(),
     );
@@ -113,15 +116,15 @@ Deno.serve(async (req) => {
       const pid = profile.id;
 
       const [orders, candidatesDirect, contractsByProfile] = await Promise.all([
-        mustSucceed(
+        mustSucceed<IdRow[]>(
           "Inkooporders ophalen",
           adminClient.from("inkooporders").select("id").eq("medewerker_id", pid),
         ),
-        mustSucceed(
+        mustSucceed<IdRow[]>(
           "Kandidaten ophalen",
           adminClient.from("kandidaten").select("id").or(`profiel_id.eq.${pid},aangemaakt_door.eq.${pid}`),
         ),
-        mustSucceed(
+        mustSucceed<IdRow[]>(
           "Contracten ophalen",
           adminClient
             .from("contracten")
@@ -130,16 +133,16 @@ Deno.serve(async (req) => {
         ),
       ]);
 
-      const orderIds = [...new Set((orders ?? []).map((row: { id: string }) => row.id))];
-      const candidateIds = [...new Set((candidatesDirect ?? []).map((row: { id: string }) => row.id))];
-      const contractIds = new Set((contractsByProfile ?? []).map((row: { id: string }) => row.id));
+      const orderIds = [...new Set(orders.map((row) => row.id))];
+      const candidateIds = [...new Set(candidatesDirect.map((row) => row.id))];
+      const contractIds = new Set(contractsByProfile.map((row) => row.id));
 
       if (candidateIds.length > 0) {
-        const contractsByCandidate = await mustSucceed(
+        const contractsByCandidate = await mustSucceed<IdRow[]>(
           "Contracten per kandidaat ophalen",
           adminClient.from("contracten").select("id").in("kandidaat_id", candidateIds),
         );
-        for (const row of contractsByCandidate ?? []) {
+        for (const row of contractsByCandidate) {
           contractIds.add(row.id);
         }
       }
@@ -163,6 +166,7 @@ Deno.serve(async (req) => {
             adminClient.from("contract_tokens").delete().in("contract_id", ids),
           ),
         ]);
+
         await mustSucceed(
           "Contracten verwijderen",
           adminClient.from("contracten").delete().in("id", ids),
@@ -224,7 +228,7 @@ Deno.serve(async (req) => {
           adminClient.from("project_planning_matrix").update({ updated_by: null }).eq("updated_by", pid),
         ),
         mustSucceed(
-          "Planning status definitief_door opschonen",
+          "Planning status definitief opschonen",
           adminClient.from("project_planning_status").update({ definitief_door: null }).eq("definitief_door", pid),
         ),
         mustSucceed(
