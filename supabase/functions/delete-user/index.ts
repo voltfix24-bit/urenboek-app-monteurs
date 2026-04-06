@@ -84,6 +84,28 @@ Deno.serve(async (req) => {
 
     if (profile) {
       const pid = profile.id;
+
+      // Delete child rows of inkooporders first (inkooporder_regels references inkooporders)
+      const { data: orders } = await adminClient
+        .from("inkooporders")
+        .select("id")
+        .eq("medewerker_id", pid);
+      if (orders && orders.length > 0) {
+        const orderIds = orders.map((o: { id: string }) => o.id);
+        await adminClient.from("inkooporder_regels").delete().in("inkooporder_id", orderIds);
+      }
+
+      // Delete child rows of contracten (contract_berichten & contract_tokens reference contracten)
+      const { data: contracts } = await adminClient
+        .from("contracten")
+        .select("id")
+        .eq("profiel_id", pid);
+      if (contracts && contracts.length > 0) {
+        const contractIds = contracts.map((c: { id: string }) => c.id);
+        await adminClient.from("contract_berichten").delete().in("contract_id", contractIds);
+        await adminClient.from("contract_tokens").delete().in("contract_id", contractIds);
+      }
+
       // Delete related data using profiles.id
       await adminClient.from("uren_boekingen").delete().eq("medewerker_id", pid);
       await adminClient.from("planning").delete().eq("medewerker_id", pid);
@@ -94,6 +116,23 @@ Deno.serve(async (req) => {
       await adminClient.from("manager_handtekeningen").delete().eq("profiel_id", pid);
       await adminClient.from("inkooporders").delete().eq("medewerker_id", pid);
       await adminClient.from("contracten").delete().eq("profiel_id", pid);
+
+      // Also delete contracten where this user created them (aangemaakt_door)
+      const { data: createdContracts } = await adminClient
+        .from("contracten")
+        .select("id")
+        .eq("aangemaakt_door", pid);
+      if (createdContracts && createdContracts.length > 0) {
+        const cIds = createdContracts.map((c: { id: string }) => c.id);
+        await adminClient.from("contract_berichten").delete().in("contract_id", cIds);
+        await adminClient.from("contract_tokens").delete().in("contract_id", cIds);
+        await adminClient.from("contracten").delete().eq("aangemaakt_door", pid);
+      }
+
+      // Delete kandidaten created by this user
+      await adminClient.from("kandidaten").delete().eq("aangemaakt_door", pid);
+
+      // Finally delete the profile
       await adminClient.from("profiles").delete().eq("id", pid);
     }
 
@@ -113,7 +152,8 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    console.error("delete-user error:", err);
+    return new Response(JSON.stringify({ error: err.message || "Onbekende fout bij verwijderen" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
