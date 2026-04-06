@@ -20,6 +20,7 @@ import { formatDatum } from "@/lib/formatting";
 
 function ContractAttentionSection({ navigate }: { navigate: (p: string) => void }) {
   const [wachtend, setWachtend] = useState<any[]>([]);
+  const [correcties, setCorrecties] = useState<any[]>([]);
   const [verlopen, setVerlopen] = useState<any[]>([]);
 
   useEffect(() => {
@@ -27,20 +28,33 @@ function ContractAttentionSection({ navigate }: { navigate: (p: string) => void 
     dertig.setDate(dertig.getDate() + 30);
     Promise.all([
       supabase.from("contracten").select("id, contract_nummer, ot_naam, kandidaat_id").eq("status", "ondertekend_ot"),
+      supabase.from("contracten").select("id, contract_nummer, ot_naam, kandidaat_id").eq("status", "correctie_gevraagd"),
       supabase.from("contracten").select("id, contract_nummer, einddatum, profiel_id").eq("status", "ondertekend_beiden").lte("einddatum", dertig.toISOString().split("T")[0]).order("einddatum"),
-    ]).then(([{ data: w }, { data: v }]) => {
+    ]).then(([{ data: w }, { data: c }, { data: v }]) => {
       setWachtend(w || []);
+      setCorrecties(c || []);
       setVerlopen(v || []);
     });
   }, []);
 
-  if (wachtend.length === 0 && verlopen.length === 0) return null;
+  if (wachtend.length === 0 && correcties.length === 0 && verlopen.length === 0) return null;
 
   return (
     <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
       <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
         <FileSignature className="h-3.5 w-3.5" /> Contracten die aandacht vragen
       </p>
+      {correcties.map(c => (
+        <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--bg-base)", border: "1px solid var(--danger-border)" }}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: "var(--danger-light)", color: "var(--danger)" }}>⚠️</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{c.ot_naam || "Opdrachtnemer"}</p>
+            <p className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>{c.contract_nummer}</p>
+          </div>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0" style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}>Correctie gevraagd</span>
+          <button onClick={() => navigate("/kandidaten")} className="text-xs font-medium shrink-0" style={{ color: "var(--accent)" }}>Bekijken</button>
+        </div>
+      ))}
       {wachtend.map(c => (
         <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
           <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: "var(--warn-light)", color: "var(--warn-text)" }}>⏳</div>
