@@ -146,11 +146,11 @@ export default function ContractAanmaken() {
     setSaving(false);
   }
 
-  if (loading) return <PageShell titel="Contract aanmaken"><Spinner /></PageShell>;
-  if (!kandidaat) return <PageShell titel="Niet gevonden"><p style={{ color: "var(--text-muted)" }}>Kandidaat niet gevonden</p></PageShell>;
+  if (loading) return <PageShell><Spinner /></PageShell>;
+  if (!kandidaat) return <PageShell><p style={{ color: "var(--text-muted)" }}>Kandidaat niet gevonden</p></PageShell>;
 
   return (
-    <PageShell titel="Contract aanmaken" subtitel={`${kandidaat.voornaam} ${kandidaat.achternaam}`}>
+    <PageShell>
       {/* Progress */}
       <div className="flex gap-1 mb-6">
         {[1, 2, 3].map(s => (
