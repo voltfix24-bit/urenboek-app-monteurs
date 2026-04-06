@@ -262,10 +262,11 @@ export default function IntakeRegelBeheer() {
     setSimResult(berekenRegels(a, simCaseType || null, regels));
   }
 
-  // Find which regel triggered a result
-  function findTriggerLabel(specCode: string): string | null {
-    const r = regels.find(r => r.spec_code === specCode && r.actief);
-    return r ? regelConditieTekst(r) : null;
+  // Build trigger label from result's own trigger info
+  function resultTriggerLabel(r: BerekendeRegel): string | null {
+    if (!r.trigger_type) return null;
+    const fakeRegel = { trigger_type: r.trigger_type, trigger_veld: r.trigger_veld ?? null, trigger_waarde: r.trigger_waarde ?? null } as IntakeRegel;
+    return regelConditieTekst(fakeRegel);
   }
 
   const inputStyle = { background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" };
@@ -519,8 +520,8 @@ export default function IntakeRegelBeheer() {
                       <span className="col-span-2 text-xs text-right" style={{ color: "var(--text-muted)", fontFamily: "DM Mono, monospace" }}>{euro(r.tarief)}</span>
                       <span className="col-span-3 text-xs text-right font-bold" style={{ color: "var(--accent)", fontFamily: "DM Mono, monospace" }}>{euro(r.tarief * r.aantal)}</span>
                     </div>
-                    {findTriggerLabel(r.spec_code) && (
-                      <p className="px-3.5 pb-2 -mt-1 text-[10px] italic" style={{ color: "var(--text-muted)" }}>Toegevoegd door: {findTriggerLabel(r.spec_code)}</p>
+                    {resultTriggerLabel(r) && (
+                      <p className="px-3.5 pb-2 -mt-1 text-[10px] italic" style={{ color: "var(--text-muted)" }}>Toegevoegd door: {resultTriggerLabel(r)}</p>
                     )}
                   </div>
                 ))}
