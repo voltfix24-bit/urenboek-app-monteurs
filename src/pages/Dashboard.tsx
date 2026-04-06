@@ -177,6 +177,18 @@ export default function Dashboard() {
 
   useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
+  // Realtime subscriptions
+  useEffect(() => {
+    if (!user) return;
+    const kanalen = [
+      supabase.channel('dash-ub').on('postgres_changes', { event: '*', schema: 'public', table: 'uren_boekingen' }, fetchDashboard).subscribe(),
+      supabase.channel('dash-pl').on('postgres_changes', { event: '*', schema: 'public', table: 'planning' }, fetchDashboard).subscribe(),
+      supabase.channel('dash-besch').on('postgres_changes', { event: '*', schema: 'public', table: 'beschikbaarheid' }, fetchDashboard).subscribe(),
+      supabase.channel('dash-cert').on('postgres_changes', { event: '*', schema: 'public', table: 'certificaten' }, fetchDashboard).subscribe(),
+    ];
+    return () => { kanalen.forEach(k => supabase.removeChannel(k)); };
+  }, [user, fetchDashboard]);
+
   const handleApprove = async (id: string) => {
     if (!await mutate(supabase.from("uren_boekingen").update({ status: "goedgekeurd" } as any).eq("id", id))) return;
     toast.success("Goedgekeurd"); fetchDashboard();

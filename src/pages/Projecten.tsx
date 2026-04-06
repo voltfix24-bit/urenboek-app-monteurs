@@ -87,6 +87,12 @@ export default function Projecten() {
     setLoading(false);
   }, [isManager]);
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Realtime subscription
+  useEffect(() => {
+    const channel = supabase.channel('projecten-rt').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'projects' }, () => fetchData()).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchData]);
   useEffect(() => { if (!isManager) navigate("/"); }, [isManager, navigate]);
 
   async function handleAdd() {

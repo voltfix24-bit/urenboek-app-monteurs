@@ -69,6 +69,12 @@ export default function Overuren() {
 
   useEffect(() => { fetchMeldingen(); }, [fetchMeldingen]);
 
+  // Realtime subscription
+  useEffect(() => {
+    const channel = supabase.channel('overuren-rt').on('postgres_changes', { event: '*', schema: 'public', table: 'overuren_meldingen' }, fetchMeldingen).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchMeldingen]);
+
   const handleAction = async (id: string, status: string) => {
     const { error } = await supabase.from("overuren_meldingen").update({
       status,
