@@ -1,6 +1,7 @@
 import { Copy, Eye, EyeOff, Mail, Key } from "lucide-react";
 import { toast } from "sonner";
 import { roleLabels } from "./MedewerkerKaart";
+import { FormField, ValidatedInput } from "@/components/ui/FormField";
 
 const inputStyle = { background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" };
 
@@ -13,15 +14,6 @@ function FormSection({ title, children }: { title: string; children: React.React
   );
 }
 
-function FormField({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
-  return (
-    <div className="space-y-1">
-      <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{label}</label>
-      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
-    </div>
-  );
-}
-
 export function NieuweGebruikerForm(props: any) {
   const {
     voornaam, setVoornaam, achternaam, setAchternaam, email, setEmail,
@@ -30,8 +22,11 @@ export function NieuweGebruikerForm(props: any) {
     contractEinddatum, setContractEinddatum,
     noodcontactNaam, setNoodcontactNaam, noodcontactTel, setNoodcontactTel,
     inviteMode, setInviteMode, password, setPassword,
-    showPw, setShowPw, generatePassword, loading, onSubmit
+    showPw, setShowPw, generatePassword, loading, onSubmit,
+    formErrors = {}, clearError,
   } = props;
+
+  const ce = (field: string) => clearError?.(field);
 
   return (
     <div className="rounded-2xl p-4 space-y-4 animate-fade-in" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>
@@ -39,29 +34,42 @@ export function NieuweGebruikerForm(props: any) {
       <form onSubmit={onSubmit} className="space-y-4">
         <FormSection title="1. Persoonsgegevens">
           <div className="grid grid-cols-2 gap-2">
-            <FormField label="Voornaam *" value={voornaam} onChange={setVoornaam} placeholder="Jan" />
-            <FormField label="Achternaam *" value={achternaam} onChange={setAchternaam} placeholder="Jansen" />
+            <FormField label="Voornaam" error={formErrors.voornaam} required>
+              <ValidatedInput value={voornaam} onChange={e => { setVoornaam(e.target.value); ce("voornaam"); }} placeholder="Jan" error={formErrors.voornaam} />
+            </FormField>
+            <FormField label="Achternaam" error={formErrors.achternaam} required>
+              <ValidatedInput value={achternaam} onChange={e => { setAchternaam(e.target.value); ce("achternaam"); }} placeholder="Jansen" error={formErrors.achternaam} />
+            </FormField>
           </div>
-          <FormField label="E-mailadres *" value={email} onChange={setEmail} placeholder="jan@terrevolt.nl" type="email" />
-          <FormField label="Telefoonnummer" value={telefoon} onChange={setTelefoon} placeholder="06-12345678" type="tel" />
-          <FormField label="Adres" value={adres} onChange={setAdres} placeholder="Straatnaam 1, Stad" />
+          <FormField label="E-mailadres" error={formErrors.email} required>
+            <ValidatedInput type="email" value={email} onChange={e => { setEmail(e.target.value); ce("email"); }} placeholder="jan@terrevolt.nl" error={formErrors.email} />
+          </FormField>
+          <FormField label="Telefoonnummer" error={formErrors.telefoon}>
+            <ValidatedInput type="tel" value={telefoon} onChange={e => { setTelefoon(e.target.value); ce("telefoon"); }} placeholder="06-12345678" error={formErrors.telefoon} />
+          </FormField>
+          <FormField label="Adres">
+            <ValidatedInput value={adres} onChange={e => setAdres(e.target.value)} placeholder="Straatnaam 1, Stad" />
+          </FormField>
         </FormSection>
 
         <FormSection title="2. Functie & tarief">
           <div className="space-y-1">
-            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Rol *</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: formErrors.role ? "var(--danger)" : "var(--text-muted)" }}>Rol *</label>
             <div className="flex gap-1.5 flex-wrap">
               {Object.entries(roleLabels).map(([value, label]) => (
-                <button key={value} type="button" onClick={() => setRole(value)} className="px-3 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
+                <button key={value} type="button" onClick={() => { setRole(value); ce("role"); }} className="px-3 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
                   background: role === value ? "var(--accent-light)" : "var(--bg-base)",
                   border: role === value ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                   color: role === value ? "var(--accent)" : "var(--text-muted)",
                 }}>{label}</button>
               ))}
             </div>
+            {formErrors.role && <p className="text-[10px] font-medium" style={{ color: "var(--danger)" }}>⚠ {formErrors.role}</p>}
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <FormField label="Uurtarief (€/uur)" value={uurtarief} onChange={setUurtarief} placeholder="75.00" type="number" />
+            <FormField label="Uurtarief (€/uur)">
+              <ValidatedInput type="number" value={uurtarief} onChange={e => setUurtarief(e.target.value)} placeholder="75.00" />
+            </FormField>
             <div className="space-y-1">
               <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Contract einddatum</label>
               <input type="date" value={contractEinddatum} onChange={e => setContractEinddatum(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
@@ -77,8 +85,12 @@ export function NieuweGebruikerForm(props: any) {
         </FormSection>
 
         <FormSection title="3. Noodcontact">
-          <FormField label="Naam noodcontact" value={noodcontactNaam} onChange={setNoodcontactNaam} placeholder="Naam" />
-          <FormField label="Telefoon noodcontact" value={noodcontactTel} onChange={setNoodcontactTel} placeholder="06-..." type="tel" />
+          <FormField label="Naam noodcontact">
+            <ValidatedInput value={noodcontactNaam} onChange={e => setNoodcontactNaam(e.target.value)} placeholder="Naam" />
+          </FormField>
+          <FormField label="Telefoon noodcontact">
+            <ValidatedInput type="tel" value={noodcontactTel} onChange={e => setNoodcontactTel(e.target.value)} placeholder="06-..." />
+          </FormField>
         </FormSection>
 
         <FormSection title="4. Certificaten">
