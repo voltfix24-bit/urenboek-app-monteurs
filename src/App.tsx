@@ -37,6 +37,9 @@ const TarievenBeheer = lazy(() => import("./pages/TarievenBeheer"));
 const Inkooporders = lazy(() => import("./pages/Inkooporders"));
 const MijnOrders = lazy(() => import("./pages/MijnOrders"));
 const BedrijfsgegevensBeheer = lazy(() => import("./pages/BedrijfsgegevensBeheer"));
+const Kandidaten = lazy(() => import("./pages/Kandidaten"));
+const ContractAanmaken = lazy(() => import("./pages/ContractAanmaken"));
+const ContractOndertekenen = lazy(() => import("./pages/ContractOndertekenen"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -143,6 +146,10 @@ const App = () => (
               <Route path="/beheer/intake-regels" element={<RoleRoute check={p => p.zietBeheer}><L><IntakeRegelBeheer /></L></RoleRoute>} />
               <Route path="/beheer/tarieven" element={<RoleRoute check={p => p.zietBeheer}><L><TarievenBeheer /></L></RoleRoute>} />
               <Route path="/beheer/bedrijf" element={<RoleRoute check={p => p.zietBeheer}><L><BedrijfsgegevensBeheer /></L></RoleRoute>} />
+
+              <Route path="/kandidaten" element={<RoleRoute check={p => p.zietKandidaten}><L><Kandidaten /></L></RoleRoute>} />
+              <Route path="/kandidaten/:kandidaatId/contract" element={<RoleRoute check={p => p.magContractenBeheren}><L><ContractAanmaken /></L></RoleRoute>} />
+              <Route path="/contract/ondertekenen/:token" element={<RB><Suspense fallback={<PageLoader />}><ContractOndertekenen /></Suspense></RB>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
