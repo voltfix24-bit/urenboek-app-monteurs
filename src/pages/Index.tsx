@@ -476,6 +476,7 @@ const Index = () => {
             </div>
             )}
           </div>
+        )}
 
         {/* Overzicht tab */}
         {activeTab === "overzicht" && (
