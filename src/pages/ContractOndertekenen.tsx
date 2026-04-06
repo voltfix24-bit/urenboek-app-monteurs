@@ -143,11 +143,39 @@ export default function ContractOndertekenen() {
         throw new Error(body.error || "Fout bij ondertekenen");
       }
 
+      const result = await res.json();
+      if (result.email) setKandidaatEmail(result.email);
+      if (result.kandidaat_id) setKandidaatId(result.kandidaat_id);
       setKlaar(true);
     } catch (err: any) {
       toast.error(err.message || "Er ging iets mis");
     }
     setSaving(false);
+  }
+
+  async function maakAccountAan() {
+    if (!wachtwoord || wachtwoord.length < 6) { toast.error("Wachtwoord moet minimaal 6 tekens zijn"); return; }
+    if (wachtwoord !== wachtwoord2) { toast.error("Wachtwoorden komen niet overeen"); return; }
+
+    setRegistreren(true);
+    try {
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/contract-register`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        body: JSON.stringify({ email: kandidaatEmail, password: wachtwoord, kandidaat_id: kandidaatId }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Fout bij registratie");
+      }
+
+      setAccountAangemaakt(true);
+    } catch (err: any) {
+      toast.error(err.message || "Er ging iets mis");
+    }
+    setRegistreren(false);
   }
 
   if (loading) return <CenterLayout><Spinner center={false} /></CenterLayout>;
