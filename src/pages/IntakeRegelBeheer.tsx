@@ -8,10 +8,10 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { ArrowLeft, Plus, Pencil, Trash2, X, Check, ToggleLeft, ToggleRight, FlaskConical, Loader2 } from "lucide-react";
 import { SPEC_CODES } from "@/lib/specCodes";
-import { IntakeRegel, IntakeAntwoorden, BerekendeRegel, defaultAntwoorden, berekenRegels } from "@/lib/forecastIntake";
+import { IntakeRegel, IntakeAntwoorden, BerekendeRegel, LEGE_ANTWOORDEN, berekenRegels } from "@/lib/forecastIntake";
 
 const TRIGGER_TYPES = ["altijd", "case_type", "antwoord", "rmu_velden_gt"];
-const TRIGGER_VELDEN = ["rmu_vervangen", "rmu_velden", "trafo_situatie", "ls_rek", "ls_stroken", "ls_kabels", "vereffeningsleiding", "aardweerstand", "ggi", "boren", "revisie", "wv", "wv_io", "case_type"];
+const TRIGGER_VELDEN = ["rmu_vervangen", "rmu_velden", "trafo_situatie", "ls_rek", "ls_stroken", "ls_kabels", "vereffeningsleiding", "aardweerstand", "ggi", "boren", "dichtzetten", "traanplaat", "revisie", "wv", "wv_io", "ims_ombouw", "trafokabel", "zekeringen", "ls_moffen", "ls_eindsluitingen", "huisaansluitingen", "ls_kast_verwijderen", "ls_kast_aansluiten", "ov_kast", "ov_meter", "kabeldeel_vrijschakelen", "vp_uren", "avp_uren", "vop_uren", "case_type"];
 const TRIGGER_BADGES: Record<string, { bg: string; color: string }> = {
   altijd: { bg: "var(--bg-surface-2)", color: "var(--text-secondary)" },
   case_type: { bg: "var(--info-light)", color: "var(--info)" },
