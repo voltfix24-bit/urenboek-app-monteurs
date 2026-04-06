@@ -5,6 +5,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+type QueryResult<T> = { data: T | null; error: { message: string } | null };
+
+async function mustSucceed<T>(label: string, query: Promise<QueryResult<T>>) {
+  const { data, error } = await query;
+  if (error) {
+    console.error(`${label} failed:`, error);
+    throw new Error(`${label}: ${error.message}`);
+  }
+  return data;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -26,7 +37,10 @@ Deno.serve(async (req) => {
     const callerClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: { user: caller } } = await callerClient.auth.getUser();
+    const {
+      data: { user: caller },
+    } = await callerClient.auth.getUser();
+
     if (!caller) {
       return new Response(JSON.stringify({ error: "Niet geautoriseerd" }), {
         status: 401,
@@ -36,9 +50,16 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { data: allowed } = await adminClient.rpc("check_rate_limit", {
-      _key: caller.id, _endpoint: "delete-user", _limit: 5, _window_seconds: 60,
-    });
+    const allowed = await mustSucceed(
+      "Rate limit check",
+      adminClient.rpc("check_rate_limit", {
+        _key: caller.id,
+        _endpoint: "delete-user",
+        _limit: 5,
+        _window_seconds: 60,
+      }),
+    );
+
     if (!allowed) {
       return new Response(JSON.stringify({ error: "Te veel verzoeken" }), {
         status: 429,
@@ -46,11 +67,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: roleData } = await adminClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", caller.id)
-      .eq("role", "manager");
+    const roleData = await mustSucceed(
+      "Manager role check",
+      adminClient.from("user_roles").select("role").eq("user_id", caller.id).eq("role", "manager"),
+    );
 
     if (!roleData || roleData.length === 0) {
       return new Response(JSON.stringify({ error: "Alleen managers mogen gebruikers verwijderen" }), {
@@ -59,13 +79,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { userId } = await req.json();
+    let body: { userId?: string } = {};
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Ongeldige request body" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userId = body.userId?.trim();
     if (!userId) {
       return new Response(JSON.stringify({ error: "userId is verplicht" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
     if (userId === caller.id) {
       return new Response(JSON.stringify({ error: "Je kunt jezelf niet verwijderen" }), {
         status: 400,
@@ -73,79 +104,151 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get profile id
-    const { data: profile } = await adminClient
-      .from("profiles")
-      .select("id")
-      .eq("user_id", userId)
-      .maybeSingle();
+    const profile = await mustSucceed(
+      "Profiel ophalen",
+      adminClient.from("profiles").select("id").eq("user_id", userId).maybeSingle(),
+    );
 
     if (profile) {
       const pid = profile.id;
 
-      // 1. inkooporder_regels → inkooporders
-      const { data: orders } = await adminClient.from("inkooporders").select("id").eq("medewerker_id", pid);
-      if (orders && orders.length > 0) {
-        const ids = orders.map((o: { id: string }) => o.id);
-        await adminClient.from("inkooporder_regels").delete().in("inkooporder_id", ids);
+      const [orders, candidatesDirect, contractsByProfile] = await Promise.all([
+        mustSucceed(
+          "Inkooporders ophalen",
+          adminClient.from("inkooporders").select("id").eq("medewerker_id", pid),
+        ),
+        mustSucceed(
+          "Kandidaten ophalen",
+          adminClient.from("kandidaten").select("id").or(`profiel_id.eq.${pid},aangemaakt_door.eq.${pid}`),
+        ),
+        mustSucceed(
+          "Contracten ophalen",
+          adminClient
+            .from("contracten")
+            .select("id")
+            .or(`profiel_id.eq.${pid},aangemaakt_door.eq.${pid},og_profiel_id.eq.${pid}`),
+        ),
+      ]);
+
+      const orderIds = [...new Set((orders ?? []).map((row: { id: string }) => row.id))];
+      const candidateIds = [...new Set((candidatesDirect ?? []).map((row: { id: string }) => row.id))];
+      const contractIds = new Set((contractsByProfile ?? []).map((row: { id: string }) => row.id));
+
+      if (candidateIds.length > 0) {
+        const contractsByCandidate = await mustSucceed(
+          "Contracten per kandidaat ophalen",
+          adminClient.from("contracten").select("id").in("kandidaat_id", candidateIds),
+        );
+        for (const row of contractsByCandidate ?? []) {
+          contractIds.add(row.id);
+        }
       }
 
-      // 2. contract children → contracten (profiel_id, aangemaakt_door, og_profiel_id)
-      const { data: allContracts } = await adminClient
-        .from("contracten")
-        .select("id")
-        .or(`profiel_id.eq.${pid},aangemaakt_door.eq.${pid},og_profiel_id.eq.${pid}`);
-      if (allContracts && allContracts.length > 0) {
-        const cIds = allContracts.map((c: { id: string }) => c.id);
-        await adminClient.from("contract_berichten").delete().in("contract_id", cIds);
-        await adminClient.from("contract_tokens").delete().in("contract_id", cIds);
+      if (orderIds.length > 0) {
+        await mustSucceed(
+          "Inkooporder regels verwijderen",
+          adminClient.from("inkooporder_regels").delete().in("inkooporder_id", orderIds),
+        );
       }
 
-      // 3. forecast_regels → profiles
-      await adminClient.from("forecast_regels").delete().eq("medewerker_id", pid);
-
-      // 4. Direct profile references
-      await adminClient.from("uren_boekingen").delete().eq("medewerker_id", pid);
-      await adminClient.from("planning").delete().eq("medewerker_id", pid);
-      await adminClient.from("overuren_meldingen").delete().eq("medewerker_id", pid);
-      await adminClient.from("beschikbaarheid").delete().eq("medewerker_id", pid);
-      await adminClient.from("certificaten").delete().eq("medewerker_id", pid);
-      await adminClient.from("mededeling_leesstatus").delete().eq("medewerker_id", pid);
-      await adminClient.from("manager_handtekeningen").delete().eq("profiel_id", pid);
-      await adminClient.from("inkooporders").delete().eq("medewerker_id", pid);
-      await adminClient.from("contracten").delete().eq("profiel_id", pid);
-      await adminClient.from("contracten").delete().eq("aangemaakt_door", pid);
-      await adminClient.from("contracten").delete().eq("og_profiel_id", pid);
-      await adminClient.from("kandidaten").delete().eq("aangemaakt_door", pid);
-
-      // 5. Nullify soft references where this user is referenced but not the owner
-      await adminClient.from("beschikbaarheid").update({ behandeld_door: null }).eq("behandeld_door", pid);
-      await adminClient.from("overuren_meldingen").update({ behandeld_door: null }).eq("behandeld_door", pid);
-      await adminClient.from("uren_boekingen").update({ approved_by: null }).eq("approved_by", pid);
-      await adminClient.from("time_entries").update({ approved_by: null }).eq("approved_by", pid);
-      await adminClient.from("bedrijfsgegevens").update({ updated_by: null }).eq("updated_by", pid);
-      await adminClient.from("profiles").update({ geverifieerd_door: null }).eq("geverifieerd_door", pid);
-      await adminClient.from("projects").update({ status_gewijzigd_door: null }).eq("status_gewijzigd_door", pid);
-      await adminClient.from("inkooporders").update({ aangemaakt_door: null }).eq("aangemaakt_door", pid);
-
-      // 6. Delete profile
-      const { error: profErr } = await adminClient.from("profiles").delete().eq("id", pid);
-      if (profErr) {
-        console.error("Profile delete error:", JSON.stringify(profErr));
-        return new Response(JSON.stringify({ error: `Profiel verwijderen mislukt: ${profErr.message}` }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      if (contractIds.size > 0) {
+        const ids = [...contractIds];
+        await Promise.all([
+          mustSucceed(
+            "Contract berichten verwijderen",
+            adminClient.from("contract_berichten").delete().in("contract_id", ids),
+          ),
+          mustSucceed(
+            "Contract tokens verwijderen",
+            adminClient.from("contract_tokens").delete().in("contract_id", ids),
+          ),
+        ]);
+        await mustSucceed(
+          "Contracten verwijderen",
+          adminClient.from("contracten").delete().in("id", ids),
+        );
       }
+
+      await Promise.all([
+        mustSucceed("Forecast regels verwijderen", adminClient.from("forecast_regels").delete().eq("medewerker_id", pid)),
+        mustSucceed("Uren boekingen verwijderen", adminClient.from("uren_boekingen").delete().eq("medewerker_id", pid)),
+        mustSucceed("Planning verwijderen", adminClient.from("planning").delete().eq("medewerker_id", pid)),
+        mustSucceed("Overuren meldingen verwijderen", adminClient.from("overuren_meldingen").delete().eq("medewerker_id", pid)),
+        mustSucceed("Beschikbaarheid verwijderen", adminClient.from("beschikbaarheid").delete().eq("medewerker_id", pid)),
+        mustSucceed("Certificaten verwijderen", adminClient.from("certificaten").delete().eq("medewerker_id", pid)),
+        mustSucceed("Leesstatus verwijderen", adminClient.from("mededeling_leesstatus").delete().eq("medewerker_id", pid)),
+        mustSucceed("Manager handtekening verwijderen", adminClient.from("manager_handtekeningen").delete().eq("profiel_id", pid)),
+        mustSucceed("Inkooporders verwijderen", adminClient.from("inkooporders").delete().eq("medewerker_id", pid)),
+        mustSucceed("Gerichte mededelingen verwijderen", adminClient.from("mededelingen").delete().eq("ontvanger_id", pid)),
+      ]);
+
+      await Promise.all([
+        mustSucceed(
+          "Beschikbaarheid behandelaar opschonen",
+          adminClient.from("beschikbaarheid").update({ behandeld_door: null }).eq("behandeld_door", pid),
+        ),
+        mustSucceed(
+          "Overuren behandelaar opschonen",
+          adminClient.from("overuren_meldingen").update({ behandeld_door: null }).eq("behandeld_door", pid),
+        ),
+        mustSucceed(
+          "Uren goedkeurder opschonen",
+          adminClient.from("uren_boekingen").update({ approved_by: null }).eq("approved_by", pid),
+        ),
+        mustSucceed(
+          "Time entries goedkeurder opschonen",
+          adminClient.from("time_entries").update({ approved_by: null }).eq("approved_by", pid),
+        ),
+        mustSucceed(
+          "Bedrijfsgegevens editor opschonen",
+          adminClient.from("bedrijfsgegevens").update({ updated_by: null }).eq("updated_by", pid),
+        ),
+        mustSucceed(
+          "Profiel verifier opschonen",
+          adminClient.from("profiles").update({ geverifieerd_door: null }).eq("geverifieerd_door", pid),
+        ),
+        mustSucceed(
+          "Project status editor opschonen",
+          adminClient.from("projects").update({ status_gewijzigd_door: null }).eq("status_gewijzigd_door", pid),
+        ),
+        mustSucceed(
+          "Inkooporder maker opschonen",
+          adminClient.from("inkooporders").update({ aangemaakt_door: null }).eq("aangemaakt_door", pid),
+        ),
+        mustSucceed(
+          "Planning template maker opschonen",
+          adminClient.from("planning_templates").update({ created_by: null }).eq("created_by", pid),
+        ),
+        mustSucceed(
+          "Planning matrix editor opschonen",
+          adminClient.from("project_planning_matrix").update({ updated_by: null }).eq("updated_by", pid),
+        ),
+        mustSucceed(
+          "Planning status definitief_door opschonen",
+          adminClient.from("project_planning_status").update({ definitief_door: null }).eq("definitief_door", pid),
+        ),
+        mustSucceed(
+          "Spec code editor opschonen",
+          adminClient.from("spec_code_tarieven").update({ updated_by: null }).eq("updated_by", pid),
+        ),
+      ]);
+
+      if (candidateIds.length > 0) {
+        await mustSucceed(
+          "Kandidaten verwijderen",
+          adminClient.from("kandidaten").delete().in("id", candidateIds),
+        );
+      }
+
+      await mustSucceed("Profiel verwijderen", adminClient.from("profiles").delete().eq("id", pid));
     }
 
-    // Delete auth-level data
-    await adminClient.from("user_roles").delete().eq("user_id", userId);
+    await mustSucceed("User roles verwijderen", adminClient.from("user_roles").delete().eq("user_id", userId));
 
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
     if (deleteError) {
-      console.error("Auth delete error:", JSON.stringify(deleteError));
-      return new Response(JSON.stringify({ error: deleteError.message }), {
+      console.error("Auth delete error:", deleteError);
+      return new Response(JSON.stringify({ error: `Auth gebruiker verwijderen mislukt: ${deleteError.message}` }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -157,8 +260,8 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("delete-user error:", err);
-    return new Response(JSON.stringify({ error: err.message || "Onbekende fout" }), {
-      status: 500,
+    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : "Onbekende fout bij verwijderen" }), {
+      status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
