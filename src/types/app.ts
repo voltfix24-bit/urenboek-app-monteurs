@@ -232,7 +232,8 @@ export type ContractStatus =
   | 'ondertekend_ot'
   | 'ondertekend_beiden'
   | 'verlopen'
-  | 'opgezegd';
+  | 'opgezegd'
+  | 'correctie_gevraagd';
 
 export interface ContractData {
   og_naam: string;

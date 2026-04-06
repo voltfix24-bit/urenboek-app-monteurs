@@ -56,6 +56,14 @@ export const CONTRACT_STATUS_CONFIG: Record<string, StatusConfig> = {
     border: 'var(--border)',
     icoon: '🔒',
   },
+  correctie_gevraagd: {
+    label: 'Correctie gevraagd',
+    labelMonteur: 'Correctie doorgegeven',
+    color: 'var(--danger)',
+    bg: 'var(--danger-light)',
+    border: 'var(--danger-border)',
+    icoon: '⚠️',
+  },
 };
 
 export const KANDIDAAT_STATUS_CONFIG: Record<string, StatusConfig> = {
