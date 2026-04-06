@@ -256,6 +256,7 @@ export default function Medewerkers() {
   );
 
   return (
+    <>
     <PageShell>
       <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3 flex items-center justify-between">
