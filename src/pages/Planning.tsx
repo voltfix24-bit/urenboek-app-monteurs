@@ -9,6 +9,7 @@ import { volledigAdres } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare, Clock, Check, MapPin, Navigation, Users, Info } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
+import { useNavigate } from "react-router-dom";
 import { nl } from "date-fns/locale";
 import { toast } from "sonner";
 import { cachePlanning, getCachedPlanning } from "@/lib/offlineQueue";
@@ -23,7 +24,8 @@ const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
 export default function Planning() {
   const { user } = useAuth();
-  const { profileId } = useProfile();
+  const { profileId, profile: profileData } = useProfile();
+  const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [items, setItems] = useState<PlanningItem[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
