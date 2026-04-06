@@ -12,16 +12,18 @@ import { KANDIDAAT_STATUS_CONFIG, CONTRACT_STATUS_CONFIG } from "@/lib/contractS
 import { generateContractPdf } from "@/lib/contractPdf";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { toast } from "sonner";
-import { UserPlus, MoreHorizontal, ChevronRight, Copy, AlertTriangle } from "lucide-react";
+import { UserPlus, MoreHorizontal, ChevronRight, Copy, AlertTriangle, Trash2, Pause, Play } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import type { Kandidaat, ContractData } from "@/types/app";
 
-const STATUSSEN = ["alle", "gesprek", "tarief_afgesproken", "uitgenodigd", "gecontracteerd", "afgewezen"] as const;
+const STATUSSEN = ["alle", "gesprek", "tarief_afgesproken", "uitgenodigd", "gecontracteerd", "on_hold", "afgewezen"] as const;
 const STATUS_LABELS: Record<string, string> = {
   alle: "Alle",
   gesprek: "Gesprek",
   tarief_afgesproken: "Tarief",
   uitgenodigd: "Uitgenodigd",
   gecontracteerd: "Gecontracteerd",
+  on_hold: "On hold",
   afgewezen: "Afgewezen",
 };
 
@@ -327,7 +329,36 @@ export default function Kandidaten() {
     fetchKandidaten();
   }
 
+  async function onHold(id: string) {
+    await supabase.from("kandidaten").update({ status: "on_hold" as any }).eq("id", id);
+    toast.success("Kandidaat on hold gezet");
+    fetchKandidaten();
+  }
+
+  async function reactiveer(id: string) {
+    await supabase.from("kandidaten").update({ status: "gesprek" }).eq("id", id);
+    toast.success("Kandidaat weer actief");
+    fetchKandidaten();
+  }
+
+  const [deleteConfirm, setDeleteConfirm] = useState<Kandidaat | null>(null);
+
+  async function verwijderKandidaat(id: string) {
+    // Also delete related contracts and berichten
+    const relatedContracts = contracten.filter(c => c.kandidaat_id === id);
+    for (const c of relatedContracts) {
+      await supabase.from("contract_berichten").delete().eq("contract_id", c.id);
+      await supabase.from("contract_tokens").delete().eq("contract_id", c.id);
+      await supabase.from("contracten").delete().eq("id", c.id);
+    }
+    await supabase.from("kandidaten").delete().eq("id", id);
+    toast.success("Kandidaat verwijderd");
+    setDeleteConfirm(null);
+    fetchKandidaten();
+  }
+
   return (
+    <>
     <PageShell>
       <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Kandidaten</h1>
       <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Werving en contractbeheer</p>
@@ -458,9 +489,26 @@ export default function Kandidaten() {
                         ✓ Gecontracteerd
                       </span>
                     )}
-                    {k.status !== "afgewezen" && k.status !== "gecontracteerd" && !wachtOpManager && !heeftCorrectie && (
-                      <button onClick={() => afwijzen(k.id)} className="text-[10px]" style={{ color: "var(--danger)" }}>
-                        Afwijzen
+                    {k.status !== "afgewezen" && k.status !== "gecontracteerd" && k.status !== "on_hold" && !wachtOpManager && !heeftCorrectie && (
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => onHold(k.id)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--warning)" }}>
+                          <Pause className="w-3 h-3" /> On hold
+                        </button>
+                        <button onClick={() => afwijzen(k.id)} className="text-[10px]" style={{ color: "var(--danger)" }}>
+                          Afwijzen
+                        </button>
+                      </div>
+                    )}
+                    {k.status === "on_hold" && (
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => reactiveer(k.id)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--success)" }}>
+                          <Play className="w-3 h-3" /> Heractiveren
+                        </button>
+                      </div>
+                    )}
+                    {(k.status === "afgewezen" || k.status === "on_hold") && (
+                      <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--danger)" }}>
+                        <Trash2 className="w-3 h-3" /> Verwijderen
                       </button>
                     )}
                   </div>
@@ -658,5 +706,26 @@ export default function Kandidaten() {
         <UserPlus className="w-6 h-6 text-white" />
       </button>
     </PageShell>
+
+    <AlertDialog open={!!deleteConfirm} onOpenChange={(o) => !o && setDeleteConfirm(null)}>
+      <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}>
+        <AlertDialogHeader>
+          <AlertDialogTitle style={{ color: "var(--danger)" }}>Kandidaat verwijderen</AlertDialogTitle>
+          <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+            Weet je zeker dat je <strong>{deleteConfirm?.voornaam} {deleteConfirm?.achternaam}</strong> wilt verwijderen? 
+            Alle bijbehorende contracten en berichten worden ook verwijderd. Dit kan niet ongedaan worden.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>
+            Annuleren
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={() => deleteConfirm && verwijderKandidaat(deleteConfirm.id)} style={{ background: "var(--danger)", color: "#fff" }}>
+            Ja, verwijderen
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
