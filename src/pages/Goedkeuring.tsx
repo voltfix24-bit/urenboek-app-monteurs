@@ -7,10 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
-import { query, mutate } from "@/lib/supabaseHelpers";
+import { mutate } from "@/lib/supabaseHelpers";
 import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck, CheckCircle, AlertTriangle } from "lucide-react";
 import { checkOveruren } from "@/lib/overurenCheck";
 import { useNavigate } from "react-router-dom";
+import { useGoedkeuring } from "@/hooks/useGoedkeuring";
 import { format, startOfWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -24,10 +25,8 @@ export default function Goedkeuring() {
   const { isManager, user } = useAuth();
   const { profileId: myProfileId } = useProfile();
   const navigate = useNavigate();
-  const [entries, setEntries] = useState<EntryWithProfile[]>([]);
   const [filter, setFilter] = useState<string>("ingediend");
   const [weekOffset, setWeekOffset] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
   const [afkeurReden, setAfkeurReden] = useState("");
   const [overurenIds, setOverurenIds] = useState<Set<string>>(new Set());
@@ -36,53 +35,32 @@ export default function Goedkeuring() {
   const weekStart = startOfWeek(addDays(new Date(), weekOffset * 7), { weekStartsOn: 1 });
   const weekEnd = addDays(weekStart, 6);
 
-  const fetchEntries = useCallback(async () => {
-    setLoading(true);
-    const boekingen = await query(supabase
-      .from("uren_boekingen")
-      .select("*")
-      .gte("datum", format(weekStart, "yyyy-MM-dd"))
-      .lte("datum", format(weekEnd, "yyyy-MM-dd"))
-      .order("datum"));
-    if (!boekingen) { setLoading(false); return; }
+  const { entries: rawEntries, loading, refetch: fetchEntries } = useGoedkeuring(weekStart, "alle");
 
-    const medIds = [...new Set(boekingen.map((b: any) => b.medewerker_id))];
-    const projIds = [...new Set(boekingen.map((b: any) => b.project_id))];
+  // Map to EntryWithProfile shape for existing render logic
+  const entries: EntryWithProfile[] = rawEntries.map(e => ({
+    id: e.id, datum: e.datum, project_naam: e.project_naam, project_nummer: e.project_nummer,
+    beschrijving: e.beschrijving || e.type || "", uren: e.uren, status: e.status,
+    medewerker_id: e.medewerker_id, full_name: e.full_name,
+    afkeur_reden: e.afkeur_reden, project_id: e.project_id,
+  }));
 
-    const [profiles, projects] = await Promise.all([
-      medIds.length > 0 ? query(supabase.from("profiles").select("id, full_name").in("id", medIds)) : [],
-      projIds.length > 0 ? query(supabase.from("projects").select("id, naam, nummer").in("id", projIds)) : [],
-    ]);
-    const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p.full_name]));
-    const projMap = new Map((projects ?? []).map((p: any) => [p.id, p]));
-
-    const merged: EntryWithProfile[] = boekingen.map((e: any) => {
-      const proj = projMap.get(e.project_id) || { naam: "Onbekend", nummer: "" };
-      return {
-        id: e.id, datum: e.datum, project_naam: proj.naam, project_nummer: proj.nummer,
-        beschrijving: e.beschrijving || e.type || "", uren: Number(e.uren), status: e.status,
-        medewerker_id: e.medewerker_id, full_name: profileMap.get(e.medewerker_id) || "Onbekend",
-        afkeur_reden: e.afkeur_reden, project_id: e.project_id,
-      };
-    });
-    setEntries(merged);
-
-    // Fetch overuren meldingen for this week
-    const { data: ouData } = await supabase
-      .from("overuren_meldingen")
-      .select("medewerker_id, datum")
-      .eq("status", "open")
-      .gte("datum", format(weekStart, "yyyy-MM-dd"))
-      .lte("datum", format(weekEnd, "yyyy-MM-dd"));
-    if (ouData) {
-      const ids = new Set(ouData.map((m: any) => `${m.medewerker_id}_${m.datum}`));
-      setOverurenIds(ids);
-    }
-
-    setLoading(false);
+  // Fetch overuren meldingen for this week
+  useEffect(() => {
+    const fetchOveruren = async () => {
+      const { data: ouData } = await supabase
+        .from("overuren_meldingen")
+        .select("medewerker_id, datum")
+        .eq("status", "open")
+        .gte("datum", format(weekStart, "yyyy-MM-dd"))
+        .lte("datum", format(weekEnd, "yyyy-MM-dd"));
+      if (ouData) {
+        const ids = new Set(ouData.map((m: any) => `${m.medewerker_id}_${m.datum}`));
+        setOverurenIds(ids);
+      }
+    };
+    fetchOveruren();
   }, [weekOffset]);
-
-  useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
   const updateStatus = async (id: string, status: string, reden?: string) => {
     const entry = entries.find(e => e.id === id);
@@ -90,7 +68,6 @@ export default function Goedkeuring() {
     if (reden) update.afkeur_reden = reden;
     if (!await mutate(supabase.from("uren_boekingen").update(update).eq("id", id))) return;
     toast.success(status === "goedgekeurd" ? "Goedgekeurd!" : "Afgekeurd");
-    // Check overuren after approval
     if (status === "goedgekeurd" && entry) {
       checkOveruren(entry.medewerker_id, entry.datum, entry.project_id, entry.uren).catch(() => {});
     }

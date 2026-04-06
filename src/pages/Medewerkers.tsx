@@ -80,20 +80,22 @@ export default function Medewerkers() {
     return () => window.removeEventListener("resize", handler);
   }, []);
 
-  useEffect(() => { loadEmployees(); }, []);
+  const { medewerkers: medewerkersData, refetch: refetchMedewerkers } = useMedewerkers();
 
-  const loadEmployees = async () => {
-    const { data: profiles } = await supabase.from("profiles").select(
-      "id, user_id, full_name, uurtarief, telefoon, adres, rijbewijs, account_status, invited_at, activated_at, noodcontact_naam, noodcontact_tel, contract_einddatum"
-    );
-    const { data: roles } = await supabase.from("user_roles").select("user_id, role");
-    if (profiles && roles) {
-      setEmployees(profiles.map((p: any) => ({
-        ...p,
-        role: roles.find((r) => r.user_id === p.user_id)?.role || "–",
+  useEffect(() => {
+    if (medewerkersData.length > 0) {
+      setEmployees(medewerkersData.map((m) => ({
+        id: m.id, user_id: m.user_id, full_name: m.full_name, role: m.role,
+        uurtarief: m.uurtarief, telefoon: m.telefoon, adres: m.adres,
+        rijbewijs: m.rijbewijs, account_status: m.account_status,
+        invited_at: m.invited_at, activated_at: m.activated_at,
+        noodcontact_naam: m.noodcontact_naam, noodcontact_tel: m.noodcontact_tel,
+        contract_einddatum: m.contract_einddatum,
       })));
     }
-  };
+  }, [medewerkersData]);
+
+  const loadEmployees = () => { refetchMedewerkers(); };
 
   const loadEmployeeCerts = async (profileId: string) => {
     const { data } = await supabase.from("certificaten").select("*").eq("medewerker_id", profileId);
