@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { format } from "date-fns";
 import { useProjects } from "@/hooks/useProjects";
+import { valideer, urenBoekingSchema } from "@/lib/validatie";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
@@ -21,6 +22,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
   const [step, setStep] = useState(initialDate ? 2 : 1);
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate || null);
   const [form, setForm] = useState({ projectId: null as string | null, werkzaamheden: null as string | null, uren: 8 });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
