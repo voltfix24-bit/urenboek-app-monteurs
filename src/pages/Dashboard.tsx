@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 import { format, startOfISOWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass, CheckCircle, Users, TrendingUp, CalendarDays, MapPin } from "lucide-react";
+import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass, CheckCircle, Users, TrendingUp, CalendarDays, MapPin, Layers } from "lucide-react";
 import { volledigAdres } from "@/lib/utils";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { euro } from "@/lib/formatting";
@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [projectsWithMarge, setProjectsWithMarge] = useState<any[]>([]);
   const [overurenMeldingen, setOverurenMeldingen] = useState<any[]>([]);
   const [overurenCount, setOverurenCount] = useState(0);
+  const [statusGroups, setStatusGroups] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [afkeurReden, setAfkeurReden] = useState("");
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
@@ -70,9 +71,15 @@ export default function Dashboard() {
       .lte("datum", format(weekEnd, "yyyy-MM-dd"));
     setWeekHours(weekData?.reduce((s: number, e: any) => s + Number(e.uren), 0) || 0);
 
-    // Active projects count
-    const { count } = await supabase.from("projects").select("id", { count: "exact", head: true }).eq("active", true);
-    setActiveProjects(count || 0);
+    // Active projects count + status groups
+    const { data: allProjects } = await supabase.from("projects").select("id, status").eq("active", true);
+    setActiveProjects(allProjects?.length || 0);
+    const groups: Record<string, number> = {};
+    (allProjects || []).forEach((p: any) => {
+      const s = p.status || "nieuw";
+      groups[s] = (groups[s] || 0) + 1;
+    });
+    setStatusGroups(groups);
 
     // Team count
     const { count: tCount } = await supabase.from("profiles").select("id", { count: "exact", head: true });
@@ -245,6 +252,35 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
+
+            {/* Project status groups */}
+            {Object.keys(statusGroups).length > 0 && (
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                    <Layers className="h-3.5 w-3.5" /> Projectstatus
+                  </p>
+                  <button onClick={() => navigate("/projecten")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
+                    Alle <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { key: "nieuw", label: "Nieuw", color: "var(--text-muted)", bg: "var(--bg-surface-2)" },
+                    { key: "gepland", label: "Gepland", color: "var(--info)", bg: "var(--info-light)" },
+                    { key: "in_uitvoering", label: "Uitvoering", color: "var(--warn-text)", bg: "var(--warn-light)" },
+                    { key: "opgeleverd", label: "Opgeleverd", color: "var(--success)", bg: "var(--success-light)" },
+                    { key: "gefactureerd", label: "Gefactureerd", color: "var(--accent)", bg: "var(--accent-light)" },
+                    { key: "gesloten", label: "Gesloten", color: "var(--text-muted)", bg: "var(--bg-surface-2)" },
+                  ] as const).filter(s => (statusGroups[s.key] || 0) > 0).map(s => (
+                    <div key={s.key} className="rounded-xl p-2.5 text-center" style={{ background: s.bg }}>
+                      <p className="text-lg font-extrabold" style={{ color: s.color, fontFamily: "DM Mono, monospace" }}>{statusGroups[s.key] || 0}</p>
+                      <p className="text-[9px] font-semibold mt-0.5" style={{ color: s.color }}>{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Today planning */}
             {todayPlanning.length > 0 && (

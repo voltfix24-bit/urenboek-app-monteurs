@@ -289,6 +289,18 @@ export default function ProjectPlanning() {
       await supabase.from("planning").insert(toInsert as any);
     }
 
+    // Auto-update project status to 'in_uitvoering' if currently 'gepland'
+    if (project) {
+      const { data: projData } = await supabase.from("projects").select("status").eq("id", projectId).single();
+      if (projData && (projData.status === "gepland" || projData.status === "nieuw")) {
+        await supabase.from("projects").update({
+          status: "in_uitvoering",
+          status_gewijzigd_op: new Date().toISOString(),
+          status_gewijzigd_door: myProfileId.current,
+        } as any).eq("id", projectId);
+      }
+    }
+
     setPlanningStatus({ is_definitief: true, definitief_op: new Date().toISOString() });
     setShowDefinitiefDialog(false);
     toast.success(`Planning gepubliceerd — ${toInsert.length} dagen ingepland voor monteurs.`);

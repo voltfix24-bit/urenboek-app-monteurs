@@ -21,6 +21,7 @@ interface Project {
   contactpersoon_naam: string | null; contactpersoon_tel: string | null; contactpersoon_email: string | null;
   straat: string | null; postcode: string | null; stad: string | null;
   intake_gedaan: boolean; rmu_merk: string | null; rmu_configuratie_id: string | null;
+  status: string;
 }
 
 export default function Projecten() {
@@ -39,10 +40,11 @@ export default function Projecten() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
+  const [statusFilter, setStatusFilter] = useState("alle");
 
   const fetchData = useCallback(async () => {
     const [p, o] = await Promise.all([
-      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id").order("nummer"),
+      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id, status").order("nummer"),
       supabase.from("opdrachtgevers").select("id, naam").order("naam"),
     ]);
     if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data);
@@ -71,7 +73,9 @@ export default function Projecten() {
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => {
     const channel = supabase.channel('projecten-rt').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'projects' }, () => fetchData()).subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const handleStatusChange = () => fetchData();
+    window.addEventListener("project-status-changed", handleStatusChange);
+    return () => { supabase.removeChannel(channel); window.removeEventListener("project-status-changed", handleStatusChange); };
   }, [fetchData]);
   useEffect(() => { if (!isManager) navigate("/"); }, [isManager, navigate]);
 
@@ -129,10 +133,16 @@ export default function Projecten() {
   const activeProjects = projects.filter(p => p.active);
   const inactiveProjects = projects.filter(p => !p.active);
   const filteredProjects = useMemo(() => {
-    if (!searchQuery.trim()) return projects;
-    const q = searchQuery.toLowerCase();
-    return projects.filter(p => p.naam.toLowerCase().includes(q) || p.nummer.toLowerCase().includes(q));
-  }, [projects, searchQuery]);
+    let result = projects;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(p => p.naam.toLowerCase().includes(q) || p.nummer.toLowerCase().includes(q));
+    }
+    if (statusFilter !== "alle") {
+      result = result.filter(p => (p.status || "nieuw") === statusFilter);
+    }
+    return result;
+  }, [projects, searchQuery, statusFilter]);
   const filteredActive = filteredProjects.filter(p => p.active);
   const filteredInactive = filteredProjects.filter(p => !p.active);
   const selectedProject = selectedId ? projects.find(p => p.id === selectedId) || null : null;
@@ -161,7 +171,7 @@ export default function Projecten() {
         </header>
 
         <div className="flex px-10 pb-10" style={{ height: "calc(100vh - 100px)" }}>
-          <DesktopProjectLijst activeProjects={filteredActive} inactiveProjects={filteredInactive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} getOgNaam={getOgNaam} loading={loading} />
+          <DesktopProjectLijst activeProjects={filteredActive} inactiveProjects={filteredInactive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} getOgNaam={getOgNaam} loading={loading} statusFilter={statusFilter} onStatusFilter={setStatusFilter} />
 
           <div className="flex-1 overflow-y-auto pl-8">
             {desktopMode === "add" ? (

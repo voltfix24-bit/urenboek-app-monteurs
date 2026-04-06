@@ -1,10 +1,13 @@
 import { Search, X, AlertTriangle } from "lucide-react";
 import { CaseTypeBadge } from "./CaseTypeBadge";
+import { StatusBadge } from "@/components/StatusBadge";
+import type { ProjectStatus } from "@/lib/projectStatus";
 
 interface Project {
   id: string; nummer: string; naam: string; active: boolean;
   case_type: string | null; stationsnaam: string | null;
   opdrachtgever_id: string | null; straat: string | null; stad: string | null;
+  status?: string;
 }
 
 function DesktopListCard({ project, ogNaam, selected, onClick, marge }: {
@@ -32,7 +35,10 @@ function DesktopListCard({ project, ogNaam, selected, onClick, marge }: {
       </div>
       <div className="flex items-center justify-between gap-2 mt-0.5">
         <span className="text-[11px] font-mono" style={{ color: "var(--accent)" }}>{project.nummer}</span>
-        {ogNaam && <span className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{ogNaam}</span>}
+        <div className="flex items-center gap-1.5">
+          {project.status && <StatusBadge status={(project.status as ProjectStatus)} size="sm" />}
+          {ogNaam && <span className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{ogNaam}</span>}
+        </div>
       </div>
       {project.stationsnaam && <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{project.stationsnaam}</p>}
     </button>
@@ -49,9 +55,11 @@ interface Props {
   margeMap: Map<string, { omzet: number; kosten: number; marge: number }>;
   getOgNaam: (id: string | null) => string | null;
   loading: boolean;
+  statusFilter?: string;
+  onStatusFilter?: (s: string) => void;
 }
 
-export function DesktopProjectLijst({ activeProjects, inactiveProjects, searchQuery, setSearchQuery, selectedId, onSelect, margeMap, getOgNaam, loading }: Props) {
+export function DesktopProjectLijst({ activeProjects, inactiveProjects, searchQuery, setSearchQuery, selectedId, onSelect, margeMap, getOgNaam, loading, statusFilter, onStatusFilter }: Props) {
   return (
     <div className="flex-shrink-0 overflow-y-auto pr-4" style={{ width: "40%", borderRight: "1px solid var(--border)" }}>
       <div className="relative mb-3">
@@ -65,6 +73,21 @@ export function DesktopProjectLijst({ activeProjects, inactiveProjects, searchQu
           </button>
         )}
       </div>
+
+      {statusFilter !== undefined && onStatusFilter && (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {["alle", "nieuw", "gepland", "in_uitvoering", "opgeleverd", "gefactureerd", "gesloten"].map(s => {
+            const labels: Record<string, string> = { alle: "Alle", nieuw: "Nieuw", gepland: "Gepland", in_uitvoering: "In uitvoering", opgeleverd: "Opgeleverd", gefactureerd: "Gefactureerd", gesloten: "Gesloten" };
+            const active = statusFilter === s;
+            return (
+              <button key={s} onClick={() => onStatusFilter(s)} className="px-2 py-1 rounded-full text-[10px] font-semibold transition-colors"
+                style={{ background: active ? "var(--accent-light)" : "var(--bg-surface-2)", color: active ? "var(--accent)" : "var(--text-muted)", border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)" }}>
+                {labels[s]}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-8"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>

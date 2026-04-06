@@ -12,7 +12,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 
-interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; }
+interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; }
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; reden: string | null; status: string; }
 
@@ -70,7 +70,7 @@ export default function Profiel() {
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("profiles").select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen").eq("user_id", user.id).single();
+    const { data } = await supabase.from("profiles").select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, uurtarief, betalingstermijn, factuuradres").eq("user_id", user.id).single();
     if (data) { setProfile(data as any); setEditForm({ full_name: data.full_name, telefoon: (data as any).telefoon || "", adres: (data as any).adres || "" }); }
     setLoading(false);
   }, [user]);
@@ -198,6 +198,22 @@ export default function Profiel() {
             </div>
           )}
         </div>
+
+        {/* ZZP Gegevens */}
+        {(profile?.kvk_nummer || profile?.btw_nummer || profile?.iban || profile?.bedrijfsnaam) && (
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>ZZP Gegevens</p>
+            <div className="space-y-2 text-sm">
+              {profile?.bedrijfsnaam && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Bedrijfsnaam</span><span style={{ color: "var(--text-primary)" }}>{profile.bedrijfsnaam}</span></div>}
+              {profile?.kvk_nummer && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>KvK-nummer</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile.kvk_nummer}</span></div>}
+              {profile?.btw_nummer && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>BTW-nummer</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile.btw_nummer}</span></div>}
+              {profile?.iban && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>IBAN</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile.iban}</span></div>}
+              {profile?.uurtarief != null && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Uurtarief</span><span className="font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(profile.uurtarief).toFixed(2)}</span></div>}
+              {profile?.factuuradres && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Factuuradres</span><span style={{ color: "var(--text-primary)" }}>{profile.factuuradres}</span></div>}
+              {profile?.betalingstermijn && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Betalingstermijn</span><span style={{ color: "var(--text-primary)" }}>{profile.betalingstermijn} dagen</span></div>}
+            </div>
+          </div>
+        )}
 
         {/* Beschikbaarheid & Kalender */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>

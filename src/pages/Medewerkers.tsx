@@ -61,6 +61,8 @@ export default function Medewerkers() {
         invited_at: m.invited_at, activated_at: m.activated_at,
         noodcontact_naam: m.noodcontact_naam, noodcontact_tel: m.noodcontact_tel,
         contract_einddatum: m.contract_einddatum,
+        kvk_nummer: (m as any).kvk_nummer, btw_nummer: (m as any).btw_nummer,
+        iban: (m as any).iban, bedrijfsnaam: (m as any).bedrijfsnaam,
       })));
     }
   }, [medewerkersData]);
