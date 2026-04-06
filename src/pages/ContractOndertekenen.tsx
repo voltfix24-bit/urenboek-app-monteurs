@@ -34,6 +34,14 @@ export default function ContractOndertekenen() {
   const [klaar, setKlaar] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Account creation state
+  const [kandidaatEmail, setKandidaatEmail] = useState("");
+  const [kandidaatId, setKandidaatId] = useState("");
+  const [wachtwoord, setWachtwoord] = useState("");
+  const [wachtwoord2, setWachtwoord2] = useState("");
+  const [registreren, setRegistreren] = useState(false);
+  const [accountAangemaakt, setAccountAangemaakt] = useState(false);
+
   // Correctie state
   const [showCorrectie, setShowCorrectie] = useState(false);
   const [correctieItems, setCorrectieItems] = useState<string[]>([]);
