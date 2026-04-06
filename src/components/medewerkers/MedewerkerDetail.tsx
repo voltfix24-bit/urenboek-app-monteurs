@@ -1,4 +1,4 @@
-import { Phone, MapPin, Mail, ShieldAlert, Calendar } from "lucide-react";
+import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
@@ -89,6 +89,23 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts }: Props) {
               </span>
             )}
           </div>
+        </Section>
+      )}
+
+      {/* ZZP Business details */}
+      {(emp.bedrijfsnaam || emp.kvk_nummer || emp.btw_nummer || emp.iban) && (
+        <Section title="ZZP Gegevens">
+          {emp.bedrijfsnaam && <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Bedrijf" value={emp.bedrijfsnaam} />}
+          {emp.kvk_nummer && <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="KvK" value={emp.kvk_nummer} />}
+          {emp.btw_nummer && <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="BTW" value={emp.btw_nummer} />}
+          {emp.iban && <InfoRow icon={<CreditCard className="h-3.5 w-3.5" />} label="IBAN" value={emp.iban} />}
+          {emp.uurtarief != null && (
+            <div className="flex items-center gap-2">
+              <span style={{ color: "var(--text-muted)" }}>€</span>
+              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>Uurtarief:</span>
+              <span className="text-sm font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(emp.uurtarief).toFixed(2)}</span>
+            </div>
+          )}
         </Section>
       )}
 
