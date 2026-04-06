@@ -31,7 +31,8 @@ interface Project {
 export default function Projecten() {
   const { isManager, permissies } = useAuth(); const navigate = useNavigate();
   const { badges } = useNavBadges();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const queryClient = useQueryClient();
+  const { data: projects = [], isLoading: projectsLoading, refetch: refetchProjects } = useProjectenQuery();
   const [opdrachtgevers, setOpdrachtgevers] = useState<Opdrachtgever[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -47,12 +48,10 @@ export default function Projecten() {
   const [statusFilter, setStatusFilter] = useState("alle");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const fetchData = useCallback(async () => {
-    const [p, o] = await Promise.all([
-      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id, status").order("nummer"),
-      supabase.from("opdrachtgevers").select("id, naam").order("naam"),
-    ]);
-    if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data);
+  // Fetch opdrachtgevers + marge data separately
+  const fetchExtra = useCallback(async () => {
+    const { data: o } = await supabase.from("opdrachtgevers").select("id, naam").order("naam");
+    if (o) setOpdrachtgevers(o);
     if (permissies.zietProjectFinancien) {
       const { data: forecasts } = await supabase.from("project_forecast").select("id, project_id");
       if (forecasts && forecasts.length > 0) {
@@ -73,9 +72,16 @@ export default function Projecten() {
       }
     }
     setLoading(false);
-  }, [isManager]);
+  }, [permissies.zietProjectFinancien]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchExtra(); }, [fetchExtra]);
+  useEffect(() => { if (!projectsLoading) setLoading(false); }, [projectsLoading]);
+
+  const fetchData = useCallback(() => {
+    refetchProjects();
+    fetchExtra();
+  }, [refetchProjects, fetchExtra]);
+
   useEffect(() => {
     const channel = supabase.channel('projecten-rt').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'projects' }, () => fetchData()).subscribe();
     const handleStatusChange = () => fetchData();
