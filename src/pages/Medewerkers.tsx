@@ -157,17 +157,24 @@ export default function Medewerkers() {
 
   const listContent = (
     <>
-      {showAdd && <NieuweGebruikerForm voornaam={voornaam} setVoornaam={setVoornaam} achternaam={achternaam} setAchternaam={setAchternaam}
-        email={email} setEmail={setEmail} telefoon={telefoon} setTelefoon={setTelefoon}
-        adres={adres} setAdres={setAdres} role={role} setRole={setRole}
-        uurtarief={uurtarief} setUurtarief={setUurtarief} rijbewijs={rijbewijs} setRijbewijs={setRijbewijs}
-        contractEinddatum={contractEinddatum} setContractEinddatum={setContractEinddatum}
-        noodcontactNaam={noodcontactNaam} setNoodcontactNaam={setNoodcontactNaam}
-        noodcontactTel={noodcontactTel} setNoodcontactTel={setNoodcontactTel}
-        inviteMode={inviteMode} setInviteMode={setInviteMode}
-        password={password} setPassword={setPassword} showPw={showPw} setShowPw={setShowPw}
-        generatePassword={generatePassword} loading={loading} onSubmit={handleCreate}
-        formErrors={formErrors} clearError={(f: string) => setFormErrors(prev => { const n = { ...prev }; delete n[f]; return n; })} />}
+      {showAdd && (
+        <>
+          <div className="rounded-xl px-3 py-2.5 flex items-start gap-2 animate-slide-up" style={{ background: "var(--warning-light)", border: "1px solid var(--warning-border)" }}>
+            <span className="text-sm" style={{ color: "var(--warning)" }}>⚠️ Dit formulier is alleen bedoeld voor uitzonderingsgevallen. Nieuwe medewerkers worden normaal aangemaakt via <strong>Kandidaten → Contract → Ondertekenen</strong>.</span>
+          </div>
+          <NieuweGebruikerForm voornaam={voornaam} setVoornaam={setVoornaam} achternaam={achternaam} setAchternaam={setAchternaam}
+            email={email} setEmail={setEmail} telefoon={telefoon} setTelefoon={setTelefoon}
+            adres={adres} setAdres={setAdres} role={role} setRole={setRole}
+            uurtarief={uurtarief} setUurtarief={setUurtarief} rijbewijs={rijbewijs} setRijbewijs={setRijbewijs}
+            contractEinddatum={contractEinddatum} setContractEinddatum={setContractEinddatum}
+            noodcontactNaam={noodcontactNaam} setNoodcontactNaam={setNoodcontactNaam}
+            noodcontactTel={noodcontactTel} setNoodcontactTel={setNoodcontactTel}
+            inviteMode={inviteMode} setInviteMode={setInviteMode}
+            password={password} setPassword={setPassword} showPw={showPw} setShowPw={setShowPw}
+            generatePassword={generatePassword} loading={loading} onSubmit={handleCreate}
+            formErrors={formErrors} clearError={(f: string) => setFormErrors(prev => { const n = { ...prev }; delete n[f]; return n; })} />
+        </>
+      )}
 
       {createdUsers.length > 0 && (
         <div className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>
