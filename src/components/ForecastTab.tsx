@@ -34,6 +34,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const [methode, setMethode] = useState<string | null>(null);
   const [regels, setRegels] = useState<ForecastRegel[]>([]);
   const [monteurs, setMonteurs] = useState<MonteurOption[]>([]);
+  const [alleProfielen, setAlleProfielen] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
   const [verwachteOmzet, setVerwachteOmzet] = useState<number>(0);
   const [specCodes, setSpecCodes] = useState<SpecCode[]>(SPEC_CODES);
