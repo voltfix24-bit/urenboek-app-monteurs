@@ -301,5 +301,30 @@ export default function Medewerkers() {
         </>
       )}
     </PageShell>
+
+    <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+      <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2" style={{ color: "var(--warning)" }}>
+            <AlertTriangle className="h-5 w-5" /> Uitzonderingsgeval bevestigen
+          </AlertDialogTitle>
+          <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+            Je staat op het punt een medewerker aan te maken <strong>buiten de kandidaat-flow</strong> om. 
+            Normaal gesproken worden nieuwe medewerkers aangemaakt via <strong>Kandidaten → Contract → Ondertekenen</strong>.
+            <br /><br />
+            Weet je zeker dat je wilt doorgaan?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>
+            Annuleren
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={doCreate} style={{ background: "var(--warning)", color: "#000" }}>
+            Ja, toch aanmaken
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
