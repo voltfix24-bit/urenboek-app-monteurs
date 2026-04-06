@@ -252,6 +252,9 @@ export function berekenRegels(
             eigen_kosten: 0,
             eenheid: spec?.eenheid || "st",
             groep: spec?.groep || "",
+            trigger_type: regel.trigger_type,
+            trigger_veld: regel.trigger_veld,
+            trigger_waarde: regel.trigger_waarde,
           });
         }
         continue;
@@ -289,6 +292,9 @@ export function berekenRegels(
         eigen_kosten: 0,
         eenheid: spec?.eenheid || "st",
         groep: spec?.groep || "",
+        trigger_type: regel.trigger_type,
+        trigger_veld: regel.trigger_veld,
+        trigger_waarde: regel.trigger_waarde,
       });
     }
   }
