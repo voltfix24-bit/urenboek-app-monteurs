@@ -6,13 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { volledigAdres } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare, Clock, Check, MapPin, Navigation } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare, Clock, Check, MapPin, Navigation, Users, Info } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 
-interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; }
+interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; activiteit: string | null; activiteit_kleur: string | null; collega_ids: string[] | null; week_opmerking: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
 interface ExistingBoeking { id: string; uren: number; status: string; }
 
@@ -24,6 +24,7 @@ export default function Planning() {
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [items, setItems] = useState<PlanningItem[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
+  const [collegaMap, setCollegaMap] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
   const [existingBoekingen, setExistingBoekingen] = useState<Map<string, ExistingBoeking>>(new Map());
   const [showUrenModal, setShowUrenModal] = useState(false);
@@ -38,7 +39,7 @@ export default function Planning() {
     const endStr = format(addDays(weekStart, 6), "yyyy-MM-dd");
 
     const [{ data }, { data: beschData }, { data: boekData }] = await Promise.all([
-      supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
+      supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id, activiteit, activiteit_kleur, collega_ids, week_opmerking").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
       supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", profileId).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("uren_boekingen").select("id, datum, project_id, uren, status").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr),
     ]);
@@ -63,9 +64,19 @@ export default function Planning() {
         projMap = new Map(projects?.map((p: any) => [p.id, p]) ?? []);
         (statuses || []).forEach((s: any) => statusMap.set(s.project_id, s.is_definitief));
       }
+
+      // Load collega names
+      const allCollegaIds = [...new Set(data.flatMap((d: any) => d.collega_ids || []))];
+      if (allCollegaIds.length > 0) {
+        const { data: collegaProfs } = await supabase.from("profiles_public" as any).select("id, full_name").in("id", allCollegaIds);
+        setCollegaMap(new Map((collegaProfs ?? []).map((p: any) => [p.id, p.full_name])));
+      } else {
+        setCollegaMap(new Map());
+      }
+
       setItems(data.map((d: any) => {
         const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "", straat: null, postcode: null, stad: null, adres: null };
-        return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false, project_straat: (proj as any).straat, project_postcode: (proj as any).postcode, project_stad: (proj as any).stad, project_adres: (proj as any).adres };
+        return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false, project_straat: (proj as any).straat, project_postcode: (proj as any).postcode, project_stad: (proj as any).stad, project_adres: (proj as any).adres, activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, collega_ids: d.collega_ids || null, week_opmerking: d.week_opmerking || null };
       }));
     }
     setLoading(false);
