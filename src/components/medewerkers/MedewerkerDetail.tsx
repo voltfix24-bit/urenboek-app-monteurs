@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText, Check, X } from "lucide-react";
+import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText, Check, X, Trash2 } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
