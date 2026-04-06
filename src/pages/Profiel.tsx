@@ -72,11 +72,7 @@ export default function Profiel() {
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
-    const { permissies: p } = useAuth.getState?.() ?? { permissies };
-    const velden = permissies.zietProjectFinancien
-      ? "id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, uurtarief, betalingstermijn, factuuradres"
-      : "id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, betalingstermijn, factuuradres";
-    const { data } = await supabase.from("profiles").select(velden).eq("user_id", user.id).single();
+    const { data } = await supabase.from("profiles").select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, uurtarief, betalingstermijn, factuuradres").eq("user_id", user.id).single();
     if (data) { setProfile(data as any); setEditForm({ full_name: data.full_name, telefoon: (data as any).telefoon || "", adres: (data as any).adres || "" }); }
     setLoading(false);
   }, [user]);
