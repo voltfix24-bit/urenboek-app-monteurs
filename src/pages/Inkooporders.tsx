@@ -18,7 +18,7 @@ import autoTable from "jspdf-autotable";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 
-import { INKOOPINKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
+import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 
 function OrderStatusBadge({ status }: { status: string }) {
   const c = INKOOPORDER_STATUS_CONFIG[status] || INKOOPORDER_STATUS_CONFIG.concept;
