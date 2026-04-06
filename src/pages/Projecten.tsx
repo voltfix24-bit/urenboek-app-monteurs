@@ -154,7 +154,8 @@ export default function Projecten() {
   const filteredInactive = filteredProjects.filter(p => !p.active);
   const selectedProject = selectedId ? projects.find(p => p.id === selectedId) || null : null;
 
-  const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} />;
+  const clearError = (field: string) => setFormErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+  const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} />;
 
   return (
     <>
