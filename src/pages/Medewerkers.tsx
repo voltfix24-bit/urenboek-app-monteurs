@@ -7,7 +7,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { Copy, Eye, EyeOff, Plus, X, Users, ArrowLeft } from "lucide-react";
+import { Copy, Eye, EyeOff, Plus, X, Users, ArrowLeft, AlertTriangle } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 import { PageShell } from "@/components/PageShell";
 import { MedewerkerKaart, roleLabels, type Employee } from "@/components/medewerkers/MedewerkerKaart";
@@ -29,6 +30,8 @@ export default function Medewerkers() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [employeeCerts, setEmployeeCerts] = useState<any[]>([]);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingEvent, setPendingEvent] = useState<React.FormEvent | null>(null);
 
   // Form state
   const [voornaam, setVoornaam] = useState("");
@@ -107,8 +110,14 @@ export default function Medewerkers() {
       return;
     }
     setFormErrors({});
-    const fullName = `${voornaam.trim()} ${achternaam.trim()}`.trim();
     if (inviteMode === "password" && !password) { toast.error("Vul een wachtwoord in"); return; }
+    setPendingEvent(e);
+    setShowConfirm(true);
+  };
+
+  const doCreate = async () => {
+    setShowConfirm(false);
+    const fullName = `${voornaam.trim()} ${achternaam.trim()}`.trim();
     setLoading(true);
     const body: any = { email, fullName, role, telefoon: telefoon || null, adres: adres || null, rijbewijs, uurtarief: uurtarief ? parseFloat(uurtarief) : null, noodcontact_naam: noodcontactNaam || null, noodcontact_tel: noodcontactTel || null, contract_einddatum: contractEinddatum || null };
     if (inviteMode === "invite") body.invite_only = true; else body.password = password;
@@ -247,6 +256,7 @@ export default function Medewerkers() {
   );
 
   return (
+    <>
     <PageShell>
       <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="px-4 py-3 flex items-center justify-between">
@@ -292,5 +302,30 @@ export default function Medewerkers() {
         </>
       )}
     </PageShell>
+
+    <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+      <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2" style={{ color: "var(--warning)" }}>
+            <AlertTriangle className="h-5 w-5" /> Uitzonderingsgeval bevestigen
+          </AlertDialogTitle>
+          <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+            Je staat op het punt een medewerker aan te maken <strong>buiten de kandidaat-flow</strong> om. 
+            Normaal gesproken worden nieuwe medewerkers aangemaakt via <strong>Kandidaten → Contract → Ondertekenen</strong>.
+            <br /><br />
+            Weet je zeker dat je wilt doorgaan?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>
+            Annuleren
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={doCreate} style={{ background: "var(--warning)", color: "#000" }}>
+            Ja, toch aanmaken
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
