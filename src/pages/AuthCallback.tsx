@@ -13,7 +13,7 @@ export default function AuthCallback() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!session) setError(true);
-    }, 5000);
+    }, 8000);
     return () => clearTimeout(timer);
   }, [session]);
 
@@ -21,19 +21,63 @@ export default function AuthCallback() {
     if (authLoading || !session) return;
 
     const checkAndActivate = async () => {
-      // Get profile to check account_status
+      // Check of er al een profiel is
       const { data: profile } = await supabase
         .from("profiles")
-        .select("account_status")
+        .select("id, account_status, full_name")
         .eq("user_id", session.user.id)
-        .single();
+        .maybeSingle();
 
-      if (profile?.account_status === "invited") {
-        // Activate account
+      if (!profile) {
+        // Eerste Microsoft login — profiel bestaat mogelijk nog niet
+        // handle_new_user trigger maakt het profiel aan, maar check user_roles
+        // Wacht kort zodat de trigger klaar is
+        await new Promise((r) => setTimeout(r, 1000));
+
+        const { data: profileRetry } = await supabase
+          .from("profiles")
+          .select("id, account_status")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+        if (!profileRetry) {
+          // Geen profiel en geen trigger — geen toegang
+          await supabase.auth.signOut();
+          navigate("/login?error=geen_toegang");
+          return;
+        }
+
+        // Check of deze user een manager rol heeft
+        const { data: rol } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+        if (rol?.role === "manager") {
+          // Update profiel status naar active
+          await supabase
+            .from("profiles")
+            .update({
+              account_status: "active",
+              activated_at: new Date().toISOString(),
+            })
+            .eq("user_id", session.user.id);
+
+          navigate("/dashboard");
+        } else {
+          // Geen manager rol — geen toegang via Microsoft
+          await supabase.auth.signOut();
+          navigate("/login?error=geen_toegang");
+        }
+        return;
+      }
+
+      // Bestaand profiel — normale flow
+      if (profile.account_status === "invited") {
         await supabase.functions.invoke("activate-account");
         navigate("/onboarding");
-      } else if (profile?.account_status === "onboarding") {
-        // Via contract binnengekomen — stuur naar onboarding dashboard
+      } else if (profile.account_status === "onboarding") {
         navigate("/onboarding-welkom");
       } else {
         navigate("/");
