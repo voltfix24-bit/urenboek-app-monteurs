@@ -84,9 +84,9 @@ export default function Projecten() {
   function getOgNaam(id: string | null) { return id ? opdrachtgevers.find(o => o.id === id)?.naam || null : null; }
 
   async function handleSubmit(isNew: boolean, id?: string) {
-    const result = valideer(projectSchema, form);
-    if (!result.success) {
-      setFormErrors(result.errors);
+    const vResult = valideer(projectSchema, form);
+    if (!vResult.success) {
+      setFormErrors(vResult.errors);
       toast.error("Controleer de ingevulde gegevens");
       return;
     }
