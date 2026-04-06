@@ -189,20 +189,89 @@ export default function ContractOndertekenen() {
     </CenterLayout>
   );
 
-  if (klaar) return (
+  if (klaar && accountAangemaakt) return (
     <CenterLayout>
       <div className="text-center space-y-4">
-        <div className="text-5xl">✅</div>
-        <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Contract ondertekend!</h1>
+        <div className="text-5xl">🎉</div>
+        <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Account aangemaakt!</h1>
         <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          TerreVolt BV ondertekent nu ook en je ontvangt het definitieve contract zodra dit klaar is.
+          Je kunt nu inloggen in de TerreVolt app met je e-mailadres en wachtwoord.
         </p>
+        <a href="/auth" className="block w-full py-3 rounded-xl text-sm font-semibold text-center"
+          style={{ background: "var(--accent)", color: "#fff" }}>
+          Inloggen →
+        </a>
         <div className="rounded-xl p-3 mt-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>TerreVolt B.V.</p>
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>info@terrevolt.nl</p>
         </div>
       </div>
     </CenterLayout>
+  );
+
+  if (klaar) return (
+    <div className="min-h-screen" style={{ background: "var(--bg-base)" }}>
+      <div className="max-w-lg mx-auto px-4 py-6">
+        <img src={terrevoltLogo} alt="TerreVolt" className="h-8 mb-6" />
+
+        <div className="text-center space-y-4 mb-8">
+          <div className="text-5xl">✅</div>
+          <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Bedankt voor het ondertekenen!</h1>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            TerreVolt BV ondertekent nu ook en je ontvangt het definitieve contract zodra dit klaar is.
+          </p>
+        </div>
+
+        {kandidaatEmail && kandidaatId && (
+          <div className="rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+            <div>
+              <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Maak je account aan</h2>
+              <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                Kies een wachtwoord om in te loggen in de TerreVolt app. Hiermee kun je je uren registreren, planning bekijken en meer.
+              </p>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>E-mailadres</label>
+              <div className="w-full mt-1 rounded-lg p-2.5 text-sm"
+                style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>
+                {kandidaatEmail}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Kies een wachtwoord</label>
+              <input type="password" value={wachtwoord} onChange={e => setWachtwoord(e.target.value)}
+                placeholder="Minimaal 6 tekens"
+                className="w-full mt-1 rounded-lg p-2.5 text-sm"
+                style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Herhaal wachtwoord</label>
+              <input type="password" value={wachtwoord2} onChange={e => setWachtwoord2(e.target.value)}
+                placeholder="Herhaal je wachtwoord"
+                className="w-full mt-1 rounded-lg p-2.5 text-sm"
+                style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+            </div>
+
+            <button onClick={maakAccountAan} disabled={registreren || !wachtwoord || wachtwoord.length < 6 || wachtwoord !== wachtwoord2}
+              className="w-full py-3 rounded-xl text-sm font-semibold"
+              style={{
+                background: (wachtwoord && wachtwoord.length >= 6 && wachtwoord === wachtwoord2) ? "var(--accent)" : "var(--bg-surface-2)",
+                color: (wachtwoord && wachtwoord.length >= 6 && wachtwoord === wachtwoord2) ? "#fff" : "var(--text-muted)",
+              }}>
+              {registreren ? "Account aanmaken..." : "Account aanmaken"}
+            </button>
+          </div>
+        )}
+
+        <div className="rounded-xl p-3 mt-6 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>TerreVolt B.V.</p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>info@terrevolt.nl</p>
+        </div>
+      </div>
+    </div>
   );
 
   // Correctie verstuurd confirmation screen
