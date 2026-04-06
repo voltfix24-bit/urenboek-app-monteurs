@@ -302,7 +302,7 @@ export default function Medewerkers() {
           <div className="w-[40%] border-r overflow-y-auto p-4 space-y-4" style={{ borderColor: "var(--border)" }}>{listContent}</div>
           <div className="w-[60%] overflow-y-auto p-4">
             {selectedEmployee ? (
-              <MedewerkerDetail emp={selectedEmployee} certs={employeeCerts} onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)} onRefresh={() => { refetchMedewerkers(); setSelectedEmployee(null); }} />
+              <MedewerkerDetail emp={selectedEmployee} certs={employeeCerts} onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)} onRefresh={() => { refetchMedewerkers(); setSelectedEmployee(null); }} onDelete={handleDelete} />
             ) : (
               <div className="flex items-center justify-center h-full" style={{ color: "var(--text-muted)" }}>
                 <p className="text-sm">Selecteer een medewerker</p>
@@ -317,7 +317,7 @@ export default function Medewerkers() {
               <button onClick={() => setSelectedEmployee(null)} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--accent)" }}>
                 <ArrowLeft className="h-4 w-4" /> Terug naar lijst
               </button>
-              <MedewerkerDetail emp={selectedEmployee} certs={employeeCerts} onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)} onRefresh={() => { refetchMedewerkers(); setSelectedEmployee(null); }} />
+              <MedewerkerDetail emp={selectedEmployee} certs={employeeCerts} onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)} onRefresh={() => { refetchMedewerkers(); setSelectedEmployee(null); }} onDelete={handleDelete} />
             </main>
           ) : (
             <main className="px-4 py-4 space-y-4">{listContent}</main>

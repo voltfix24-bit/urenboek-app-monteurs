@@ -5,7 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -46,6 +45,7 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
       });
     }
+
     const { data: roleData } = await adminClient
       .from("user_roles")
       .select("role")
@@ -75,14 +75,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    await adminClient.from("uren_boekingen").delete().eq("medewerker_id", userId);
-    await adminClient.from("planning").delete().eq("medewerker_id", userId);
-    await adminClient.from("overuren_meldingen").delete().eq("medewerker_id", userId);
-    await adminClient.from("beschikbaarheid").delete().eq("medewerker_id", userId);
-    await adminClient.from("certificaten").delete().eq("medewerker_id", userId);
-    await adminClient.from("mededeling_leesstatus").delete().eq("medewerker_id", userId);
+    // Get the profile id (medewerker_id in related tables references profiles.id, not auth user id)
+    const { data: profile } = await adminClient
+      .from("profiles")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (profile) {
+      const pid = profile.id;
+      // Delete related data using profiles.id
+      await adminClient.from("uren_boekingen").delete().eq("medewerker_id", pid);
+      await adminClient.from("planning").delete().eq("medewerker_id", pid);
+      await adminClient.from("overuren_meldingen").delete().eq("medewerker_id", pid);
+      await adminClient.from("beschikbaarheid").delete().eq("medewerker_id", pid);
+      await adminClient.from("certificaten").delete().eq("medewerker_id", pid);
+      await adminClient.from("mededeling_leesstatus").delete().eq("medewerker_id", pid);
+      await adminClient.from("manager_handtekeningen").delete().eq("profiel_id", pid);
+      await adminClient.from("inkooporders").delete().eq("medewerker_id", pid);
+      await adminClient.from("contracten").delete().eq("profiel_id", pid);
+      await adminClient.from("profiles").delete().eq("id", pid);
+    }
+
+    // Delete auth-level data
     await adminClient.from("user_roles").delete().eq("user_id", userId);
-    await adminClient.from("profiles").delete().eq("user_id", userId);
 
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
     if (deleteError) {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText, Check, X } from "lucide-react";
+import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText, Check, X, Trash2 } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
@@ -41,6 +41,7 @@ interface Props {
   certs: any[];
   onRefreshCerts: () => void;
   onRefresh?: () => void;
+  onDelete?: (userId: string, name: string) => void;
 }
 
 function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
@@ -128,10 +129,11 @@ function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
   );
 }
 
-export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh }: Props) {
+export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDelete }: Props) {
   const navigate = useNavigate();
   const { profileId: myProfileId } = useProfile();
   const [contract, setContract] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (!emp.id) return;
@@ -311,6 +313,39 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh }: Prop
           {emp.activated_at && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Geactiveerd op: {format(parseISO(emp.activated_at), "d MMM yyyy HH:mm", { locale: nl })}</p>}
         </div>
       </Section>
+
+      {/* Verwijderen */}
+      {onDelete && (
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
+          style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}
+        >
+          <Trash2 className="h-3.5 w-3.5" /> Medewerker verwijderen
+        </button>
+      )}
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2" style={{ color: "var(--danger)" }}>
+              <Trash2 className="h-4 w-4" /> Medewerker verwijderen
+            </AlertDialogTitle>
+            <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+              Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen? Dit verwijdert ook alle uren, planning, certificaten en andere gerelateerde data. Dit kan niet ongedaan worden gemaakt.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { onDelete?.(emp.user_id, emp.full_name); setShowDeleteConfirm(false); }}
+              style={{ background: "var(--danger)", color: "#fff" }}
+            >
+              Ja, verwijderen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
