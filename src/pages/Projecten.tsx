@@ -17,6 +17,7 @@ import { ProjectCard } from "@/components/projecten/ProjectCard";
 import { DesktopProjectLijst } from "@/components/projecten/DesktopProjectLijst";
 import { DesktopProjectDetail, DesktopFormPanel } from "@/components/projecten/DesktopProjectDetail";
 import { valideer, projectSchema } from "@/lib/validatie";
+import { ListSkeleton, ProjectCardSkeleton } from "@/components/ui/Skeletons";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
@@ -235,7 +236,7 @@ export default function Projecten() {
                 </div>
               </div>
             )}
-            {loading ? <div className="text-center py-8"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div> : (
+            {loading ? <ListSkeleton count={4} ItemSkeleton={ProjectCardSkeleton} /> : (
               <>
                 <div className="space-y-2">
                   <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Actief ({activeProjects.length})</p>

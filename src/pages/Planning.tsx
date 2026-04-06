@@ -11,6 +11,7 @@ import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns"
 import { nl } from "date-fns/locale";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
+import { ListSkeleton, PlanningCardSkeleton } from "@/components/ui/Skeletons";
 
 interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; activiteit: string | null; activiteit_kleur: string | null; collega_ids: string[] | null; week_opmerking: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
@@ -163,7 +164,7 @@ export default function Planning() {
       </div>
 
       {loading ? (
-        <div className="text-center py-10"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
+        <ListSkeleton count={3} ItemSkeleton={PlanningCardSkeleton} />
       ) : (
         <>
           {weekDates.map((date, i) => {

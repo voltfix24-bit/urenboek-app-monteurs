@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Spinner } from "@/components/ui/Spinner";
+import { ListSkeleton, GoedkeuringCardSkeleton } from "@/components/ui/Skeletons";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -138,7 +138,7 @@ export default function Goedkeuring() {
       </div>
 
       {loading ? (
-        <Spinner />
+        <ListSkeleton count={3} ItemSkeleton={GoedkeuringCardSkeleton} />
       ) : Object.keys(grouped).length === 0 ? (
         <div className="text-center py-10 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
