@@ -165,7 +165,8 @@ export default function Medewerkers() {
         noodcontactTel={noodcontactTel} setNoodcontactTel={setNoodcontactTel}
         inviteMode={inviteMode} setInviteMode={setInviteMode}
         password={password} setPassword={setPassword} showPw={showPw} setShowPw={setShowPw}
-        generatePassword={generatePassword} loading={loading} onSubmit={handleCreate} />}
+        generatePassword={generatePassword} loading={loading} onSubmit={handleCreate}
+        formErrors={formErrors} clearError={(f: string) => setFormErrors(prev => { const n = { ...prev }; delete n[f]; return n; })} />}
 
       {createdUsers.length > 0 && (
         <div className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>
