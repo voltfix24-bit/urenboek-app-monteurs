@@ -210,6 +210,21 @@ export default function Planning() {
                           <Lock className="h-3 w-3" /> {item.project_naam} — Planning nog concept
                         </div>
                       )}
+
+                      {/* Activity badge */}
+                      {item.activiteit && (
+                        <div style={{
+                          display: "inline-flex", alignItems: "center", gap: 5,
+                          padding: "3px 10px", borderRadius: 20,
+                          background: item.activiteit_kleur ? `${item.activiteit_kleur}22` : "var(--accent-light)",
+                          border: `1px solid ${item.activiteit_kleur || "var(--accent)"}44`,
+                          marginBottom: 6,
+                        }}>
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: item.activiteit_kleur || "var(--accent)", flexShrink: 0 }} />
+                          <span style={{ fontSize: 11, fontWeight: 600, color: item.activiteit_kleur || "var(--accent)" }}>{item.activiteit}</span>
+                        </div>
+                      )}
+
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{item.project_naam}</p>
@@ -223,6 +238,24 @@ export default function Planning() {
                         <p className="text-xs flex items-center gap-1" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)", color: "var(--warn-text)", padding: "6px 10px", borderRadius: 10 }}>
                           <MessageSquare className="h-3 w-3 shrink-0" /> {item.notitie}
                         </p>
+                      )}
+
+                      {/* Colleagues */}
+                      {item.collega_ids && item.collega_ids.length > 0 && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 10px", borderRadius: 10, background: "var(--bg-surface-2)" }}>
+                          <Users className="h-3 w-3" style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+                          <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                            {item.collega_ids.map(id => (collegaMap.get(id) || "Collega").split(" ")[0]).join(", ")}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Week remark */}
+                      {item.week_opmerking && (
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginTop: 6, padding: "8px 10px", borderRadius: 10, background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
+                          <Info className="h-3 w-3 shrink-0 mt-0.5" style={{ color: "var(--warn-text)" }} />
+                          <span style={{ fontSize: 11, color: "var(--warn-text)", lineHeight: 1.4 }}>{item.week_opmerking}</span>
+                        </div>
                       )}
 
                       {/* Uren boeken section */}
