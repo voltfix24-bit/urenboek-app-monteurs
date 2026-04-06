@@ -5,7 +5,12 @@ import { CaseTypeBadge } from "./CaseTypeBadge";
 import { generateProjectPdf } from "./projectPdf";
 import { ForecastTab } from "@/components/ForecastTab";
 import { PlanningStatusTab } from "@/components/PlanningStatusTab";
-
+import { StatusBadge } from "@/components/StatusBadge";
+import { STATUS_TRANSITIONS, type ProjectStatus } from "@/lib/projectStatus";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 function InfoField({ label, value, mono, badge }: { label: string; value: string | null; mono?: boolean; badge?: boolean }) {
   if (!value) return (
     <div style={{ borderBottom: "1px solid var(--bg-surface)", paddingBottom: 8 }}>
@@ -38,11 +43,30 @@ interface Props {
 
 export function DesktopProjectDetail({ project, ogNaam, isManager, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate, onStartIntake }: Props) {
   const [activeTab, setActiveTab] = useState<"info" | "forecast" | "planning">("info");
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const { user } = useAuth();
+  const { profileId } = useProfile();
   const tabs = [
     { key: "info" as const, label: "Projectinfo" },
     ...(isManager ? [{ key: "forecast" as const, label: "Forecast" }] : []),
     { key: "planning" as const, label: "Planning" },
   ];
+
+  const currentStatus = (project.status || "nieuw") as ProjectStatus;
+  const transitions = STATUS_TRANSITIONS[currentStatus] || [];
+
+  const changeStatus = async (newStatus: ProjectStatus) => {
+    const { error } = await supabase.from("projects").update({
+      status: newStatus,
+      status_gewijzigd_op: new Date().toISOString(),
+      status_gewijzigd_door: profileId,
+    } as any).eq("id", project.id);
+    if (error) { toast.error("Fout bij statuswijziging"); return; }
+    toast.success(`Status gewijzigd naar ${newStatus.replace(/_/g, " ")}`);
+    setShowStatusMenu(false);
+    // Trigger refetch via parent
+    window.dispatchEvent(new CustomEvent("project-status-changed"));
+  };
 
   return (
     <div className="space-y-5">
@@ -51,9 +75,21 @@ export function DesktopProjectDetail({ project, ogNaam, isManager, confirmDelete
         <div>
           <h2 className="text-xl font-medium" style={{ color: "var(--text-primary)" }}>{project.naam}</h2>
           <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>{project.nummer}</span>
-          <div className="flex items-center gap-1.5 mt-2">
+          <div className="flex items-center gap-2 mt-2">
             <span className="w-2 h-2 rounded-full" style={{ background: project.active ? "var(--accent)" : "var(--text-muted)" }} />
             <span className="text-xs font-medium" style={{ color: project.active ? "var(--accent)" : "var(--text-muted)" }}>{project.active ? "Actief" : "Inactief"}</span>
+            <div className="relative">
+              <StatusBadge status={currentStatus} size="md" onClick={isManager ? () => setShowStatusMenu(!showStatusMenu) : undefined} />
+              {showStatusMenu && transitions.length > 0 && (
+                <div className="absolute top-full left-0 mt-1 z-50 rounded-xl p-1.5 min-w-[160px] shadow-lg" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                  {transitions.map(t => (
+                    <button key={t} onClick={() => changeStatus(t)} className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium hover:opacity-80 transition-opacity" style={{ color: "var(--text-primary)" }}>
+                      <StatusBadge status={t} size="sm" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
