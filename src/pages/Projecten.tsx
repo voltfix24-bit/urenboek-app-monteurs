@@ -4,14 +4,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { volledigAdres } from "@/lib/utils";
-import { ArrowLeft, Plus, Pencil, ToggleLeft, ToggleRight, X, Check, Building2, ChevronDown, ChevronUp, Lock, Phone, Mail, Search, FolderOpen, Trash2, CalendarDays, Download, MapPin, AlertTriangle, Zap } from "lucide-react";
+import { ArrowLeft, Plus, Building2, X, FolderOpen } from "lucide-react";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
-import { ForecastTab } from "@/components/ForecastTab";
-import { PlanningStatusTab } from "@/components/PlanningStatusTab";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { ForecastIntakeWizard } from "@/components/ForecastIntakeWizard";
+import { ProjectFormFields, FormState, emptyForm } from "@/components/projecten/ProjectFormFields";
+import { ProjectCard } from "@/components/projecten/ProjectCard";
+import { DesktopProjectLijst } from "@/components/projecten/DesktopProjectLijst";
+import { DesktopProjectDetail, DesktopFormPanel } from "@/components/projecten/DesktopProjectDetail";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
@@ -21,38 +22,23 @@ interface Project {
   straat: string | null; postcode: string | null; stad: string | null;
   intake_gedaan: boolean; rmu_merk: string | null; rmu_configuratie_id: string | null;
 }
-type FormState = {
-  nummer: string; naam: string; opdrachtgever_id: string | null;
-  stationsnaam: string; straat: string; postcode: string; stad: string; case_type: string;
-  contactpersoon_naam: string; contactpersoon_tel: string; contactpersoon_email: string;
-};
-const emptyForm: FormState = { nummer: "", naam: "", opdrachtgever_id: null, stationsnaam: "", straat: "", postcode: "", stad: "", case_type: "", contactpersoon_naam: "", contactpersoon_tel: "", contactpersoon_email: "" };
-
-const inputStyle = { background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" };
-
-function CaseTypeBadge({ type }: { type: string | null }) {
-  if (!type) return null;
-  const styles: Record<string, { bg: string; color: string }> = {
-    "NSA-case": { bg: "var(--info-light)", color: "var(--info)" },
-    "Compactstation": { bg: "var(--accent-light)", color: "var(--text-primary)" },
-    "Provisorium": { bg: "var(--warn-light)", color: "var(--warn-text)" },
-  };
-  const s = styles[type] || { bg: "var(--bg-surface)", color: "var(--text-secondary)" };
-  return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: s.bg, color: s.color }}>{type}</span>;
-}
 
 export default function Projecten() {
   const { isManager, permissies } = useAuth(); const navigate = useNavigate();
   const { badges } = useNavBadges();
-  const [projects, setProjects] = useState<Project[]>([]); const [opdrachtgevers, setOpdrachtgevers] = useState<Opdrachtgever[]>([]);
-  const [loading, setLoading] = useState(true); const [showAdd, setShowAdd] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [opdrachtgevers, setOpdrachtgevers] = useState<Opdrachtgever[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [intakeProjectId, setIntakeProjectId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
-
   const [margeMap, setMargeMap] = useState<Map<string, { omzet: number; kosten: number; marge: number }>>(new Map());
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
 
   const fetchData = useCallback(async () => {
     const [p, o] = await Promise.all([
@@ -60,8 +46,6 @@ export default function Projecten() {
       supabase.from("opdrachtgevers").select("id, naam").order("naam"),
     ]);
     if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data);
-
-    // Fetch forecast marge data for managers
     if (permissies.zietProjectFinancien) {
       const { data: forecasts } = await supabase.from("project_forecast").select("id, project_id");
       if (forecasts && forecasts.length > 0) {
@@ -73,64 +57,51 @@ export default function Projecten() {
           const pid = fProject.get(r.forecast_id);
           if (!pid) return;
           const cur = m.get(pid) || { omzet: 0, kosten: 0, marge: 0 };
-          if (r.type === "spec" || r.type === "stuks") {
-            cur.omzet += (r.tarief || 0) * (r.aantal || 1);
-          } else if (r.type === "uren") {
-            cur.kosten += (r.geplande_uren || 0) * (r.uurtarief_snap || 0);
-          }
+          if (r.type === "spec" || r.type === "stuks") cur.omzet += (r.tarief || 0) * (r.aantal || 1);
+          else if (r.type === "uren") cur.kosten += (r.geplande_uren || 0) * (r.uurtarief_snap || 0);
           m.set(pid, cur);
         });
-        m.forEach((v, k) => { v.marge = v.omzet > 0 ? ((v.omzet - v.kosten) / v.omzet) * 100 : 0; });
+        m.forEach((v) => { v.marge = v.omzet > 0 ? ((v.omzet - v.kosten) / v.omzet) * 100 : 0; });
         setMargeMap(m);
       }
     }
     setLoading(false);
   }, [isManager]);
-  useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Realtime subscription
+  useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => {
     const channel = supabase.channel('projecten-rt').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'projects' }, () => fetchData()).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [fetchData]);
   useEffect(() => { if (!isManager) navigate("/"); }, [isManager, navigate]);
 
-  async function handleAdd() {
-    if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
-    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
-    const insert: any = { nummer: form.nummer.trim(), naam: form.naam.trim(), straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(), adres: `${form.straat.trim()}, ${form.postcode.trim()} ${form.stad.trim()}` };
-    if (form.opdrachtgever_id) insert.opdrachtgever_id = form.opdrachtgever_id;
-    if (form.stationsnaam.trim()) insert.stationsnaam = form.stationsnaam.trim();
-    if (form.case_type) insert.case_type = form.case_type;
-    if (isManager) {
-      if (form.contactpersoon_naam.trim()) insert.contactpersoon_naam = form.contactpersoon_naam.trim();
-      if (form.contactpersoon_tel.trim()) insert.contactpersoon_tel = form.contactpersoon_tel.trim();
-      if (form.contactpersoon_email.trim()) insert.contactpersoon_email = form.contactpersoon_email.trim();
-    }
-    const { data: newP, error } = await supabase.from("projects").insert(insert).select("id").single();
-    if (error) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); else toast.error("Fout bij aanmaken"); return; }
-    toast.success("Project toegevoegd"); setForm(emptyForm); setShowAdd(false); fetchData();
-    if (newP) setIntakeProjectId(newP.id);
-  }
+  function getOgNaam(id: string | null) { return id ? opdrachtgevers.find(o => o.id === id)?.naam || null : null; }
 
-  async function handleUpdate(id: string) {
+  async function handleSubmit(isNew: boolean, id?: string) {
     if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
     if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
-    const update: any = {
+    const data: any = {
       nummer: form.nummer.trim(), naam: form.naam.trim(),
-      opdrachtgever_id: form.opdrachtgever_id || null,
-      stationsnaam: form.stationsnaam.trim() || null,
       straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(),
       adres: `${form.straat.trim()}, ${form.postcode.trim()} ${form.stad.trim()}`,
+      opdrachtgever_id: form.opdrachtgever_id || null,
+      stationsnaam: form.stationsnaam.trim() || null,
       case_type: form.case_type || null,
     };
     if (isManager) {
-      update.contactpersoon_naam = form.contactpersoon_naam.trim() || null;
-      update.contactpersoon_tel = form.contactpersoon_tel.trim() || null;
-      update.contactpersoon_email = form.contactpersoon_email.trim() || null;
+      data.contactpersoon_naam = form.contactpersoon_naam.trim() || null;
+      data.contactpersoon_tel = form.contactpersoon_tel.trim() || null;
+      data.contactpersoon_email = form.contactpersoon_email.trim() || null;
     }
-    if (!await mutate(supabase.from("projects").update(update).eq("id", id))) return;
-    toast.success("Project gewijzigd"); setEditId(null); setForm(emptyForm); fetchData();
+    if (isNew) {
+      const { data: newP, error } = await supabase.from("projects").insert(data).select("id").single();
+      if (error) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); else toast.error("Fout bij aanmaken"); return; }
+      toast.success("Project toegevoegd"); setForm(emptyForm); setShowAdd(false); setDesktopMode("view"); fetchData();
+      if (newP) setIntakeProjectId(newP.id);
+    } else {
+      if (!await mutate(supabase.from("projects").update(data).eq("id", id!))) return;
+      toast.success("Project gewijzigd"); setEditId(null); setDesktopMode("view"); setForm(emptyForm); fetchData();
+    }
   }
 
   async function toggleActive(p: Project) {
@@ -147,150 +118,33 @@ export default function Projecten() {
 
   function startEdit(p: Project) {
     setEditId(p.id); setExpandedId(null); setShowAdd(false);
-    setForm({
-      nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id,
-      stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "",
-      contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "",
-      contactpersoon_email: p.contactpersoon_email || "",
-    });
+    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "" });
   }
 
-  function getOgNaam(id: string | null) { return id ? opdrachtgevers.find(o => o.id === id)?.naam || null : null; }
+  function startDesktopEdit(p: Project) {
+    setDesktopMode("edit"); setSelectedId(p.id);
+    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "" });
+  }
 
   const activeProjects = projects.filter(p => p.active);
   const inactiveProjects = projects.filter(p => !p.active);
-
-  // Desktop state
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
-
   const filteredProjects = useMemo(() => {
     if (!searchQuery.trim()) return projects;
     const q = searchQuery.toLowerCase();
     return projects.filter(p => p.naam.toLowerCase().includes(q) || p.nummer.toLowerCase().includes(q));
   }, [projects, searchQuery]);
-
   const filteredActive = filteredProjects.filter(p => p.active);
   const filteredInactive = filteredProjects.filter(p => !p.active);
   const selectedProject = selectedId ? projects.find(p => p.id === selectedId) || null : null;
 
-  function selectProject(p: Project) {
-    setSelectedId(p.id);
-    setDesktopMode("view");
-    setEditId(null);
-    setForm(emptyForm);
-  }
-
-  function startDesktopEdit(p: Project) {
-    setDesktopMode("edit");
-    setSelectedId(p.id);
-    setForm({
-      nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id,
-      stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "",
-      contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "",
-      contactpersoon_email: p.contactpersoon_email || "",
-    });
-  }
-
-  function startDesktopAdd() {
-    setDesktopMode("add");
-    setSelectedId(null);
-    setForm(emptyForm);
-  }
-
-  async function handleDesktopAdd() {
-    if (!form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
-    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
-    const insert: any = { nummer: form.nummer.trim(), naam: form.naam.trim(), straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(), adres: `${form.straat.trim()}, ${form.postcode.trim()} ${form.stad.trim()}` };
-    if (form.opdrachtgever_id) insert.opdrachtgever_id = form.opdrachtgever_id;
-    if (form.stationsnaam.trim()) insert.stationsnaam = form.stationsnaam.trim();
-    if (form.case_type) insert.case_type = form.case_type;
-    if (isManager) {
-      if (form.contactpersoon_naam.trim()) insert.contactpersoon_naam = form.contactpersoon_naam.trim();
-      if (form.contactpersoon_tel.trim()) insert.contactpersoon_tel = form.contactpersoon_tel.trim();
-      if (form.contactpersoon_email.trim()) insert.contactpersoon_email = form.contactpersoon_email.trim();
-    }
-    const { data: newP, error } = await supabase.from("projects").insert(insert).select("id").single();
-    if (error) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); else toast.error("Fout bij aanmaken"); return; }
-    toast.success("Project toegevoegd"); setForm(emptyForm); setDesktopMode("view"); fetchData();
-    if (newP) setIntakeProjectId(newP.id);
-  }
-
-  async function handleDesktopUpdate() {
-    if (!selectedId || !form.nummer.trim() || !form.naam.trim()) { toast.error("Vul casenummer en casenaam in"); return; }
-    if (!form.straat.trim() || !form.postcode.trim() || !form.stad.trim()) { toast.error("Vul het volledige adres in (straat, postcode en stad)"); return; }
-    const update: any = {
-      nummer: form.nummer.trim(), naam: form.naam.trim(),
-      opdrachtgever_id: form.opdrachtgever_id || null,
-      stationsnaam: form.stationsnaam.trim() || null,
-      straat: form.straat.trim(), postcode: form.postcode.trim(), stad: form.stad.trim(),
-      adres: `${form.straat.trim()}, ${form.postcode.trim()} ${form.stad.trim()}`,
-      case_type: form.case_type || null,
-    };
-    if (isManager) {
-      update.contactpersoon_naam = form.contactpersoon_naam.trim() || null;
-      update.contactpersoon_tel = form.contactpersoon_tel.trim() || null;
-      update.contactpersoon_email = form.contactpersoon_email.trim() || null;
-    }
-    if (!await mutate(supabase.from("projects").update(update).eq("id", selectedId))) return;
-    toast.success("Project gewijzigd"); setDesktopMode("view"); fetchData();
-  }
-
-  function renderFormFields() {
-    return (
-      <>
-        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Projectgegevens</p>
-        <div className="grid grid-cols-2 gap-2">
-          <input value={form.nummer} onChange={e => setForm(f => ({ ...f, nummer: e.target.value }))} placeholder="Casenummer bijv. 0311927" className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
-          <input value={form.naam} onChange={e => setForm(f => ({ ...f, naam: e.target.value }))} placeholder="Casenaam" className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
-        </div>
-        <input value={form.stationsnaam} onChange={e => setForm(f => ({ ...f, stationsnaam: e.target.value }))} placeholder="Stationsnaam bijv. KOPPOELLN" className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle} />
-        <p className="text-[11px] font-semibold uppercase tracking-wider mt-2" style={{ color: "var(--text-muted)" }}>Adres werklocatie *</p>
-        <input value={form.straat} onChange={e => setForm(f => ({ ...f, straat: e.target.value }))} placeholder="Burgemeester Fletzlaan 12" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ ...inputStyle, borderColor: !form.straat.trim() && form.nummer.trim() ? "var(--danger-border)" : undefined }} />
-        <div className="grid grid-cols-2 gap-2">
-          <input value={form.postcode} onChange={e => {
-            let v = e.target.value;
-            if (v.length === 4 && /^\d{4}$/.test(v) && form.postcode.length < 4) v += " ";
-            setForm(f => ({ ...f, postcode: v }));
-          }} placeholder="1234 AB" maxLength={7} className="px-3 py-2.5 rounded-xl text-sm" style={{ ...inputStyle, borderColor: !form.postcode.trim() && form.nummer.trim() ? "var(--danger-border)" : undefined }} />
-          <input value={form.stad} onChange={e => setForm(f => ({ ...f, stad: e.target.value }))} placeholder="Amsterdam" className="px-3 py-2.5 rounded-xl text-sm" style={{ ...inputStyle, borderColor: !form.stad.trim() && form.nummer.trim() ? "var(--danger-border)" : undefined }} />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <select value={form.opdrachtgever_id || ""} onChange={e => setForm(f => ({ ...f, opdrachtgever_id: e.target.value || null }))} className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle}>
-            <option value="">Geen opdrachtgever</option>
-            {opdrachtgevers.map(og => <option key={og.id} value={og.id}>{og.naam}</option>)}
-          </select>
-          <select value={form.case_type} onChange={e => setForm(f => ({ ...f, case_type: e.target.value }))} className="px-3 py-2.5 rounded-xl text-sm" style={inputStyle}>
-            <option value="">Case type</option>
-            <option value="NSA-case">NSA-case</option>
-            <option value="Compactstation">Compactstation</option>
-            <option value="Provisorium">Provisorium</option>
-          </select>
-        </div>
-        {isManager && (
-          <div className="rounded-xl p-3 space-y-2 mt-1" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-            <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
-              <Lock className="h-3 w-3" /> Contactpersoon (alleen zichtbaar voor managers)
-            </p>
-            <input value={form.contactpersoon_naam} onChange={e => setForm(f => ({ ...f, contactpersoon_naam: e.target.value }))} placeholder="Naam contactpersoon" className="w-full px-3 py-2 rounded-xl text-sm" style={inputStyle} />
-            <div className="grid grid-cols-2 gap-2">
-              <input type="tel" value={form.contactpersoon_tel} onChange={e => setForm(f => ({ ...f, contactpersoon_tel: e.target.value }))} placeholder="Telefoonnummer" className="px-3 py-2 rounded-xl text-sm" style={inputStyle} />
-              <input type="email" value={form.contactpersoon_email} onChange={e => setForm(f => ({ ...f, contactpersoon_email: e.target.value }))} placeholder="E-mailadres" className="px-3 py-2 rounded-xl text-sm" style={inputStyle} />
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
+  const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} />;
 
   return (
     <>
       <DesktopSidebar badges={badges} />
 
-      {/* ===== DESKTOP LAYOUT ===== */}
+      {/* DESKTOP */}
       <div className="hidden lg:block" style={{ marginLeft: 240, minHeight: "100vh", background: "var(--bg-base)" }}>
-        {/* Desktop header */}
         <header className="flex items-center justify-between px-10 pt-8 pb-4">
           <div>
             <h1 className="text-[22px] font-medium" style={{ color: "var(--text-primary)" }}>Projecten</h1>
@@ -300,89 +154,26 @@ export default function Projecten() {
             <button onClick={() => navigate("/opdrachtgevers")} className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
               <Building2 className="h-3.5 w-3.5" /> Opdrachtgevers →
             </button>
-            <button onClick={startDesktopAdd} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+            <button onClick={() => { setDesktopMode("add"); setSelectedId(null); setForm(emptyForm); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
               <Plus className="h-3.5 w-3.5" /> Nieuw project
             </button>
           </div>
         </header>
 
-        {/* Desktop 2-column layout */}
         <div className="flex px-10 pb-10" style={{ height: "calc(100vh - 100px)" }}>
-          {/* Left: project list */}
-          <div className="flex-shrink-0 overflow-y-auto pr-4" style={{ width: "40%", borderRight: "1px solid var(--border)" }}>
-            {/* Search */}
-            <div className="relative mb-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "var(--text-muted)" }} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Zoek op naam of casenummer..."
-                className="w-full pl-9 pr-9 py-2 rounded-[10px] text-sm"
-                style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
+          <DesktopProjectLijst activeProjects={filteredActive} inactiveProjects={filteredInactive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} getOgNaam={getOgNaam} loading={loading} />
 
-            {loading ? (
-              <div className="text-center py-8"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
-            ) : (
-              <>
-                {filteredActive.length > 0 && (
-                  <div className="space-y-1.5 mb-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Actief ({filteredActive.length})</p>
-                    {filteredActive.map(p => (
-                      <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => selectProject(p)} marge={margeMap.get(p.id)} />
-                    ))}
-                  </div>
-                )}
-                {filteredInactive.length > 0 && (
-                  <div className="space-y-1.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Inactief ({filteredInactive.length})</p>
-                    {filteredInactive.map(p => (
-                      <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => selectProject(p)} marge={margeMap.get(p.id)} />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Right: detail panel */}
           <div className="flex-1 overflow-y-auto pl-8">
             {desktopMode === "add" ? (
-              <DesktopFormPanel
-                title="Nieuw project aanmaken"
-                renderFormFields={renderFormFields}
-                onCancel={() => setDesktopMode("view")}
-                onSubmit={handleDesktopAdd}
-                submitLabel="Project aanmaken"
-              />
+              <DesktopFormPanel title="Nieuw project aanmaken" onCancel={() => setDesktopMode("view")} onSubmit={() => handleSubmit(true)} submitLabel="Project aanmaken">
+                {formFields}
+              </DesktopFormPanel>
             ) : desktopMode === "edit" && selectedProject ? (
-              <DesktopFormPanel
-                title="Project bewerken"
-                renderFormFields={renderFormFields}
-                onCancel={() => setDesktopMode("view")}
-                onSubmit={handleDesktopUpdate}
-                submitLabel="Opslaan"
-              />
+              <DesktopFormPanel title="Project bewerken" onCancel={() => setDesktopMode("view")} onSubmit={() => handleSubmit(false, selectedId!)} submitLabel="Opslaan">
+                {formFields}
+              </DesktopFormPanel>
             ) : selectedProject ? (
-              <DesktopDetailPanel
-                project={selectedProject}
-                ogNaam={getOgNaam(selectedProject.opdrachtgever_id)}
-                isManager={isManager}
-                confirmDeleteId={confirmDeleteId}
-                onEdit={() => startDesktopEdit(selectedProject)}
-                onToggle={() => toggleActive(selectedProject)}
-                onDelete={() => handleDelete(selectedProject)}
-                onCancelDelete={() => setConfirmDeleteId(null)}
-                navigate={navigate}
-                onStartIntake={() => setIntakeProjectId(selectedProject.id)}
-              />
+              <DesktopProjectDetail project={selectedProject} ogNaam={getOgNaam(selectedProject.opdrachtgever_id)} isManager={isManager} confirmDeleteId={confirmDeleteId} onEdit={() => startDesktopEdit(selectedProject)} onToggle={() => toggleActive(selectedProject)} onDelete={() => handleDelete(selectedProject)} onCancelDelete={() => setConfirmDeleteId(null)} navigate={navigate} onStartIntake={() => setIntakeProjectId(selectedProject.id)} />
             ) : (
               <div className="flex flex-col items-center justify-center h-full" style={{ color: "var(--text-muted)" }}>
                 <FolderOpen className="h-8 w-8 mb-3" />
@@ -394,7 +185,7 @@ export default function Projecten() {
         </div>
       </div>
 
-      {/* ===== MOBILE LAYOUT ===== */}
+      {/* MOBILE */}
       <div className="lg:hidden">
         <div className="min-h-screen" style={{ background: "var(--bg-base)", maxWidth: 430, margin: "0 auto" }}>
           <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
@@ -410,10 +201,10 @@ export default function Projecten() {
             {showAdd && (
               <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>
                 <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Nieuw project</h3>
-                {renderFormFields()}
+                {formFields}
                 <div className="flex gap-2 pt-1">
                   <button onClick={() => setShowAdd(false)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
-                  <button onClick={handleAdd} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>Toevoegen</button>
+                  <button onClick={() => handleSubmit(true)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>Toevoegen</button>
                 </div>
               </div>
             )}
@@ -422,11 +213,11 @@ export default function Projecten() {
                 <div className="space-y-2">
                   <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Actief ({activeProjects.length})</p>
                   {activeProjects.map(p => (
-                    <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isManager={isManager}
+                    <ProjectCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isManager={isManager}
                       isEditing={editId === p.id} isExpanded={expandedId === p.id} isConfirmingDelete={confirmDeleteId === p.id}
-                      form={form} setForm={setForm} renderFormFields={renderFormFields}
+                      renderFormFields={() => formFields}
                       onEdit={() => startEdit(p)} onCancel={() => { setEditId(null); setForm(emptyForm); }}
-                      onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)}
+                      onSave={() => handleSubmit(false, p.id)} onToggle={() => toggleActive(p)}
                       onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)}
                       onToggleExpand={() => setExpandedId(expandedId === p.id ? null : p.id)} />
                   ))}
@@ -435,11 +226,11 @@ export default function Projecten() {
                   <div className="space-y-2 pt-2">
                     <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Inactief ({inactiveProjects.length})</p>
                     {inactiveProjects.map(p => (
-                      <ProjectRow key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isManager={isManager}
+                      <ProjectCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isManager={isManager}
                         isEditing={editId === p.id} isExpanded={expandedId === p.id} isConfirmingDelete={confirmDeleteId === p.id}
-                        form={form} setForm={setForm} renderFormFields={renderFormFields}
+                        renderFormFields={() => formFields}
                         onEdit={() => startEdit(p)} onCancel={() => { setEditId(null); setForm(emptyForm); }}
-                        onSave={() => handleUpdate(p.id)} onToggle={() => toggleActive(p)}
+                        onSave={() => handleSubmit(false, p.id)} onToggle={() => toggleActive(p)}
                         onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)}
                         onToggleExpand={() => setExpandedId(expandedId === p.id ? null : p.id)} />
                     ))}
@@ -452,386 +243,13 @@ export default function Projecten() {
         <BottomNav badges={badges} />
       </div>
 
-      {/* Intake Wizard */}
       {intakeProjectId && (() => {
         const p = projects.find(pr => pr.id === intakeProjectId);
         return p ? (
-          <ForecastIntakeWizard
-            projectId={intakeProjectId}
-            project={{ nummer: p.nummer, naam: p.naam, case_type: p.case_type }}
-            onClose={() => setIntakeProjectId(null)}
-            onComplete={() => { setIntakeProjectId(null); fetchData(); toast.success("Forecast aangemaakt op basis van intake ✓"); }}
-          />
+          <ForecastIntakeWizard projectId={intakeProjectId} project={{ nummer: p.nummer, naam: p.naam, case_type: p.case_type }}
+            onClose={() => setIntakeProjectId(null)} onComplete={() => { setIntakeProjectId(null); fetchData(); toast.success("Forecast aangemaakt op basis van intake ✓"); }} />
         ) : null;
       })()}
     </>
-  );
-}
-
-function ProjectRow({ project, ogNaam, isManager, isEditing, isExpanded, isConfirmingDelete, form, setForm, renderFormFields, onEdit, onCancel, onSave, onToggle, onDelete, onCancelDelete, onToggleExpand }: any) {
-  if (isEditing) {
-    return (
-      <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--bg-surface)", border: "1px solid var(--info-border)" }}>
-        <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Project bewerken</h3>
-        {renderFormFields()}
-        <div className="flex gap-2 pt-1">
-          <button onClick={onCancel} className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1" style={{ background: "var(--bg-base)", color: "var(--text-secondary)" }}><X className="h-3.5 w-3.5" /> Annuleren</button>
-          <button onClick={onSave} className="flex-1 py-2 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}><Check className="h-3.5 w-3.5" /> Opslaan</button>
-        </div>
-      </div>
-    );
-  }
-  if (isConfirmingDelete) {
-    return (
-      <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }}>
-        <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>"{project.naam}" verwijderen?</p>
-        <div className="flex gap-2">
-          <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
-          <button onClick={onDelete} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "var(--danger)" }}>Verwijderen</button>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="rounded-2xl overflow-hidden transition-transform active:scale-[0.985]" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", opacity: project.active ? 1 : 0.5 }}>
-      <div className="p-4 flex items-center gap-3 cursor-pointer" onClick={onToggleExpand}>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>
-              {project.naam}
-              {(!project.straat || !project.stad) && <span title="Adres onvolledig — monteurs kunnen niet navigeren"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>}
-            </p>
-            <CaseTypeBadge type={project.case_type} />
-          </div>
-          <p className="text-xs mt-0.5 font-mono" style={{ color: "var(--accent)" }}>{project.nummer}</p>
-          {project.stationsnaam && <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{project.stationsnaam}</p>}
-          {ogNaam && <p className="text-[11px] mt-0.5 flex items-center gap-1" style={{ color: "var(--text-muted)" }}><Building2 className="h-3 w-3 shrink-0" /> {ogNaam}</p>}
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
-          <button onClick={onEdit} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Pencil className="h-3.5 w-3.5" style={{ color: "var(--text-secondary)" }} /></button>
-          <button onClick={onToggle} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: project.active ? "var(--success-light)" : "var(--bg-surface-2)" }}>
-            {project.active ? <ToggleRight className="h-4 w-4" style={{ color: "var(--success)" }} /> : <ToggleLeft className="h-4 w-4" style={{ color: "var(--text-muted)" }} />}
-          </button>
-          <button onClick={onDelete} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--danger-light)" }}><X className="h-3.5 w-3.5" style={{ color: "var(--danger)" }} /></button>
-        </div>
-        {isExpanded ? <ChevronUp className="h-4 w-4 shrink-0" style={{ color: "var(--text-muted)" }} /> : <ChevronDown className="h-4 w-4 shrink-0" style={{ color: "var(--text-muted)" }} />}
-      </div>
-      {isExpanded && (
-        <div className="px-4 pb-4 space-y-2 animate-fade-in" style={{ borderTop: "1px solid var(--border)" }}>
-           <div className="pt-3 space-y-1.5">
-            {volledigAdres(project) ? (
-              <>
-                <DetailLine label="Straat" value={project.straat} />
-                <DetailLine label="Postcode" value={project.postcode} />
-                <DetailLine label="Stad" value={project.stad} />
-                <a href={`https://maps.google.com/?q=${encodeURIComponent(volledigAdres(project))}`} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs mt-1" style={{ color: "var(--accent)" }}>
-                  <MapPin className="h-3 w-3" /> Bekijk op kaart ↗
-                </a>
-              </>
-            ) : project.adres ? (
-              <DetailLine label="Adres" value={project.adres} />
-            ) : null}
-            {project.case_type && <DetailLine label="Case type" value={project.case_type} />}
-            {project.stationsnaam && <DetailLine label="Station" value={project.stationsnaam} />}
-            {ogNaam && <DetailLine label="Opdrachtgever" value={ogNaam} />}
-          </div>
-          {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
-            <div className="rounded-xl p-3 space-y-1.5 mt-2" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-              <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
-                <Lock className="h-3 w-3" /> Contactpersoon opdrachtgever
-              </p>
-              {project.contactpersoon_naam && <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{project.contactpersoon_naam}</p>}
-              {project.contactpersoon_tel && (
-                <a href={`tel:${project.contactpersoon_tel}`} className="text-xs flex items-center gap-1.5" style={{ color: "var(--accent)" }}>
-                  <Phone className="h-3 w-3" /> {project.contactpersoon_tel}
-                </a>
-              )}
-              {project.contactpersoon_email && (
-                <a href={`mailto:${project.contactpersoon_email}`} className="text-xs flex items-center gap-1.5" style={{ color: "var(--accent)" }}>
-                  <Mail className="h-3 w-3" /> {project.contactpersoon_email}
-                </a>
-              )}
-            </div>
-          )}
-          <button onClick={() => generateProjectPdf(project, ogNaam, isManager)} className="w-full mt-2 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-            <Download className="h-3.5 w-3.5" /> PDF downloaden
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function DetailLine({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start gap-2">
-      <span className="text-[11px] font-medium w-24 shrink-0" style={{ color: "var(--text-muted)" }}>{label}</span>
-      <span className="text-xs" style={{ color: "var(--text-primary)" }}>{value}</span>
-    </div>
-  );
-}
-
-/* ===== Desktop-only components ===== */
-
-function DesktopListCard({ project, ogNaam, selected, onClick, marge }: { project: any; ogNaam: string | null; selected: boolean; onClick: () => void; marge?: { omzet: number; kosten: number; marge: number } }) {
-  const margeColor = (m: number) => m >= 30 ? "var(--success)" : m >= 15 ? "var(--warn-dot)" : "var(--danger)";
-  const margeBg = (m: number) => m >= 30 ? "var(--success-light)" : m >= 15 ? "var(--warn-light)" : "var(--danger-light)";
-  return (
-    <button
-      onClick={onClick}
-      className="w-full text-left p-2.5 rounded-xl mb-1.5 transition-colors cursor-pointer"
-      style={{
-        background: selected ? "var(--accent-light)" : "var(--bg-surface)",
-        border: selected ? "1.5px solid var(--accent)" : "1px solid var(--border)",
-      }}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[13px] font-semibold truncate" style={{ color: "var(--text-primary)" }}>
-          {project.naam}
-          {(!project.straat || !project.stad) && <span title="Adres onvolledig"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>}
-        </p>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {marge && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: margeBg(marge.marge), color: margeColor(marge.marge), fontFamily: "DM Mono, monospace" }}>
-              {marge.marge.toFixed(1)}%
-            </span>
-          )}
-          <CaseTypeBadge type={project.case_type} />
-        </div>
-      </div>
-      <div className="flex items-center justify-between gap-2 mt-0.5">
-        <span className="text-[11px] font-mono" style={{ color: "var(--accent)" }}>{project.nummer}</span>
-        {ogNaam && <span className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{ogNaam}</span>}
-      </div>
-      {project.stationsnaam && <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{project.stationsnaam}</p>}
-    </button>
-  );
-}
-
-function generateProjectPdf(project: any, ogNaam: string | null, isManager: boolean) {
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${project.naam}</title><style>
-    body{font-family:system-ui,sans-serif;padding:40px;color:#2D4A1E;max-width:800px;margin:0 auto}
-    h1{font-size:22px;margin-bottom:4px}table{width:100%;border-collapse:collapse;margin:16px 0}
-    td,th{text-align:left;padding:8px 12px;border-bottom:1px solid #C5D4B2;font-size:13px}
-    th{color:#5A7A42;font-weight:500;width:140px}.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;background:#D4E8C2;color:#4A7C2F;font-weight:600}
-    .section{margin-top:24px;padding-top:16px;border-top:2px solid #EBF0E4}
-    .section h2{font-size:15px;color:#5A7A42;margin-bottom:8px}
-    @media print{body{padding:20px}}
-  </style></head><body>
-    <h1>${project.naam}</h1>
-    <span class="badge">${project.nummer}</span>
-    <table><tbody>
-      <tr><th>Status</th><td>${project.active ? "Actief" : "Inactief"}</td></tr>
-      ${project.case_type ? `<tr><th>Case type</th><td>${project.case_type}</td></tr>` : ""}
-      ${project.stationsnaam ? `<tr><th>Stationsnaam</th><td>${project.stationsnaam}</td></tr>` : ""}
-      ${project.adres ? `<tr><th>Adres</th><td>${project.adres}</td></tr>` : ""}
-      ${ogNaam ? `<tr><th>Opdrachtgever</th><td>${ogNaam}</td></tr>` : ""}
-    </tbody></table>
-    ${isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) ? `
-      <div class="section"><h2>Contactpersoon opdrachtgever</h2><table><tbody>
-        ${project.contactpersoon_naam ? `<tr><th>Naam</th><td>${project.contactpersoon_naam}</td></tr>` : ""}
-        ${project.contactpersoon_tel ? `<tr><th>Telefoon</th><td>${project.contactpersoon_tel}</td></tr>` : ""}
-        ${project.contactpersoon_email ? `<tr><th>Email</th><td>${project.contactpersoon_email}</td></tr>` : ""}
-      </tbody></table></div>
-    ` : ""}
-    <p style="margin-top:32px;font-size:10px;color:#8AAD6E">Gegenereerd op ${new Date().toLocaleDateString("nl-NL")} · TerreVolt BV</p>
-    <script>window.onload=()=>window.print()</script>
-  </body></html>`;
-  const w = window.open("", "_blank");
-  if (w) { w.document.write(html); w.document.close(); }
-}
-
-function DesktopDetailPanel({ project, ogNaam, isManager, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate, onStartIntake }: any) {
-  const [activeTab, setActiveTab] = useState<"info" | "forecast" | "planning">("info");
-  const tabs = [
-    { key: "info" as const, label: "Projectinfo" },
-    ...(isManager ? [{ key: "forecast" as const, label: "Forecast" }] : []),
-    { key: "planning" as const, label: "Planning" },
-  ];
-
-  return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-xl font-medium" style={{ color: "var(--text-primary)" }}>{project.naam}</h2>
-          <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>{project.nummer}</span>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-2 h-2 rounded-full" style={{ background: project.active ? "var(--accent)" : "var(--text-muted)" }} />
-            <span className="text-xs font-medium" style={{ color: project.active ? "var(--accent)" : "var(--text-muted)" }}>{project.active ? "Actief" : "Inactief"}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => generateProjectPdf(project, ogNaam, isManager)} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-            <Download className="h-3.5 w-3.5" /> PDF
-          </button>
-          <button onClick={onEdit} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-            <Pencil className="h-3.5 w-3.5" /> Bewerken
-          </button>
-          <button onClick={onToggle} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-            {project.active ? <ToggleRight className="h-3.5 w-3.5" style={{ color: "var(--success)" }} /> : <ToggleLeft className="h-3.5 w-3.5" />}
-            {project.active ? "Deactiveren" : "Activeren"}
-          </button>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-0" style={{ borderBottom: "1px solid var(--border)" }}>
-        {tabs.map(t => (
-          <button key={t.key} onClick={() => setActiveTab(t.key)} className="px-4 py-2 text-sm transition-colors" style={{
-            color: activeTab === t.key ? "var(--accent)" : "var(--text-muted)",
-            fontWeight: activeTab === t.key ? 500 : 400,
-            borderBottom: activeTab === t.key ? "2px solid var(--accent)" : "2px solid transparent",
-            marginBottom: -1,
-          }}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      {activeTab === "info" && (
-        <>
-          {/* Info grid */}
-          <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-            <InfoField label="Casenummer" value={project.nummer} mono />
-            <InfoField label="Case type" value={project.case_type} badge />
-            <InfoField label="Casenaam" value={project.naam} />
-            <InfoField label="Opdrachtgever" value={ogNaam} />
-            <InfoField label="Stationsnaam" value={project.stationsnaam} />
-            <InfoField label="Straat" value={project.straat} />
-            <InfoField label="Postcode" value={project.postcode} />
-            <InfoField label="Stad" value={project.stad} />
-          </div>
-          {volledigAdres(project) && (
-            <a href={`https://maps.google.com/?q=${encodeURIComponent(volledigAdres(project))}`} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs mt-2" style={{ color: "var(--accent)" }}>
-              <MapPin className="h-3 w-3" /> Bekijk op kaart ↗
-            </a>
-          )}
-
-          {/* Intake status */}
-          {isManager && !project.intake_gedaan && (
-            <div className="rounded-xl p-3 flex items-center justify-between" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4" style={{ color: "var(--warn-text)" }} />
-                <span className="text-xs font-semibold" style={{ color: "var(--warn-text)" }}>Forecast intake nog niet gedaan</span>
-              </div>
-              <button onClick={onStartIntake} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
-                Intake starten →
-              </button>
-            </div>
-          )}
-          {isManager && project.intake_gedaan && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "var(--success-light)", color: "var(--success)" }}>✓ Intake voltooid</span>
-              <button onClick={onStartIntake} className="text-[11px]" style={{ color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>Opnieuw doen</button>
-            </div>
-          )}
-
-          {/* Contact section (manager only) */}
-          {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
-            <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-              <p className="text-xs font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
-                <Lock className="h-3 w-3" /> Contactpersoon opdrachtgever
-              </p>
-              <div className="grid grid-cols-3 gap-4">
-                {project.contactpersoon_naam && (
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "var(--warn-text)" }}>Naam</p>
-                    <p className="text-sm" style={{ color: "var(--text-primary)" }}>{project.contactpersoon_naam}</p>
-                  </div>
-                )}
-                {project.contactpersoon_tel && (
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "var(--warn-text)" }}>Telefoon</p>
-                    <a href={`tel:${project.contactpersoon_tel}`} className="text-sm flex items-center gap-1" style={{ color: "var(--accent)" }}>
-                      <Phone className="h-3 w-3" /> {project.contactpersoon_tel}
-                    </a>
-                  </div>
-                )}
-                {project.contactpersoon_email && (
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "var(--warn-text)" }}>Email</p>
-                    <a href={`mailto:${project.contactpersoon_email}`} className="text-sm flex items-center gap-1" style={{ color: "var(--accent)" }}>
-                      <Mail className="h-3 w-3" /> {project.contactpersoon_email}
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="space-y-2 pt-2">
-            <button onClick={onEdit} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-              <Pencil className="h-3.5 w-3.5" /> Project bewerken
-            </button>
-            <button onClick={onToggle} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-              {project.active ? <ToggleRight className="h-3.5 w-3.5" /> : <ToggleLeft className="h-3.5 w-3.5" />}
-              {project.active ? "Deactiveren" : "Activeren"}
-            </button>
-            {confirmDeleteId === project.id ? (
-              <div className="flex gap-2">
-                <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
-                <button onClick={onDelete} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "var(--danger)" }}>Definitief verwijderen</button>
-              </div>
-            ) : (
-              <button onClick={onDelete} className="w-full py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
-                <Trash2 className="h-3.5 w-3.5" /> Verwijderen
-              </button>
-            )}
-          </div>
-        </>
-      )}
-
-      {activeTab === "forecast" && isManager && (
-        <ForecastTab projectId={project.id} />
-      )}
-
-      {activeTab === "planning" && (
-        <PlanningStatusTab projectId={project.id} profileId={undefined} />
-      )}
-    </div>
-  );
-}
-
-function InfoField({ label, value, mono, badge }: { label: string; value: string | null; mono?: boolean; badge?: boolean }) {
-  if (!value) return (
-    <div style={{ borderBottom: "1px solid var(--bg-surface)", paddingBottom: 8 }}>
-      <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{label}</p>
-      <p className="text-[13px] mt-0.5" style={{ color: "var(--border)" }}>—</p>
-    </div>
-  );
-  return (
-    <div style={{ borderBottom: "1px solid var(--bg-surface)", paddingBottom: 8 }}>
-      <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{label}</p>
-      {badge ? <CaseTypeBadge type={value} /> : (
-        <p className={`text-[13px] mt-0.5 ${mono ? "font-mono" : ""}`} style={{ color: "var(--text-primary)" }}>{value}</p>
-      )}
-    </div>
-  );
-}
-
-function DesktopFormPanel({ title, renderFormFields, onCancel, onSubmit, submitLabel }: {
-  title: string; renderFormFields: () => React.ReactNode; onCancel: () => void; onSubmit: () => void; submitLabel: string;
-}) {
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium" style={{ color: "var(--text-primary)" }}>{title}</h2>
-        <button onClick={onCancel} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}>
-          <X className="h-4 w-4" style={{ color: "var(--text-secondary)" }} />
-        </button>
-      </div>
-      <div className="space-y-3">
-        {renderFormFields()}
-      </div>
-      <div className="flex gap-3 pt-2">
-        <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
-        <button onClick={onSubmit} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>{submitLabel}</button>
-      </div>
-    </div>
   );
 }
