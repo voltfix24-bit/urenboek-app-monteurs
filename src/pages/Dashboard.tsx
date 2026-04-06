@@ -322,6 +322,9 @@ export default function Dashboard() {
               </div>
             )}
 
+            {/* Contracts needing attention */}
+            <ContractAttentionSection navigate={navigate} />
+
             {/* Expiring certs */}
             {expiringCerts.length > 0 && (
               <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
