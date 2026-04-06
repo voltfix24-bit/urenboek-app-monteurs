@@ -119,7 +119,7 @@ const SITUATIE_OPTIES = [
   { label: "VOP uren (aantal > 0)", type: "antwoord", veld: "vop_uren", waarde: "gt0" },
 ] as const;
 
-import { euroDecimals as euro } from "@/lib/formatting";
+
 
 // ─── Helpers ───
 
