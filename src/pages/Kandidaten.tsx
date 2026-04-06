@@ -12,7 +12,7 @@ import { KANDIDAAT_STATUS_CONFIG, CONTRACT_STATUS_CONFIG } from "@/lib/contractS
 import { generateContractPdf } from "@/lib/contractPdf";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { toast } from "sonner";
-import { UserPlus, MoreHorizontal, ChevronRight } from "lucide-react";
+import { UserPlus, MoreHorizontal, ChevronRight, Copy } from "lucide-react";
 import type { Kandidaat, ContractData } from "@/types/app";
 
 const STATUSSEN = ["alle", "gesprek", "tarief_afgesproken", "uitgenodigd", "gecontracteerd", "afgewezen"] as const;
@@ -290,9 +290,26 @@ export default function Kandidaten() {
                         Contract <ChevronRight className="w-3 h-3" />
                       </button>
                     )}
-                    {!wachtOpManager && (k.status === "uitgenodigd" || k.status === "gecontracteerd") && (
+                    {!wachtOpManager && k.status === "uitgenodigd" && contract && (
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-[10px] font-medium" style={{ color: "var(--info)" }}>📧 Uitgenodigd</span>
+                        {(contract.contract_data as any)?._token && (
+                          <button
+                            onClick={() => {
+                              const link = `${window.location.origin}/contract/ondertekenen/${(contract.contract_data as any)._token}`;
+                              navigator.clipboard.writeText(link);
+                              toast.success("Link gekopieerd ✓");
+                            }}
+                            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg font-medium"
+                            style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                            <Copy className="w-3 h-3" /> Link kopiëren
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {!wachtOpManager && k.status === "gecontracteerd" && (
                       <span className="text-[10px] font-medium" style={{ color: "var(--success)" }}>
-                        {k.status === "gecontracteerd" ? "✓ Gecontracteerd" : "📧 Uitgenodigd"}
+                        ✓ Gecontracteerd
                       </span>
                     )}
                     {k.status !== "afgewezen" && k.status !== "gecontracteerd" && !wachtOpManager && (

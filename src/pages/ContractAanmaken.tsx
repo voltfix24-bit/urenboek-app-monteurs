@@ -137,7 +137,21 @@ export default function ContractAanmaken() {
       await supabase.from("kandidaten").update({ status: "uitgenodigd" }).eq("id", kandidaatId!);
 
       toast.success("Contract verstuurd ✓");
-      toast.info(`Ondertekeningslink: ${ondertekeningsLink}`, { duration: 15000 });
+      toast.info(
+        <div className="space-y-1">
+          <p className="text-xs font-semibold">Ondertekeningslink:</p>
+          <div className="flex items-center gap-2">
+            <code className="text-[10px] break-all flex-1" style={{ color: "var(--accent)" }}>{ondertekeningsLink}</code>
+            <button
+              onClick={() => { navigator.clipboard.writeText(ondertekeningsLink); toast.success("Link gekopieerd ✓"); }}
+              className="shrink-0 px-2 py-1 rounded text-[10px] font-medium"
+              style={{ background: "var(--accent)", color: "#fff" }}>
+              Kopieer
+            </button>
+          </div>
+        </div>,
+        { duration: 30000 }
+      );
       navigate("/kandidaten");
     } catch (err) {
       toast.error("Fout bij versturen");
