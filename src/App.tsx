@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth, type RolPermissies } from "@/hooks/useAuth";
 import { ProfileProvider } from "@/hooks/useProfile";
 import { NavBadgesProvider } from "@/hooks/useNavBadges";
+import { AppErrorBoundary, RouteErrorBoundary } from "@/components/AppErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Setup from "./pages/Setup";
@@ -64,53 +65,56 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+const RB = ({ children }: { children: React.ReactNode }) => (
+  <RouteErrorBoundary>{children}</RouteErrorBoundary>
+);
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <ProfileProvider>
-          <NavBadgesProvider>
-          <Routes>
-            <Route path="/login" element={<PublicRoute><Auth /></PublicRoute>} />
-            <Route path="/setup" element={<Setup />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+  <AppErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <ProfileProvider>
+            <NavBadgesProvider>
+            <Routes>
+              <Route path="/login" element={<PublicRoute><RB><Auth /></RB></PublicRoute>} />
+              <Route path="/setup" element={<RB><Setup /></RB>} />
+              <Route path="/reset-password" element={<RB><ResetPassword /></RB>} />
+              <Route path="/auth/callback" element={<RB><AuthCallback /></RB>} />
+              <Route path="/onboarding" element={<ProtectedRoute><RB><Onboarding /></RB></ProtectedRoute>} />
 
-            {/* Always accessible for logged-in users */}
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/planning" element={<RoleRoute check={p => p.zietPlanning}><Planning /></RoleRoute>} />
-            <Route path="/mededelingen" element={<RoleRoute check={p => p.zietMededelingen}><Mededelingen /></RoleRoute>} />
-            <Route path="/profiel" element={<ProtectedRoute><Profiel /></ProtectedRoute>} />
-            <Route path="/mijn-orders" element={<RoleRoute check={p => p.zietInkooporders}><MijnOrders /></RoleRoute>} />
+              <Route path="/" element={<ProtectedRoute><RB><Index /></RB></ProtectedRoute>} />
+              <Route path="/planning" element={<RoleRoute check={p => p.zietPlanning}><RB><Planning /></RB></RoleRoute>} />
+              <Route path="/mededelingen" element={<RoleRoute check={p => p.zietMededelingen}><RB><Mededelingen /></RB></RoleRoute>} />
+              <Route path="/profiel" element={<ProtectedRoute><RB><Profiel /></RB></ProtectedRoute>} />
+              <Route path="/mijn-orders" element={<RoleRoute check={p => p.zietInkooporders}><RB><MijnOrders /></RB></RoleRoute>} />
 
-            {/* Role-gated routes */}
-            <Route path="/dashboard" element={<RoleRoute check={p => p.zietDashboard}><Dashboard /></RoleRoute>} />
-            <Route path="/goedkeuring" element={<RoleRoute check={p => p.zietGoedkeuring}><Goedkeuring /></RoleRoute>} />
-            <Route path="/overuren" element={<RoleRoute check={p => p.zietOveruren}><Overuren /></RoleRoute>} />
-            <Route path="/rapportage" element={<RoleRoute check={p => p.zietRapportage}><Rapportage /></RoleRoute>} />
-            <Route path="/manager-planning" element={<RoleRoute check={p => p.zietManagerPlanning}><ManagerPlanning /></RoleRoute>} />
-            <Route path="/projecten" element={<RoleRoute check={p => p.zietProjecten}><Projecten /></RoleRoute>} />
-            <Route path="/projecten/:projectId/planning" element={<RoleRoute check={p => p.zietProjecten}><ProjectPlanning /></RoleRoute>} />
-            <Route path="/opdrachtgevers" element={<RoleRoute check={p => p.magTeamBeheren}><Opdrachtgevers /></RoleRoute>} />
-            <Route path="/medewerkers" element={<RoleRoute check={p => p.zietTeam}><Medewerkers /></RoleRoute>} />
-            <Route path="/inkooporders" element={<RoleRoute check={p => p.zietAlleInkooporders}><Inkooporders /></RoleRoute>} />
+              <Route path="/dashboard" element={<RoleRoute check={p => p.zietDashboard}><RB><Dashboard /></RB></RoleRoute>} />
+              <Route path="/goedkeuring" element={<RoleRoute check={p => p.zietGoedkeuring}><RB><Goedkeuring /></RB></RoleRoute>} />
+              <Route path="/overuren" element={<RoleRoute check={p => p.zietOveruren}><RB><Overuren /></RB></RoleRoute>} />
+              <Route path="/rapportage" element={<RoleRoute check={p => p.zietRapportage}><RB><Rapportage /></RB></RoleRoute>} />
+              <Route path="/manager-planning" element={<RoleRoute check={p => p.zietManagerPlanning}><RB><ManagerPlanning /></RB></RoleRoute>} />
+              <Route path="/projecten" element={<RoleRoute check={p => p.zietProjecten}><RB><Projecten /></RB></RoleRoute>} />
+              <Route path="/projecten/:projectId/planning" element={<RoleRoute check={p => p.zietProjecten}><RB><ProjectPlanning /></RB></RoleRoute>} />
+              <Route path="/opdrachtgevers" element={<RoleRoute check={p => p.magTeamBeheren}><RB><Opdrachtgevers /></RB></RoleRoute>} />
+              <Route path="/medewerkers" element={<RoleRoute check={p => p.zietTeam}><RB><Medewerkers /></RB></RoleRoute>} />
+              <Route path="/inkooporders" element={<RoleRoute check={p => p.zietAlleInkooporders}><RB><Inkooporders /></RB></RoleRoute>} />
 
-            {/* Beheer */}
-            <Route path="/beheer/intake-regels" element={<RoleRoute check={p => p.zietBeheer}><IntakeRegelBeheer /></RoleRoute>} />
-            <Route path="/beheer/tarieven" element={<RoleRoute check={p => p.zietBeheer}><TarievenBeheer /></RoleRoute>} />
+              <Route path="/beheer/intake-regels" element={<RoleRoute check={p => p.zietBeheer}><RB><IntakeRegelBeheer /></RB></RoleRoute>} />
+              <Route path="/beheer/tarieven" element={<RoleRoute check={p => p.zietBeheer}><RB><TarievenBeheer /></RB></RoleRoute>} />
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          </NavBadgesProvider>
-          </ProfileProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            </NavBadgesProvider>
+            </ProfileProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </AppErrorBoundary>
 );
 
 export default App;
