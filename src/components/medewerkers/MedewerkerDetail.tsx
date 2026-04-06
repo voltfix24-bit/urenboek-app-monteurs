@@ -313,6 +313,39 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
           {emp.activated_at && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Geactiveerd op: {format(parseISO(emp.activated_at), "d MMM yyyy HH:mm", { locale: nl })}</p>}
         </div>
       </Section>
+
+      {/* Verwijderen */}
+      {onDelete && (
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
+          style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}
+        >
+          <Trash2 className="h-3.5 w-3.5" /> Medewerker verwijderen
+        </button>
+      )}
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2" style={{ color: "var(--danger)" }}>
+              <Trash2 className="h-4 w-4" /> Medewerker verwijderen
+            </AlertDialogTitle>
+            <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+              Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen? Dit verwijdert ook alle uren, planning, certificaten en andere gerelateerde data. Dit kan niet ongedaan worden gemaakt.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { onDelete?.(emp.user_id, emp.full_name); setShowDeleteConfirm(false); }}
+              style={{ background: "var(--danger)", color: "#fff" }}
+            >
+              Ja, verwijderen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
