@@ -238,6 +238,12 @@ export default function Profiel() {
           </div>
         </div>
 
+        {/* Manager handtekening section */}
+        {permissies.zietDashboard && <ManagerHandtekeningSection profileId={profile?.id || null} />}
+
+        {/* Monteur contract section */}
+        {!permissies.zietDashboard && <MonteurContractSection profileId={profile?.id || null} />}
+
         {/* Beschikbaarheid & Kalender */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Beschikbaarheid</p>
