@@ -262,10 +262,11 @@ export default function IntakeRegelBeheer() {
     setSimResult(berekenRegels(a, simCaseType || null, regels));
   }
 
-  // Find which regel triggered a result
-  function findTriggerLabel(specCode: string): string | null {
-    const r = regels.find(r => r.spec_code === specCode && r.actief);
-    return r ? regelConditieTekst(r) : null;
+  // Build trigger label from result's own trigger info
+  function resultTriggerLabel(r: BerekendeRegel): string | null {
+    if (!r.trigger_type) return null;
+    const fakeRegel = { trigger_type: r.trigger_type, trigger_veld: r.trigger_veld ?? null, trigger_waarde: r.trigger_waarde ?? null } as IntakeRegel;
+    return regelConditieTekst(fakeRegel);
   }
 
   const inputStyle = { background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" };
