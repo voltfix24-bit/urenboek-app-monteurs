@@ -21,6 +21,7 @@ interface Project {
   contactpersoon_naam: string | null; contactpersoon_tel: string | null; contactpersoon_email: string | null;
   straat: string | null; postcode: string | null; stad: string | null;
   intake_gedaan: boolean; rmu_merk: string | null; rmu_configuratie_id: string | null;
+  status: string;
 }
 
 export default function Projecten() {
@@ -39,10 +40,11 @@ export default function Projecten() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
+  const [statusFilter, setStatusFilter] = useState("alle");
 
   const fetchData = useCallback(async () => {
     const [p, o] = await Promise.all([
-      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id").order("nummer"),
+      supabase.from("projects").select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id, status").order("nummer"),
       supabase.from("opdrachtgevers").select("id, naam").order("naam"),
     ]);
     if (p.data) setProjects(p.data); if (o.data) setOpdrachtgevers(o.data);
