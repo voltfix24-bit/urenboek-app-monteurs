@@ -203,6 +203,81 @@ export interface Inkooporder {
   notitie: string | null;
 }
 
+// ─── KANDIDATEN ───────────────────────
+export type KandidaatStatus =
+  | 'gesprek'
+  | 'tarief_afgesproken'
+  | 'uitgenodigd'
+  | 'gecontracteerd'
+  | 'afgewezen';
+
+export interface Kandidaat {
+  id: string;
+  voornaam: string;
+  achternaam: string;
+  email: string;
+  telefoon: string | null;
+  notities: string | null;
+  status: KandidaatStatus;
+  afgesproken_tarief: number | null;
+  aangemaakt_door: string;
+  aangemaakt_op: string;
+  profiel_id: string | null;
+}
+
+// ─── CONTRACTEN ───────────────────────
+export type ContractStatus =
+  | 'concept'
+  | 'verstuurd'
+  | 'ondertekend_ot'
+  | 'ondertekend_beiden'
+  | 'verlopen'
+  | 'opgezegd';
+
+export interface ContractData {
+  og_naam: string;
+  og_rechtsvorm: string;
+  og_adres: string;
+  og_postcode: string;
+  og_stad: string;
+  og_kvk: string;
+  og_vertegenwoordiger: string;
+  og_functie: string;
+  ot_naam: string;
+  ot_handelsnaam: string;
+  ot_adres: string;
+  ot_postcode: string;
+  ot_stad: string;
+  ot_kvk: string;
+  ot_btw: string;
+  uurtarief: number;
+  startdatum: string;
+  einddatum: string;
+  onderteken_datum: string;
+  onderteken_plaats: string;
+  contract_nummer: string;
+}
+
+export interface Contract {
+  id: string;
+  contract_nummer: string;
+  kandidaat_id: string | null;
+  profiel_id: string | null;
+  status: ContractStatus;
+  contract_data: ContractData;
+  ot_naam: string | null;
+  ot_timestamp: string | null;
+  og_naam: string | null;
+  og_profiel_id: string | null;
+  og_timestamp: string | null;
+  pdf_path: string | null;
+  pdf_hash: string | null;
+  startdatum: string | null;
+  einddatum: string | null;
+  herinnering_verstuurd: boolean;
+  aangemaakt_op: string;
+}
+
 // ─── HELPER TYPES ─────────────────────
 export interface ProfielMetRol extends Profiel {
   role: string;
