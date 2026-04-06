@@ -358,6 +358,7 @@ export default function Kandidaten() {
   }
 
   return (
+    <>
     <PageShell>
       <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Kandidaten</h1>
       <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Werving en contractbeheer</p>
