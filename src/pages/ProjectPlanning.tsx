@@ -231,8 +231,12 @@ export default function ProjectPlanning() {
       definitief_door: myProfileId.current,
     }, { onConflict: "project_id" });
 
-    // Create planning entries for cells with medewerker — with dedup check
-    const cellEntries: { key: string; cell: CellData; datumStr: string; actIdx: number }[] = [];
+    // Delete existing planning records for this project so we can re-create them
+    await supabase.from("planning").delete().eq("project_id", projectId);
+
+    // Build monteur-per-datum map for collega_ids
+    const monteurPerDatum = new Map<string, string[]>();
+    const cellEntries: { key: string; cell: CellData; datumStr: string; actIdx: number; weekIdx: number }[] = [];
     for (const [key, cell] of Object.entries(state.cells)) {
       if (!cell.medewerker_id) continue;
       const [actIdx, weekIdx, dayIdx] = key.split("-").map(Number);
@@ -240,53 +244,60 @@ export default function ProjectPlanning() {
       if (weekNr === undefined) continue;
       const datum = dateFromWeek(state.year, weekNr, dayIdx);
       const datumStr = format(datum, "yyyy-MM-dd");
-      cellEntries.push({ key, cell, datumStr, actIdx });
+      cellEntries.push({ key, cell, datumStr, actIdx, weekIdx });
+
+      const existing = monteurPerDatum.get(datumStr) || [];
+      if (!existing.includes(cell.medewerker_id)) {
+        existing.push(cell.medewerker_id);
+      }
+      monteurPerDatum.set(datumStr, existing);
     }
 
-    let newCount = 0;
-    if (cellEntries.length > 0) {
-      // Deduplicate by medewerker_id + datum within our entries
-      const seen = new Set<string>();
-      const unique = cellEntries.filter(e => {
-        const k = `${e.cell.medewerker_id}-${e.datumStr}`;
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
+    // Deduplicate by medewerker_id + datum (keep first activity found)
+    const seen = new Set<string>();
+    const unique = cellEntries.filter(e => {
+      const k = `${e.cell.medewerker_id}-${e.datumStr}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
 
-      // Check existing entries in DB in parallel
-      const results = await Promise.all(unique.map(async (e) => {
-        const { data } = await supabase.from("planning").select("id")
-          .eq("medewerker_id", e.cell.medewerker_id!)
-          .eq("datum", e.datumStr)
-          .eq("project_id", projectId)
-          .limit(1);
-        return { entry: e, exists: (data && data.length > 0) };
-      }));
+    const toInsert = unique.map(r => {
+      const activiteitNaam = state.activities[r.actIdx] || "";
+      const activiteitKleur = r.cell.color || "";
+      const weekKey = `${state.weekNrs[r.weekIdx]}`;
+      const weekOpm = state.weekComments?.[weekKey] || null;
+      const alleDagMonteurs = monteurPerDatum.get(r.datumStr) || [];
+      const collega_ids = alleDagMonteurs.filter(id => id !== r.cell.medewerker_id);
 
-      const toInsert = results.filter(r => !r.exists).map(r => ({
-        medewerker_id: r.entry.cell.medewerker_id!,
+      return {
+        medewerker_id: r.cell.medewerker_id!,
         project_id: projectId,
-        datum: r.entry.datumStr,
+        datum: r.datumStr,
         starttijd: "07:00",
         eindtijd: "16:00",
-        notitie: r.entry.cell.note || state.activities[r.entry.actIdx] || "",
-        created_by: myProfileId.current || r.entry.cell.medewerker_id!,
-      }));
+        notitie: r.cell.note || "",
+        activiteit: activiteitNaam || null,
+        activiteit_kleur: activiteitKleur || null,
+        collega_ids: collega_ids.length > 0 ? collega_ids : null,
+        week_opmerking: weekOpm,
+        created_by: myProfileId.current || r.cell.medewerker_id!,
+      };
+    });
 
-      newCount = toInsert.length;
-      if (toInsert.length > 0) {
-        await supabase.from("planning").insert(toInsert);
-      }
+    if (toInsert.length > 0) {
+      await supabase.from("planning").insert(toInsert as any);
     }
 
     setPlanningStatus({ is_definitief: true, definitief_op: new Date().toISOString() });
     setShowDefinitiefDialog(false);
-    toast.success(`Planning gepubliceerd — ${newCount} nieuwe dagen ingepland voor monteurs.`);
+    toast.success(`Planning gepubliceerd — ${toInsert.length} dagen ingepland voor monteurs.`);
   };
 
   const makeConcept = async () => {
     if (!projectId) return;
+    // Delete planning records for this project
+    await supabase.from("planning").delete().eq("project_id", projectId);
     await supabase.from("project_planning_status").upsert({
       project_id: projectId,
       is_definitief: false,
