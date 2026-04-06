@@ -52,7 +52,7 @@ const MANAGER_GROEPEN: NavGroep[] = [
   {
     label: "Team",
     items: [
-      { path: "/medewerkers", icon: Users, label: "Medewerkers" },
+      { path: "/medewerkers", icon: Users, label: "Medewerkers", badgeKey: "verificatieNodig" },
       { path: "/kandidaten", icon: UserPlus, label: "Kandidaten" },
     ],
   },
