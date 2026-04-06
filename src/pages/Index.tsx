@@ -447,6 +447,9 @@ const Index = () => {
             </div>
 
             {/* Week entries by day */}
+            {loading ? (
+              <ListSkeleton count={3} ItemSkeleton={UrenCardSkeleton} />
+            ) : (
             <div className="space-y-3">
               {weekDates.map((d, i) => {
                 const key = dateKey(d);
@@ -471,7 +474,7 @@ const Index = () => {
                 </div>
               )}
             </div>
-          </div>
+            )}
         )}
 
         {/* Overzicht tab */}
