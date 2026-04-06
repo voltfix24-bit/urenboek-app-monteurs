@@ -68,6 +68,7 @@ export default function Profiel() {
   const [verlofForm, setVerlofForm] = useState({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" });
   const [loading, setLoading] = useState(true);
   const [calMonth, setCalMonth] = useState(new Date());
+  const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
@@ -84,6 +85,13 @@ export default function Profiel() {
 
   const saveProfile = async () => {
     if (!profile) return;
+    const vResult = valideer(profielSchema, editForm);
+    if (!vResult.success) {
+      setProfileErrors(vResult.errors);
+      toast.error("Controleer de ingevulde gegevens");
+      return;
+    }
+    setProfileErrors({});
     if (!await mutate(supabase.from("profiles").update({ full_name: editForm.full_name, telefoon: editForm.telefoon, adres: editForm.adres } as any).eq("id", profile.id))) return;
     toast.success("Profiel opgeslagen"); setEditing(false); fetchProfile(); refetchProfileContext();
   };
