@@ -1,0 +1,2 @@
+UPDATE intake_regels SET volgorde = 3 WHERE spec_code = 'R320010' AND trigger_type = 'antwoord' AND trigger_waarde = 'ja';
+UPDATE intake_regels SET volgorde = 5 WHERE spec_code = 'R320040' AND trigger_type = 'case_type' AND trigger_waarde = 'compactstation';
