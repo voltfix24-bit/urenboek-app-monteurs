@@ -34,6 +34,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const [methode, setMethode] = useState<string | null>(null);
   const [regels, setRegels] = useState<ForecastRegel[]>([]);
   const [monteurs, setMonteurs] = useState<MonteurOption[]>([]);
+  const [alleProfielen, setAlleProfielen] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
   const [verwachteOmzet, setVerwachteOmzet] = useState<number>(0);
   const [specCodes, setSpecCodes] = useState<SpecCode[]>(SPEC_CODES);
@@ -57,8 +58,10 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     }
     const { data: profiles } = await supabase.from("profiles").select("id, user_id, full_name, uurtarief");
     const { data: roles } = await supabase.from("user_roles").select("user_id, role");
-    if (profiles && roles) {
-      const monteurUserIds = new Set(roles.filter(r => r.role === "monteur" || r.role === "schakelmonteur").map(r => r.user_id));
+    if (profiles) {
+      const namenMap = new Map(profiles.map(p => [p.id, p.full_name]));
+      setAlleProfielen(namenMap);
+      const monteurUserIds = new Set((roles || []).filter(r => r.role === "monteur" || r.role === "schakelmonteur").map(r => r.user_id));
       setMonteurs(profiles.filter(p => monteurUserIds.has(p.user_id)).map(p => ({ id: p.id, full_name: p.full_name, uurtarief: (p as any).uurtarief })));
     }
     setLoading(false);
@@ -133,7 +136,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     return <StuksprijzenEditor regels={regels} onUpdate={updateRegels} onSave={() => saveRegels(regels)} specCodes={specCodes} />;
   }
 
-  return <UrenEditor regels={regels} monteurs={monteurs} onUpdate={updateRegels} onSave={() => saveRegels(regels)} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} />;
+  return <UrenEditor regels={regels} monteurs={monteurs} alleProfielen={alleProfielen} onUpdate={updateRegels} onSave={() => saveRegels(regels)} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} />;
 }
 
 function StuksprijzenEditor({ regels, onUpdate, onSave, specCodes }: { regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; onSave: () => void; specCodes: SpecCode[] }) {
@@ -252,8 +255,8 @@ function StuksprijzenEditor({ regels, onUpdate, onSave, specCodes }: { regels: F
   );
 }
 
-function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVerwachteOmzet }: {
-  regels: ForecastRegel[]; monteurs: MonteurOption[]; onUpdate: (r: ForecastRegel[]) => void; onSave: () => void;
+function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, onSave, verwachteOmzet, setVerwachteOmzet }: {
+  regels: ForecastRegel[]; monteurs: MonteurOption[]; alleProfielen: Map<string, string>; onUpdate: (r: ForecastRegel[]) => void; onSave: () => void;
   verwachteOmzet: number; setVerwachteOmzet: (v: number) => void;
 }) {
   const [selectedMonteur, setSelectedMonteur] = useState("");
@@ -308,7 +311,7 @@ function UrenEditor({ regels, monteurs, onUpdate, onSave, verwachteOmzet, setVer
               const kosten = (r.geplande_uren || 0) * (r.uurtarief_snap || 0);
               return (
                 <div key={r.medewerker_id} className="grid grid-cols-[1fr_70px_70px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid var(--border)" }}>
-                  <span className="truncate" style={{ color: "var(--text-primary)" }}>{m?.full_name || "?"}</span>
+                  <span className="truncate" style={{ color: "var(--text-primary)" }}>{m?.full_name || alleProfielen.get(r.medewerker_id || '') || r.medewerker_id?.slice(0, 8) || "?"}</span>
                   <span className={mono} style={{ color: "var(--text-secondary)" }}>€ {r.uurtarief_snap || 0}</span>
                   <input type="number" value={r.geplande_uren || 0} onChange={e => updateUren(r.medewerker_id!, parseFloat(e.target.value) || 0)} className={`w-14 text-center bg-transparent text-[12px] ${mono}`} style={{ color: "var(--text-primary)" }} min={0} />
                   <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(kosten)}</span>
