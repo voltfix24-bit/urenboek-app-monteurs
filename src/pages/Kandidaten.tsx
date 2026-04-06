@@ -329,6 +329,34 @@ export default function Kandidaten() {
     fetchKandidaten();
   }
 
+  async function onHold(id: string) {
+    await supabase.from("kandidaten").update({ status: "on_hold" as any }).eq("id", id);
+    toast.success("Kandidaat on hold gezet");
+    fetchKandidaten();
+  }
+
+  async function reactiveer(id: string) {
+    await supabase.from("kandidaten").update({ status: "gesprek" }).eq("id", id);
+    toast.success("Kandidaat weer actief");
+    fetchKandidaten();
+  }
+
+  const [deleteConfirm, setDeleteConfirm] = useState<Kandidaat | null>(null);
+
+  async function verwijderKandidaat(id: string) {
+    // Also delete related contracts and berichten
+    const relatedContracts = contracten.filter(c => c.kandidaat_id === id);
+    for (const c of relatedContracts) {
+      await supabase.from("contract_berichten").delete().eq("contract_id", c.id);
+      await supabase.from("contract_tokens").delete().eq("contract_id", c.id);
+      await supabase.from("contracten").delete().eq("id", c.id);
+    }
+    await supabase.from("kandidaten").delete().eq("id", id);
+    toast.success("Kandidaat verwijderd");
+    setDeleteConfirm(null);
+    fetchKandidaten();
+  }
+
   return (
     <PageShell>
       <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Kandidaten</h1>
