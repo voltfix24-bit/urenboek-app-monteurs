@@ -8,10 +8,10 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { ArrowLeft, Plus, Pencil, Trash2, X, Check, ToggleLeft, ToggleRight, FlaskConical, Loader2 } from "lucide-react";
 import { SPEC_CODES } from "@/lib/specCodes";
-import { IntakeRegel, IntakeAntwoorden, BerekendeRegel, defaultAntwoorden, berekenRegels } from "@/lib/forecastIntake";
+import { IntakeRegel, IntakeAntwoorden, BerekendeRegel, LEGE_ANTWOORDEN, berekenRegels } from "@/lib/forecastIntake";
 
 const TRIGGER_TYPES = ["altijd", "case_type", "antwoord", "rmu_velden_gt"];
-const TRIGGER_VELDEN = ["rmu_vervangen", "rmu_velden", "trafo_situatie", "ls_rek", "ls_stroken", "ls_kabels", "vereffeningsleiding", "aardweerstand", "ggi", "boren", "revisie", "wv", "wv_io", "case_type"];
+const TRIGGER_VELDEN = ["rmu_vervangen", "rmu_velden", "trafo_situatie", "ls_rek", "ls_stroken", "ls_kabels", "vereffeningsleiding", "aardweerstand", "ggi", "boren", "dichtzetten", "traanplaat", "revisie", "wv", "wv_io", "ims_ombouw", "trafokabel", "zekeringen", "ls_moffen", "ls_eindsluitingen", "huisaansluitingen", "ls_kast_verwijderen", "ls_kast_aansluiten", "ov_kast", "ov_meter", "kabeldeel_vrijschakelen", "vp_uren", "avp_uren", "vop_uren", "case_type"];
 const TRIGGER_BADGES: Record<string, { bg: string; color: string }> = {
   altijd: { bg: "var(--bg-surface-2)", color: "var(--text-secondary)" },
   case_type: { bg: "var(--info-light)", color: "var(--info)" },
@@ -38,7 +38,7 @@ export default function IntakeRegelBeheer() {
   const [filterType, setFilterType] = useState<string>("alle");
   const [showSim, setShowSim] = useState(false);
   const [simCaseType, setSimCaseType] = useState<string>("");
-  const [simAnswers, setSimAnswers] = useState<IntakeAntwoorden>(defaultAntwoorden);
+  const [simAnswers, setSimAnswers] = useState<IntakeAntwoorden>(LEGE_ANTWOORDEN);
   const [simResult, setSimResult] = useState<BerekendeRegel[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -147,7 +147,8 @@ export default function IntakeRegelBeheer() {
                 <input type="checkbox" checked={simAnswers.rmu_vervangen} onChange={e => setSimAnswers(a => ({ ...a, rmu_vervangen: e.target.checked }))} style={{ accentColor: "var(--accent)" }} /> RMU
               </label>
               <label className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-primary)" }}>
-                <input type="checkbox" checked={simAnswers.vereffeningsleiding} onChange={e => setSimAnswers(a => ({ ...a, vereffeningsleiding: e.target.checked }))} style={{ accentColor: "var(--accent)" }} /> Vereff.
+                Vereff:
+                <input type="number" value={simAnswers.vereffeningsleiding} onChange={e => setSimAnswers(a => ({ ...a, vereffeningsleiding: parseInt(e.target.value) || 0 }))} min={0} max={10} className="w-14 px-2 py-1 rounded text-center" style={inputStyle} />
               </label>
               <label className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-primary)" }}>
                 <input type="checkbox" checked={simAnswers.wv} onChange={e => setSimAnswers(a => ({ ...a, wv: e.target.checked }))} style={{ accentColor: "var(--accent)" }} /> WV
