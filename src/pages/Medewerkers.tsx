@@ -13,6 +13,7 @@ import { PageShell } from "@/components/PageShell";
 import { MedewerkerKaart, roleLabels, type Employee } from "@/components/medewerkers/MedewerkerKaart";
 import { MedewerkerDetail } from "@/components/medewerkers/MedewerkerDetail";
 import { NieuweGebruikerForm } from "@/components/medewerkers/NieuweGebruikerForm";
+import { ListSkeleton, MedewerkerSkeleton } from "@/components/ui/Skeletons";
 
 interface CreatedUser { email: string; fullName: string; role: string; password?: string; inviteOnly?: boolean; }
 
@@ -52,7 +53,7 @@ export default function Medewerkers() {
     return () => window.removeEventListener("resize", handler);
   }, []);
 
-  const { medewerkers: medewerkersData, refetch: refetchMedewerkers } = useMedewerkers();
+  const { medewerkers: medewerkersData, loading: medewerkersLoading, refetch: refetchMedewerkers } = useMedewerkers();
 
   useEffect(() => {
     if (medewerkersData.length > 0) {
@@ -228,7 +229,11 @@ export default function Medewerkers() {
         </>
       )}
 
-      {employees.length === 0 && (
+      {medewerkersLoading && employees.length === 0 && (
+        <ListSkeleton count={5} ItemSkeleton={MedewerkerSkeleton} />
+      )}
+
+      {!medewerkersLoading && employees.length === 0 && (
         <div className="text-center py-12">
           <Users className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
           <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Nog geen medewerkers</p>
