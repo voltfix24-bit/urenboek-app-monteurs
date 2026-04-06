@@ -42,6 +42,7 @@ export default function Projecten() {
   const [searchQuery, setSearchQuery] = useState("");
   const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
   const [statusFilter, setStatusFilter] = useState("alle");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const fetchData = useCallback(async () => {
     const [p, o] = await Promise.all([
