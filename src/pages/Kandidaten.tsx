@@ -705,5 +705,26 @@ export default function Kandidaten() {
         <UserPlus className="w-6 h-6 text-white" />
       </button>
     </PageShell>
+
+    <AlertDialog open={!!deleteConfirm} onOpenChange={(o) => !o && setDeleteConfirm(null)}>
+      <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}>
+        <AlertDialogHeader>
+          <AlertDialogTitle style={{ color: "var(--danger)" }}>Kandidaat verwijderen</AlertDialogTitle>
+          <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+            Weet je zeker dat je <strong>{deleteConfirm?.voornaam} {deleteConfirm?.achternaam}</strong> wilt verwijderen? 
+            Alle bijbehorende contracten en berichten worden ook verwijderd. Dit kan niet ongedaan worden.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>
+            Annuleren
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={() => deleteConfirm && verwijderKandidaat(deleteConfirm.id)} style={{ background: "var(--danger)", color: "#fff" }}>
+            Ja, verwijderen
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
