@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText } from "lucide-react";
+import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText, Check, X } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
@@ -8,6 +8,10 @@ import { StatusBadge, roleLabels, type Employee } from "./MedewerkerKaart";
 import { CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDatum } from "@/lib/formatting";
+import { useProfile } from "@/hooks/useProfile";
+import { toast } from "sonner";
+import { mutate } from "@/lib/supabaseHelpers";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -36,10 +40,97 @@ interface Props {
   emp: Employee;
   certs: any[];
   onRefreshCerts: () => void;
+  onRefresh?: () => void;
 }
 
-export function MedewerkerDetail({ emp, certs, onRefreshCerts }: Props) {
+function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
+  emp: Employee; certs: any[]; contract: any;
+  onActivate: () => void; onAfwijzen: (reden: string) => void;
+}) {
+  const [showAfwijzen, setShowAfwijzen] = useState(false);
+  const [afwijsReden, setAfwijsReden] = useState("");
+  const [showActiveer, setShowActiveer] = useState(false);
+
+  const heeftCerts = certs.length >= 1;
+  const heeftContract = contract && ["ondertekend_beiden", "ondertekend_ot"].includes(contract.status);
+  const naamAdresOk = !!(emp.full_name && emp.adres);
+  const alleChecks = naamAdresOk && heeftCerts && heeftContract;
+
+  const checks = [
+    { label: "Naam en adres kloppen", ok: naamAdresOk },
+    { label: "KVK-nummer gecontroleerd", ok: !!emp.kvk_nummer },
+    { label: "Minstens 1 certificaat aanwezig", ok: heeftCerts },
+    { label: "Contract is ondertekend", ok: heeftContract },
+  ];
+
+  return (
+    <>
+      <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+        <p className="text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--warn-text)" }}>
+          <AlertTriangle className="h-4 w-4" /> Verificatie vereist
+        </p>
+        <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{emp.full_name} heeft het onboarding profiel ingevuld.</p>
+
+        <div className="space-y-1.5 mt-2">
+          {checks.map((c, i) => (
+            <div key={i} className="flex items-center gap-2">
+              {c.ok ? (
+                <Check className="h-3.5 w-3.5" style={{ color: "var(--success)" }} />
+              ) : (
+                <AlertTriangle className="h-3.5 w-3.5" style={{ color: "var(--warn-text)" }} />
+              )}
+              <span className="text-xs" style={{ color: c.ok ? "var(--success)" : "var(--warn-text)" }}>{c.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-2 mt-3">
+          <button onClick={() => setShowActiveer(true)} disabled={!alleChecks} className="flex-1 py-2 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "var(--success)", color: "#fff" }}>
+            ✓ Activeren
+          </button>
+          <button onClick={() => setShowAfwijzen(true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}>
+            ✕ Afwijzen
+          </button>
+        </div>
+      </div>
+
+      <AlertDialog open={showActiveer} onOpenChange={setShowActiveer}>
+        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle style={{ color: "var(--text-primary)" }}>Account activeren</AlertDialogTitle>
+            <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+              Weet je zeker dat je <strong>{emp.full_name}</strong> wilt activeren? Ze kunnen daarna worden ingepland en uren boeken.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogAction onClick={onActivate} style={{ background: "var(--success)", color: "#fff" }}>Ja, activeren</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showAfwijzen} onOpenChange={setShowAfwijzen}>
+        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle style={{ color: "var(--text-primary)" }}>Account afwijzen</AlertDialogTitle>
+            <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+              Geef een reden op voor het afwijzen van <strong>{emp.full_name}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <textarea value={afwijsReden} onChange={e => setAfwijsReden(e.target.value)} placeholder="Reden..." rows={3} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+          <AlertDialogFooter>
+            <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { onAfwijzen(afwijsReden); setShowAfwijzen(false); }} disabled={!afwijsReden.trim()} style={{ background: "var(--danger)", color: "#fff" }}>Afwijzen</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
+export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh }: Props) {
   const navigate = useNavigate();
+  const { profileId: myProfileId } = useProfile();
   const [contract, setContract] = useState<any>(null);
 
   useEffect(() => {
@@ -63,6 +154,41 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts }: Props) {
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   }
 
+  const handleActivate = async () => {
+    if (!myProfileId) return;
+    if (!await mutate(supabase.from("profiles").update({
+      account_status: "active",
+      geverifieerd_door: myProfileId,
+      geverifieerd_op: new Date().toISOString(),
+    } as any).eq("id", emp.id))) return;
+    // Send message to monteur
+    await supabase.from("mededelingen").insert({
+      titel: "Je account is actief! 🎉",
+      inhoud: "Je kunt nu worden ingepland, uren boeken en alle functies van de app gebruiken. Welkom bij het team!",
+      verzonden_door: myProfileId,
+      ontvanger_type: "persoon",
+      ontvanger_id: emp.id,
+      urgentie: "normaal",
+    });
+    toast.success(`${emp.full_name} geactiveerd ✓`);
+    onRefresh?.();
+  };
+
+  const handleAfwijzen = async (reden: string) => {
+    if (!myProfileId) return;
+    if (!await mutate(supabase.from("profiles").update({ account_status: "inactive" } as any).eq("id", emp.id))) return;
+    await supabase.from("mededelingen").insert({
+      titel: "Account afgewezen",
+      inhoud: `Je account is helaas niet geactiveerd. Reden: ${reden}\n\nNeem contact op met je manager voor meer informatie.`,
+      verzonden_door: myProfileId,
+      ontvanger_type: "persoon",
+      ontvanger_id: emp.id,
+      urgentie: "normaal",
+    });
+    toast.success(`${emp.full_name} afgewezen`);
+    onRefresh?.();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -77,6 +203,11 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Verification panel for onboarding status */}
+      {emp.account_status === "onboarding" && (
+        <VerificatiePanel emp={emp} certs={certs} contract={contract} onActivate={handleActivate} onAfwijzen={handleAfwijzen} />
+      )}
 
       <Section title="Contactgegevens">
         <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Telefoon" value={emp.telefoon || "–"} isLink={emp.telefoon ? `tel:${emp.telefoon}` : undefined} />

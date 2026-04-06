@@ -1198,12 +1198,17 @@ export type Database = {
           created_at: string
           factuuradres: string | null
           full_name: string
+          geboortedatum: string | null
+          geverifieerd_door: string | null
+          geverifieerd_op: string | null
           iban: string | null
           id: string
           invited_at: string | null
           kvk_nummer: string | null
           noodcontact_naam: string | null
           noodcontact_tel: string | null
+          onboarding_voltooid: boolean
+          onboarding_voltooid_op: string | null
           rijbewijs: boolean
           telefoon: string
           updated_at: string
@@ -1223,12 +1228,17 @@ export type Database = {
           created_at?: string
           factuuradres?: string | null
           full_name: string
+          geboortedatum?: string | null
+          geverifieerd_door?: string | null
+          geverifieerd_op?: string | null
           iban?: string | null
           id?: string
           invited_at?: string | null
           kvk_nummer?: string | null
           noodcontact_naam?: string | null
           noodcontact_tel?: string | null
+          onboarding_voltooid?: boolean
+          onboarding_voltooid_op?: string | null
           rijbewijs?: boolean
           telefoon?: string
           updated_at?: string
@@ -1248,12 +1258,17 @@ export type Database = {
           created_at?: string
           factuuradres?: string | null
           full_name?: string
+          geboortedatum?: string | null
+          geverifieerd_door?: string | null
+          geverifieerd_op?: string | null
           iban?: string | null
           id?: string
           invited_at?: string | null
           kvk_nummer?: string | null
           noodcontact_naam?: string | null
           noodcontact_tel?: string | null
+          onboarding_voltooid?: boolean
+          onboarding_voltooid_op?: string | null
           rijbewijs?: boolean
           telefoon?: string
           updated_at?: string
@@ -1261,7 +1276,22 @@ export type Database = {
           uurtarief?: number | null
           vaste_vrije_dagen?: number[]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_geverifieerd_door_fkey"
+            columns: ["geverifieerd_door"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_geverifieerd_door_fkey"
+            columns: ["geverifieerd_door"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_forecast: {
         Row: {

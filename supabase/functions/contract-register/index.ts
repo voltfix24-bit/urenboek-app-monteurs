@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
       bedrijfsnaam: cd.ot_handelsnaam || null,
       uurtarief: cd.uurtarief || kandidaat.afgesproken_tarief || null,
       contract_einddatum: contract.status === "ondertekend_beiden" ? (cd.einddatum_raw || null) : null,
-      account_status: "active",
+      account_status: "onboarding",
       activated_at: new Date().toISOString(),
     }).select("id").single();
 
@@ -153,8 +153,8 @@ Deno.serve(async (req) => {
 
     // Send welcome message via mededelingen
     await supabase.from("mededelingen").insert({
-      titel: "Welkom bij TerreVolt! 🎉",
-      inhoud: `Hoi ${kandidaat.voornaam},\n\nWelkom bij het team van TerreVolt! Je account is aangemaakt en je contract is ondertekend.\n\nJe kunt nu inloggen en je planning, uren en berichten bekijken.\n\nHeb je vragen? Neem gerust contact op met je manager.\n\nSucces en tot snel!`,
+      titel: "Welkom bij TerreVolt! 👋",
+      inhoud: `Hoi ${kandidaat.voornaam},\n\nWelkom! Je account is aangemaakt en je contract is ondertekend.\n\nVoordat je aan de slag kunt, moet je nog een paar dingen aanvullen:\n- Persoonlijke gegevens controleren\n- Geboortedatum invullen\n- Certificaten uploaden\n- Vragen beantwoorden\n\nLog in en ga naar je profiel om dit te completeren. Je manager verifieert daarna je gegevens zodat je ingepland kunt worden.`,
       verzonden_door: kandidaat.aangemaakt_door,
       ontvanger_type: "persoon",
       ontvanger_id: profile!.id,

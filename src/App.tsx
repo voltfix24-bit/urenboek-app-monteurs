@@ -40,6 +40,7 @@ const BedrijfsgegevensBeheer = lazy(() => import("./pages/BedrijfsgegevensBeheer
 const Kandidaten = lazy(() => import("./pages/Kandidaten"));
 const ContractAanmaken = lazy(() => import("./pages/ContractAanmaken"));
 const ContractOndertekenen = lazy(() => import("./pages/ContractOndertekenen"));
+const OnboardingWelkom = lazy(() => import("./pages/OnboardingWelkom"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -122,6 +123,7 @@ const App = () => (
               <Route path="/reset-password" element={<RB><ResetPassword /></RB>} />
               <Route path="/auth/callback" element={<RB><AuthCallback /></RB>} />
               <Route path="/onboarding" element={<ProtectedRoute><RB><Onboarding /></RB></ProtectedRoute>} />
+              <Route path="/onboarding-welkom" element={<ProtectedRoute><L><OnboardingWelkom /></L></ProtectedRoute>} />
 
               {/* Index — eager (monteur start page) */}
               <Route path="/" element={<ProtectedRoute><RB><Index /></RB></ProtectedRoute>} />

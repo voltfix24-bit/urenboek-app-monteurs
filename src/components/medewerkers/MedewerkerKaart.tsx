@@ -19,6 +19,9 @@ interface Employee {
 }
 
 function StatusBadge({ emp }: { emp: Employee }) {
+  if (emp.account_status === "onboarding") {
+    return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "var(--warn-light)", color: "var(--warn-text)", border: "1px solid var(--warn-border)" }}>⚠ Verificatie nodig</span>;
+  }
   if (emp.account_status === "invited") {
     return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}>📧 Uitgenodigd</span>;
   }

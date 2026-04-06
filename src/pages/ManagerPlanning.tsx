@@ -81,7 +81,7 @@ export default function ManagerPlanning() {
     const endStr = format(addDays(weekStart, 4), "yyyy-MM-dd");
     const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }] = await Promise.all([
       supabase.from("planning").select("*, activiteit, activiteit_kleur").gte("datum", startStr).lte("datum", endStr),
-      supabase.from("profiles").select("id, full_name, vaste_vrije_dagen").order("full_name"),
+      supabase.from("profiles").select("id, full_name, vaste_vrije_dagen").eq("account_status", "active").order("full_name"),
       supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
     ]);
