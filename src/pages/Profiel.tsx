@@ -8,9 +8,12 @@ import CertificatenOverzicht from "@/components/CertificatenOverzicht";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
 import { valideer, profielSchema } from "@/lib/validatie";
-import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight } from "lucide-react";
+import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO } from "date-fns";
+import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
+import { formatDatum } from "@/lib/formatting";
+import { CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO, differenceInDays } from "date-fns";
 import { nl } from "date-fns/locale";
 
 interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; }
