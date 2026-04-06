@@ -58,8 +58,10 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     }
     const { data: profiles } = await supabase.from("profiles").select("id, user_id, full_name, uurtarief");
     const { data: roles } = await supabase.from("user_roles").select("user_id, role");
-    if (profiles && roles) {
-      const monteurUserIds = new Set(roles.filter(r => r.role === "monteur" || r.role === "schakelmonteur").map(r => r.user_id));
+    if (profiles) {
+      const namenMap = new Map(profiles.map(p => [p.id, p.full_name]));
+      setAlleProfielen(namenMap);
+      const monteurUserIds = new Set((roles || []).filter(r => r.role === "monteur" || r.role === "schakelmonteur").map(r => r.user_id));
       setMonteurs(profiles.filter(p => monteurUserIds.has(p.user_id)).map(p => ({ id: p.id, full_name: p.full_name, uurtarief: (p as any).uurtarief })));
     }
     setLoading(false);
