@@ -136,7 +136,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     return <StuksprijzenEditor regels={regels} onUpdate={updateRegels} onSave={() => saveRegels(regels)} specCodes={specCodes} />;
   }
 
-  return <UrenEditor regels={regels} monteurs={monteurs} onUpdate={updateRegels} onSave={() => saveRegels(regels)} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} />;
+  return <UrenEditor regels={regels} monteurs={monteurs} alleProfielen={alleProfielen} onUpdate={updateRegels} onSave={() => saveRegels(regels)} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} />;
 }
 
 function StuksprijzenEditor({ regels, onUpdate, onSave, specCodes }: { regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; onSave: () => void; specCodes: SpecCode[] }) {
