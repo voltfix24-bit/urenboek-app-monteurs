@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { subWeeks } from "date-fns";
+import { useProfile } from "@/hooks/useProfile";
 import { useTimesheet } from "@/hooks/useTimesheet";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -52,6 +53,8 @@ const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)',
 
 const Index = () => {
   const { user, profile, isManager } = useAuth();
+  const { profile: profileCtx } = useProfile();
+  const navigate = useNavigate();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"week" | "overzicht">("week");
   const [showModal, setShowModal] = useState(false);
