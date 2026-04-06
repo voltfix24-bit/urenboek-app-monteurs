@@ -12,7 +12,7 @@ import { volledigAdres } from "@/lib/utils";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 
-interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; }
+interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; }
 interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; }
 interface ProjectInfo { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
 interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_tot: string; type: string; status: string; }
@@ -79,12 +79,12 @@ export default function ManagerPlanning() {
     const startStr = format(weekStart, "yyyy-MM-dd");
     const endStr = format(addDays(weekStart, 4), "yyyy-MM-dd");
     const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }] = await Promise.all([
-      supabase.from("planning").select("*").gte("datum", startStr).lte("datum", endStr),
+      supabase.from("planning").select("*, activiteit, activiteit_kleur").gte("datum", startStr).lte("datum", endStr),
       supabase.from("profiles").select("id, full_name, vaste_vrije_dagen").order("full_name"),
       supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
     ]);
-    setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "" })));
+    setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "", activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null })));
     setMedewerkers((profData ?? []) as any);
     setProjects((projData ?? []) as any);
     setBeschikbaarheid((beschData ?? []) as any);
@@ -230,9 +230,9 @@ export default function ManagerPlanning() {
                 const hasConflict = conflicts.length > 0;
 
                 return (
-                  <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] lg:min-h-[64px] flex flex-col items-center justify-center text-center transition-colors active:scale-95" style={{
-                    background: hasConflict && !entry ? "var(--danger-light)" : entry ? "var(--accent-light)" : "var(--bg-base)",
-                    border: hasConflict ? "1px solid var(--danger-border)" : entry ? "1px solid var(--accent-border)" : "1px solid var(--bg-surface-2)",
+                  <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] lg:min-h-[64px] flex flex-col items-center justify-center text-center transition-colors active:scale-95 relative" style={{
+                    background: hasConflict && !entry ? "var(--danger-light)" : entry ? (entry.activiteit_kleur ? `${entry.activiteit_kleur}18` : "var(--accent-light)") : "var(--bg-base)",
+                    border: hasConflict ? "1px solid var(--danger-border)" : entry ? `1px solid ${entry.activiteit_kleur || "var(--accent)"}44` : "1px solid var(--bg-surface-2)",
                   }}>
                     {entry ? (
                       <>
@@ -240,6 +240,11 @@ export default function ManagerPlanning() {
                           <span className="lg:hidden">{proj?.nummer?.slice(-3) || "?"}</span>
                           <span className="hidden lg:inline">{proj?.naam || proj?.nummer || "?"}</span>
                         </span>
+                        {entry.activiteit && (
+                          <span className="text-[7px] lg:text-[9px] truncate w-full block" style={{ color: "var(--text-muted)", marginTop: 1 }}>
+                            {entry.activiteit}
+                          </span>
+                        )}
                         <span className="text-[7px] lg:text-[10px]" style={{ color: "var(--text-muted)" }}>{entry.starttijd}–{entry.eindtijd}</span>
                       </>
                     ) : hasConflict ? (

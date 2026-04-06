@@ -98,17 +98,20 @@ export default function Dashboard() {
     }
 
     // Today planning
-    const { data: plan } = await supabase.from("planning").select("id, medewerker_id, project_id, starttijd, eindtijd").eq("datum", today);
+    const { data: plan } = await supabase.from("planning").select("id, medewerker_id, project_id, starttijd, eindtijd, activiteit, activiteit_kleur").eq("datum", today);
     if (plan) {
       const profIds = [...new Set(plan.map((p: any) => p.medewerker_id))];
       const projIds = [...new Set(plan.map((p: any) => p.project_id))];
-      const [{ data: profs }, { data: projs }] = await Promise.all([
+      const [{ data: profs }, { data: projs }, { data: boekData }] = await Promise.all([
         profIds.length > 0 ? supabase.from("profiles").select("id, full_name").in("id", profIds) : { data: [] },
         projIds.length > 0 ? supabase.from("projects").select("id, naam, straat, postcode, stad, adres").in("id", projIds) : { data: [] },
+        profIds.length > 0 ? supabase.from("uren_boekingen").select("medewerker_id, uren, status").eq("datum", today).in("medewerker_id", profIds).in("status", ["concept", "ingediend", "goedgekeurd"]) : { data: [] },
       ]);
       const profMap = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
       const projMap = new Map((projs ?? []).map((p: any) => [p.id, p]));
-      setTodayPlanning(plan.map((p: any) => { const proj = projMap.get(p.project_id) || {}; return { ...p, naam: profMap.get(p.medewerker_id) || "Onbekend", project: (proj as any).naam || "Onbekend", projectAdres: volledigAdres(proj as any), starttijd: p.starttijd?.slice(0, 5), eindtijd: p.eindtijd?.slice(0, 5) }; }));
+      const boekMap = new Map<string, { uren: number; status: string }>();
+      (boekData ?? []).forEach((b: any) => { boekMap.set(b.medewerker_id, { uren: Number(b.uren), status: b.status }); });
+      setTodayPlanning(plan.map((p: any) => { const proj = projMap.get(p.project_id) || {}; return { ...p, naam: profMap.get(p.medewerker_id) || "Onbekend", project: (proj as any).naam || "Onbekend", projectAdres: volledigAdres(proj as any), starttijd: p.starttijd?.slice(0, 5), eindtijd: p.eindtijd?.slice(0, 5), activiteit: p.activiteit || null, activiteit_kleur: p.activiteit_kleur || null, boeking: boekMap.get(p.medewerker_id) || null }; }));
     }
 
     // Projects with marge from forecast
@@ -250,11 +253,32 @@ export default function Dashboard() {
                       </div>
                       <div>
                         <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{p.naam}</p>
-                        <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{p.project}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{p.project}</p>
+                          {p.activiteit && (
+                            <span style={{
+                              display: "inline-flex", alignItems: "center", gap: 3,
+                              padding: "1px 6px", borderRadius: 10, fontSize: 9, fontWeight: 600,
+                              background: p.activiteit_kleur ? `${p.activiteit_kleur}22` : "var(--accent-light)",
+                              color: p.activiteit_kleur || "var(--accent)",
+                              border: `1px solid ${p.activiteit_kleur || "var(--accent)"}44`,
+                            }}>
+                              <span style={{ width: 5, height: 5, borderRadius: "50%", background: p.activiteit_kleur || "var(--accent)" }} />
+                              {p.activiteit}
+                            </span>
+                          )}
+                        </div>
                         {p.projectAdres && <p className="text-[10px] flex items-center gap-0.5" style={{ color: "var(--text-muted)" }}><MapPin className="h-3 w-3 inline" /> {p.projectAdres}</p>}
                       </div>
                     </div>
-                    <span className="text-[11px] font-medium" style={{ color: "var(--accent)", fontFamily: "DM Mono, monospace" }}>{p.starttijd}–{p.eindtijd}</span>
+                    <div className="text-right">
+                      <span className="text-[11px] font-medium block" style={{ color: "var(--accent)", fontFamily: "DM Mono, monospace" }}>{p.starttijd}–{p.eindtijd}</span>
+                      {p.boeking ? (
+                        <span className="text-[10px] font-semibold" style={{ color: "var(--success)" }}>✓ {p.boeking.uren}u geboekt</span>
+                      ) : (
+                        <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Nog geen uren</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
