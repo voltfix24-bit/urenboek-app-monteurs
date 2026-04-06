@@ -433,6 +433,7 @@ export default function Dashboard() {
 
             {/* Contracts needing attention */}
             <ContractAttentionSection navigate={navigate} />
+            <NieuweMedewerkersSection navigate={navigate} />
 
             {/* Expiring certs */}
             {expiringCerts.length > 0 && (
