@@ -186,6 +186,10 @@ export default function ContractOndertekenen() {
       const result = await res.json();
       if (result.email) setKandidaatEmail(result.email);
       if (result.kandidaat_id) setKandidaatId(result.kandidaat_id);
+      // Store contract reference for page reload detection
+      if (result.contract_id) {
+        sessionStorage.setItem(`contract_signed_${token}`, result.contract_id);
+      }
       setKlaar(true);
     } catch (err: any) {
       toast.error(err.message || "Er ging iets mis");
