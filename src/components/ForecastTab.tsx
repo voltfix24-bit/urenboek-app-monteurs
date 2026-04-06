@@ -311,7 +311,7 @@ function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, onSave, verwach
               const kosten = (r.geplande_uren || 0) * (r.uurtarief_snap || 0);
               return (
                 <div key={r.medewerker_id} className="grid grid-cols-[1fr_70px_70px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid var(--border)" }}>
-                  <span className="truncate" style={{ color: "var(--text-primary)" }}>{m?.full_name || "?"}</span>
+                  <span className="truncate" style={{ color: "var(--text-primary)" }}>{m?.full_name || alleProfielen.get(r.medewerker_id || '') || r.medewerker_id?.slice(0, 8) || "?"}</span>
                   <span className={mono} style={{ color: "var(--text-secondary)" }}>€ {r.uurtarief_snap || 0}</span>
                   <input type="number" value={r.geplande_uren || 0} onChange={e => updateUren(r.medewerker_id!, parseFloat(e.target.value) || 0)} className={`w-14 text-center bg-transparent text-[12px] ${mono}`} style={{ color: "var(--text-primary)" }} min={0} />
                   <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(kosten)}</span>
