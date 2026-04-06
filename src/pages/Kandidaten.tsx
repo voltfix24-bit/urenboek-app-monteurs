@@ -92,7 +92,9 @@ export default function Kandidaten() {
   }
 
   return (
-    <PageShell titel="Kandidaten" subtitel="Werving en contractbeheer">
+    <PageShell>
+      <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Kandidaten</h1>
+      <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Werving en contractbeheer</p>
       {/* Filter chips */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
         {STATUSSEN.map(s => (
