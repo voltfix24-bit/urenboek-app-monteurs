@@ -19,6 +19,9 @@ export interface RolPermissies {
   zietInkooporders: boolean;
   zietAlleInkooporders: boolean;
   zietBeheer: boolean;
+  zietKandidaten: boolean;
+  magContractenBeheren: boolean;
+  zietEigenContract: boolean;
   magPlanningWijzigen: boolean;
   magUrenGoedkeuren: boolean;
   magProjectenWijzigen: boolean;
@@ -32,6 +35,7 @@ const PERMISSIES: Record<string, RolPermissies> = {
     zietOveruren: true, zietPlanning: true, zietManagerPlanning: true, zietProjecten: true,
     zietProjectFinancien: true, zietRapportage: true, zietTeam: true, zietMededelingen: true,
     zietProfiel: true, zietInkooporders: true, zietAlleInkooporders: true, zietBeheer: true,
+    zietKandidaten: true, magContractenBeheren: true, zietEigenContract: true,
     magPlanningWijzigen: true, magUrenGoedkeuren: true, magProjectenWijzigen: true,
     magTeamBeheren: true, magMededelingenVersturen: true,
   },
@@ -40,6 +44,7 @@ const PERMISSIES: Record<string, RolPermissies> = {
     zietOveruren: false, zietPlanning: true, zietManagerPlanning: true, zietProjecten: true,
     zietProjectFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
     zietProfiel: true, zietInkooporders: true, zietAlleInkooporders: false, zietBeheer: false,
+    zietKandidaten: false, magContractenBeheren: false, zietEigenContract: true,
     magPlanningWijzigen: true, magUrenGoedkeuren: false, magProjectenWijzigen: false,
     magTeamBeheren: false, magMededelingenVersturen: false,
   },
@@ -48,6 +53,7 @@ const PERMISSIES: Record<string, RolPermissies> = {
     zietOveruren: false, zietPlanning: true, zietManagerPlanning: true, zietProjecten: true,
     zietProjectFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
     zietProfiel: true, zietInkooporders: true, zietAlleInkooporders: false, zietBeheer: false,
+    zietKandidaten: false, magContractenBeheren: false, zietEigenContract: true,
     magPlanningWijzigen: true, magUrenGoedkeuren: false, magProjectenWijzigen: false,
     magTeamBeheren: false, magMededelingenVersturen: false,
   },
@@ -56,6 +62,7 @@ const PERMISSIES: Record<string, RolPermissies> = {
     zietOveruren: false, zietPlanning: true, zietManagerPlanning: false, zietProjecten: false,
     zietProjectFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
     zietProfiel: true, zietInkooporders: true, zietAlleInkooporders: false, zietBeheer: false,
+    zietKandidaten: false, magContractenBeheren: false, zietEigenContract: true,
     magPlanningWijzigen: false, magUrenGoedkeuren: false, magProjectenWijzigen: false,
     magTeamBeheren: false, magMededelingenVersturen: false,
   },
@@ -64,11 +71,11 @@ const PERMISSIES: Record<string, RolPermissies> = {
     zietOveruren: false, zietPlanning: true, zietManagerPlanning: false, zietProjecten: false,
     zietProjectFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
     zietProfiel: true, zietInkooporders: true, zietAlleInkooporders: false, zietBeheer: false,
+    zietKandidaten: false, magContractenBeheren: false, zietEigenContract: true,
     magPlanningWijzigen: false, magUrenGoedkeuren: false, magProjectenWijzigen: false,
     magTeamBeheren: false, magMededelingenVersturen: false,
   },
 };
-
 function getPermissies(roles: string[]): RolPermissies {
   if (roles.includes("manager")) return PERMISSIES.manager;
   if (roles.includes("uitvoerder")) return PERMISSIES.uitvoerder;
