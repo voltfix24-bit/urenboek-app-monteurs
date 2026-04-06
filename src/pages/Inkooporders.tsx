@@ -18,10 +18,10 @@ import autoTable from "jspdf-autotable";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 
-import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
+import { INKOOPINKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 
 function OrderStatusBadge({ status }: { status: string }) {
-  const c = ORDER_STATUS_CONFIG[status] || ORDER_STATUS_CONFIG.concept;
+  const c = INKOOPORDER_STATUS_CONFIG[status] || INKOOPORDER_STATUS_CONFIG.concept;
   return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>{c.label}</span>;
 }
 
@@ -176,7 +176,7 @@ export default function Inkooporders() {
     if (newStatus === "verzonden") update.verzonden_op = new Date().toISOString();
     if (newStatus === "betaald") update.betaald_op = extra?.betaald_op || new Date().toISOString();
     if (!await mutate(supabase.from("inkooporders").update(update).eq("id", orderId))) return;
-    toast.success(`Status gewijzigd naar ${ORDER_STATUS_CONFIG[newStatus]?.label || newStatus}`);
+    toast.success(`Status gewijzigd naar ${INKOOPORDER_STATUS_CONFIG[newStatus]?.label || newStatus}`);
 
     // Send mededeling when verzonden
     if (newStatus === "verzonden" && selectedOrder) {
@@ -281,7 +281,7 @@ export default function Inkooporders() {
                 border: `1px solid ${statusFilter === s ? "var(--accent-border)" : "var(--border)"}`,
                 color: statusFilter === s ? "var(--accent)" : "var(--text-muted)",
               }}>
-                {s === "alle" ? "Alle" : ORDER_STATUS_CONFIG[s]?.label || s}
+                {s === "alle" ? "Alle" : INKOOPORDER_STATUS_CONFIG[s]?.label || s}
               </button>
             ))}
           </div>
