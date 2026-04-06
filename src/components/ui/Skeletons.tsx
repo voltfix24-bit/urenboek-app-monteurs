@@ -1,3 +1,5 @@
+import React from "react";
+
 function SkeletonBase({
   className = "",
   style,
@@ -150,7 +152,7 @@ export function ListSkeleton({
   return (
     <div className="space-y-3">
       {Array.from({ length: count }).map((_, i) => (
-        <ItemSkeleton key={i} />
+        <React.Fragment key={i}><ItemSkeleton /></React.Fragment>
       ))}
     </div>
   );
