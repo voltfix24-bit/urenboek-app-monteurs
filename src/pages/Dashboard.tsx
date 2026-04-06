@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 import { format, startOfISOWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass, CheckCircle, Users, TrendingUp, CalendarDays, MapPin } from "lucide-react";
+import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass, CheckCircle, Users, TrendingUp, CalendarDays, MapPin, Layers } from "lucide-react";
 import { volledigAdres } from "@/lib/utils";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { euro } from "@/lib/formatting";
@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [projectsWithMarge, setProjectsWithMarge] = useState<any[]>([]);
   const [overurenMeldingen, setOverurenMeldingen] = useState<any[]>([]);
   const [overurenCount, setOverurenCount] = useState(0);
+  const [statusGroups, setStatusGroups] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [afkeurReden, setAfkeurReden] = useState("");
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
@@ -70,9 +71,15 @@ export default function Dashboard() {
       .lte("datum", format(weekEnd, "yyyy-MM-dd"));
     setWeekHours(weekData?.reduce((s: number, e: any) => s + Number(e.uren), 0) || 0);
 
-    // Active projects count
-    const { count } = await supabase.from("projects").select("id", { count: "exact", head: true }).eq("active", true);
-    setActiveProjects(count || 0);
+    // Active projects count + status groups
+    const { data: allProjects } = await supabase.from("projects").select("id, status").eq("active", true);
+    setActiveProjects(allProjects?.length || 0);
+    const groups: Record<string, number> = {};
+    (allProjects || []).forEach((p: any) => {
+      const s = p.status || "nieuw";
+      groups[s] = (groups[s] || 0) + 1;
+    });
+    setStatusGroups(groups);
 
     // Team count
     const { count: tCount } = await supabase.from("profiles").select("id", { count: "exact", head: true });
