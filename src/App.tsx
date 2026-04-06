@@ -99,6 +99,8 @@ const L = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<PageLoader />}><RB>{children}</RB></Suspense>
 );
 
+
+
 const App = () => (
   <AppErrorBoundary>
     <QueryClientProvider client={queryClient}>
