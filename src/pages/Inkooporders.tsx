@@ -18,15 +18,10 @@ import autoTable from "jspdf-autotable";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 
-const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  concept: { label: "Concept", color: "var(--text-muted)", bg: "var(--bg-surface-2)", border: "var(--border)" },
-  verzonden: { label: "Verzonden", color: "var(--success)", bg: "var(--success-light)", border: "var(--success-border)" },
-  factuur_ontvangen: { label: "Factuur ontvangen", color: "var(--info)", bg: "var(--info-light)", border: "var(--info-border)" },
-  betaald: { label: "Betaald", color: "var(--accent)", bg: "var(--accent-light)", border: "var(--accent-border)" },
-};
+import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 
 function OrderStatusBadge({ status }: { status: string }) {
-  const c = ORDER_STATUS_CONFIG[status] || ORDER_STATUS_CONFIG.concept;
+  const c = INKOOPORDER_STATUS_CONFIG[status] || INKOOPORDER_STATUS_CONFIG.concept;
   return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>{c.label}</span>;
 }
 
@@ -181,7 +176,7 @@ export default function Inkooporders() {
     if (newStatus === "verzonden") update.verzonden_op = new Date().toISOString();
     if (newStatus === "betaald") update.betaald_op = extra?.betaald_op || new Date().toISOString();
     if (!await mutate(supabase.from("inkooporders").update(update).eq("id", orderId))) return;
-    toast.success(`Status gewijzigd naar ${ORDER_STATUS_CONFIG[newStatus]?.label || newStatus}`);
+    toast.success(`Status gewijzigd naar ${INKOOPORDER_STATUS_CONFIG[newStatus]?.label || newStatus}`);
 
     // Send mededeling when verzonden
     if (newStatus === "verzonden" && selectedOrder) {
@@ -286,7 +281,7 @@ export default function Inkooporders() {
                 border: `1px solid ${statusFilter === s ? "var(--accent-border)" : "var(--border)"}`,
                 color: statusFilter === s ? "var(--accent)" : "var(--text-muted)",
               }}>
-                {s === "alle" ? "Alle" : ORDER_STATUS_CONFIG[s]?.label || s}
+                {s === "alle" ? "Alle" : INKOOPORDER_STATUS_CONFIG[s]?.label || s}
               </button>
             ))}
           </div>

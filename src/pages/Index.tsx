@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useSwipe } from "@/hooks/useSwipe";
 import { EntryCard } from "@/components/EntryCard";
+import { ListSkeleton, UrenCardSkeleton } from "@/components/ui/Skeletons";
 import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
@@ -446,6 +447,9 @@ const Index = () => {
             </div>
 
             {/* Week entries by day */}
+            {loading ? (
+              <ListSkeleton count={3} ItemSkeleton={UrenCardSkeleton} />
+            ) : (
             <div className="space-y-3">
               {weekDates.map((d, i) => {
                 const key = dateKey(d);
@@ -470,6 +474,7 @@ const Index = () => {
                 </div>
               )}
             </div>
+            )}
           </div>
         )}
 

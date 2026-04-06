@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { Spinner } from "@/components/ui/Spinner";
 import terrevoltLogo from "@/assets/terrevolt-logo.svg";
 
 export default function AuthCallback() {
@@ -58,8 +59,8 @@ export default function AuthCallback() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: "var(--bg-base)" }}>
-      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
-      <p className="text-sm" style={{ color: "var(--text-muted)" }}>Account activeren...</p>
+      <Spinner />
+      <p className="text-sm mt-4" style={{ color: "var(--text-muted)" }}>Account activeren...</p>
     </div>
   );
 }

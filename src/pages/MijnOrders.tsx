@@ -12,12 +12,7 @@ import autoTable from "jspdf-autotable";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 
-const STATUS_INFO: Record<string, { label: string; color: string; bg: string; border: string; hint?: string }> = {
-  concept: { label: "Wordt voorbereid", color: "var(--text-muted)", bg: "var(--bg-surface-2)", border: "var(--border)" },
-  verzonden: { label: "Klaar — maak je factuur", color: "var(--success)", bg: "var(--success-light)", border: "var(--success-border)", hint: "Gebruik dit document als basis voor je factuur aan TerreVolt BV." },
-  factuur_ontvangen: { label: "Factuur ontvangen ✓", color: "var(--info)", bg: "var(--info-light)", border: "var(--info-border)" },
-  betaald: { label: "Betaald ✓", color: "var(--accent)", bg: "var(--accent-light)", border: "var(--accent-border)" },
-};
+import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 
 export default function MijnOrders() {
   const { user } = useAuth();
@@ -113,7 +108,7 @@ export default function MijnOrders() {
         ) : (
           <div className="space-y-2">
             {orders.map(o => {
-              const si = STATUS_INFO[o.status] || STATUS_INFO.concept;
+              const si = INKOOPORDER_STATUS_CONFIG[o.status] || INKOOPORDER_STATUS_CONFIG.concept;
               return (
                 <button key={o.id} onClick={() => loadDetail(o)} className="w-full text-left rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: `1px solid ${selectedOrder?.id === o.id ? "var(--accent)" : "var(--border)"}` }}>
                   <div className="flex items-center justify-between">
@@ -138,7 +133,7 @@ export default function MijnOrders() {
               <div className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
                 <div className="flex items-start gap-2">
                   <CheckCircle className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--success)" }} />
-                  <span className="text-[13px] font-medium" style={{ color: "var(--success)" }}>{STATUS_INFO.verzonden.hint}</span>
+                  <span className="text-[13px] font-medium" style={{ color: "var(--success)" }}>{INKOOPORDER_STATUS_CONFIG.verzonden.hint}</span>
                 </div>
                 <button onClick={downloadPdf} className="w-full py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
                   <Download className="h-3.5 w-3.5 inline mr-1" /> Download PDF

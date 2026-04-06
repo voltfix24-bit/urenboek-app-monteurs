@@ -6,10 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { volledigAdres } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare, Clock, Check, MapPin, Navigation, Users, Info } from "lucide-react";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 import { toast } from "sonner";
+import { cachePlanning, getCachedPlanning } from "@/lib/offlineQueue";
 import { mutate } from "@/lib/supabaseHelpers";
 import { ListSkeleton, PlanningCardSkeleton } from "@/components/ui/Skeletons";
 
@@ -53,32 +55,51 @@ export default function Planning() {
     });
     setExistingBoekingen(boekMap);
 
-    if (data) {
-      const projectIds = [...new Set(data.map((d: any) => d.project_id))];
-      let projMap = new Map();
-      let statusMap = new Map<string, boolean>();
-      if (projectIds.length > 0) {
-        const [{ data: projects }, { data: statuses }] = await Promise.all([
-          supabase.from("projects_monteur" as any).select("id, naam, nummer, straat, postcode, stad, adres").in("id", projectIds),
-          supabase.from("project_planning_status").select("project_id, is_definitief").in("project_id", projectIds),
-        ]);
-        projMap = new Map(projects?.map((p: any) => [p.id, p]) ?? []);
-        (statuses || []).forEach((s: any) => statusMap.set(s.project_id, s.is_definitief));
-      }
+    if (navigator.onLine) {
+      if (data) {
+        const projectIds = [...new Set(data.map((d: any) => d.project_id))];
+        let projMap = new Map();
+        let statusMap = new Map<string, boolean>();
+        if (projectIds.length > 0) {
+          const [{ data: projects }, { data: statuses }] = await Promise.all([
+            supabase.from("projects_monteur" as any).select("id, naam, nummer, straat, postcode, stad, adres").in("id", projectIds),
+            supabase.from("project_planning_status").select("project_id, is_definitief").in("project_id", projectIds),
+          ]);
+          projMap = new Map(projects?.map((p: any) => [p.id, p]) ?? []);
+          (statuses || []).forEach((s: any) => statusMap.set(s.project_id, s.is_definitief));
+        }
 
-      // Load collega names
-      const allCollegaIds = [...new Set(data.flatMap((d: any) => d.collega_ids || []))];
-      if (allCollegaIds.length > 0) {
-        const { data: collegaProfs } = await supabase.from("profiles_public" as any).select("id, full_name").in("id", allCollegaIds);
-        setCollegaMap(new Map((collegaProfs ?? []).map((p: any) => [p.id, p.full_name])));
-      } else {
-        setCollegaMap(new Map());
-      }
+        // Load collega names
+        const allCollegaIds = [...new Set(data.flatMap((d: any) => d.collega_ids || []))];
+        if (allCollegaIds.length > 0) {
+          const { data: collegaProfs } = await supabase.from("profiles_public" as any).select("id, full_name").in("id", allCollegaIds);
+          setCollegaMap(new Map((collegaProfs ?? []).map((p: any) => [p.id, p.full_name])));
+        } else {
+          setCollegaMap(new Map());
+        }
 
-      setItems(data.map((d: any) => {
-        const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "", straat: null, postcode: null, stad: null, adres: null };
-        return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false, project_straat: (proj as any).straat, project_postcode: (proj as any).postcode, project_stad: (proj as any).stad, project_adres: (proj as any).adres, activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, collega_ids: d.collega_ids || null, week_opmerking: d.week_opmerking || null };
-      }));
+        setItems(data.map((d: any) => {
+          const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "", straat: null, postcode: null, stad: null, adres: null };
+          return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false, project_straat: (proj as any).straat, project_postcode: (proj as any).postcode, project_stad: (proj as any).stad, project_adres: (proj as any).adres, activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, collega_ids: d.collega_ids || null, week_opmerking: d.week_opmerking || null };
+        }));
+
+        // Cache planning data for offline use
+        await cachePlanning(profileId, startStr, data as any[]);
+      }
+    } else {
+      // Offline: use cached data
+      const cached = await getCachedPlanning(profileId, startStr);
+      if (cached) {
+        const projectIds = [...new Set(cached.map((d: any) => d.project_id))];
+        let projMap = new Map();
+        cached.forEach((d: any) => projMap.set(d.project_id, { naam: "Onbekend", nummer: "" }));
+
+        setItems(cached.map((d: any) => {
+          const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "" };
+          return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: false, project_straat: null, project_postcode: null, project_stad: null, project_adres: null, activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, collega_ids: d.collega_ids || null, week_opmerking: d.week_opmerking || null };
+        }));
+        toast.info("📡 Offline — planning uit cache");
+      }
     }
     setLoading(false);
   }, [user, weekStart]);
@@ -304,11 +325,7 @@ export default function Planning() {
           })}
 
           {items.length === 0 && beschikbaarheid.length === 0 && (
-            <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-              <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
-              <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen bevestigde planning deze week</p>
-              <p className="text-xs mt-1 px-6" style={{ color: "var(--text-muted)" }}>Je manager heeft de planning nog niet gepubliceerd voor deze week.</p>
-            </div>
+            <EmptyState icoon="📅" titel="Geen bevestigde planning" subtitel="Je manager heeft de planning nog niet gepubliceerd voor deze week." />
           )}
 
           {allConcept && beschikbaarheid.length === 0 && (

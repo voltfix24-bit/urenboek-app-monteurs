@@ -14,7 +14,7 @@ import { MedewerkerKaart, roleLabels, type Employee } from "@/components/medewer
 import { MedewerkerDetail } from "@/components/medewerkers/MedewerkerDetail";
 import { NieuweGebruikerForm } from "@/components/medewerkers/NieuweGebruikerForm";
 import { ListSkeleton, MedewerkerSkeleton } from "@/components/ui/Skeletons";
-
+import { EmptyState } from "@/components/ui/EmptyState";
 interface CreatedUser { email: string; fullName: string; role: string; password?: string; inviteOnly?: boolean; }
 
 export default function Medewerkers() {
@@ -234,10 +234,7 @@ export default function Medewerkers() {
       )}
 
       {!medewerkersLoading && employees.length === 0 && (
-        <div className="text-center py-12">
-          <Users className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
-          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Nog geen medewerkers</p>
-        </div>
+        <EmptyState icoon="👥" titel="Geen medewerkers" subtitel="Voeg een medewerker toe om te beginnen." />
       )}
     </>
   );
