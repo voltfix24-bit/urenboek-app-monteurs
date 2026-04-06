@@ -105,15 +105,13 @@ function RealLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [msLoading, setMsLoading] = useState(false);
+  
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [noManagers, setNoManagers] = useState(false);
   const navigate = useNavigate();
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const urlError = searchParams.get("error");
 
   useEffect(() => {
     const checkManagers = async () => {
@@ -134,20 +132,6 @@ function RealLoginForm() {
     setLoading(false);
   };
 
-  const loginMetMicrosoft = async () => {
-    setMsLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "azure",
-      options: {
-        scopes: "email profile",
-        redirectTo: window.location.origin + "/auth/callback",
-      },
-    });
-    if (error) {
-      toast.error("Inloggen met Microsoft mislukt");
-      setMsLoading(false);
-    }
-  };
 
   const handleForgotPassword = async () => {
     if (!forgotEmail) return;
@@ -183,13 +167,6 @@ function RealLoginForm() {
           </div>
         )}
 
-        {urlError === "geen_toegang" && (
-          <div className="rounded-xl p-3 mb-4" style={{ background: "var(--danger-light, rgba(239,68,68,0.1))", border: "1px solid var(--danger-border, rgba(239,68,68,0.3))" }}>
-            <p className="text-xs font-medium" style={{ color: "var(--danger, #ef4444)" }}>
-              Dit Microsoft account heeft geen toegang tot de TerreVolt app. Gebruik je e-mail en wachtwoord, of neem contact op met een manager.
-            </p>
-          </div>
-        )}
 
         <div className="text-center mb-8">
           <img src={terrevoltLogo} alt="TerreVolt BV" className="h-12 mx-auto mb-3" />
@@ -201,47 +178,6 @@ function RealLoginForm() {
             <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Log in om door te gaan</p>
           </div>
 
-          {/* Microsoft login */}
-          <div className="space-y-2">
-            <button
-              type="button"
-              onClick={loginMetMicrosoft}
-              disabled={msLoading}
-              className="w-full flex items-center justify-center gap-3 h-11 rounded-xl text-sm font-semibold transition-all disabled:opacity-50"
-              style={{
-                background: "#fff",
-                color: "#1a1a1a",
-                border: "1px solid #e0e0e0",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "#0078d4";
-                e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,120,212,0.15)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "#e0e0e0";
-                e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.08)";
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 21 21" fill="none">
-                <rect x="1" y="1" width="9" height="9" fill="#F25022" />
-                <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
-                <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
-                <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
-              </svg>
-              {msLoading ? "Laden..." : "Inloggen met Microsoft"}
-            </button>
-            <p className="text-[11px] text-center" style={{ color: "var(--text-muted)" }}>
-              Voor TerreVolt medewerkers met een @terrevolt.nl account
-            </p>
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-            <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>of</span>
-            <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-          </div>
 
           {/* Email/password form */}
           <form onSubmit={handleSubmit} className="space-y-4">
