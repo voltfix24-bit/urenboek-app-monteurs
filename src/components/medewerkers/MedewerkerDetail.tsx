@@ -129,9 +129,11 @@ function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
   );
 }
 
-export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh }: Props) {
+export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDelete }: Props) {
   const navigate = useNavigate();
   const { profileId: myProfileId } = useProfile();
+  const [contract, setContract] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [contract, setContract] = useState<any>(null);
 
   useEffect(() => {
