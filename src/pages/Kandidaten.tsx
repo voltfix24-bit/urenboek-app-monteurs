@@ -350,7 +350,7 @@ export default function Kandidaten() {
         <EmptyState icoon="👥" titel="Geen kandidaten" subtitel={filter === "alle" ? "Voeg een kandidaat toe om te beginnen." : `Geen kandidaten met status "${STATUS_LABELS[filter]}".`} />
       ) : (
         <div className="space-y-3">
-          {gefiltered.map(k => {
+          {gefilterd.map(k => {
             const sc = KANDIDAAT_STATUS_CONFIG[k.status] || KANDIDAAT_STATUS_CONFIG.gesprek;
             const contract = getContractForKandidaat(k.id);
             const wachtOpManager = k.status === "uitgenodigd" && contract?.status === "ondertekend_ot";
