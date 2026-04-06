@@ -4,6 +4,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
+import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import { PageShell } from "@/components/PageShell";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
@@ -198,22 +199,35 @@ export default function Inkooporders() {
   const [betaaldDatum, setBetaaldDatum] = useState("");
   const [showStatusDialog, setShowStatusDialog] = useState<string | null>(null);
 
-  const generatePdf = (order: any, regels: any[], prof: any) => {
+  const generatePdf = async (order: any, regels: any[], prof: any) => {
+    const bedrijf = await getBedrijfsgegevens();
+    const bNaam = bedrijf?.bedrijfsnaam || "TerreVolt BV";
     const doc = new jsPDF();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.setTextColor(74, 124, 47);
-    doc.text("TerreVolt BV", 14, 20);
+    doc.text(bNaam, 14, 20);
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text("Inkooporder", 14, 28);
 
+    // Opdrachtgever info
+    let yLeft = 36;
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    if (bedrijf?.straat) { doc.text(bedrijf.straat, 14, yLeft); yLeft += 5; }
+    if (bedrijf?.postcode || bedrijf?.stad) { doc.text([bedrijf.postcode, bedrijf.stad].filter(Boolean).join(" "), 14, yLeft); yLeft += 5; }
+    if (bedrijf?.kvk_nummer) { doc.text(`KVK: ${bedrijf.kvk_nummer}`, 14, yLeft); yLeft += 5; }
+    if (bedrijf?.btw_nummer) { doc.text(`BTW: ${bedrijf.btw_nummer}`, 14, yLeft); yLeft += 5; }
+
     doc.setFontSize(12);
     doc.setTextColor(0);
-    doc.text(`${order.order_nummer}`, 14, 40);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${order.order_nummer}`, 14, yLeft + 6);
     doc.setFontSize(9);
-    doc.text(`Datum: ${format(new Date(order.aangemaakt_op), "d MMMM yyyy", { locale: nl })}`, 14, 47);
-    doc.text(`Periode: ${order.periode_van} t/m ${order.periode_tot}`, 14, 53);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Datum: ${format(new Date(order.aangemaakt_op), "d MMMM yyyy", { locale: nl })}`, 14, yLeft + 13);
+    doc.text(`Periode: ${order.periode_van} t/m ${order.periode_tot}`, 14, yLeft + 19);
 
     // Opdrachtnemer
     doc.setFontSize(10);
@@ -248,8 +262,9 @@ export default function Inkooporders() {
     const finalY = (doc as any).lastAutoTable?.finalY || 200;
     doc.setFontSize(8);
     doc.setTextColor(130);
-    doc.text(`Betaling binnen ${prof?.betalingstermijn || 14} dagen na ontvangst factuur`, 14, finalY + 15);
-    doc.text(`Gegenereerd op ${format(new Date(), "d MMMM yyyy", { locale: nl })} · TerreVolt BV`, 14, finalY + 22);
+    doc.text(`Betaling binnen ${prof?.betalingstermijn || bedrijf?.betalingstermijn || 14} dagen na ontvangst factuur`, 14, finalY + 15);
+    if (bedrijf?.iban) doc.text(`IBAN: ${bedrijf.iban}${bedrijf.iban_naam ? ` t.n.v. ${bedrijf.iban_naam}` : ""}`, 14, finalY + 22);
+    doc.text(`Gegenereerd op ${format(new Date(), "d MMMM yyyy", { locale: nl })} · ${bNaam}`, 14, finalY + 29);
 
     doc.save(`Inkooporder_${order.order_nummer}.pdf`);
   };
