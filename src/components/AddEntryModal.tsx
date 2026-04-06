@@ -52,11 +52,21 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
   const today = dateKey(new Date());
 
   function handleSubmit() {
-    if (!selectedDate || !proj || !form.werkzaamheden) return;
+    if (!selectedDate) return;
+    const vResult = valideer(urenBoekingSchema, {
+      projectId: form.projectId || "",
+      werkzaamheden: form.werkzaamheden || "",
+      uren: form.uren,
+    });
+    if (!vResult.success) {
+      setFormErrors(vResult.errors);
+      return;
+    }
+    setFormErrors({});
     onSubmit({
       date: format(selectedDate, "yyyy-MM-dd"),
-      projectId: proj.id,
-      description: form.werkzaamheden,
+      projectId: form.projectId!,
+      description: form.werkzaamheden!,
       hours: form.uren,
     });
     onClose();
