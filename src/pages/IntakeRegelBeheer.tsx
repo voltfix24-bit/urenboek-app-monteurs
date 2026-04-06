@@ -9,6 +9,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 import { ArrowLeft, Plus, Pencil, Trash2, X, Check, FlaskConical, Loader2, AlertTriangle, ChevronDown, ChevronRight, Settings, LayoutList } from "lucide-react";
 import { SPEC_CODES, GROEP_LABELS } from "@/lib/specCodes";
 import { IntakeRegel, IntakeAntwoorden, BerekendeRegel, LEGE_ANTWOORDEN, berekenRegels } from "@/lib/forecastIntake";
+import { euroDecimals as euro } from "@/lib/formatting";
 
 // ─── Constants ───
 
