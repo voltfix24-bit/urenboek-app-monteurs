@@ -139,8 +139,8 @@ export default function Dashboard() {
         let omzet = 0, kosten = 0;
         rules.forEach((r: any) => {
           if (r.type === "spec") {
-            omzet += (r.tarief_terrevolt || 0) * (r.aantal || 1);
-            kosten += (r.tarief_inkoop || 0) * (r.aantal || 1);
+            omzet += (r.tarief || 0) * (r.aantal || 1);
+            kosten += (r.eigen_kosten || 0) * (r.aantal || 1);
           } else if (r.type === "uren") {
             kosten += (r.geplande_uren || 0) * (r.uurtarief_snap || 0);
           }
