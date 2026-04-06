@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 import { format, startOfISOWeek, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass, CheckCircle, Users, TrendingUp, CalendarDays, MapPin, Layers, FileSignature } from "lucide-react";
+import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourglass, CheckCircle, Users, TrendingUp, CalendarDays, MapPin, Layers, FileSignature, UserCheck } from "lucide-react";
 import { volledigAdres } from "@/lib/utils";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { euro } from "@/lib/formatting";

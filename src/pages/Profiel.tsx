@@ -294,6 +294,19 @@ export default function Profiel() {
           </div>
         </div>
 
+        {/* Onboarding banner */}
+        {profile?.account_status === 'onboarding' && (
+          <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: "var(--warn-text)" }}>⚠ Je account is nog niet actief</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Vul je gegevens aan en rond je onboarding af.</p>
+            </div>
+            <button onClick={() => window.location.href = "/onboarding-welkom"} className="px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0" style={{ background: "var(--accent)", color: "#fff" }}>
+              Naar onboarding →
+            </button>
+          </div>
+        )}
+
         {/* Mijn gegevens */}
         <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <div className="flex items-center justify-between">
@@ -311,12 +324,18 @@ export default function Profiel() {
                   {profileErrors[f.key] && <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--danger)" }}>⚠ {profileErrors[f.key]}</p>}
                 </div>
               ))}
+              {/* Geboortedatum */}
+              <div>
+                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Geboortedatum</label>
+                <input type="date" value={editForm.geboortedatum} onChange={e => setEditForm({ ...editForm, geboortedatum: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              </div>
             </div>
           ) : (
             <div className="space-y-2 text-sm">
               <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Email</span><span style={{ color: "var(--text-primary)" }}>{user?.email}</span></div>
               <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Telefoon</span><span style={{ color: "var(--text-primary)" }}>{profile?.telefoon || "–"}</span></div>
               <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Adres</span><span style={{ color: "var(--text-primary)" }}>{profile?.adres || "–"}</span></div>
+              <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Geboortedatum</span><span style={{ color: "var(--text-primary)" }}>{profile?.geboortedatum ? formatDatum(profile.geboortedatum) : "–"}</span></div>
             </div>
           )}
         </div>
