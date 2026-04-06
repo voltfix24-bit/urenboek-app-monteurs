@@ -14,8 +14,6 @@ import { ProjectCard } from "@/components/projecten/ProjectCard";
 import { DesktopProjectLijst } from "@/components/projecten/DesktopProjectLijst";
 import { DesktopProjectDetail, DesktopFormPanel } from "@/components/projecten/DesktopProjectDetail";
 import { valideer, projectSchema } from "@/lib/validatie";
-import { DesktopProjectLijst } from "@/components/projecten/DesktopProjectLijst";
-import { DesktopProjectDetail, DesktopFormPanel } from "@/components/projecten/DesktopProjectDetail";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
