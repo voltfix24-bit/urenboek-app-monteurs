@@ -12,7 +12,7 @@ import { KANDIDAAT_STATUS_CONFIG, CONTRACT_STATUS_CONFIG } from "@/lib/contractS
 import { generateContractPdf } from "@/lib/contractPdf";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { toast } from "sonner";
-import { UserPlus, MoreHorizontal, ChevronRight, Copy } from "lucide-react";
+import { UserPlus, MoreHorizontal, ChevronRight, Copy, AlertTriangle } from "lucide-react";
 import type { Kandidaat, ContractData } from "@/types/app";
 
 const STATUSSEN = ["alle", "gesprek", "tarief_afgesproken", "uitgenodigd", "gecontracteerd", "afgewezen"] as const;
@@ -23,6 +23,16 @@ const STATUS_LABELS: Record<string, string> = {
   uitgenodigd: "Uitgenodigd",
   gecontracteerd: "Gecontracteerd",
   afgewezen: "Afgewezen",
+};
+
+const CORRECTIE_LABELS: Record<string, string> = {
+  naam_handelsnaam: "Naam / handelsnaam",
+  adres: "Adres",
+  kvk_nummer: "KVK-nummer",
+  btw_nummer: "BTW-nummer",
+  uurtarief: "Uurtarief",
+  looptijd: "Ingangsdatum / einddatum",
+  anders: "Anders",
 };
 
 function dataUriToBlob(dataUri: string): Blob {
@@ -40,6 +50,7 @@ export default function Kandidaten() {
   const navigate = useNavigate();
   const [kandidaten, setKandidaten] = useState<Kandidaat[]>([]);
   const [contracten, setContracten] = useState<any[]>([]);
+  const [berichten, setBerichten] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("alle");
   const [showNieuw, setShowNieuw] = useState(false);
@@ -58,13 +69,22 @@ export default function Kandidaten() {
   const [saveHt, setSaveHt] = useState(true);
   const [signing, setSigning] = useState(false);
 
+  // Correctie modal state
+  const [correctieContract, setCorrectieContract] = useState<any>(null);
+  const [correctieKandidaat, setCorrectieKandidaat] = useState<Kandidaat | null>(null);
+  const [correctieBerichten, setCorrectieBerichten] = useState<any[]>([]);
+  const [editFields, setEditFields] = useState<Record<string, string>>({});
+  const [resending, setResending] = useState(false);
+
   const fetchKandidaten = useCallback(async () => {
-    const [{ data: kData }, { data: cData }] = await Promise.all([
+    const [{ data: kData }, { data: cData }, { data: bData }] = await Promise.all([
       supabase.from("kandidaten").select("*").order("aangemaakt_op", { ascending: false }),
-      supabase.from("contracten").select("id, contract_nummer, kandidaat_id, status, contract_data, ot_naam, ot_handtekening, profiel_id").in("status", ["verstuurd", "ondertekend_ot", "ondertekend_beiden"]),
+      supabase.from("contracten").select("id, contract_nummer, kandidaat_id, status, contract_data, ot_naam, ot_handtekening, profiel_id").in("status", ["verstuurd", "ondertekend_ot", "ondertekend_beiden", "correctie_gevraagd"]),
+      supabase.from("contract_berichten").select("*").order("aangemaakt_op", { ascending: true }),
     ]);
     setKandidaten((kData as unknown as Kandidaat[]) || []);
     setContracten(cData || []);
+    setBerichten(bData || []);
     setLoading(false);
   }, []);
 
@@ -74,6 +94,112 @@ export default function Kandidaten() {
 
   function getContractForKandidaat(kandidaatId: string) {
     return contracten.find(c => c.kandidaat_id === kandidaatId);
+  }
+
+  function getBerichtenForContract(contractId: string) {
+    return berichten.filter(b => b.contract_id === contractId);
+  }
+
+  async function openCorrectieModal(k: Kandidaat, contract: any) {
+    const cb = getBerichtenForContract(contract.id);
+    setCorrectieKandidaat(k);
+    setCorrectieContract(contract);
+    setCorrectieBerichten(cb);
+
+    // Pre-fill editable fields from contract_data
+    const cd = contract.contract_data as any;
+    setEditFields({
+      ot_naam: cd.ot_naam || "",
+      ot_handelsnaam: cd.ot_handelsnaam || "",
+      ot_adres: cd.ot_adres || "",
+      ot_postcode: cd.ot_postcode || "",
+      ot_stad: cd.ot_stad || "",
+      ot_kvk: cd.ot_kvk || "",
+      ot_btw: cd.ot_btw || "",
+      uurtarief: cd.uurtarief?.toString() || "",
+      startdatum: cd.startdatum || "",
+      einddatum: cd.einddatum || "",
+    });
+  }
+
+  async function opnieuwVersturen() {
+    if (!correctieContract || !correctieKandidaat || !profileId) return;
+    setResending(true);
+
+    try {
+      const cd = { ...(correctieContract.contract_data as any) };
+
+      // Apply edits
+      cd.ot_naam = editFields.ot_naam;
+      cd.ot_handelsnaam = editFields.ot_handelsnaam;
+      cd.ot_adres = editFields.ot_adres;
+      cd.ot_postcode = editFields.ot_postcode;
+      cd.ot_stad = editFields.ot_stad;
+      cd.ot_kvk = editFields.ot_kvk;
+      cd.ot_btw = editFields.ot_btw;
+      cd.uurtarief = parseFloat(editFields.uurtarief) || cd.uurtarief;
+      // startdatum/einddatum are display strings, keep as-is if not changed
+
+      // Generate new token
+      const newToken = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, "");
+      const geldigTot = new Date();
+      geldigTot.setDate(geldigTot.getDate() + 7);
+      cd._token = newToken;
+      cd._token_geldig_tot = geldigTot.toISOString();
+
+      // Update contract
+      await supabase.from("contracten").update({
+        contract_data: cd as any,
+        status: "verstuurd",
+      }).eq("id", correctieContract.id);
+
+      // Update kandidaat tarief if changed
+      const nieuwTarief = parseFloat(editFields.uurtarief);
+      if (!isNaN(nieuwTarief) && nieuwTarief > 0 && nieuwTarief !== correctieKandidaat.afgesproken_tarief) {
+        await supabase.from("kandidaten").update({ afgesproken_tarief: nieuwTarief }).eq("id", correctieKandidaat.id);
+      }
+
+      // Add bericht record
+      await supabase.from("contract_berichten").insert({
+        contract_id: correctieContract.id,
+        richting: "manager_naar_kandidaat",
+        bericht_type: "opnieuw_verstuurd",
+        toelichting: "Contract is aangepast en opnieuw verstuurd.",
+      });
+
+      // Mark correction berichten as read
+      const unread = correctieBerichten.filter(b => !b.gelezen_op && b.richting === "kandidaat_naar_manager");
+      for (const b of unread) {
+        await supabase.from("contract_berichten").update({ gelezen_op: new Date().toISOString() }).eq("id", b.id);
+      }
+
+      const link = `${window.location.origin}/contract/ondertekenen/${newToken}`;
+      toast.success("Contract opnieuw verstuurd ✓");
+      toast.info(
+        <div className="space-y-1">
+          <p className="text-xs font-semibold">Nieuwe ondertekeningslink:</p>
+          <div className="flex items-center gap-2">
+            <code className="text-[10px] break-all flex-1" style={{ color: "var(--accent)" }}>{link}</code>
+            <button
+              onClick={() => { navigator.clipboard.writeText(link); toast.success("Link gekopieerd ✓"); }}
+              className="shrink-0 px-2 py-1 rounded text-[10px] font-medium"
+              style={{ background: "var(--accent)", color: "#fff" }}>
+              Kopieer
+            </button>
+          </div>
+        </div>,
+        { duration: 30000 }
+      );
+
+      setCorrectieContract(null);
+      setCorrectieKandidaat(null);
+      fetchKandidaten();
+    } catch (err) {
+      toast.error("Fout bij opnieuw versturen");
+      console.error(err);
+    } finally {
+      setResending(false);
+    }
   }
 
   async function openSignModal(k: Kandidaat) {
@@ -86,7 +212,6 @@ export default function Kandidaten() {
     setUseOpgeslagen(true);
     setSaveHt(true);
 
-    // Load manager handtekening
     if (profileId) {
       const { data } = await supabase.from("manager_handtekeningen").select("handtekening").eq("profiel_id", profileId).maybeSingle();
       setManagerHt(data?.handtekening || null);
@@ -101,7 +226,6 @@ export default function Kandidaten() {
 
     setSigning(true);
     try {
-      // 1. Save handtekening if requested
       if (saveHt && (nieuweHt || showCanvas)) {
         await supabase.from("manager_handtekeningen").upsert({
           profiel_id: profileId,
@@ -110,7 +234,6 @@ export default function Kandidaten() {
         }, { onConflict: "profiel_id" });
       }
 
-      // 2. Generate PDF
       const managerNaam = profileCtx?.full_name || "";
       const { dataUri, hash } = await generateContractPdf(
         signContract.contract_data as ContractData,
@@ -120,12 +243,10 @@ export default function Kandidaten() {
         signContract.ot_naam,
       );
 
-      // 3. Upload PDF
       const bestandsnaam = `${signContract.id}.pdf`;
       const blob = dataUriToBlob(dataUri);
       await supabase.storage.from("contracten").upload(bestandsnaam, blob, { contentType: "application/pdf", upsert: true });
 
-      // 4. Update contract
       await supabase.from("contracten").update({
         og_naam: managerNaam,
         og_handtekening: htToUse,
@@ -136,10 +257,8 @@ export default function Kandidaten() {
         pdf_hash: hash,
       }).eq("id", signContract.id);
 
-      // 5. Update kandidaat
       await supabase.from("kandidaten").update({ status: "gecontracteerd" }).eq("id", signKandidaat.id);
 
-      // 6. Link contract to profile + send mededeling
       if (signKandidaat.profiel_id) {
         await supabase.from("contracten").update({ profiel_id: signKandidaat.profiel_id }).eq("id", signContract.id);
         await supabase.from("mededelingen").insert({
@@ -231,12 +350,16 @@ export default function Kandidaten() {
         <EmptyState icoon="👥" titel="Geen kandidaten" subtitel={filter === "alle" ? "Voeg een kandidaat toe om te beginnen." : `Geen kandidaten met status "${STATUS_LABELS[filter]}".`} />
       ) : (
         <div className="space-y-3">
-          {gefilterd.map(k => {
+          {gefiltered.map(k => {
             const sc = KANDIDAAT_STATUS_CONFIG[k.status] || KANDIDAAT_STATUS_CONFIG.gesprek;
             const contract = getContractForKandidaat(k.id);
             const wachtOpManager = k.status === "uitgenodigd" && contract?.status === "ondertekend_ot";
+            const heeftCorrectie = k.status === "uitgenodigd" && contract?.status === "correctie_gevraagd";
+            const contractBerichten = contract ? getBerichtenForContract(contract.id) : [];
+            const ongelezen = contractBerichten.filter(b => !b.gelezen_op && b.richting === "kandidaat_naar_manager").length;
+
             return (
-              <div key={k.id} className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+              <div key={k.id} className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: `1px solid ${heeftCorrectie ? "var(--danger-border)" : "var(--border)"}` }}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>
@@ -263,6 +386,29 @@ export default function Kandidaten() {
                       style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
                       {sc.label}
                     </span>
+
+                    {/* Correctie gevraagd badge + button */}
+                    {heeftCorrectie && (
+                      <>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap flex items-center gap-1"
+                          style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}>
+                          <AlertTriangle className="w-3 h-3" />
+                          Correctie gevraagd
+                          {ongelezen > 0 && (
+                            <span className="ml-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+                              style={{ background: "var(--danger)", color: "#fff" }}>
+                              {ongelezen}
+                            </span>
+                          )}
+                        </span>
+                        <button onClick={() => openCorrectieModal(k, contract)}
+                          className="text-xs px-3 py-1.5 rounded-lg font-medium"
+                          style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}>
+                          Bekijken & aanpassen
+                        </button>
+                      </>
+                    )}
+
                     {wachtOpManager && (
                       <>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
@@ -290,7 +436,7 @@ export default function Kandidaten() {
                         Contract <ChevronRight className="w-3 h-3" />
                       </button>
                     )}
-                    {!wachtOpManager && k.status === "uitgenodigd" && contract && (
+                    {!wachtOpManager && !heeftCorrectie && k.status === "uitgenodigd" && contract && (
                       <div className="flex flex-col items-end gap-1">
                         <span className="text-[10px] font-medium" style={{ color: "var(--info)" }}>📧 Uitgenodigd</span>
                         {(contract.contract_data as any)?._token && (
@@ -307,12 +453,12 @@ export default function Kandidaten() {
                         )}
                       </div>
                     )}
-                    {!wachtOpManager && k.status === "gecontracteerd" && (
+                    {!wachtOpManager && !heeftCorrectie && k.status === "gecontracteerd" && (
                       <span className="text-[10px] font-medium" style={{ color: "var(--success)" }}>
                         ✓ Gecontracteerd
                       </span>
                     )}
-                    {k.status !== "afgewezen" && k.status !== "gecontracteerd" && !wachtOpManager && (
+                    {k.status !== "afgewezen" && k.status !== "gecontracteerd" && !wachtOpManager && !heeftCorrectie && (
                       <button onClick={() => afwijzen(k.id)} className="text-[10px]" style={{ color: "var(--danger)" }}>
                         Afwijzen
                       </button>
@@ -421,6 +567,85 @@ export default function Kandidaten() {
               className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40"
               style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
               {signing ? "Bezig met ondertekenen..." : "Contract voltooien ✓"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Correctie modal */}
+      {correctieKandidaat && correctieContract && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setCorrectieContract(null); setCorrectieKandidaat(null); }}>
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-in slide-in-from-bottom rounded-t-3xl p-5 space-y-4"
+            style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }}
+            onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
+            <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Correctie gevraagd</h3>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+              {correctieKandidaat.voornaam} {correctieKandidaat.achternaam} · {correctieContract.contract_nummer}
+            </p>
+
+            {/* Berichten thread */}
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Berichten</p>
+              {correctieBerichten.length === 0 ? (
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Geen berichten</p>
+              ) : (
+                correctieBerichten.map(b => (
+                  <div key={b.id} className="rounded-xl p-3 text-xs" style={{
+                    background: b.richting === "kandidaat_naar_manager" ? "var(--danger-light)" : "var(--info-light)",
+                    border: `1px solid ${b.richting === "kandidaat_naar_manager" ? "var(--danger-border)" : "var(--info-border)"}`,
+                  }}>
+                    <p className="font-semibold text-[10px] mb-1" style={{
+                      color: b.richting === "kandidaat_naar_manager" ? "var(--danger)" : "var(--info)",
+                    }}>
+                      {b.richting === "kandidaat_naar_manager" ? "📨 Kandidaat" : "📤 Manager"}
+                      {b.bericht_type === "correctie_verzoek" && " — Correctie verzoek"}
+                      {b.bericht_type === "opnieuw_verstuurd" && " — Opnieuw verstuurd"}
+                    </p>
+                    {b.wat_klopt_niet?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-1">
+                        {b.wat_klopt_niet.map((item: string) => (
+                          <span key={item} className="px-1.5 py-0.5 rounded text-[9px] font-medium"
+                            style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
+                            {CORRECTIE_LABELS[item] || item}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {b.toelichting && (
+                      <p style={{ color: "var(--text-secondary)" }}>{b.toelichting}</p>
+                    )}
+                    <p className="text-[9px] mt-1" style={{ color: "var(--text-muted)" }}>
+                      {new Date(b.aangemaakt_op).toLocaleDateString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Editable fields */}
+            <div className="space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Contract aanpassen</p>
+              <Input placeholder="Naam" value={editFields.ot_naam} onChange={e => setEditFields(p => ({ ...p, ot_naam: e.target.value }))} />
+              <Input placeholder="Handelsnaam" value={editFields.ot_handelsnaam} onChange={e => setEditFields(p => ({ ...p, ot_handelsnaam: e.target.value }))} />
+              <Input placeholder="Adres" value={editFields.ot_adres} onChange={e => setEditFields(p => ({ ...p, ot_adres: e.target.value }))} />
+              <div className="grid grid-cols-2 gap-2">
+                <Input placeholder="Postcode" value={editFields.ot_postcode} onChange={e => setEditFields(p => ({ ...p, ot_postcode: e.target.value }))} />
+                <Input placeholder="Stad" value={editFields.ot_stad} onChange={e => setEditFields(p => ({ ...p, ot_stad: e.target.value }))} />
+              </div>
+              <Input placeholder="KVK-nummer" value={editFields.ot_kvk} onChange={e => setEditFields(p => ({ ...p, ot_kvk: e.target.value }))} />
+              <Input placeholder="BTW-nummer" value={editFields.ot_btw} onChange={e => setEditFields(p => ({ ...p, ot_btw: e.target.value }))} />
+              <div>
+                <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Uurtarief (€/uur)</label>
+                <Input type="number" value={editFields.uurtarief} onChange={e => setEditFields(p => ({ ...p, uurtarief: e.target.value }))} className="mt-1" />
+              </div>
+            </div>
+
+            <button onClick={opnieuwVersturen} disabled={resending}
+              className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40"
+              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+              {resending ? "Versturen..." : "Aanpassen & nieuwe link versturen →"}
             </button>
           </div>
         </div>
