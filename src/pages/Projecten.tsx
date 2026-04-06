@@ -73,7 +73,9 @@ export default function Projecten() {
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => {
     const channel = supabase.channel('projecten-rt').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'projects' }, () => fetchData()).subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const handleStatusChange = () => fetchData();
+    window.addEventListener("project-status-changed", handleStatusChange);
+    return () => { supabase.removeChannel(channel); window.removeEventListener("project-status-changed", handleStatusChange); };
   }, [fetchData]);
   useEffect(() => { if (!isManager) navigate("/"); }, [isManager, navigate]);
 
@@ -131,10 +133,16 @@ export default function Projecten() {
   const activeProjects = projects.filter(p => p.active);
   const inactiveProjects = projects.filter(p => !p.active);
   const filteredProjects = useMemo(() => {
-    if (!searchQuery.trim()) return projects;
-    const q = searchQuery.toLowerCase();
-    return projects.filter(p => p.naam.toLowerCase().includes(q) || p.nummer.toLowerCase().includes(q));
-  }, [projects, searchQuery]);
+    let result = projects;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(p => p.naam.toLowerCase().includes(q) || p.nummer.toLowerCase().includes(q));
+    }
+    if (statusFilter !== "alle") {
+      result = result.filter(p => (p.status || "nieuw") === statusFilter);
+    }
+    return result;
+  }, [projects, searchQuery, statusFilter]);
   const filteredActive = filteredProjects.filter(p => p.active);
   const filteredInactive = filteredProjects.filter(p => !p.active);
   const selectedProject = selectedId ? projects.find(p => p.id === selectedId) || null : null;
