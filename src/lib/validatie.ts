@@ -100,7 +100,7 @@ export const mededelingSchema = z.object({
 export function valideer<T>(
   schema: z.ZodSchema<T>,
   data: unknown
-): { success: true; data: T } | { success: false; errors: Record<string, string> } {
+): { success: true; data: T; errors?: never } | { success: false; errors: Record<string, string>; data?: never } {
   const result = schema.safeParse(data);
 
   if (result.success) {
