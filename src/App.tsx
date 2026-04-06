@@ -145,6 +145,7 @@ const App = () => (
               <Route path="/beheer/intake-regels" element={<RoleRoute check={p => p.zietBeheer}><L><IntakeRegelBeheer /></L></RoleRoute>} />
               <Route path="/beheer/tarieven" element={<RoleRoute check={p => p.zietBeheer}><L><TarievenBeheer /></L></RoleRoute>} />
 
+              <Route path="/test-error" element={<L><TestErrorPage /></L>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </NavBadgesProvider>
