@@ -5,7 +5,7 @@ import React from "react";
 
 interface ProfileContextType {
   profileId: string | null;
-  profile: { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; uurtarief: number | null } | null;
+  profile: { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; uurtarief: number | null; account_status: string } | null;
   loading: boolean;
   refetch: () => Promise<void>;
 }
@@ -30,7 +30,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
     const { data } = await supabase
       .from("profiles")
-      .select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, uurtarief")
+      .select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, uurtarief, account_status")
       .eq("user_id", user.id)
       .single();
     if (data) setProfile(data as any);
