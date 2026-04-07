@@ -51,11 +51,11 @@ export default function MijnOrders() {
     setOrderRegels(data || []);
   };
 
-  // Wizard: set default period to last month
+  // Wizard: set default period to current month
   const openWizard = () => {
-    const lastMonth = subMonths(new Date(), 1);
-    setWizVan(format(startOfMonth(lastMonth), "yyyy-MM-dd"));
-    setWizTot(format(endOfMonth(lastMonth), "yyyy-MM-dd"));
+    const now = new Date();
+    setWizVan(format(startOfMonth(now), "yyyy-MM-dd"));
+    setWizTot(format(endOfMonth(now), "yyyy-MM-dd"));
     setWizStep(1);
     setWizBoekingen([]);
     setWizSelected(new Set());
