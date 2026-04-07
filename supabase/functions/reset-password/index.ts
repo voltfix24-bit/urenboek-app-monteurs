@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { user_id, password } = await req.json();
+    const { user_id, password, email } = await req.json();
 
     if (!user_id || !password) {
       return new Response(JSON.stringify({ error: "user_id en password zijn verplicht" }), {
@@ -38,9 +38,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { error } = await adminClient.auth.admin.updateUserById(user_id, {
-      password,
-    });
+    const updateData: any = { password };
+    if (email) {
+      updateData.email = email;
+      updateData.email_confirm = true;
+    }
+
+    const { error } = await adminClient.auth.admin.updateUserById(user_id, updateData);
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), {
