@@ -196,6 +196,12 @@ export default function ContractOndertekenen() {
       // Store contract reference for page reload detection
       if (result.contract_id) {
         sessionStorage.setItem(`contract_signed_${token}`, result.contract_id);
+        sessionStorage.setItem(`contract_data_${token}`, JSON.stringify({
+          contract_data: contractData,
+          has_account: false,
+          kandidaat_email: result.email || "",
+          kandidaat_id: result.kandidaat_id || "",
+        }));
       }
       setKlaar(true);
     } catch (err: any) {
