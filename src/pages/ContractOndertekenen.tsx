@@ -53,79 +53,86 @@ export default function ContractOndertekenen() {
     async function load() {
       if (!token) { setError("Geen token"); setLoading(false); return; }
 
-      // Also check ondertekend_ot to detect already-signed contracts on reload
-      const { data: contracten } = await supabase
-        .from("contracten")
-        .select("*")
-        .in("status", ["verstuurd", "correctie_gevraagd", "ondertekend_ot", "ondertekend_beiden"]);
-
-      // First try to find by token in contract_data
-      let contract = contracten?.find((c: any) => {
-        const cd = c.contract_data as any;
-        return cd?._token === token;
-      });
-
-      // If not found by token (token was cleared after signing), check URL token against any
-      // recently signed contract — but we can't match without the token.
-      // Instead, store the contract ID in sessionStorage after signing.
-      if (!contract) {
-        const storedContractId = sessionStorage.getItem(`contract_signed_${token}`);
-        if (storedContractId) {
-          contract = contracten?.find((c: any) => c.id === storedContractId);
-        }
-      }
-
-      if (!contract) {
-        setError("Deze link is verlopen of ongeldig");
+      // Use edge function to lookup contract (bypasses RLS for unauthenticated users)
+      const lookupUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/contract-lookup`;
+      let res: Response;
+      try {
+        res = await fetch(lookupUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ token }),
+        });
+      } catch {
+        setError("Kan contract niet laden. Controleer je internetverbinding.");
         setLoading(false);
         return;
       }
 
-      const cd = (contract as any).contract_data as any;
-      const status = (contract as any).status;
+      const data = await res.json();
 
-      // Already signed — check if account exists
-      if (status === "ondertekend_ot" || status === "ondertekend_beiden") {
-        const kandidaatIdVal = (contract as any).kandidaat_id;
-        if (kandidaatIdVal) {
-          const { data: kand } = await supabase
-            .from("kandidaten")
-            .select("email, profiel_id")
-            .eq("id", kandidaatIdVal)
-            .single();
-
-          if (kand?.profiel_id) {
-            // Account already created
-            setAccountAangemaakt(true);
-            setKlaar(true);
-            setContractData(cd as ContractData);
-            setLoading(false);
-            return;
+      if (!res.ok) {
+        if (data.error === "expired") {
+          setError("Deze link is verlopen");
+        } else if (data.error === "not_found") {
+          // Check sessionStorage for recently signed contract
+          const storedContractId = sessionStorage.getItem(`contract_signed_${token}`);
+          if (storedContractId) {
+            // Try loading signed contract data from sessionStorage
+            const storedData = sessionStorage.getItem(`contract_data_${token}`);
+            if (storedData) {
+              try {
+                const parsed = JSON.parse(storedData);
+                setContractData(parsed.contract_data as ContractData);
+                setAccountAangemaakt(parsed.has_account || false);
+                if (!parsed.has_account && parsed.kandidaat_email) {
+                  setKandidaatEmail(parsed.kandidaat_email);
+                  setKandidaatId(parsed.kandidaat_id || "");
+                }
+                setKlaar(true);
+                setLoading(false);
+                return;
+              } catch { /* fall through */ }
+            }
           }
-          // Signed but no account yet — show account creation
-          setKandidaatEmail(kand?.email || "");
-          setKandidaatId(kandidaatIdVal);
+          setError("Deze link is verlopen of ongeldig");
+        } else {
+          setError(data.error || "Er is een fout opgetreden");
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Handle signed contracts
+      if (data.status === "signed") {
+        if (data.has_account) {
+          setAccountAangemaakt(true);
+        } else if (data.kandidaat_email) {
+          setKandidaatEmail(data.kandidaat_email);
+          setKandidaatId(data.kandidaat_id || "");
         }
         setKlaar(true);
-        setContractData(cd as ContractData);
+        setContractData(data.contract_data as ContractData);
         setLoading(false);
         return;
       }
 
-      // Check token expiry for unsigned contracts
-      if (cd._token_geldig_tot && new Date(cd._token_geldig_tot) < new Date()) {
-        setError("Deze link is verlopen");
+      // Pending contract
+      if (data.status === "pending") {
+        if (data.berichten?.length > 0) {
+          setBerichten(data.berichten);
+        }
+        // Check if correctie was requested
+        const lastBericht = data.berichten?.[data.berichten.length - 1];
+        if (lastBericht?.bericht_type === "correctie" && lastBericht?.richting === "ot_naar_og") {
+          setCorrectieVerstuurd(true);
+        }
+        setContractData(data.contract_data as ContractData);
+        setNaam(data.contract_data?.ot_naam || "");
         setLoading(false);
-        return;
       }
-
-      if (status === "correctie_gevraagd") {
-        setCorrectieVerstuurd(true);
-      }
-
-      setContractData(cd as ContractData);
-      setNaam(cd.ot_naam || "");
-      setLoading(false);
     }
     load();
   }, [token]);
@@ -189,6 +196,12 @@ export default function ContractOndertekenen() {
       // Store contract reference for page reload detection
       if (result.contract_id) {
         sessionStorage.setItem(`contract_signed_${token}`, result.contract_id);
+        sessionStorage.setItem(`contract_data_${token}`, JSON.stringify({
+          contract_data: contractData,
+          has_account: false,
+          kandidaat_email: result.email || "",
+          kandidaat_id: result.kandidaat_id || "",
+        }));
       }
       setKlaar(true);
     } catch (err: any) {
