@@ -26,7 +26,7 @@ export default function Goedkeuring() {
   const { isManager, user } = useAuth();
   const { profileId: myProfileId } = useProfile();
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<string>("ingediend");
+  const [filter, setFilter] = useState<string>("alle");
   const [weekOffset, setWeekOffset] = useState(0);
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
   const [afkeurReden, setAfkeurReden] = useState("");
@@ -160,7 +160,7 @@ export default function Goedkeuring() {
       </div>
 
       <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-        {([["ingediend", "Ingediend"], ["goedgekeurd", "Goedgekeurd"], ["afgekeurd", "Afgekeurd"], ["alle", "Alle"]] as const).map(([k, l]) => (
+        {([["alle", "Alle"], ["ingediend", "Ingediend"], ["goedgekeurd", "Goedgekeurd"], ["afgekeurd", "Afgekeurd"], ["concept", "Concept"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setFilter(k)} className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors" style={{
             background: filter === k ? "var(--accent-light)" : "var(--bg-surface)",
             border: filter === k ? "1px solid var(--accent-border)" : "1px solid var(--border)",
