@@ -14,10 +14,8 @@ import { Plus, Download, ChevronRight, ArrowLeft, X, Check, FileText, AlertTrian
 import { format, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
 import { useSearchParams } from "react-router-dom";
 import { nl } from "date-fns/locale";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-
 import { euroDecimals as euro } from "@/lib/formatting";
+import { generateInkooporderPdf } from "@/lib/inkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
 
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
@@ -137,7 +135,7 @@ export default function Inkooporders() {
     setWizBoekingen(enriched);
     setWizSelected(new Set(enriched.map((b: any) => b.id)));
     // Get profile + tarief
-    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn").eq("id", wizMedewerker).single();
+    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", wizMedewerker).single();
     setWizMedProfile(prof);
     setWizTarief(Number(prof?.uurtarief) || 0);
     setWizLoading(false);
@@ -218,75 +216,7 @@ export default function Inkooporders() {
   const [betaaldDatum, setBetaaldDatum] = useState("");
   const [showStatusDialog, setShowStatusDialog] = useState<string | null>(null);
 
-  const generatePdf = async (order: any, regels: any[], prof: any) => {
-    const bedrijf = await getBedrijfsgegevens();
-    const bNaam = bedrijf?.bedrijfsnaam || "TerreVolt BV";
-    const doc = new jsPDF();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(74, 124, 47);
-    doc.text(bNaam, 14, 20);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text("Inkooporder", 14, 28);
-
-    // Opdrachtgever info
-    let yLeft = 36;
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    if (bedrijf?.straat) { doc.text(bedrijf.straat, 14, yLeft); yLeft += 5; }
-    if (bedrijf?.postcode || bedrijf?.stad) { doc.text([bedrijf.postcode, bedrijf.stad].filter(Boolean).join(" "), 14, yLeft); yLeft += 5; }
-    if (bedrijf?.kvk_nummer) { doc.text(`KVK: ${bedrijf.kvk_nummer}`, 14, yLeft); yLeft += 5; }
-    if (bedrijf?.btw_nummer) { doc.text(`BTW: ${bedrijf.btw_nummer}`, 14, yLeft); yLeft += 5; }
-
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${order.order_nummer}`, 14, yLeft + 6);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Datum: ${format(new Date(order.aangemaakt_op), "d MMMM yyyy", { locale: nl })}`, 14, yLeft + 13);
-    doc.text(`Periode: ${order.periode_van} t/m ${order.periode_tot}`, 14, yLeft + 19);
-
-    // Opdrachtnemer
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("Opdrachtnemer:", 120, 40);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    const naam = prof?.bedrijfsnaam || prof?.full_name || order.medewerker_naam;
-    doc.text(naam, 120, 47);
-    if (prof?.factuuradres || prof?.adres) doc.text(prof.factuuradres || prof.adres, 120, 53);
-    if (prof?.kvk_nummer) doc.text(`KVK: ${prof.kvk_nummer}`, 120, 59);
-    if (prof?.btw_nummer) doc.text(`BTW: ${prof.btw_nummer}`, 120, 65);
-    if (prof?.iban) doc.text(`IBAN: ${prof.iban}`, 120, 71);
-
-    autoTable(doc, {
-      startY: 80,
-      head: [["Datum", "Project", "Activiteit", "Uren", "Tarief", "Bedrag"]],
-      body: regels.map(r => [
-        r.datum, r.project_naam || "", r.activiteit || "", `${r.uren}`, euro(r.uurtarief), euro(r.bedrag),
-      ]),
-      foot: [
-        ["", "", "", "", "Subtotaal excl BTW:", euro(order.totaal_excl_btw)],
-        ["", "", "", "", "BTW 21%:", euro(order.btw_bedrag)],
-        ["", "", "", "", "Totaal incl BTW:", euro(order.totaal_incl_btw)],
-      ],
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [74, 124, 47], textColor: 255 },
-      footStyles: { fillColor: [245, 247, 240], textColor: [0, 0, 0], fontStyle: "bold" },
-    });
-
-    const finalY = (doc as any).lastAutoTable?.finalY || 200;
-    doc.setFontSize(8);
-    doc.setTextColor(130);
-    doc.text(`Betaling binnen ${prof?.betalingstermijn || bedrijf?.betalingstermijn || 14} dagen na ontvangst factuur`, 14, finalY + 15);
-    if (bedrijf?.iban) doc.text(`IBAN: ${bedrijf.iban}${bedrijf.iban_naam ? ` t.n.v. ${bedrijf.iban_naam}` : ""}`, 14, finalY + 22);
-    doc.text(`Gegenereerd op ${format(new Date(), "d MMMM yyyy", { locale: nl })} · ${bNaam}`, 14, finalY + 29);
-
-    doc.save(`Inkooporder_${order.order_nummer}.pdf`);
-  };
+  const generatePdf = generateInkooporderPdf;
 
   if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers.</p></div>;
 
