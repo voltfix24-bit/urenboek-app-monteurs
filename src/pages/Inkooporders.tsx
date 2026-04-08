@@ -94,16 +94,19 @@ export default function Inkooporders() {
 
   const loadOrderDetail = async (order: any) => {
     setSelectedOrder(order);
-    const { data } = await supabase.from("inkooporder_regels").select("*").eq("inkooporder_id", order.id).order("datum");
-    const regels = data || [];
+    const { data } = await supabase.from("inkooporder_regels").select("*, uren_boekingen(beschrijving, type)").eq("inkooporder_id", order.id).order("datum");
+    const verrijkt = (data || []).map((r: any) => ({
+      ...r,
+      activiteit: r.activiteit || (r.uren_boekingen as any)?.beschrijving || (r.uren_boekingen as any)?.type || "",
+    }));
     // Enrich with project nummer
-    const projIds = [...new Set(regels.map((r: any) => r.project_id).filter(Boolean))];
+    const projIds = [...new Set(verrijkt.map((r: any) => r.project_id).filter(Boolean))];
     if (projIds.length > 0) {
       const { data: projs } = await supabase.from("projects").select("id, nummer").in("id", projIds);
       const nummerMap = new Map((projs || []).map((p: any) => [p.id, p.nummer]));
-      regels.forEach((r: any) => { r._project_nummer = nummerMap.get(r.project_id) || ""; });
+      verrijkt.forEach((r: any) => { r._project_nummer = nummerMap.get(r.project_id) || ""; });
     }
-    setOrderRegels(regels);
+    setOrderRegels(verrijkt);
   };
 
   // Generate next order number
