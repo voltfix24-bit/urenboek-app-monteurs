@@ -13,7 +13,7 @@ import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck, CheckCircle,
 import { checkOveruren } from "@/lib/overurenCheck";
 import { useNavigate } from "react-router-dom";
 import { useGoedkeuring } from "@/hooks/useGoedkeuring";
-import { format, startOfWeek, addDays } from "date-fns";
+import { format, startOfWeek, addDays, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 
 interface EntryWithProfile {
