@@ -4,6 +4,13 @@ import { queryKeys } from "@/lib/queryKeys";
 import { format, startOfISOWeek, addDays } from "date-fns";
 import { volledigAdres } from "@/lib/utils";
 
+interface ZonderOrderMonteur {
+  id: string;
+  naam: string;
+  uren: number;
+  aantal: number;
+}
+
 interface DashboardData {
   pendingCount: number;
   weekHours: number;
@@ -17,6 +24,7 @@ interface DashboardData {
   overurenMeldingen: any[];
   overurenCount: number;
   statusGroups: Record<string, number>;
+  zonderOrder: ZonderOrderMonteur[];
 }
 
 async function fetchDashboard(): Promise<DashboardData> {
