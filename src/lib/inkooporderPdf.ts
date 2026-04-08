@@ -6,6 +6,21 @@ import { euroDecimals as euro } from "@/lib/formatting";
 import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import terrevoltLogoPng from "@/assets/terrevolt-logo.png";
 
+function formatIban(iban: string): string {
+  return iban.replace(/\s/g, "").replace(/(.{4})/g, "$1 ").trim();
+}
+
+function activiteitLabel(r: any): string {
+  if (r.activiteit && r.activiteit !== "") return r.activiteit;
+  if (r.beschrijving && r.beschrijving !== "") return r.beschrijving;
+  if (r.type && r.type !== "") {
+    if (r.type === "monteren") return "Montagewerkzaamheden";
+    if (r.type === "schakelen") return "Schakelwerkzaamheden";
+    return r.type;
+  }
+  return "Elektrotechnische werkzaamheden";
+}
+
 export async function generateInkooporderPdf(
   order: any,
   regels: any[],
@@ -33,7 +48,6 @@ export async function generateInkooporderPdf(
   const groenMid = [74, 124, 47] as [number, number, number];
   const groenTint = [238, 245, 232] as [number, number, number];
   const groenLicht = [245, 247, 240] as [number, number, number];
-  const goud = [200, 168, 75] as [number, number, number];
   const goudLicht = [255, 248, 220] as [number, number, number];
   const rand = [200, 217, 184] as [number, number, number];
   const tekst = [7, 33, 0] as [number, number, number];
@@ -66,46 +80,43 @@ export async function generateInkooporderPdf(
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...muted);
-  doc.text("ELEKTROTECHNIEK & INSTALLATIE", ml, ml + logoH + 5);
+  doc.text("ELEKTROTECHNIEK & INSTALLATIE", ml, ml + logoH + 4);
 
-  // ── TITEL RECHTS ─────────────────
-  doc.setFontSize(34);
+  // ── TITEL RECHTS (zelfde hoogte als logo) ─────
+  doc.setFontSize(30);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...groen);
-  doc.text("Inkooporder", pageW - mr, ml + 2, { align: "right" });
+  doc.text("Inkooporder", pageW - mr, ml + 8, { align: "right" });
 
-  doc.setFontSize(13);
+  doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...groenMid);
-  doc.text(order.order_nummer, pageW - mr, ml + 12, { align: "right" });
+  doc.text(order.order_nummer, pageW - mr, ml + 16, { align: "right" });
 
-  // Datums rechts
+  // Datums rechts — compact
   const datumStr = format(new Date(order.aangemaakt_op), "d MMMM yyyy", { locale: nl });
 
-  doc.setFontSize(8.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...faint);
-
-  let dY = ml + 20;
-  const datumRegels = [
-    { label: "Datum:", waarde: datumStr },
-    { label: "Geaccordeerd door:", waarde: goedkeurderNaam || bNaam },
-    { label: "Accordeerdatum:", waarde: datumStr },
+  const datumInfo = [
+    { label: "Datum", waarde: datumStr },
+    { label: "Geaccordeerd", waarde: goedkeurderNaam || bNaam },
+    { label: "Accordeerdatum", waarde: datumStr },
   ];
 
-  datumRegels.forEach((r) => {
+  let dY = ml + 24;
+  datumInfo.forEach((r) => {
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.text(r.label, pageW - mr, dY, { align: "right" });
+    doc.setTextColor(...faint);
+    doc.text(r.label + ":", pageW - mr, dY, { align: "right" });
     dY += 4;
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...groen);
     doc.text(r.waarde, pageW - mr, dY, { align: "right" });
-    doc.setTextColor(...faint);
     dY += 5;
   });
 
   // ── PARTIJEN ─────────────────────
-  const partijY = ml + logoH + 14;
+  const partijY = Math.max(ml + logoH + 10, dY + 4);
   const partijH = 36;
   const halfW = (contentW - 4) / 2;
 
@@ -165,7 +176,7 @@ export async function generateInkooporderPdf(
 
   if (prof?.iban) {
     doc.setTextColor(...groenMid);
-    doc.text(`IBAN: ${prof.iban}`, ml + 4, lY);
+    doc.text(`IBAN: ${formatIban(prof.iban)}`, ml + 4, lY);
   }
 
   // Rechts: Opdrachtgever
@@ -207,6 +218,12 @@ export async function generateInkooporderPdf(
     rY += 4;
   }
 
+  if (bedrijf?.iban) {
+    doc.setTextColor(...groenMid);
+    doc.text(`IBAN: ${formatIban(bedrijf.iban)}`, rechtsBoxX + 4, rY);
+    rY += 4;
+  }
+
   if (bedrijf?.email) {
     doc.setTextColor(...muted);
     doc.text(bedrijf.email, rechtsBoxX + 4, rY);
@@ -216,12 +233,12 @@ export async function generateInkooporderPdf(
   const tableY = partijY + partijH + 6;
 
   const tabelBody = regels.map((r) => [
-    format(new Date(r.datum + "T12:00:00"), "dd-MM-yyyy"),
+    format(new Date(r.datum + "T12:00:00"), "d MMM", { locale: nl }),
     r.project_naam || "",
-    r.activiteit || r.beschrijving || r.type || "Werkzaamheden",
+    activiteitLabel(r),
     String(r.uren),
-    `€ ${Number(r.uurtarief).toFixed(2)}`,
-    `€ ${Number(r.bedrag).toFixed(2).replace(".", ",")}`,
+    euro(Number(r.uurtarief)),
+    euro(Number(r.bedrag)),
   ]);
 
   autoTable(doc, {
@@ -231,7 +248,7 @@ export async function generateInkooporderPdf(
       "Datum",
       "Project",
       "Werkzaamheden",
-      "Uren",
+      "u",
       "Tarief excl. btw",
       "Bedrag excl. btw",
     ]],
@@ -256,12 +273,12 @@ export async function generateInkooporderPdf(
       fillColor: [255, 255, 255] as [number, number, number],
     },
     columnStyles: {
-      0: { cellWidth: 22, textColor: [faint[0], faint[1], faint[2]] as [number, number, number] },
-      1: { cellWidth: 42, fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number] },
-      2: { cellWidth: "auto" },
-      3: { cellWidth: 12, halign: "center", fontStyle: "bold" },
-      4: { cellWidth: 26, halign: "right" },
-      5: { cellWidth: 28, halign: "right", fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number] },
+      0: { cellWidth: 20, textColor: [faint[0], faint[1], faint[2]] as [number, number, number], overflow: "linebreak" },
+      1: { cellWidth: 38, fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number], overflow: "linebreak" },
+      2: { cellWidth: "auto", overflow: "linebreak" },
+      3: { cellWidth: 10, halign: "center", fontStyle: "bold" },
+      4: { cellWidth: 24, halign: "right" },
+      5: { cellWidth: 26, halign: "right", fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number] },
     },
   });
 
@@ -367,7 +384,7 @@ export async function generateInkooporderPdf(
   let bY = footerY + 12;
   const bankRegels: string[] = [];
   if (bNaam) bankRegels.push(bNaam);
-  if (bedrijf?.iban) bankRegels.push(`IBAN: ${bedrijf.iban}`);
+  if (bedrijf?.iban) bankRegels.push(`IBAN: ${formatIban(bedrijf.iban)}`);
   if (bedrijf?.iban_naam) bankRegels.push(`T.n.v. ${bedrijf.iban_naam}`);
   if (bedrijf?.kvk_nummer) bankRegels.push(`KVK: ${bedrijf.kvk_nummer}`);
 
@@ -378,9 +395,9 @@ export async function generateInkooporderPdf(
 
   // ── ONDERSTE BALK ─────────────────
   const periodeStr =
-    format(new Date(order.periode_van), "d MMM", { locale: nl }) +
+    format(new Date(order.periode_van + "T12:00:00"), "d MMM yyyy", { locale: nl }) +
     " – " +
-    format(new Date(order.periode_tot), "d MMM yyyy", { locale: nl });
+    format(new Date(order.periode_tot + "T12:00:00"), "d MMM yyyy", { locale: nl });
 
   doc.setFillColor(...groenTint);
   doc.rect(0, pageH - 10, pageW, 10, "F");
