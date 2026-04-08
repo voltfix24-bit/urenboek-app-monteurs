@@ -43,67 +43,7 @@ export default function MijnOrders() {
 
   const downloadPdf = async () => {
     if (!selectedOrder) return;
-    const bedrijf = await getBedrijfsgegevens();
-    const bNaam = bedrijf?.bedrijfsnaam || "TerreVolt BV";
-    const doc = new jsPDF();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(74, 124, 47);
-    doc.text(bNaam, 14, 20);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text("Inkooporder", 14, 28);
-
-    let yLeft = 36;
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    if (bedrijf?.straat) { doc.text(bedrijf.straat, 14, yLeft); yLeft += 5; }
-    if (bedrijf?.postcode || bedrijf?.stad) { doc.text([bedrijf.postcode, bedrijf.stad].filter(Boolean).join(" "), 14, yLeft); yLeft += 5; }
-    if (bedrijf?.kvk_nummer) { doc.text(`KVK: ${bedrijf.kvk_nummer}`, 14, yLeft); yLeft += 5; }
-
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.setFont("helvetica", "bold");
-    doc.text(selectedOrder.order_nummer, 14, yLeft + 6);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Periode: ${selectedOrder.periode_van} t/m ${selectedOrder.periode_tot}`, 14, yLeft + 13);
-
-    if (profile) {
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.text("Opdrachtnemer:", 120, 40);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.text(profile.bedrijfsnaam || profile.full_name, 120, 47);
-      if (profile.factuuradres || profile.adres) doc.text(profile.factuuradres || profile.adres, 120, 53);
-      if (profile.kvk_nummer) doc.text(`KVK: ${profile.kvk_nummer}`, 120, 59);
-      if (profile.btw_nummer) doc.text(`BTW: ${profile.btw_nummer}`, 120, 65);
-      if (profile.iban) doc.text(`IBAN: ${profile.iban}`, 120, 71);
-    }
-
-    autoTable(doc, {
-      startY: 80,
-      head: [["Datum", "Project", "Activiteit", "Uren", "Tarief", "Bedrag"]],
-      body: orderRegels.map(r => [r.datum, r.project_naam || "", r.activiteit || "", `${r.uren}`, euro(r.uurtarief), euro(r.bedrag)]),
-      foot: [
-        ["", "", "", "", "Subtotaal:", euro(Number(selectedOrder.totaal_excl_btw))],
-        ["", "", "", "", "BTW 21%:", euro(Number(selectedOrder.btw_bedrag))],
-        ["", "", "", "", "Totaal:", euro(Number(selectedOrder.totaal_incl_btw))],
-      ],
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [74, 124, 47], textColor: 255 },
-      footStyles: { fillColor: [245, 247, 240], textColor: [0, 0, 0], fontStyle: "bold" },
-    });
-
-    const finalY = (doc as any).lastAutoTable?.finalY || 200;
-    doc.setFontSize(8);
-    doc.setTextColor(130);
-    if (bedrijf?.iban) doc.text(`IBAN: ${bedrijf.iban}${bedrijf.iban_naam ? ` t.n.v. ${bedrijf.iban_naam}` : ""}`, 14, finalY + 15);
-    doc.text(`${bNaam}`, 14, finalY + 22);
-
-    doc.save(`Inkooporder_${selectedOrder.order_nummer}.pdf`);
+    await generateInkooporderPdf(selectedOrder, orderRegels, profile);
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><Spinner /></div>;
