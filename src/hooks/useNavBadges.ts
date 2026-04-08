@@ -95,7 +95,7 @@ export function NavBadgesProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     const uid = instanceId.current;
     const chUb = supabase.channel(`nb-ub-${uid}`).on("postgres_changes", { event: "*", schema: "public", table: "uren_boekingen" }, fetchBadges).subscribe();
-    const chLs = supabase.channel(`nb-ls-${uid}`).on("postgres_changes", { event: "*", schema: "public", table: "mededeling_leesstatus" }, fetchBadges).subscribe();
+    const chLs = supabase.channel(`nb-ls-${uid}`).on("postgres_changes", { event: "*", schema: "public", table: "chat_berichten" }, fetchBadges).subscribe();
     const chOu = supabase.channel(`nb-ou-${uid}`).on("postgres_changes", { event: "*", schema: "public", table: "overuren_meldingen" }, fetchBadges).subscribe();
     const chIo = supabase.channel(`nb-io-${uid}`).on("postgres_changes", { event: "*", schema: "public", table: "inkooporders" }, fetchBadges).subscribe();
     const chKa = supabase.channel(`nb-ka-${uid}`).on("postgres_changes", { event: "*", schema: "public", table: "kandidaten" }, fetchBadges).subscribe();
