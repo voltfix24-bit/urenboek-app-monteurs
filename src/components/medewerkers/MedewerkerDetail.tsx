@@ -139,6 +139,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
     full_name: emp.full_name,
     telefoon: emp.telefoon || "",
     adres: emp.adres || "",
+    email: emp.email || "",
     bedrijfsnaam: emp.bedrijfsnaam || "",
     kvk_nummer: emp.kvk_nummer || "",
     btw_nummer: emp.btw_nummer || "",
