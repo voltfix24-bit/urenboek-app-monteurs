@@ -49,7 +49,12 @@ export default function MijnOrders() {
 
   const downloadPdf = async () => {
     if (!selectedOrder) return;
-    await generateInkooporderPdf(selectedOrder, orderRegels, profile);
+    let gkNaam: string | undefined;
+    if (selectedOrder.aangemaakt_door) {
+      const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
+      gkNaam = gk?.full_name || undefined;
+    }
+    await generateInkooporderPdf(selectedOrder, orderRegels, profile, gkNaam);
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><Spinner /></div>;
