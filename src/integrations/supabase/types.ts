@@ -1622,6 +1622,7 @@ export type Database = {
           actief: boolean
           code: string
           eenheid: string
+          eigen_kosten: number
           groep: string | null
           id: string
           omschrijving: string
@@ -1633,6 +1634,7 @@ export type Database = {
           actief?: boolean
           code: string
           eenheid: string
+          eigen_kosten?: number
           groep?: string | null
           id?: string
           omschrijving: string
@@ -1644,6 +1646,7 @@ export type Database = {
           actief?: boolean
           code?: string
           eenheid?: string
+          eigen_kosten?: number
           groep?: string | null
           id?: string
           omschrijving?: string
