@@ -153,6 +153,7 @@ export default function Dashboard() {
   const overurenMeldingen = dashboardData?.overurenMeldingen ?? [];
   const overurenCount = dashboardData?.overurenCount ?? 0;
   const statusGroups = dashboardData?.statusGroups ?? {};
+  const zonderOrder = dashboardData?.zonderOrder ?? [];
 
   const [afkeurReden, setAfkeurReden] = useState("");
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
