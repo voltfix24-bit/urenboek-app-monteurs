@@ -214,6 +214,22 @@ export default function Profiel() {
     toast.success("Profiel opgeslagen"); setEditing(false); fetchProfile(); refetchProfileContext();
   };
 
+  const saveZzp = async () => {
+    if (!profile) return;
+    if (!await mutate(supabase.from("profiles").update({
+      bedrijfsnaam: zzpEditForm.bedrijfsnaam || null,
+      kvk_nummer: zzpEditForm.kvk_nummer || null,
+      btw_nummer: zzpEditForm.btw_nummer || null,
+      iban: zzpEditForm.iban || null,
+      factuuradres: zzpEditForm.factuuradres || null,
+      betalingstermijn: zzpEditForm.betalingstermijn,
+    } as any).eq("id", profile.id))) return;
+    toast.success("ZZP gegevens opgeslagen");
+    setEditingZzp(false);
+    fetchProfile();
+    refetchProfileContext();
+  };
+
   const toggleVrijeDag = async (dag: number) => {
     if (!profile) return;
     const current = profile.vaste_vrije_dagen || [];
