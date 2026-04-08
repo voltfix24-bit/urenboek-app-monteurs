@@ -27,7 +27,7 @@ export default function MijnOrders() {
     setLoading(true);
     const { data } = await supabase.from("inkooporders").select("*").eq("medewerker_id", profileId).order("aangemaakt_op", { ascending: false });
     setOrders(data || []);
-    const { data: prof } = await supabase.from("profiles").select("*").eq("id", profileId).single();
+    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", profileId).single();
     setProfile(prof);
     setLoading(false);
   }, [profileId]);
