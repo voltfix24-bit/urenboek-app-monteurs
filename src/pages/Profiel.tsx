@@ -187,7 +187,11 @@ export default function Profiel() {
   const fetchProfile = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from("profiles").select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, uurtarief, betalingstermijn, factuuradres, geboortedatum, account_status").eq("user_id", user.id).single();
-    if (data) { setProfile(data as any); setEditForm({ full_name: data.full_name, telefoon: (data as any).telefoon || "", adres: (data as any).adres || "", geboortedatum: (data as any).geboortedatum || "" }); }
+    if (data) {
+      setProfile(data as any);
+      setEditForm({ full_name: data.full_name, telefoon: (data as any).telefoon || "", adres: (data as any).adres || "", geboortedatum: (data as any).geboortedatum || "" });
+      setZzpEditForm({ bedrijfsnaam: (data as any).bedrijfsnaam || "", kvk_nummer: (data as any).kvk_nummer || "", btw_nummer: (data as any).btw_nummer || "", iban: (data as any).iban || "", factuuradres: (data as any).factuuradres || "", betalingstermijn: (data as any).betalingstermijn || 30 });
+    }
     setLoading(false);
   }, [user]);
 
