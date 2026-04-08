@@ -135,7 +135,7 @@ export default function Inkooporders() {
     setWizBoekingen(enriched);
     setWizSelected(new Set(enriched.map((b: any) => b.id)));
     // Get profile + tarief
-    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn").eq("id", wizMedewerker).single();
+    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", wizMedewerker).single();
     setWizMedProfile(prof);
     setWizTarief(Number(prof?.uurtarief) || 0);
     setWizLoading(false);
