@@ -132,7 +132,7 @@ export default function MijnOrders() {
                   </tbody>
                   <tfoot>
                     <tr style={{ borderTop: "2px solid var(--accent-border)" }}>
-                      <td colSpan={2} />
+                      <td colSpan={3} />
                       <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace" }}>{selectedOrder.totaal_uren}u</td>
                       <td className="py-2 px-2 font-bold text-base" style={{ fontFamily: "DM Mono, monospace", color: "var(--accent)" }}>{euro(Number(selectedOrder.totaal_incl_btw))}</td>
                     </tr>
