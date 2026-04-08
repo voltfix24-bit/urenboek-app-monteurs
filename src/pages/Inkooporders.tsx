@@ -475,7 +475,7 @@ export default function Inkooporders() {
                     </div>
                     <div>
                       <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Betalingstermijn</label>
-                      <span className="block px-3 py-2 text-sm" style={{ color: "var(--text-primary)" }}>{wizMedProfile?.betalingstermijn || 14} dagen</span>
+                      <span className="block px-3 py-2 text-sm" style={{ color: "var(--text-primary)" }}>{wizMedProfile?.betalingstermijn || 30} dagen</span>
                     </div>
                   </div>
                   <div className="rounded-xl p-3 space-y-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
