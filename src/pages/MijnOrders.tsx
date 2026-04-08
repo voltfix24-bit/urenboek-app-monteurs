@@ -37,7 +37,14 @@ export default function MijnOrders() {
   const loadDetail = async (order: any) => {
     setSelectedOrder(order);
     const { data } = await supabase.from("inkooporder_regels").select("*").eq("inkooporder_id", order.id).order("datum");
-    setOrderRegels(data || []);
+    const regels = data || [];
+    const projIds = [...new Set(regels.map((r: any) => r.project_id).filter(Boolean))];
+    if (projIds.length > 0) {
+      const { data: projs } = await supabase.from("projects").select("id, nummer").in("id", projIds);
+      const nummerMap = new Map((projs || []).map((p: any) => [p.id, p.nummer]));
+      regels.forEach((r: any) => { r._project_nummer = nummerMap.get(r.project_id) || ""; });
+    }
+    setOrderRegels(regels);
   };
 
   const downloadPdf = async () => {
@@ -104,7 +111,7 @@ export default function MijnOrders() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                      {["Datum", "Project", "Uren", "Bedrag"].map(h => (
+                      {["Datum", "Project", "Activiteit", "Uren", "Bedrag"].map(h => (
                         <th key={h} className="text-left pb-2 px-2 font-semibold" style={{ color: "var(--text-muted)", fontSize: 10, textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
@@ -113,7 +120,11 @@ export default function MijnOrders() {
                     {orderRegels.map(r => (
                       <tr key={r.id} style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
                         <td className="py-2 px-2" style={{ color: "var(--text-primary)" }}>{r.datum}</td>
-                        <td className="py-2 px-2" style={{ color: "var(--text-primary)" }}>{r.project_naam}</td>
+                        <td className="py-2 px-2">
+                          <span style={{ color: "var(--text-primary)" }}>{r.project_naam}</span>
+                          {r._project_nummer && <span className="block text-[10px]" style={{ color: "var(--text-muted)", fontFamily: "DM Mono, monospace" }}>{r._project_nummer}</span>}
+                        </td>
+                        <td className="py-2 px-2" style={{ color: "var(--text-muted)" }}>{r.activiteit || "—"}</td>
                         <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace" }}>{r.uren}u</td>
                         <td className="py-2 px-2 font-semibold" style={{ fontFamily: "DM Mono, monospace" }}>{euro(r.bedrag)}</td>
                       </tr>
@@ -121,7 +132,7 @@ export default function MijnOrders() {
                   </tbody>
                   <tfoot>
                     <tr style={{ borderTop: "2px solid var(--accent-border)" }}>
-                      <td colSpan={2} />
+                      <td colSpan={3} />
                       <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace" }}>{selectedOrder.totaal_uren}u</td>
                       <td className="py-2 px-2 font-bold text-base" style={{ fontFamily: "DM Mono, monospace", color: "var(--accent)" }}>{euro(Number(selectedOrder.totaal_incl_btw))}</td>
                     </tr>

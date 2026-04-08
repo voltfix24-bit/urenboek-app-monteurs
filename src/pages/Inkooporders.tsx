@@ -95,7 +95,15 @@ export default function Inkooporders() {
   const loadOrderDetail = async (order: any) => {
     setSelectedOrder(order);
     const { data } = await supabase.from("inkooporder_regels").select("*").eq("inkooporder_id", order.id).order("datum");
-    setOrderRegels(data || []);
+    const regels = data || [];
+    // Enrich with project nummer
+    const projIds = [...new Set(regels.map((r: any) => r.project_id).filter(Boolean))];
+    if (projIds.length > 0) {
+      const { data: projs } = await supabase.from("projects").select("id, nummer").in("id", projIds);
+      const nummerMap = new Map((projs || []).map((p: any) => [p.id, p.nummer]));
+      regels.forEach((r: any) => { r._project_nummer = nummerMap.get(r.project_id) || ""; });
+    }
+    setOrderRegels(regels);
   };
 
   // Generate next order number
@@ -123,14 +131,9 @@ export default function Inkooporders() {
     const projIds = [...new Set(available.map((b: any) => b.project_id))];
     const { data: projs } = projIds.length > 0 ? await supabase.from("projects").select("id, naam, nummer").in("id", projIds) : { data: [] };
     const projMap = new Map((projs || []).map((p: any) => [p.id, p]));
-    // Get planning activiteit
-    const { data: planData } = await supabase.from("planning").select("medewerker_id, datum, project_id, activiteit").eq("medewerker_id", wizMedewerker).gte("datum", wizVan).lte("datum", wizTot);
-    const planKey = (mid: string, d: string, pid: string) => `${mid}-${d}-${pid}`;
-    const planMap = new Map((planData || []).map((p: any) => [planKey(p.medewerker_id, p.datum, p.project_id), p.activiteit]));
-
     const enriched = available.map((b: any) => {
       const proj = projMap.get(b.project_id) || { naam: "", nummer: "" };
-      return { ...b, project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, activiteit: planMap.get(planKey(wizMedewerker, b.datum, b.project_id)) || null };
+      return { ...b, project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, activiteit: b.type || null };
     });
     setWizBoekingen(enriched);
     setWizSelected(new Set(enriched.map((b: any) => b.id)));
@@ -312,7 +315,10 @@ export default function Inkooporders() {
                     {orderRegels.map(r => (
                       <tr key={r.id} style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
                         <td className="py-2 px-2" style={{ color: "var(--text-primary)" }}>{r.datum}</td>
-                        <td className="py-2 px-2" style={{ color: "var(--text-primary)" }}>{r.project_naam}</td>
+                        <td className="py-2 px-2">
+                          <span style={{ color: "var(--text-primary)" }}>{r.project_naam}</span>
+                          {r._project_nummer && <span className="block text-[10px]" style={{ color: "var(--text-muted)", fontFamily: "DM Mono, monospace" }}>{r._project_nummer}</span>}
+                        </td>
                         <td className="py-2 px-2" style={{ color: "var(--text-muted)" }}>{r.activiteit || "—"}</td>
                         <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace" }}>{r.uren}</td>
                         <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace" }}>{euro(r.uurtarief)}</td>

@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
+import { supabase } from "@/integrations/supabase/client";
 import terrevoltLogoPng from "@/assets/terrevolt-logo.png";
 
 export async function generateInkooporderPdf(
@@ -13,6 +14,14 @@ export async function generateInkooporderPdf(
 ) {
   const bedrijf = await getBedrijfsgegevens();
   const bNaam = bedrijf?.bedrijfsnaam || "TerreVolt B.V.";
+
+  // Fetch project nummers for regels
+  const projIds = [...new Set(regels.map((r: any) => r.project_id).filter(Boolean))];
+  let nummerMap = new Map<string, string>();
+  if (projIds.length > 0) {
+    const { data: projs } = await supabase.from("projects").select("id, nummer").in("id", projIds);
+    nummerMap = new Map((projs || []).map((p: any) => [p.id, p.nummer]));
+  }
 
   const doc = new jsPDF({
     orientation: "portrait",
@@ -305,14 +314,20 @@ export async function generateInkooporderPdf(
     startY: tableY,
     margin: { left: margin, right: margin },
     head: [["Datum", "Project", "Activiteit", "Uren", "Tarief", "Bedrag"]],
-    body: regels.map((r) => [
-      format(new Date(r.datum + "T12:00:00"), "dd-MM-yyyy"),
-      r.project_naam || "",
-      r.activiteit || "—",
-      String(r.uren),
-      euro(r.uurtarief),
-      euro(r.bedrag),
-    ]),
+    body: regels.map((r) => {
+      const projectNummer = nummerMap.get(r.project_id) || "";
+      const projectCell = projectNummer
+        ? `${r.project_naam || ""}\n${projectNummer}`
+        : (r.project_naam || "");
+      return [
+        format(new Date(r.datum + "T12:00:00"), "dd-MM-yyyy"),
+        projectCell,
+        r.activiteit || "—",
+        String(r.uren),
+        euro(r.uurtarief),
+        euro(r.bedrag),
+      ];
+    }),
     theme: "grid",
     styles: {
       fontSize: 8.5,
