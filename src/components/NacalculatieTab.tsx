@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, TrendingDown, Users, Clock, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Clock, Calendar, Info } from "lucide-react";
 import { euroDecimals as euro, euro as euroShort, formatDatum } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 
@@ -17,6 +17,7 @@ interface MonteurUren {
 }
 
 export function NacalculatieTab({ projectId }: Props) {
+  const [forecastMethode, setForecastMethode] = useState<string | null>(null);
   const [forecastRegels, setForecastRegels] = useState<any[]>([]);
   const [urenPerMonteur, setUrenPerMonteur] = useState<MonteurUren[]>([]);
   const [profielMap, setProfielMap] = useState<Map<string, { full_name: string; uurtarief: number }>>(new Map());
@@ -26,11 +27,13 @@ export function NacalculatieTab({ projectId }: Props) {
   const fetchData = useCallback(async () => {
     setLoading(true);
 
-    // 1. Forecast
-    const { data: forecasts } = await supabase.from("project_forecast").select("id").eq("project_id", projectId).eq("methode", "stuksprijzen").maybeSingle();
+    // 1. Forecast (both methods)
+    const { data: forecast } = await supabase.from("project_forecast").select("id, methode").eq("project_id", projectId).maybeSingle();
+    setForecastMethode(forecast?.methode || null);
+
     let regels: any[] = [];
-    if (forecasts) {
-      const { data } = await supabase.from("forecast_regels").select("*").eq("forecast_id", forecasts.id);
+    if (forecast) {
+      const { data } = await supabase.from("forecast_regels").select("*").eq("forecast_id", forecast.id);
       regels = data || [];
     }
     setForecastRegels(regels);
@@ -55,8 +58,9 @@ export function NacalculatieTab({ projectId }: Props) {
     }));
     setUrenPerMonteur(monteurUren);
 
-    // 3. Profielen
-    const medIds = [...new Set(monteurUren.map(m => m.medewerker_id))];
+    // 3. Profielen - include forecast medewerker_ids too
+    const forecastMedIds = regels.filter(r => r.medewerker_id).map(r => r.medewerker_id);
+    const medIds = [...new Set([...monteurUren.map(m => m.medewerker_id), ...forecastMedIds])];
     if (medIds.length > 0) {
       const { data: profs } = await supabase.from("profiles").select("id, full_name, uurtarief").in("id", medIds);
       setProfielMap(new Map((profs || []).map((p: any) => [p.id, { full_name: p.full_name, uurtarief: Number(p.uurtarief) || 0 }])));
@@ -84,8 +88,30 @@ export function NacalculatieTab({ projectId }: Props) {
 
   if (loading) return <Spinner padding="py-8" />;
 
-  // Calculations
-  const forecastOmzet = forecastRegels.filter(r => r.type === "stuksprijzen" || r.type === "spec").reduce((s, r) => s + (Number(r.tarief) || 0) * (Number(r.aantal) || 1), 0);
+  // No forecast at all
+  if (!forecastMethode) {
+    return (
+      <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <Info className="h-8 w-8 mx-auto mb-3" style={{ color: "var(--text-muted)" }} />
+        <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Nog geen forecast ingevuld</p>
+        <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>Ga naar de Forecast tab om een methode te kiezen.</p>
+      </div>
+    );
+  }
+
+  if (forecastMethode === "uren") {
+    return <UrenNacalculatie forecastRegels={forecastRegels} urenPerMonteur={urenPerMonteur} profielMap={profielMap} planningData={planningData} projectId={projectId} />;
+  }
+
+  return <StuksprijzenNacalculatie forecastRegels={forecastRegels} urenPerMonteur={urenPerMonteur} profielMap={profielMap} planningData={planningData} handleWerkelijkAantal={handleWerkelijkAantal} />;
+}
+
+function StuksprijzenNacalculatie({ forecastRegels, urenPerMonteur, profielMap, planningData, handleWerkelijkAantal }: {
+  forecastRegels: any[]; urenPerMonteur: MonteurUren[]; profielMap: Map<string, { full_name: string; uurtarief: number }>;
+  planningData: { medewerker_id: string; geplande_dagen: number }[]; handleWerkelijkAantal: (id: string, val: number | null) => void;
+}) {
+  const forecastOmzet = forecastRegels.filter(r => r.type === "stuksprijzen" || r.type === "stuks" || r.type === "spec").reduce((s, r) => s + (Number(r.tarief) || 0) * (Number(r.aantal) || 1), 0);
+  const forecastKosten = forecastRegels.filter(r => r.type === "stuksprijzen" || r.type === "stuks" || r.type === "spec").reduce((s, r) => s + (Number(r.eigen_kosten) || 0) * (Number(r.aantal) || 1), 0);
   const werkelijkeKosten = urenPerMonteur.reduce((s, m) => {
     const tarief = profielMap.get(m.medewerker_id)?.uurtarief || 0;
     return s + m.totaal_uren * tarief;
@@ -100,19 +126,16 @@ export function NacalculatieTab({ projectId }: Props) {
   const margeColor = werkelijkeMargePerc >= 30 ? "var(--success)" : werkelijkeMargePerc >= 15 ? "var(--warn-text)" : "var(--danger)";
   const margeBg = werkelijkeMargePerc >= 30 ? "var(--success-light)" : werkelijkeMargePerc >= 15 ? "var(--warn-light)" : "var(--danger-light)";
 
-  // Werkelijk ontvangen
-  const werkelijkOntvangen = forecastRegels.filter(r => r.type === "stuksprijzen" || r.type === "spec").reduce((s, r) => {
+  const werkelijkOntvangen = forecastRegels.filter(r => r.type === "stuksprijzen" || r.type === "stuks" || r.type === "spec").reduce((s, r) => {
     const wa = r.werkelijk_aantal != null ? Number(r.werkelijk_aantal) : Number(r.aantal) || 1;
     return s + (Number(r.tarief) || 0) * wa;
   }, 0);
 
-  // Tijdlijn
   const alleDatums = urenPerMonteur.flatMap(m => [m.eerste_dag, m.laatste_dag]).filter(Boolean);
   const eersteUren = alleDatums.length > 0 ? alleDatums.reduce((a, b) => a < b ? a : b) : null;
   const laatsteUren = alleDatums.length > 0 ? alleDatums.reduce((a, b) => a > b ? a : b) : null;
   const doorlooptijdDagen = eersteUren && laatsteUren ? Math.ceil((new Date(laatsteUren).getTime() - new Date(eersteUren).getTime()) / 86400000) + 1 : 0;
 
-  // Planning map for per-monteur
   const planMap = new Map(planningData.map(p => [p.medewerker_id, p.geplande_dagen]));
 
   return (
@@ -229,7 +252,7 @@ export function NacalculatieTab({ projectId }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {forecastRegels.filter(r => r.type === "stuksprijzen" || r.type === "spec").map(r => {
+                {forecastRegels.filter(r => r.type === "stuksprijzen" || r.type === "stuks" || r.type === "spec").map(r => {
                   const forecast = (Number(r.tarief) || 0) * (Number(r.aantal) || 1);
                   const wa = r.werkelijk_aantal != null ? Number(r.werkelijk_aantal) : null;
                   const werkelijk = wa != null ? (Number(r.tarief) || 0) * wa : null;
@@ -290,6 +313,139 @@ export function NacalculatieTab({ projectId }: Props) {
 
       {/* Empty state */}
       {urenPerMonteur.length === 0 && forecastRegels.length === 0 && (
+        <div className="text-center py-8 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <p className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>Nog geen goedgekeurde uren of forecast data</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UrenNacalculatie({ forecastRegels, urenPerMonteur, profielMap, planningData, projectId }: {
+  forecastRegels: any[]; urenPerMonteur: MonteurUren[]; profielMap: Map<string, { full_name: string; uurtarief: number }>;
+  planningData: { medewerker_id: string; geplande_dagen: number }[]; projectId: string;
+}) {
+  // Forecast (planned)
+  const urenRegels = forecastRegels.filter(r => r.type === "uren");
+  const geplandeTotaalUren = urenRegels.reduce((s, r) => s + (Number(r.geplande_uren) || 0), 0);
+  const geplandeTotaalKosten = urenRegels.reduce((s, r) => s + (Number(r.geplande_uren) || 0) * (Number(r.uurtarief_snap) || 0), 0);
+
+  // Werkelijk
+  const werkelijkeUren = urenPerMonteur.reduce((s, m) => s + m.totaal_uren, 0);
+  const werkelijkeKosten = urenPerMonteur.reduce((s, m) => {
+    const tarief = profielMap.get(m.medewerker_id)?.uurtarief || 0;
+    return s + m.totaal_uren * tarief;
+  }, 0);
+
+  const urenVerschil = werkelijkeUren - geplandeTotaalUren;
+  const kostenVerschil = werkelijkeKosten - geplandeTotaalKosten;
+
+  const urenVerschilColor = urenVerschil > 0 ? "var(--danger)" : urenVerschil < 0 ? "var(--success)" : "var(--text-muted)";
+  const kostenVerschilColor = kostenVerschil > 0 ? "var(--danger)" : kostenVerschil < 0 ? "var(--success)" : "var(--text-muted)";
+
+  return (
+    <div className="space-y-5">
+      {/* Vergelijking strip */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: "Gepland", uren: `${geplandeTotaalUren}u`, kosten: euroShort(geplandeTotaalKosten), color: "var(--accent)", bg: "var(--accent-light)" },
+          { label: "Werkelijk", uren: `${werkelijkeUren}u`, kosten: euroShort(werkelijkeKosten), color: "var(--text-primary)", bg: "var(--bg-surface)" },
+          { label: "Verschil", uren: `${urenVerschil > 0 ? "+" : ""}${urenVerschil}u`, kosten: euroShort(kostenVerschil), color: kostenVerschilColor, bg: kostenVerschil > 0 ? "var(--danger-light)" : kostenVerschil < 0 ? "var(--success-light)" : "var(--bg-surface)" },
+        ].map((k, i) => (
+          <div key={i} className="rounded-2xl p-4 text-center" style={{ background: k.bg, border: "1px solid var(--border)" }}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>{k.label}</p>
+            <p className="text-lg font-extrabold" style={{ color: k.color, fontFamily: "DM Mono, monospace" }}>{k.uren}</p>
+            <p className="text-xs font-semibold mt-0.5" style={{ color: k.color, fontFamily: "DM Mono, monospace" }}>{k.kosten}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Forecast (geplande inzet) */}
+      {urenRegels.length > 0 && (
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+            <Clock className="h-3.5 w-3.5" /> Forecast (geplande inzet)
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                  {["Medewerker", "Geplande uren", "Tarief", "Geplande kosten"].map(h => (
+                    <th key={h} className="text-left pb-2 px-2 font-semibold" style={{ color: "var(--text-muted)", fontSize: 10, textTransform: "uppercase" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {urenRegels.map((r, i) => {
+                  const prof = profielMap.get(r.medewerker_id);
+                  const kosten = (Number(r.geplande_uren) || 0) * (Number(r.uurtarief_snap) || 0);
+                  return (
+                    <tr key={i} style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
+                      <td className="py-2 px-2 font-medium" style={{ color: "var(--text-primary)" }}>{prof?.full_name || "Onbekend"}</td>
+                      <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{Number(r.geplande_uren) || 0}u</td>
+                      <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)" }}>€{Number(r.uurtarief_snap) || 0}/u</td>
+                      <td className="py-2 px-2 font-semibold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{euroShort(kosten)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: "2px solid var(--accent-border)" }}>
+                  <td className="py-2 px-2 font-semibold" style={{ color: "var(--text-primary)" }}>Totaal</td>
+                  <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{geplandeTotaalUren}u</td>
+                  <td></td>
+                  <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{euroShort(geplandeTotaalKosten)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Werkelijk per monteur */}
+      {urenPerMonteur.length > 0 && (
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+            <Users className="h-3.5 w-3.5" /> Werkelijk per medewerker
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                  {["Medewerker", "Werkelijke uren", "Tarief", "Werkelijke kosten"].map(h => (
+                    <th key={h} className="text-left pb-2 px-2 font-semibold" style={{ color: "var(--text-muted)", fontSize: 10, textTransform: "uppercase" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {urenPerMonteur.map(m => {
+                  const prof = profielMap.get(m.medewerker_id);
+                  const kosten = m.totaal_uren * (prof?.uurtarief || 0);
+                  return (
+                    <tr key={m.medewerker_id} style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
+                      <td className="py-2 px-2 font-medium" style={{ color: "var(--text-primary)" }}>{prof?.full_name || "Onbekend"}</td>
+                      <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{m.totaal_uren}u</td>
+                      <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)" }}>€{prof?.uurtarief || 0}/u</td>
+                      <td className="py-2 px-2 font-semibold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{euroShort(kosten)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: "2px solid var(--accent-border)" }}>
+                  <td className="py-2 px-2 font-semibold" style={{ color: "var(--text-primary)" }}>Totaal</td>
+                  <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{werkelijkeUren}u</td>
+                  <td></td>
+                  <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{euroShort(werkelijkeKosten)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {urenPerMonteur.length === 0 && urenRegels.length === 0 && (
         <div className="text-center py-8 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <p className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>Nog geen goedgekeurde uren of forecast data</p>
         </div>

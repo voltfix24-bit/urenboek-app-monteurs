@@ -27,6 +27,7 @@ interface MonteurOption {
   id: string;
   full_name: string;
   uurtarief: number | null;
+  rol?: string;
 }
 
 export function ForecastTab({ projectId }: { projectId: string }) {
@@ -38,10 +39,10 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const [loading, setLoading] = useState(true);
   const [verwachteOmzet, setVerwachteOmzet] = useState<number>(0);
   const [specCodes, setSpecCodes] = useState<SpecCode[]>(SPEC_CODES);
+  const [saved, setSaved] = useState(false);
 
   const loadForecast = useCallback(async () => {
     setLoading(true);
-    // Load live spec codes
     const codes = await loadSpecCodes(supabase);
     setSpecCodes(codes);
 
@@ -58,11 +59,24 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     }
     const { data: profiles } = await supabase.from("profiles").select("id, user_id, full_name, uurtarief");
     const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+
     if (profiles) {
       const namenMap = new Map(profiles.map(p => [p.id, p.full_name]));
       setAlleProfielen(namenMap);
-      const monteurUserIds = new Set((roles || []).filter(r => r.role === "monteur" || r.role === "schakelmonteur").map(r => r.user_id));
-      setMonteurs(profiles.filter(p => monteurUserIds.has(p.user_id)).map(p => ({ id: p.id, full_name: p.full_name, uurtarief: (p as any).uurtarief })));
+
+      // Build role map
+      const rolMap = new Map((roles || []).map(r => [r.user_id, r.role]));
+
+      // All profiles with uurtarief > 0
+      const beschikbaar = profiles
+        .filter(p => (p as any).uurtarief != null && Number((p as any).uurtarief) > 0)
+        .map(p => ({
+          id: p.id,
+          full_name: p.full_name,
+          uurtarief: (p as any).uurtarief,
+          rol: rolMap.get(p.user_id) || '',
+        }));
+      setMonteurs(beschikbaar);
     }
     setLoading(false);
   }, [projectId]);
@@ -94,12 +108,14 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       }));
       if (!await mutate(supabase.from("forecast_regels").insert(inserts))) return;
     }
-    toast.success("Forecast opgeslagen");
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   }
 
   const [saveTimer, setSaveTimer] = useState<NodeJS.Timeout | null>(null);
   function debouncedSave(newRegels: ForecastRegel[]) {
     if (saveTimer) clearTimeout(saveTimer);
+    setSaved(false);
     const t = setTimeout(() => saveRegels(newRegels), 1500);
     setSaveTimer(t);
   }
@@ -133,13 +149,13 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   }
 
   if (methode === "stuksprijzen") {
-    return <StuksprijzenEditor regels={regels} onUpdate={updateRegels} onSave={() => saveRegels(regels)} specCodes={specCodes} />;
+    return <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} saved={saved} />;
   }
 
-  return <UrenEditor regels={regels} monteurs={monteurs} alleProfielen={alleProfielen} onUpdate={updateRegels} onSave={() => saveRegels(regels)} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} />;
+  return <UrenEditor regels={regels} monteurs={monteurs} alleProfielen={alleProfielen} onUpdate={updateRegels} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} saved={saved} />;
 }
 
-function StuksprijzenEditor({ regels, onUpdate, onSave, specCodes }: { regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; onSave: () => void; specCodes: SpecCode[] }) {
+function StuksprijzenEditor({ regels, onUpdate, specCodes, saved }: { regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; specCodes: SpecCode[]; saved: boolean }) {
   const [search, setSearch] = useState("");
   const [openGroepen, setOpenGroepen] = useState<Set<string>>(new Set());
 
@@ -156,7 +172,7 @@ function StuksprijzenEditor({ regels, onUpdate, onSave, specCodes }: { regels: F
 
   function addCode(sc: SpecCode) {
     if (regels.find(r => r.spec_code === sc.code)) return;
-    onUpdate([...regels, { type: "stuks", spec_code: sc.code, spec_omschrijving: sc.omschrijving, tarief: sc.tarief, eigen_kosten: 0, aantal: 1 }]);
+    onUpdate([...regels, { type: "stuks", spec_code: sc.code, spec_omschrijving: sc.omschrijving, tarief: sc.tarief, eigen_kosten: sc.eigen_kosten || 0, aantal: 1 }]);
   }
 
   function updateAantal(code: string, delta: number) {
@@ -172,6 +188,10 @@ function StuksprijzenEditor({ regels, onUpdate, onSave, specCodes }: { regels: F
   }
 
   const totaalOmzet = regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0);
+  const totaalKosten = regels.reduce((s, r) => s + (r.eigen_kosten || 0) * (r.aantal || 1), 0);
+  const totaalMarge = totaalOmzet - totaalKosten;
+  const totaalMargePerc = totaalOmzet > 0 ? (totaalMarge / totaalOmzet) * 100 : 0;
+  const totaalMargeColor = totaalMargePerc > 30 ? "var(--success)" : totaalMargePerc >= 15 ? "var(--warn-text)" : "var(--danger)";
 
   const selectedCodes = new Set(regels.map(r => r.spec_code));
 
@@ -214,36 +234,59 @@ function StuksprijzenEditor({ regels, onUpdate, onSave, specCodes }: { regels: F
       {regels.length > 0 ? (
         <>
           <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Geselecteerde codes</p>
-          <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-            <div className="grid grid-cols-[80px_1fr_70px_90px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
-              <span>Code</span><span>Omschrijving</span><span>Aantal</span><span>Totaal omzet</span><span></span>
+          <div className="rounded-xl overflow-hidden overflow-x-auto" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+            <div className="grid grid-cols-[70px_1fr_60px_80px_80px_80px_28px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider min-w-[520px]" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
+              <span>Code</span><span>Omschrijving</span><span>Aantal</span><span>Omzet</span><span>Kosten</span><span>Marge</span><span></span>
             </div>
-            {regels.map(r => (
-              <div key={r.spec_code} className="grid grid-cols-[80px_1fr_70px_90px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid var(--border)" }}>
-                <span className={mono} style={{ color: "var(--accent)" }}>{r.spec_code}</span>
-                <span className="truncate" style={{ color: "var(--text-primary)" }}>{r.spec_omschrijving}</span>
-                <div className="flex items-center gap-0.5">
-                  <button onClick={() => updateAantal(r.spec_code!, -0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Minus className="h-3 w-3" style={{ color: "var(--text-secondary)" }} /></button>
-                  <input type="number" value={r.aantal || 1} onChange={e => setAantal(r.spec_code!, parseFloat(e.target.value) || 1)} className={`w-8 text-center text-[11px] ${mono} bg-transparent`} style={{ color: "var(--text-primary)" }} />
-                  <button onClick={() => updateAantal(r.spec_code!, 0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Plus className="h-3 w-3" style={{ color: "var(--text-secondary)" }} /></button>
+            {regels.map(r => {
+              const omzet = (r.tarief || 0) * (r.aantal || 1);
+              const kosten = (r.eigen_kosten || 0) * (r.aantal || 1);
+              const marge = omzet - kosten;
+              const margePerc = omzet > 0 ? (marge / omzet) * 100 : 0;
+              const margeColor = margePerc > 30 ? "var(--success)" : margePerc >= 15 ? "var(--warn-text)" : "var(--danger)";
+              return (
+                <div key={r.spec_code} className="grid grid-cols-[70px_1fr_60px_80px_80px_80px_28px] items-center px-3 py-1.5 text-[12px] min-w-[520px]" style={{ borderTop: "1px solid var(--border)" }}>
+                  <span className={mono} style={{ color: "var(--accent)" }}>{r.spec_code}</span>
+                  <span className="truncate" style={{ color: "var(--text-primary)" }}>{r.spec_omschrijving}</span>
+                  <div className="flex items-center gap-0.5">
+                    <button onClick={() => updateAantal(r.spec_code!, -0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Minus className="h-3 w-3" style={{ color: "var(--text-secondary)" }} /></button>
+                    <input type="number" value={r.aantal || 1} onChange={e => setAantal(r.spec_code!, parseFloat(e.target.value) || 1)} className={`w-8 text-center text-[11px] ${mono} bg-transparent`} style={{ color: "var(--text-primary)" }} />
+                    <button onClick={() => updateAantal(r.spec_code!, 0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Plus className="h-3 w-3" style={{ color: "var(--text-secondary)" }} /></button>
+                  </div>
+                  <span className={mono} style={{ color: "var(--success)" }}>{fmt(omzet)}</span>
+                  <span className={mono} style={{ color: "var(--text-secondary)" }}>{fmt(kosten)}</span>
+                  <span className={mono} style={{ color: margeColor }}>{fmt(marge)} <span className="text-[9px]">({margePerc.toFixed(0)}%)</span></span>
+                  <button onClick={() => removeCode(r.spec_code!)} className="w-5 h-5 rounded flex items-center justify-center" style={{ color: "var(--danger)" }}><X className="h-3.5 w-3.5" /></button>
                 </div>
-                <span className={mono} style={{ color: "var(--success)" }}>{fmt((r.tarief || 0) * (r.aantal || 1))}</span>
-                <button onClick={() => removeCode(r.spec_code!)} className="w-5 h-5 rounded flex items-center justify-center" style={{ color: "var(--danger)" }}><X className="h-3.5 w-3.5" /></button>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Totals */}
           <div className="rounded-xl p-3.5 space-y-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-            <div className="flex justify-between text-[13px] font-semibold">
-              <span style={{ color: "var(--text-primary)" }}>Totaal omzet (Van Gelder)</span>
+            <div className="flex justify-between text-[12px]">
+              <span style={{ color: "var(--text-secondary)" }}>Totaal omzet (Van Gelder)</span>
               <span className={mono} style={{ color: "var(--success)" }}>{fmt(totaalOmzet)}</span>
+            </div>
+            <div className="flex justify-between text-[12px]">
+              <span style={{ color: "var(--text-secondary)" }}>Totale eigen kosten</span>
+              <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(totaalKosten)}</span>
+            </div>
+            <div className="pt-1.5" style={{ borderTop: "1px solid var(--border)" }}>
+              <div className="flex justify-between text-[13px] font-semibold">
+                <span style={{ color: "var(--text-primary)" }}>Bruto marge</span>
+                <div className="flex items-center gap-2">
+                  <span className={mono} style={{ color: totaalMargeColor }}>{fmt(totaalMarge)}</span>
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold" style={{ background: totaalMargeColor + "18", color: totaalMargeColor }}>{totaalMargePerc.toFixed(1)}%</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <button onClick={onSave} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
-            Forecast opslaan
-          </button>
+          {/* Auto-save indicator */}
+          <p className="text-[11px] text-center" style={{ color: "var(--text-muted)" }}>
+            {saved ? "✓ Automatisch opgeslagen" : "Wordt automatisch opgeslagen..."}
+          </p>
         </>
       ) : (
         <div className="text-center py-8 rounded-xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
@@ -255,9 +298,9 @@ function StuksprijzenEditor({ regels, onUpdate, onSave, specCodes }: { regels: F
   );
 }
 
-function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, onSave, verwachteOmzet, setVerwachteOmzet }: {
-  regels: ForecastRegel[]; monteurs: MonteurOption[]; alleProfielen: Map<string, string>; onUpdate: (r: ForecastRegel[]) => void; onSave: () => void;
-  verwachteOmzet: number; setVerwachteOmzet: (v: number) => void;
+function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, verwachteOmzet, setVerwachteOmzet, saved }: {
+  regels: ForecastRegel[]; monteurs: MonteurOption[]; alleProfielen: Map<string, string>; onUpdate: (r: ForecastRegel[]) => void;
+  verwachteOmzet: number; setVerwachteOmzet: (v: number) => void; saved: boolean;
 }) {
   const [selectedMonteur, setSelectedMonteur] = useState("");
 
@@ -286,13 +329,20 @@ function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, onSave, verwach
   const usedIds = new Set(regels.map(r => r.medewerker_id));
   const available = monteurs.filter(m => !usedIds.has(m.id));
 
+  function rolLabel(rol: string) {
+    if (rol === 'manager') return ' (Manager)';
+    if (rol === 'uitvoerder') return ' (Uitvoerder)';
+    if (rol === 'wv') return ' (WV)';
+    return '';
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
         <select value={selectedMonteur} onChange={e => setSelectedMonteur(e.target.value)} className="flex-1 px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
-          <option value="">Monteur toevoegen...</option>
+          <option value="">Medewerker toevoegen...</option>
           {available.map(m => (
-            <option key={m.id} value={m.id}>{m.full_name} ({m.uurtarief != null ? `€${m.uurtarief}/u` : "geen tarief"})</option>
+            <option key={m.id} value={m.id}>{m.full_name}{rolLabel(m.rol || '')} · €{m.uurtarief}/u</option>
           ))}
         </select>
         <button onClick={addMonteur} disabled={!selectedMonteur} className="px-3 py-2 rounded-xl text-sm font-semibold" style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
@@ -304,7 +354,7 @@ function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, onSave, verwach
         <>
           <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
             <div className="grid grid-cols-[1fr_70px_70px_80px_32px] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
-              <span>Monteur</span><span>Tarief</span><span>Uren</span><span>Kosten</span><span></span>
+              <span>Medewerker</span><span>Tarief</span><span>Uren</span><span>Kosten</span><span></span>
             </div>
             {regels.map(r => {
               const m = monteurs.find(m => m.id === r.medewerker_id);
@@ -331,9 +381,19 @@ function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, onSave, verwach
               <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(totaalKosten)}</span>
             </div>
             <div className="pt-2" style={{ borderTop: "1px solid var(--border)" }}>
-              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Verwachte omzet (€)</label>
-              <input type="number" value={verwachteOmzet || ""} onChange={e => setVerwachteOmzet(parseFloat(e.target.value) || 0)} placeholder="bijv. 25000" className={`w-full mt-1 px-3 py-2 rounded-xl text-sm ${mono}`} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Verwachte omzet (€)</label>
+                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                  Wat factureert TerreVolt aan Van Gelder voor dit project? Dit staat in de opdrachtbevestiging of is op basis van stuksprijzen afgesproken.
+                </p>
+                <input type="number" value={verwachteOmzet || ""} onChange={e => setVerwachteOmzet(parseFloat(e.target.value) || 0)} placeholder="bijv. 25000" className={`w-full mt-1 px-3 py-2 rounded-xl text-sm ${mono}`} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              </div>
             </div>
+            {verwachteOmzet === 0 && (
+              <div className="flex items-center gap-2 rounded-xl p-2.5" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+                <span className="text-[11px] font-medium" style={{ color: "var(--warn-text)" }}>⚠ Vul de verwachte omzet in om de marge te berekenen</span>
+              </div>
+            )}
             {verwachteOmzet > 0 && (
               <div className="flex justify-between items-center text-[13px] font-semibold pt-1" style={{ borderTop: "1px solid var(--border)" }}>
                 <span style={{ color: "var(--text-primary)" }}>Marge</span>
@@ -345,9 +405,10 @@ function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, onSave, verwach
             )}
           </div>
 
-          <button onClick={onSave} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
-            Forecast opslaan
-          </button>
+          {/* Auto-save indicator */}
+          <p className="text-[11px] text-center" style={{ color: "var(--text-muted)" }}>
+            {saved ? "✓ Automatisch opgeslagen" : "Wordt automatisch opgeslagen..."}
+          </p>
         </>
       )}
     </div>

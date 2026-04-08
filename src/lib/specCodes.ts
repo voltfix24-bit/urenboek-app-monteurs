@@ -4,6 +4,7 @@ export interface SpecCode {
   eenheid: string;
   tarief: number;
   groep: string;
+  eigen_kosten?: number;
 }
 
 export const GROEP_LABELS: Record<string, string> = {
@@ -78,5 +79,6 @@ export async function loadSpecCodes(supabase: any): Promise<SpecCode[]> {
     eenheid: d.eenheid,
     tarief: Number(d.tarief),
     groep: d.groep,
+    eigen_kosten: Number(d.eigen_kosten) || 0,
   }));
 }
