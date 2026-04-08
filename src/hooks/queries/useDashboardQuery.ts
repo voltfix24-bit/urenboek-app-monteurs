@@ -172,6 +172,35 @@ async function fetchDashboard(): Promise<DashboardData> {
     overurenMeldingen = ouData.map((m: any) => ({ ...m, full_name: ouNameMap.get(m.medewerker_id) || "Onbekend", geboekte_uren: Number(m.geboekte_uren), limiet_uren: Number(m.limiet_uren) }));
   }
 
+  // Goedgekeurde uren zonder inkooporder
+  let zonderOrder: ZonderOrderMonteur[] = [];
+  const { data: goedgekeurd } = await supabase
+    .from("uren_boekingen")
+    .select("id, medewerker_id, uren")
+    .eq("status", "goedgekeurd");
+  if (goedgekeurd && goedgekeurd.length > 0) {
+    const { data: gebruikteRegels } = await supabase
+      .from("inkooporder_regels")
+      .select("uren_boeking_id")
+      .not("uren_boeking_id", "is", null);
+    const usedSet = new Set((gebruikteRegels || []).map((r: any) => r.uren_boeking_id));
+    const openBoekingen = goedgekeurd.filter((b: any) => !usedSet.has(b.id));
+    if (openBoekingen.length > 0) {
+      const medIds = [...new Set(openBoekingen.map((b: any) => b.medewerker_id))];
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", medIds);
+      const nameMap = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
+      const perMonteur: Record<string, ZonderOrderMonteur> = {};
+      openBoekingen.forEach((b: any) => {
+        if (!perMonteur[b.medewerker_id]) {
+          perMonteur[b.medewerker_id] = { id: b.medewerker_id, naam: nameMap.get(b.medewerker_id) || "Onbekend", uren: 0, aantal: 0 };
+        }
+        perMonteur[b.medewerker_id].uren += Number(b.uren);
+        perMonteur[b.medewerker_id].aantal++;
+      });
+      zonderOrder = Object.values(perMonteur);
+    }
+  }
+
   return {
     pendingCount: pending?.length || 0,
     weekHours,
@@ -185,6 +214,7 @@ async function fetchDashboard(): Promise<DashboardData> {
     overurenMeldingen,
     overurenCount: ouCount || 0,
     statusGroups,
+    zonderOrder,
   };
   } catch (err) {
     console.error("[Dashboard] fetch error:", err);
@@ -192,7 +222,7 @@ async function fetchDashboard(): Promise<DashboardData> {
       pendingCount: 0, weekHours: 0, activeProjects: 0, teamCount: 0,
       pendingEntries: [], verlofAanvragen: [], expiringCerts: [],
       todayPlanning: [], projectsWithMarge: [], overurenMeldingen: [],
-      overurenCount: 0, statusGroups: {},
+      overurenCount: 0, statusGroups: {}, zonderOrder: [],
     };
   }
 }
