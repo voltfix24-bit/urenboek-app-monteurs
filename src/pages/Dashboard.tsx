@@ -391,6 +391,34 @@ export default function Dashboard() {
               </div>
             )}
 
+            {/* Goedgekeurd zonder order */}
+            {zonderOrder.length > 0 && (
+              <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+                    <Receipt className="h-3.5 w-3.5" /> Goedgekeurd zonder order
+                  </p>
+                  <button onClick={() => navigate("/inkooporders")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
+                    Alle <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+                {zonderOrder.map(m => (
+                  <div key={m.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: "var(--accent)", color: "#fff" }}>
+                      {m.naam.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{m.naam}</p>
+                      <p className="text-[10px]" style={{ color: "var(--text-muted)", fontFamily: "DM Mono, monospace" }}>{m.aantal} boekingen · {m.uren}u</p>
+                    </div>
+                    <button onClick={() => navigate(`/inkooporders?medewerker=${m.id}`)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0" style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
+                      Order aanmaken →
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Verlof requests with inline actions */}
             {verlofAanvragen.length > 0 && (
               <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
