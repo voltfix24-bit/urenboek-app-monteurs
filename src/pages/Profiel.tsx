@@ -107,6 +107,7 @@ function ManagerHandtekeningSection({ profileId }: { profileId: string | null })
 function MonteurContractSection({ profileId }: { profileId: string | null }) {
   const [contract, setContract] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     if (!profileId) return;
@@ -125,6 +126,20 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
   }
 
   const contractDays = contract?.einddatum ? differenceInDays(parseISO(contract.einddatum), new Date()) : null;
+  const cd = contract?.contract_data as Record<string, any> | null;
+
+  const detailRows: { label: string; value: string }[] = [];
+  if (cd) {
+    if (cd.ot_handelsnaam) detailRows.push({ label: "Handelsnaam", value: cd.ot_handelsnaam });
+    if (cd.uurtarief) detailRows.push({ label: "Uurtarief", value: `€${cd.uurtarief}` });
+    if (cd.og_naam) detailRows.push({ label: "Opdrachtgever", value: cd.og_naam });
+    if (cd.og_vertegenwoordiger) detailRows.push({ label: "Vertegenwoordiger", value: cd.og_vertegenwoordiger });
+    if (cd.onderteken_plaats) detailRows.push({ label: "Plaats", value: cd.onderteken_plaats });
+    if (cd.onderteken_datum) detailRows.push({ label: "Ondertekend op", value: cd.onderteken_datum });
+    if (cd.ot_kvk) detailRows.push({ label: "KVK", value: cd.ot_kvk });
+    if (cd.ot_btw) detailRows.push({ label: "BTW", value: cd.ot_btw });
+    if (cd.ot_adres) detailRows.push({ label: "Adres", value: `${cd.ot_adres}${cd.ot_postcode ? `, ${cd.ot_postcode}` : ""}${cd.ot_stad ? ` ${cd.ot_stad}` : ""}` });
+  }
 
   return (
     <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
@@ -140,16 +155,26 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
           {contractDays !== null && contractDays <= 30 && contractDays >= 0 && (
             <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}>⚠ Verloopt binnenkort</span>
           )}
-          <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium mt-1" style={{ color: "var(--accent)" }}>
-            <Download className="h-3.5 w-3.5" /> Download contract PDF
-          </button>
+          <div className="flex items-center gap-3 mt-1">
+            {contract.pdf_path && (
+              <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "var(--accent)" }}>
+                <Download className="h-3.5 w-3.5" /> Download PDF
+              </button>
+            )}
+            <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+              {showDetails ? "Verberg details ▲" : "Bekijk details ▼"}
+            </button>
+          </div>
         </div>
       )}
 
       {contract?.status === "ondertekend_ot" && (
-        <div className="rounded-xl p-3.5 space-y-1" style={{ background: "var(--info-light)", border: "1px solid var(--info-border)" }}>
+        <div className="rounded-xl p-3.5 space-y-2" style={{ background: "var(--info-light)", border: "1px solid var(--info-border)" }}>
           <p className="text-sm font-semibold" style={{ color: "var(--info)" }}>⏳ Wacht op TerreVolt</p>
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Je hebt ondertekend. TerreVolt rondt dit zo snel mogelijk af.</p>
+          <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium mt-1" style={{ color: "var(--text-secondary)" }}>
+            {showDetails ? "Verberg details ▲" : "Bekijk details ▼"}
+          </button>
         </div>
       )}
 
@@ -158,6 +183,19 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
           <p className="text-sm font-semibold" style={{ color: "var(--warn-text)" }}>📧 Wacht op jouw handtekening</p>
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Bekijk je e-mail voor de ondertekeningslink.</p>
           <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>Geen e-mail ontvangen? Neem contact op via info@terrevolt.nl</p>
+        </div>
+      )}
+
+      {/* Contract details panel */}
+      {showDetails && contract && detailRows.length > 0 && (
+        <div className="rounded-xl p-3 space-y-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Contractgegevens</p>
+          {detailRows.map((row, i) => (
+            <div key={i} className="flex justify-between items-center py-1" style={{ borderBottom: i < detailRows.length - 1 ? "1px solid var(--border)" : "none" }}>
+              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>{row.label}</span>
+              <span className="text-xs font-medium text-right max-w-[60%]" style={{ color: "var(--text-primary)" }}>{row.value}</span>
+            </div>
+          ))}
         </div>
       )}
 
