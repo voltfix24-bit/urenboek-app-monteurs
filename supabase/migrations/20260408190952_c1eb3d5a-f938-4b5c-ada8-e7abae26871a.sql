@@ -1,0 +1,1 @@
+ALTER TABLE public.spec_code_tarieven ADD COLUMN eigen_kosten numeric NOT NULL DEFAULT 0;
