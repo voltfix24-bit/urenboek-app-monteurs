@@ -82,7 +82,7 @@ export async function generateInkooporderPdf(
   doc.setTextColor(...muted);
   doc.text("ELEKTROTECHNIEK & INSTALLATIE", ml, ml + logoH + 4);
 
-  // ── TITEL RECHTS (zelfde hoogte als logo) ─────
+  // ── TITEL RECHTS ─────────────────
   doc.setFontSize(30);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...groen);
@@ -93,32 +93,76 @@ export async function generateInkooporderPdf(
   doc.setTextColor(...groenMid);
   doc.text(order.order_nummer, pageW - mr, ml + 16, { align: "right" });
 
-  // Datums rechts — compact
+  // ── STATUS BADGE ─────────────────
+  const badgeTekst = "Definitief goedgekeurd voor facturatie";
+  doc.setFontSize(6.5);
+  doc.setFont("helvetica", "bold");
+  const badgeW = doc.getTextWidth(badgeTekst) + 8;
+  const badgeH = 5;
+  const badgeY = ml + 18;
+  const badgeX = pageW - mr - badgeW;
+
+  doc.setFillColor(...groenMid);
+  doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 1, 1, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.text(badgeTekst, badgeX + 4, badgeY + 3.5);
+
+  // ── DATUMS RECHTS — compact ──────
   const datumStr = format(new Date(order.aangemaakt_op), "d MMMM yyyy", { locale: nl });
 
   const datumInfo = [
     { label: "Datum", waarde: datumStr },
     { label: "Geaccordeerd", waarde: goedkeurderNaam || bNaam },
-    { label: "Accordeerdatum", waarde: datumStr },
+    { label: "Datum akkoord", waarde: datumStr },
   ];
 
-  let dY = ml + 24;
+  let dY = ml + 26;
   datumInfo.forEach((r) => {
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...faint);
     doc.text(r.label + ":", pageW - mr, dY, { align: "right" });
-    dY += 4;
+    dY += 3.5;
+    doc.setFontSize(8.5);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...groen);
     doc.text(r.waarde, pageW - mr, dY, { align: "right" });
-    dY += 5;
+    dY += 4.5;
   });
 
-  // ── PARTIJEN ─────────────────────
-  const partijY = Math.max(ml + logoH + 10, dY + 4);
-  const partijH = 36;
+  // ── PARTIJEN — dynamische hoogte ─
+  const partijY = Math.max(ml + logoH + 8, dY + 2);
   const halfW = (contentW - 4) / 2;
+
+  const monteurNaam = prof?.bedrijfsnaam || prof?.full_name || order.medewerker_naam || "";
+  const adres = prof?.factuuradres || prof?.adres || "";
+
+  // Opdrachtnemer regels
+  const otRegels: string[] = [];
+  otRegels.push(monteurNaam);
+  if (adres) {
+    adres.split(",").map((s: string) => s.trim()).filter(Boolean).slice(0, 2).forEach((d: string) => otRegels.push(d));
+  }
+  if (prof?.kvk_nummer) otRegels.push(`KVK: ${prof.kvk_nummer}`);
+  if (prof?.btw_nummer) otRegels.push(`BTW: ${prof.btw_nummer}`);
+  if (prof?.iban) otRegels.push(`IBAN: ${formatIban(prof.iban)}`);
+  if (prof?.telefoon) otRegels.push(`Tel: ${prof.telefoon}`);
+
+  // Opdrachtgever regels
+  const ogRegelsArr: string[] = [];
+  ogRegelsArr.push(bNaam);
+  if (bedrijf?.straat) ogRegelsArr.push(bedrijf.straat);
+  const pc = [bedrijf?.postcode, bedrijf?.stad].filter(Boolean).join(" ");
+  if (pc) ogRegelsArr.push(pc);
+  if (bedrijf?.kvk_nummer) ogRegelsArr.push(`KVK: ${bedrijf.kvk_nummer}`);
+  if (bedrijf?.btw_nummer) ogRegelsArr.push(`BTW: ${bedrijf.btw_nummer}`);
+  if (bedrijf?.iban) ogRegelsArr.push(`IBAN: ${formatIban(bedrijf.iban)}`);
+  if (bedrijf?.email) ogRegelsArr.push(bedrijf.email);
+
+  // Hoogte: label (6) + naam (8) + extra regels × 4.5 + padding (14)
+  const otHoogte = 6 + 8 + (otRegels.length - 1) * 4.5 + 14;
+  const ogHoogte = 6 + 8 + (ogRegelsArr.length - 1) * 4.5 + 14;
+  const partijH = Math.max(otHoogte, ogHoogte);
 
   // Witte box links (opdrachtnemer)
   doc.setFillColor(255, 255, 255);
@@ -140,8 +184,6 @@ export async function generateInkooporderPdf(
   doc.setTextColor(...groen);
   doc.text("OPDRACHTNEMER", ml + 4, partijY + 6);
 
-  const monteurNaam = prof?.bedrijfsnaam || prof?.full_name || order.medewerker_naam || "";
-
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...tekst);
@@ -152,32 +194,16 @@ export async function generateInkooporderPdf(
   doc.setTextColor(...muted);
 
   let lY = partijY + 19;
-
-  const adres = prof?.factuuradres || prof?.adres || "";
-  if (adres) {
-    const adresDelen = adres.split(",").map((s: string) => s.trim()).filter(Boolean);
-    adresDelen.slice(0, 2).forEach((deel: string) => {
-      doc.text(deel, ml + 4, lY);
-      lY += 4;
-    });
-  }
-
-  if (prof?.kvk_nummer) {
-    doc.setTextColor(...groenMid);
-    doc.text(`KVK: ${prof.kvk_nummer}`, ml + 4, lY);
-    lY += 4;
-  }
-
-  if (prof?.btw_nummer) {
-    doc.setTextColor(...groenMid);
-    doc.text(`BTW: ${prof.btw_nummer}`, ml + 4, lY);
-    lY += 4;
-  }
-
-  if (prof?.iban) {
-    doc.setTextColor(...groenMid);
-    doc.text(`IBAN: ${formatIban(prof.iban)}`, ml + 4, lY);
-  }
+  // Print extra regels (skip naam, already printed)
+  otRegels.slice(1).forEach((regel) => {
+    if (regel.startsWith("KVK:") || regel.startsWith("BTW:") || regel.startsWith("IBAN:")) {
+      doc.setTextColor(...groenMid);
+    } else {
+      doc.setTextColor(...muted);
+    }
+    doc.text(regel, ml + 4, lY);
+    lY += 4.5;
+  });
 
   // Rechts: Opdrachtgever
   doc.setFontSize(7);
@@ -192,45 +218,71 @@ export async function generateInkooporderPdf(
 
   doc.setFontSize(8.5);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(...muted);
 
   let rY = partijY + 19;
-
-  const ogAdres = [
-    bedrijf?.straat,
-    [bedrijf?.postcode, bedrijf?.stad].filter(Boolean).join(" "),
-  ].filter(Boolean);
-
-  ogAdres.forEach((r) => {
-    doc.text(r as string, rechtsBoxX + 4, rY);
-    rY += 4;
+  ogRegelsArr.slice(1).forEach((regel) => {
+    if (regel.startsWith("KVK:") || regel.startsWith("BTW:") || regel.startsWith("IBAN:")) {
+      doc.setTextColor(...groenMid);
+    } else {
+      doc.setTextColor(...muted);
+    }
+    doc.text(regel, rechtsBoxX + 4, rY);
+    rY += 4.5;
   });
 
-  if (bedrijf?.kvk_nummer) {
-    doc.setTextColor(...groenMid);
-    doc.text(`KVK: ${bedrijf.kvk_nummer}`, rechtsBoxX + 4, rY);
-    rY += 4;
-  }
+  // ── SAMENVATTINGSBALK ────────────
+  const samenvatY = partijY + partijH + 5;
+  const samenvatH = 12;
 
-  if (bedrijf?.btw_nummer) {
-    doc.setTextColor(...groenMid);
-    doc.text(`BTW: ${bedrijf.btw_nummer}`, rechtsBoxX + 4, rY);
-    rY += 4;
-  }
+  doc.setFillColor(...groenTint);
+  doc.roundedRect(ml, samenvatY, contentW, samenvatH, 2, 2, "F");
+  doc.setDrawColor(...rand);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(ml, samenvatY, contentW, samenvatH, 2, 2, "S");
 
-  if (bedrijf?.iban) {
-    doc.setTextColor(...groenMid);
-    doc.text(`IBAN: ${formatIban(bedrijf.iban)}`, rechtsBoxX + 4, rY);
-    rY += 4;
-  }
+  const samenvatItems = [
+    {
+      label: "PERIODE",
+      waarde: format(new Date(order.periode_van + "T12:00:00"), "d MMM", { locale: nl }) +
+        " – " + format(new Date(order.periode_tot + "T12:00:00"), "d MMM yyyy", { locale: nl }),
+    },
+    { label: "TOTAAL UREN", waarde: `${order.totaal_uren} uur` },
+    {
+      label: "UURTARIEF EXCL. BTW",
+      waarde: regels.length > 0 ? euro(regels[0].uurtarief) : "—",
+    },
+    {
+      label: "BETAALTERMIJN",
+      waarde: `${bedrijf?.betalingstermijn || 30} dagen`,
+    },
+  ];
 
-  if (bedrijf?.email) {
+  const itemW = contentW / samenvatItems.length;
+  samenvatItems.forEach((item, i) => {
+    const ix = ml + i * itemW + 4;
+
+    doc.setFontSize(6);
+    doc.setFont("helvetica", "bold");
     doc.setTextColor(...muted);
-    doc.text(bedrijf.email, rechtsBoxX + 4, rY);
-  }
+    doc.text(item.label, ix, samenvatY + 5);
+
+    doc.setFontSize(8.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...groen);
+    doc.text(item.waarde, ix, samenvatY + 10);
+
+    if (i < samenvatItems.length - 1) {
+      doc.setDrawColor(...rand);
+      doc.setLineWidth(0.2);
+      doc.line(
+        ml + (i + 1) * itemW, samenvatY + 2,
+        ml + (i + 1) * itemW, samenvatY + samenvatH - 2
+      );
+    }
+  });
 
   // ── TABEL ────────────────────────
-  const tableY = partijY + partijH + 6;
+  const tableY = samenvatY + samenvatH + 5;
 
   const tabelBody = regels.map((r) => [
     format(new Date(r.datum + "T12:00:00"), "d MMM", { locale: nl }),
@@ -253,41 +305,48 @@ export async function generateInkooporderPdf(
       "Bedrag excl. btw",
     ]],
     body: tabelBody,
-    theme: "plain",
+    theme: "grid",
     styles: {
       fontSize: 8.5,
       cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },
       textColor: [tekst[0], tekst[1], tekst[2]] as [number, number, number],
-      lineColor: [200, 217, 184] as [number, number, number],
+      lineColor: [220, 232, 212] as [number, number, number],
       lineWidth: 0.15,
     },
     headStyles: {
-      fillColor: [245, 247, 240] as [number, number, number],
-      textColor: [groen[0], groen[1], groen[2]] as [number, number, number],
+      fillColor: [groen[0], groen[1], groen[2]] as [number, number, number],
+      textColor: [255, 255, 255] as [number, number, number],
       fontStyle: "bold",
       fontSize: 7.5,
-      lineColor: [groen[0], groen[1], groen[2]] as [number, number, number],
-      lineWidth: { bottom: 0.5 },
+      cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },
+    },
+    bodyStyles: {
+      lineColor: [220, 232, 212] as [number, number, number],
+      lineWidth: 0.15,
     },
     alternateRowStyles: {
       fillColor: [255, 255, 255] as [number, number, number],
     },
     columnStyles: {
-      0: { cellWidth: 20, textColor: [faint[0], faint[1], faint[2]] as [number, number, number], overflow: "linebreak" },
-      1: { cellWidth: 38, fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number], overflow: "linebreak" },
-      2: { cellWidth: "auto", overflow: "linebreak" },
-      3: { cellWidth: 10, halign: "center", fontStyle: "bold" },
-      4: { cellWidth: 24, halign: "right" },
-      5: { cellWidth: 26, halign: "right", fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number] },
+      0: { cellWidth: 20, textColor: [faint[0], faint[1], faint[2]] as [number, number, number], overflow: "linebreak" as const },
+      1: { cellWidth: 34, fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number], overflow: "linebreak" as const },
+      2: { cellWidth: "auto", overflow: "linebreak" as const },
+      3: { cellWidth: 10, halign: "center" as const, fontStyle: "bold", overflow: "linebreak" as const },
+      4: { cellWidth: 24, halign: "right" as const, overflow: "linebreak" as const },
+      5: { cellWidth: 26, halign: "right" as const, fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number], overflow: "linebreak" as const },
     },
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 180;
 
   // ── FINANCIEEL RECHTS ─────────────
+  const balkY = pageH - 12;
+  const beschikbaarVoorFinancieel = balkY - 70 - finalY;
+  const finStartY = beschikbaarVoorFinancieel > 30 ? finalY + 8 : finalY + 4;
+
   const finW = 78;
   const finX = pageW - mr - finW;
-  let finY = finalY + 6;
+  let finY = finStartY;
 
   const finRegels = [
     { label: "Subtotaal excl. BTW", waarde: euro(order.totaal_excl_btw) },
@@ -312,11 +371,10 @@ export async function generateInkooporderPdf(
     doc.line(finX, finY - 2, finX + finW, finY - 2);
   });
 
-  // Totaal box met gouden achtergrond
+  // Totaal box
   const totH = 14;
   doc.setFillColor(...goudLicht);
   doc.roundedRect(finX, finY, finW, totH, 2, 2, "F");
-  // Groene linker rand
   doc.setFillColor(...groenMid);
   doc.rect(finX, finY, 3, totH, "F");
 
@@ -331,7 +389,7 @@ export async function generateInkooporderPdf(
   doc.text(euro(order.totaal_incl_btw), finX + finW - 4, finY + 10, { align: "right" });
 
   // ── FOOTER ───────────────────────
-  const footerY = finY + totH + 8;
+  const footerY = finY + totH + 16;
 
   doc.setDrawColor(...rand);
   doc.setLineWidth(0.3);
@@ -344,7 +402,7 @@ export async function generateInkooporderPdf(
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...muted);
-  doc.text("BETALINGSINSTRUCTIES", ml, footerY + 7);
+  doc.text("BETALINGSINSTRUCTIES", ml, footerY + 8);
 
   doc.setFontSize(8.5);
   doc.setFont("helvetica", "normal");
@@ -356,41 +414,43 @@ export async function generateInkooporderPdf(
     `Stuur uw factuur naar: ${email}`,
   ];
 
-  let iY = footerY + 12;
+  let iY = footerY + 13;
   instrRegels.forEach((r) => {
     doc.text(r, ml, iY);
     iY += 4.5;
   });
 
-  // Cursief: geen factuur
+  // Geen factuur disclaimer
   doc.setFontSize(7.5);
   doc.setFont("helvetica", "italic");
   doc.setTextColor(...muted);
-  doc.text(
-    "Dit document is geen factuur. Het dient als basis voor uw facturatie aan " + bNaam + ".",
-    ml, iY + 2
-  );
+  const geenFactuurTekst =
+    "Dit document is geen factuur — gebruik het als basis voor uw eigen facturatie.";
+  const geenFactuurRegels = doc.splitTextToSize(geenFactuurTekst, contentW / 2 - 4);
+  doc.text(geenFactuurRegels, ml, iY + 4);
 
-  // Rechts: bankgegevens
+  // Rechts: factuuradministratie
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...muted);
-  doc.text("BANKGEGEVENS " + bNaam.toUpperCase(), rechtsX, footerY + 7);
+  doc.text("FACTUURADMINISTRATIE", rechtsX, footerY + 8);
 
   doc.setFontSize(8.5);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...faint);
 
-  let bY = footerY + 12;
-  const bankRegels: string[] = [];
-  if (bNaam) bankRegels.push(bNaam);
-  if (bedrijf?.iban) bankRegels.push(`IBAN: ${formatIban(bedrijf.iban)}`);
-  if (bedrijf?.iban_naam) bankRegels.push(`T.n.v. ${bedrijf.iban_naam}`);
-  if (bedrijf?.kvk_nummer) bankRegels.push(`KVK: ${bedrijf.kvk_nummer}`);
+  const adminRegels = [
+    "Facturen uitsluitend onder vermelding",
+    `van ordernummer ${order.order_nummer}`,
+    `naar ${bedrijf?.email || "info@terrevolt.nl"}`,
+    `Betaling binnen ${bedrijf?.betalingstermijn || 30} dagen na`,
+    "ontvangst van een correcte factuur.",
+  ];
 
-  bankRegels.forEach((r) => {
-    doc.text(r, rechtsX, bY);
-    bY += 4.5;
+  let aY = footerY + 13;
+  adminRegels.forEach((r) => {
+    doc.text(r, rechtsX, aY);
+    aY += 4;
   });
 
   // ── ONDERSTE BALK ─────────────────
@@ -400,21 +460,21 @@ export async function generateInkooporderPdf(
     format(new Date(order.periode_tot + "T12:00:00"), "d MMM yyyy", { locale: nl });
 
   doc.setFillColor(...groenTint);
-  doc.rect(0, pageH - 10, pageW, 10, "F");
+  doc.rect(0, balkY, pageW, 12, "F");
   doc.setDrawColor(...rand);
   doc.setLineWidth(0.2);
-  doc.line(0, pageH - 10, pageW, pageH - 10);
+  doc.line(0, balkY, pageW, balkY);
 
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...muted);
   doc.text(
     `Doc: ${order.order_nummer} · Periode ${periodeStr}`,
-    ml, pageH - 4
+    ml, balkY + 6
   );
   doc.text(
     "Definitief goedgekeurd voor facturatie · Pagina 01",
-    pageW - mr, pageH - 4,
+    pageW - mr, balkY + 6,
     { align: "right" }
   );
 
