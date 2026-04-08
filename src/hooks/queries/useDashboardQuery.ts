@@ -20,6 +20,7 @@ interface DashboardData {
 }
 
 async function fetchDashboard(): Promise<DashboardData> {
+  try {
   const weekStart = startOfISOWeek(new Date());
   const weekEnd = addDays(weekStart, 6);
   const today = format(new Date(), "yyyy-MM-dd");
@@ -177,6 +178,15 @@ async function fetchDashboard(): Promise<DashboardData> {
     overurenCount: ouCount || 0,
     statusGroups,
   };
+  } catch (err) {
+    console.error("[Dashboard] fetch error:", err);
+    return {
+      pendingCount: 0, weekHours: 0, activeProjects: 0, teamCount: 0,
+      pendingEntries: [], verlofAanvragen: [], expiringCerts: [],
+      todayPlanning: [], projectsWithMarge: [], overurenMeldingen: [],
+      overurenCount: 0, statusGroups: {},
+    };
+  }
 }
 
 export function useDashboardQuery() {
@@ -184,5 +194,7 @@ export function useDashboardQuery() {
     queryKey: queryKeys.dashboard(),
     queryFn: fetchDashboard,
     staleTime: 30 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
   });
 }
