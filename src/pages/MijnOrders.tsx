@@ -27,7 +27,7 @@ export default function MijnOrders() {
     setLoading(true);
     const { data } = await supabase.from("inkooporders").select("*").eq("medewerker_id", profileId).order("aangemaakt_op", { ascending: false });
     setOrders(data || []);
-    const { data: prof } = await supabase.from("profiles").select("*").eq("id", profileId).single();
+    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", profileId).single();
     setProfile(prof);
     setLoading(false);
   }, [profileId]);
@@ -49,7 +49,12 @@ export default function MijnOrders() {
 
   const downloadPdf = async () => {
     if (!selectedOrder) return;
-    await generateInkooporderPdf(selectedOrder, orderRegels, profile);
+    let gkNaam: string | undefined;
+    if (selectedOrder.aangemaakt_door) {
+      const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
+      gkNaam = gk?.full_name || undefined;
+    }
+    await generateInkooporderPdf(selectedOrder, orderRegels, profile, gkNaam);
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><Spinner /></div>;
