@@ -1287,6 +1287,7 @@ export type Database = {
           btw_nummer: string | null
           contract_einddatum: string | null
           created_at: string
+          email: string | null
           factuuradres: string | null
           full_name: string
           geboortedatum: string | null
@@ -1317,6 +1318,7 @@ export type Database = {
           btw_nummer?: string | null
           contract_einddatum?: string | null
           created_at?: string
+          email?: string | null
           factuuradres?: string | null
           full_name: string
           geboortedatum?: string | null
@@ -1347,6 +1349,7 @@ export type Database = {
           btw_nummer?: string | null
           contract_einddatum?: string | null
           created_at?: string
+          email?: string | null
           factuuradres?: string | null
           full_name?: string
           geboortedatum?: string | null

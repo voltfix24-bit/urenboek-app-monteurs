@@ -139,6 +139,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
     full_name: emp.full_name,
     telefoon: emp.telefoon || "",
     adres: emp.adres || "",
+    email: emp.email || "",
     bedrijfsnaam: emp.bedrijfsnaam || "",
     kvk_nummer: emp.kvk_nummer || "",
     btw_nummer: emp.btw_nummer || "",
@@ -153,6 +154,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       full_name: emp.full_name,
       telefoon: emp.telefoon || "",
       adres: emp.adres || "",
+      email: emp.email || "",
       bedrijfsnaam: emp.bedrijfsnaam || "",
       kvk_nummer: emp.kvk_nummer || "",
       btw_nummer: emp.btw_nummer || "",
@@ -183,6 +185,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       full_name: editForm.full_name.trim(),
       telefoon: editForm.telefoon.trim(),
       adres: editForm.adres.trim(),
+      email: editForm.email.trim() || null,
       bedrijfsnaam: editForm.bedrijfsnaam.trim() || null,
       kvk_nummer: editForm.kvk_nummer.trim() || null,
       btw_nummer: editForm.btw_nummer.trim() || null,
@@ -274,6 +277,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
           <div className="space-y-2">
             {[
               { label: "Naam", key: "full_name" as const },
+              { label: "E-mail", key: "email" as const },
               { label: "Telefoon", key: "telefoon" as const },
               { label: "Adres", key: "adres" as const },
             ].map(f => (
@@ -285,9 +289,9 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
           </div>
         ) : (
           <>
+            <InfoRow icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" value={emp.email || "–"} isLink={emp.email ? `mailto:${emp.email}` : undefined} />
             <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Telefoon" value={emp.telefoon || "–"} isLink={emp.telefoon ? `tel:${emp.telefoon}` : undefined} />
             <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Adres" value={emp.adres || "–"} />
-            <InfoRow icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" value="–" />
           </>
         )}
       </Section>
