@@ -175,7 +175,9 @@ export default function Profiel() {
   const [certs, setCerts] = useState<Certificaat[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
   const [editing, setEditing] = useState(false);
+  const [editingZzp, setEditingZzp] = useState(false);
   const [editForm, setEditForm] = useState({ full_name: "", telefoon: "", adres: "", geboortedatum: "" });
+  const [zzpEditForm, setZzpEditForm] = useState({ bedrijfsnaam: "", kvk_nummer: "", btw_nummer: "", iban: "", factuuradres: "", betalingstermijn: 30 });
   const [showVerlof, setShowVerlof] = useState(false);
   const [verlofForm, setVerlofForm] = useState({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" });
   const [loading, setLoading] = useState(true);
