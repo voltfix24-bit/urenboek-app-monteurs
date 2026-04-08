@@ -185,6 +185,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       full_name: editForm.full_name.trim(),
       telefoon: editForm.telefoon.trim(),
       adres: editForm.adres.trim(),
+      email: editForm.email.trim() || null,
       bedrijfsnaam: editForm.bedrijfsnaam.trim() || null,
       kvk_nummer: editForm.kvk_nummer.trim() || null,
       btw_nummer: editForm.btw_nummer.trim() || null,
