@@ -26,7 +26,7 @@ export default function Goedkeuring() {
   const { isManager, user } = useAuth();
   const { profileId: myProfileId } = useProfile();
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<string>("ingediend");
+  const [filter, setFilter] = useState<string>("alle");
   const [weekOffset, setWeekOffset] = useState(0);
   const [afkeurId, setAfkeurId] = useState<string | null>(null);
   const [afkeurReden, setAfkeurReden] = useState("");
