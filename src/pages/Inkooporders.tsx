@@ -28,6 +28,7 @@ function OrderStatusBadge({ status }: { status: string }) {
 }
 
 export default function Inkooporders() {
+  const [searchParams] = useSearchParams();
   const { isManager, user } = useAuth();
   const { profileId } = useProfile();
   const { badges } = useNavBadges();
@@ -68,6 +69,23 @@ export default function Inkooporders() {
   }, []);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  // Auto-open wizard from URL params (e.g. after goedkeuring)
+  const didAutoOpen = useRef(false);
+  useEffect(() => {
+    if (didAutoOpen.current) return;
+    const medId = searchParams.get("medewerker");
+    const van = searchParams.get("van");
+    const tot = searchParams.get("tot");
+    if (medId && van && tot && medewerkers.length > 0) {
+      didAutoOpen.current = true;
+      setWizMedewerker(medId);
+      setWizVan(van);
+      setWizTot(tot);
+      setShowCreate(true);
+      setWizStep(2);
+    }
+  }, [searchParams, medewerkers]);
 
   const filteredOrders = useMemo(() => {
     let result = orders;
