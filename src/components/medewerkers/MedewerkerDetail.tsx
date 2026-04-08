@@ -277,6 +277,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
           <div className="space-y-2">
             {[
               { label: "Naam", key: "full_name" as const },
+              { label: "E-mail", key: "email" as const },
               { label: "Telefoon", key: "telefoon" as const },
               { label: "Adres", key: "adres" as const },
             ].map(f => (
@@ -288,9 +289,9 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
           </div>
         ) : (
           <>
+            <InfoRow icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" value={emp.email || "–"} isLink={emp.email ? `mailto:${emp.email}` : undefined} />
             <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Telefoon" value={emp.telefoon || "–"} isLink={emp.telefoon ? `tel:${emp.telefoon}` : undefined} />
             <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Adres" value={emp.adres || "–"} />
-            <InfoRow icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" value="–" />
           </>
         )}
       </Section>
