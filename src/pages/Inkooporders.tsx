@@ -10,7 +10,7 @@ import { HeaderLogo } from "@/components/HeaderLogo";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
-import { Plus, Download, ChevronRight, ArrowLeft, X, Check, FileText, AlertTriangle } from "lucide-react";
+import { Plus, Download, ChevronRight, ArrowLeft, X, Check, FileText, AlertTriangle, Trash2 } from "lucide-react";
 import { format, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
 import { useSearchParams } from "react-router-dom";
 import { nl } from "date-fns/locale";
