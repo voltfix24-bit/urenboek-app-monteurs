@@ -20,6 +20,7 @@ interface DashboardData {
 }
 
 async function fetchDashboard(): Promise<DashboardData> {
+  try {
   const weekStart = startOfISOWeek(new Date());
   const weekEnd = addDays(weekStart, 6);
   const today = format(new Date(), "yyyy-MM-dd");
