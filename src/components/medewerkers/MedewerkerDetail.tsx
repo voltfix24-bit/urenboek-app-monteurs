@@ -242,18 +242,27 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
-          {emp.full_name.charAt(0).toUpperCase()}
-        </div>
-        <div>
-          <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{emp.full_name}</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-sm capitalize" style={{ color: "var(--text-muted)" }}>{roleLabels[emp.role] || emp.role}</span>
-            <StatusBadge emp={emp} />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
+            {emp.full_name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{emp.full_name}</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-sm capitalize" style={{ color: "var(--text-muted)" }}>{roleLabels[emp.role] || emp.role}</span>
+              <StatusBadge emp={emp} />
+            </div>
           </div>
         </div>
+        <button onClick={() => editing ? saveProfile() : setEditing(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: editing ? "var(--accent)" : "var(--bg-surface)", border: `1px solid ${editing ? "var(--accent)" : "var(--border)"}`, color: editing ? "#fff" : "var(--accent)" }}>
+          {editing ? <><Save className="h-3 w-3" /> Opslaan</> : <><Edit2 className="h-3 w-3" /> Bewerken</>}
+        </button>
       </div>
+
+      {editing && (
+        <button onClick={() => setEditing(false)} className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Annuleren</button>
+      )}
 
       {/* Verification panel for onboarding status */}
       {emp.account_status === "onboarding" && (
@@ -261,16 +270,44 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       )}
 
       <Section title="Contactgegevens">
-        <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Telefoon" value={emp.telefoon || "–"} isLink={emp.telefoon ? `tel:${emp.telefoon}` : undefined} />
-        <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Adres" value={emp.adres || "–"} />
-        <InfoRow icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" value="–" />
+        {editing ? (
+          <div className="space-y-2">
+            {[
+              { label: "Naam", key: "full_name" as const },
+              { label: "Telefoon", key: "telefoon" as const },
+              { label: "Adres", key: "adres" as const },
+            ].map(f => (
+              <div key={f.key}>
+                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{f.label}</label>
+                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Telefoon" value={emp.telefoon || "–"} isLink={emp.telefoon ? `tel:${emp.telefoon}` : undefined} />
+            <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Adres" value={emp.adres || "–"} />
+            <InfoRow icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" value="–" />
+          </>
+        )}
       </Section>
 
-      <div className="rounded-xl p-3 space-y-2" style={{ background: "#FFF8DC", border: "1px solid var(--warn-border)" }}>
+      <div className="rounded-xl p-3 space-y-2" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
         <p className="text-xs font-semibold flex items-center gap-1.5" style={{ color: "var(--warn-text)" }}>
           <ShieldAlert className="h-3.5 w-3.5" /> Noodcontact
         </p>
-        {emp.noodcontact_naam ? (
+        {editing ? (
+          <div className="space-y-2">
+            <div>
+              <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Naam</label>
+              <input value={editForm.noodcontact_naam} onChange={e => setEditForm({ ...editForm, noodcontact_naam: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Telefoon</label>
+              <input value={editForm.noodcontact_tel} onChange={e => setEditForm({ ...editForm, noodcontact_tel: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+            </div>
+          </div>
+        ) : emp.noodcontact_naam ? (
           <>
             <p className="text-sm" style={{ color: "var(--text-primary)" }}>{emp.noodcontact_naam}</p>
             {emp.noodcontact_tel && (
