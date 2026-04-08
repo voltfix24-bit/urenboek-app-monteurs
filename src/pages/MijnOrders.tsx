@@ -10,7 +10,6 @@ import { nl } from "date-fns/locale";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { generateInkooporderPdf } from "@/lib/inkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
-import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 import { EmptyState } from "@/components/ui/EmptyState";
 
