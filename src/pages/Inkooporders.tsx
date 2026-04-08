@@ -405,7 +405,7 @@ export default function Inkooporders() {
               </div>
 
               {/* Status actions */}
-              <div className="flex flex-wrap gap-2 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
+              <div className="flex flex-wrap items-center gap-2 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
                 {selectedOrder.status === "concept" && (
                   <button onClick={() => updateOrderStatus(selectedOrder.id, "verzonden")} className="px-4 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
                     Verzenden naar monteur
@@ -428,6 +428,19 @@ export default function Inkooporders() {
                     </button>
                   </div>
                 )}
+                {/* Verwijderen */}
+                <button onClick={async () => {
+                  if (!confirm(`Weet je zeker dat je ${selectedOrder.order_nummer} wilt verwijderen?`)) return;
+                  await supabase.from("inkooporder_regels").delete().eq("inkooporder_id", selectedOrder.id);
+                  const { error } = await supabase.from("inkooporders").delete().eq("id", selectedOrder.id);
+                  if (error) { toast.error("Verwijderen mislukt"); return; }
+                  toast.success(`${selectedOrder.order_nummer} verwijderd`);
+                  setSelectedOrder(null);
+                  fetchOrders();
+                }} className="ml-auto px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5"
+                  style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
+                  <Trash2 className="h-3.5 w-3.5" /> Verwijderen
+                </button>
               </div>
             </div>
           )}
