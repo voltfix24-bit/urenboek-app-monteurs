@@ -61,18 +61,8 @@ export async function generateInkooporderPdf(
     doc.text("TerreVolt BV", margin, margin + 8);
   }
 
-  // Bedrijfsnaam en subtitel onder logo
-  const naLogoY = margin + logoH + 6;
-
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...groen);
-  doc.text(bNaam, margin, naLogoY);
-
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...groenMid);
-  doc.text("ELEKTROTECHNIEK & INSTALLATIE", margin, naLogoY + 5);
+  // Positie na logo (tekst weggelaten, alleen logo)
+  const naLogoY = margin + logoH + 2;
 
   // ── GROTE TITEL ──────────────────
   doc.setFontSize(32);
