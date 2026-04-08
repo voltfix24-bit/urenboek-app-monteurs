@@ -366,7 +366,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       )}
 
       {/* ZZP incomplete warning */}
-      {(!emp.kvk_nummer || !emp.iban) && (
+      {!editing && (!emp.kvk_nummer || !emp.iban) && (
         <div className="flex items-start gap-2 rounded-xl p-3" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--warn-text)" }} />
           <span className="text-xs" style={{ color: "var(--warn-text)" }}>ZZP gegevens incompleet — inkooporder kan niet aangemaakt worden</span>
@@ -374,21 +374,38 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       )}
 
       {/* ZZP Business details */}
-      {(emp.bedrijfsnaam || emp.kvk_nummer || emp.btw_nummer || emp.iban) && (
-        <Section title="ZZP Gegevens">
-          {emp.bedrijfsnaam && <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Bedrijf" value={emp.bedrijfsnaam} />}
-          {emp.kvk_nummer && <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="KvK" value={emp.kvk_nummer} />}
-          {emp.btw_nummer && <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="BTW" value={emp.btw_nummer} />}
-          {emp.iban && <InfoRow icon={<CreditCard className="h-3.5 w-3.5" />} label="IBAN" value={emp.iban} />}
-          {emp.uurtarief != null && (
-            <div className="flex items-center gap-2">
-              <span style={{ color: "var(--text-muted)" }}>€</span>
-              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>Uurtarief:</span>
-              <span className="text-sm font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(emp.uurtarief).toFixed(2)}</span>
-            </div>
-          )}
-        </Section>
-      )}
+      <Section title="ZZP Gegevens">
+        {editing ? (
+          <div className="space-y-2">
+            {[
+              { label: "Bedrijfsnaam", key: "bedrijfsnaam" as const },
+              { label: "KvK-nummer", key: "kvk_nummer" as const },
+              { label: "BTW-nummer", key: "btw_nummer" as const },
+              { label: "IBAN", key: "iban" as const },
+              { label: "Uurtarief (€)", key: "uurtarief" as const },
+            ].map(f => (
+              <div key={f.key}>
+                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{f.label}</label>
+                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} type={f.key === "uurtarief" ? "number" : "text"} step={f.key === "uurtarief" ? "0.01" : undefined} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            {emp.bedrijfsnaam && <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Bedrijf" value={emp.bedrijfsnaam} />}
+            {emp.kvk_nummer ? <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="KvK" value={emp.kvk_nummer} /> : <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="KvK" value="Niet ingevuld" />}
+            {emp.btw_nummer && <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="BTW" value={emp.btw_nummer} />}
+            {emp.iban ? <InfoRow icon={<CreditCard className="h-3.5 w-3.5" />} label="IBAN" value={emp.iban} /> : <InfoRow icon={<CreditCard className="h-3.5 w-3.5" />} label="IBAN" value="Niet ingevuld" />}
+            {emp.uurtarief != null && (
+              <div className="flex items-center gap-2">
+                <span style={{ color: "var(--text-muted)" }}>€</span>
+                <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>Uurtarief:</span>
+                <span className="text-sm font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(emp.uurtarief).toFixed(2)}</span>
+              </div>
+            )}
+          </>
+        )}
+      </Section>
 
       <CertificatenOverzicht certificaten={certs} toonToevoegen={true} medewerker_id={emp.id} onRefresh={onRefreshCerts} />
 
