@@ -12,6 +12,7 @@ export async function generateInkooporderPdf(
   prof: any
 ) {
   const bedrijf = await getBedrijfsgegevens();
+  const bNaam = bedrijf?.bedrijfsnaam || "TerreVolt B.V.";
 
   const doc = new jsPDF({
     orientation: "portrait",
@@ -21,184 +22,286 @@ export async function generateInkooporderPdf(
 
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  const margin = 14;
-
-  // ── HEADER BALK ──────────────────
-  doc.setFillColor(45, 90, 26);
-  doc.rect(0, 0, pageW, 26, "F");
-
-  // Logo links in header
-  try {
-    const logoW = 12 * (129 / 36);
-    doc.addImage(terrevoltLogoPng, "PNG", margin, 7, logoW, 12, undefined, "FAST");
-  } catch {
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "bold");
-    doc.text("TerreVolt B.V.", margin, 17);
-  }
-
-  // "INKOOPORDER" rechts in header
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.text("INKOOPORDER", pageW - margin, 11, { align: "right" });
-
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
-  doc.text(order.order_nummer, pageW - margin, 20, { align: "right" });
-
-  // ── KLEURSTREEP ──────────────────
-  doc.setFillColor(122, 173, 86);
-  doc.rect(0, 26, pageW * 0.5, 2, "F");
-  doc.setFillColor(200, 168, 75);
-  doc.rect(pageW * 0.5, 26, pageW * 0.3, 2, "F");
-
-  // ── PARTIJEN BLOK ────────────────
-  let y = 34;
+  const margin = 20;
   const rechtsX = pageW / 2 + 4;
 
-  // Labels
+  // ── KLEUREN ──────────────────────
+  const groen = [0, 59, 30] as const;
+  const groenMid = [44, 106, 68] as const;
+  const groenTint = [244, 248, 241] as const;
+  const goud = [200, 168, 75] as const;
+  const goudLicht = [254, 249, 236] as const;
+  const rand = [192, 201, 191] as const;
+  const randLicht = [227, 227, 222] as const;
+  const tekst = [26, 28, 25] as const;
+  const muted = [64, 73, 65] as const;
+  const faint = [112, 121, 113] as const;
+
+  // ── LOGO BOX LINKS BOVEN ─────────
+  doc.setFillColor(...groen);
+  doc.roundedRect(margin, margin, 14, 14, 2, 2, "F");
+
+  try {
+    doc.addImage(
+      terrevoltLogoPng, "PNG",
+      margin + 1, margin + 2.5,
+      12, 9,
+      undefined, "FAST"
+    );
+  } catch {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text("TV", margin + 3, margin + 10);
+  }
+
+  // Bedrijfsnaam rechts van logo box
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...groen);
+  doc.text(bNaam, margin + 17, margin + 8);
+
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...groenMid);
+  doc.text("ELEKTROTECHNIEK & INSTALLATIE", margin + 17, margin + 13);
+
+  // ── GROTE TITEL ──────────────────
+  doc.setFontSize(32);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...groen);
+  doc.text("Inkooporder", margin, margin + 35);
+
+  // Status badge
+  const badgeY = margin + 38;
+  const badgeTekst = "OFFICIEEL VERZONDEN";
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(122, 173, 86);
-  doc.text("OPDRACHTGEVER", margin, y);
-  doc.text("OPDRACHTNEMER", rechtsX, y);
-  y += 5;
+  doc.setTextColor(255, 255, 255);
+  const badgeW = doc.getTextWidth(badgeTekst) + 8;
+  doc.setFillColor(...groen);
+  doc.roundedRect(margin, badgeY, badgeW, 5.5, 1, 1, "F");
+  doc.text(badgeTekst, margin + 4, badgeY + 3.8);
 
-  // Links: TerreVolt naam
-  doc.setFontSize(10);
+  // ── ORDER BOX RECHTS ─────────────
+  const boxW = 56;
+  const boxX = pageW - margin - boxW;
+
+  doc.setFillColor(...groenTint);
+  doc.roundedRect(boxX, margin, boxW, 18, 2, 2, "F");
+  doc.setDrawColor(...randLicht);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(boxX, margin, boxW, 18, 2, 2, "S");
+
+  doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(30, 60, 15);
-  doc.text(bedrijf?.bedrijfsnaam || "TerreVolt B.V.", margin, y);
+  doc.setTextColor(...faint);
+  doc.text("ORDERNUMMER", boxX + 4, margin + 6);
 
-  // Rechts: Monteur naam
-  const monteurNaam = prof?.bedrijfsnaam || prof?.full_name || order.medewerker_naam || "";
-  doc.text(monteurNaam, rechtsX, y);
-  y += 5;
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...groen);
+  doc.text(order.order_nummer, boxX + 4, margin + 14);
 
-  // TerreVolt adresregels
-  doc.setFontSize(8);
+  // Datum onder order box
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...faint);
+  doc.text("DATUM", boxX + 4, margin + 24);
+
+  doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
+  doc.setTextColor(...tekst);
+  doc.text(
+    format(new Date(order.aangemaakt_op), "d MMMM yyyy", { locale: nl }),
+    boxX + 4, margin + 30
+  );
+
+  // ── PARTIJEN ─────────────────────
+  const partijY = margin + 52;
+
+  // Scheidingslijn boven partijen
+  doc.setDrawColor(...randLicht);
+  doc.setLineWidth(0.3);
+  doc.line(margin, partijY - 4, pageW - margin, partijY - 4);
+
+  // LINKS: Opdrachtnemer (monteur)
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...groen);
+  doc.text("OPDRACHTNEMER", margin, partijY);
+
+  doc.setDrawColor(...groen);
+  doc.setLineWidth(0.5);
+  doc.line(margin, partijY + 1.5, margin + 55, partijY + 1.5);
+
+  const monteurNaam = prof?.bedrijfsnaam || prof?.full_name || order.medewerker_naam || "";
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...tekst);
+  doc.text(monteurNaam, margin, partijY + 8);
+
+  doc.setFontSize(8.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...muted);
+
+  let yL = partijY + 14;
+
+  const adres = prof?.factuuradres || prof?.adres || "";
+  if (adres) {
+    adres.split(",").map((s: string) => s.trim()).filter(Boolean).forEach((deel: string) => {
+      doc.text(deel, margin, yL);
+      yL += 4;
+    });
+  }
+
+  if (prof?.kvk_nummer) {
+    doc.setTextColor(...groenMid);
+    doc.text(`KVK: ${prof.kvk_nummer}`, margin, yL);
+  } else {
+    doc.setTextColor(180, 120, 0);
+    doc.text("KVK: niet ingevuld", margin, yL);
+  }
+  yL += 4;
+
+  if (prof?.btw_nummer) {
+    doc.setTextColor(...groenMid);
+    doc.text(`BTW: ${prof.btw_nummer}`, margin, yL);
+    yL += 4;
+  }
+
+  if (prof?.iban) {
+    doc.setTextColor(...groenMid);
+    doc.text(`IBAN: ${prof.iban}`, margin, yL);
+  } else {
+    doc.setTextColor(180, 120, 0);
+    doc.text("IBAN: niet ingevuld", margin, yL);
+  }
+  yL += 4;
+
+  if (prof?.telefoon) {
+    doc.setTextColor(...muted);
+    doc.text(`Tel: ${prof.telefoon}`, margin, yL);
+    yL += 4;
+  }
+
+  // RECHTS: Opdrachtgever (TerreVolt)
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...groen);
+  doc.text("OPDRACHTGEVER", rechtsX, partijY);
+
+  doc.setDrawColor(...groen);
+  doc.setLineWidth(0.5);
+  doc.line(rechtsX, partijY + 1.5, rechtsX + 55, partijY + 1.5);
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...tekst);
+  doc.text(bNaam, rechtsX, partijY + 8);
+
+  doc.setFontSize(8.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...muted);
+
+  let yR = partijY + 14;
 
   const ogRegels: string[] = [];
   if (bedrijf?.straat) ogRegels.push(bedrijf.straat);
   if (bedrijf?.postcode || bedrijf?.stad)
     ogRegels.push([bedrijf?.postcode, bedrijf?.stad].filter(Boolean).join(" "));
-  if (bedrijf?.kvk_nummer) ogRegels.push(`KVK: ${bedrijf.kvk_nummer}`);
-  if (bedrijf?.btw_nummer) ogRegels.push(`BTW: ${bedrijf.btw_nummer}`);
-  if (bedrijf?.email) ogRegels.push(bedrijf.email);
 
   ogRegels.forEach((r) => {
-    doc.text(r, margin, y);
-    y += 4;
+    doc.text(r, rechtsX, yR);
+    yR += 4;
   });
 
-  // Monteur adresregels
-  let yR = 44;
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
-
-  const adres = prof?.factuuradres || prof?.adres;
-  if (adres) {
-    const adresDelen = adres.split(",").map((s: string) => s.trim()).filter(Boolean);
-    adresDelen.forEach((deel: string) => {
-      doc.text(deel, rechtsX, yR);
-      yR += 4;
-    });
-  }
-
-  if (prof?.kvk_nummer) {
-    doc.text(`KVK: ${prof.kvk_nummer}`, rechtsX, yR);
-    yR += 4;
-  } else {
-    doc.setTextColor(180, 120, 0);
-    doc.text("KVK: niet ingevuld", rechtsX, yR);
-    doc.setTextColor(80, 80, 80);
+  if (bedrijf?.kvk_nummer) {
+    doc.setTextColor(...groenMid);
+    doc.text(`KVK: ${bedrijf.kvk_nummer}`, rechtsX, yR);
     yR += 4;
   }
 
-  if (prof?.btw_nummer) {
-    doc.text(`BTW: ${prof.btw_nummer}`, rechtsX, yR);
+  if (bedrijf?.btw_nummer) {
+    doc.setTextColor(...groenMid);
+    doc.text(`BTW: ${bedrijf.btw_nummer}`, rechtsX, yR);
     yR += 4;
   }
 
-  if (prof?.iban) {
-    doc.text(`IBAN: ${prof.iban}`, rechtsX, yR);
-    yR += 4;
-  } else {
-    doc.setTextColor(180, 120, 0);
-    doc.text("IBAN: niet ingevuld", rechtsX, yR);
-    doc.setTextColor(80, 80, 80);
+  if (bedrijf?.email) {
+    doc.setTextColor(...muted);
+    doc.text(bedrijf.email, rechtsX, yR);
     yR += 4;
   }
 
-  if (prof?.telefoon) {
-    doc.text(`Tel: ${prof.telefoon}`, rechtsX, yR);
-    yR += 4;
-  }
-
-  // Verticale scheidingslijn
-  const scheidingY = 34;
-  const scheidingH = Math.max(y, yR) - scheidingY + 2;
-  doc.setDrawColor(210, 228, 200);
+  // Verticale scheiding tussen partijen
+  const scheidingMidden = pageW / 2;
+  const scheidingTop = partijY - 1;
+  const scheidingBtm = Math.max(yL, yR) + 2;
+  doc.setDrawColor(...randLicht);
   doc.setLineWidth(0.3);
-  doc.line(pageW / 2, scheidingY, pageW / 2, scheidingY + scheidingH);
+  doc.line(scheidingMidden, scheidingTop, scheidingMidden, scheidingBtm);
 
-  // ── BENTO INFO BALK ──────────────
-  const bentoY = Math.max(y, yR) + 6;
+  // ── META BALK ────────────────────
+  const metaY = Math.max(yL, yR) + 8;
+  const metaH = 14;
 
-  doc.setFillColor(238, 245, 232);
-  doc.rect(0, bentoY, pageW, 16, "F");
-  doc.setDrawColor(212, 224, 204);
+  doc.setFillColor(...groenTint);
+  doc.roundedRect(margin, metaY, pageW - margin * 2, metaH, 2, 2, "F");
+  doc.setDrawColor(...randLicht);
   doc.setLineWidth(0.2);
-  doc.line(0, bentoY, pageW, bentoY);
-  doc.line(0, bentoY + 16, pageW, bentoY + 16);
+  doc.roundedRect(margin, metaY, pageW - margin * 2, metaH, 2, 2, "S");
 
-  const bentoItems = [
+  const metaItems = [
     {
       label: "PERIODE",
-      waarde: `${format(new Date(order.periode_van), "d MMM", { locale: nl })} — ${format(new Date(order.periode_tot), "d MMM yyyy", { locale: nl })}`,
+      waarde:
+        format(new Date(order.periode_van), "d MMM", { locale: nl }) +
+        " — " +
+        format(new Date(order.periode_tot), "d MMM yyyy", { locale: nl }),
     },
     {
-      label: "DATUM",
-      waarde: format(new Date(order.aangemaakt_op), "d MMMM yyyy", { locale: nl }),
+      label: "BETALINGSTERMIJN",
+      waarde: `${bedrijf?.betalingstermijn || 30} dagen`,
     },
     {
       label: "TOTAAL UREN",
       waarde: `${order.totaal_uren} uur`,
     },
     {
-      label: "BETALINGSTERMIJN",
-      waarde: `${bedrijf?.betalingstermijn || 30} dagen`,
+      label: "UURTARIEF",
+      waarde: regels.length > 0 ? euro(regels[0].uurtarief) : "—",
     },
   ];
 
-  const bentoW = pageW / bentoItems.length;
-  bentoItems.forEach((item, i) => {
-    const bx = i * bentoW + 6;
+  const metaW = (pageW - margin * 2) / metaItems.length;
+
+  metaItems.forEach((item, i) => {
+    const mx = margin + i * metaW + 5;
 
     doc.setFontSize(6.5);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(100, 140, 70);
-    doc.text(item.label, bx, bentoY + 5);
+    doc.setTextColor(...faint);
+    doc.text(item.label, mx, metaY + 5);
 
-    doc.setFontSize(8.5);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(30, 60, 15);
-    doc.text(item.waarde, bx, bentoY + 12);
+    doc.setTextColor(...groen);
+    doc.text(item.waarde, mx, metaY + 11);
 
-    if (i < bentoItems.length - 1) {
-      doc.setDrawColor(210, 228, 200);
+    if (i < metaItems.length - 1) {
+      doc.setDrawColor(...rand);
       doc.setLineWidth(0.2);
-      doc.line((i + 1) * bentoW, bentoY + 2, (i + 1) * bentoW, bentoY + 14);
+      doc.line(
+        margin + (i + 1) * metaW, metaY + 2,
+        margin + (i + 1) * metaW, metaY + metaH - 2
+      );
     }
   });
 
   // ── TABEL ────────────────────────
-  const tableY = bentoY + 20;
+  const tableY = metaY + metaH + 8;
 
   autoTable(doc, {
     startY: tableY,
@@ -212,127 +315,146 @@ export async function generateInkooporderPdf(
       euro(r.uurtarief),
       euro(r.bedrag),
     ]),
-    foot: [
-      ["", "", "", "", "Subtotaal excl. BTW:", euro(order.totaal_excl_btw)],
-      ["", "", "", "", "BTW 21%:", euro(order.btw_bedrag)],
-      ["", "", "", "", "Totaal incl. BTW:", euro(order.totaal_incl_btw)],
-    ],
     theme: "grid",
     styles: {
-      fontSize: 8,
-      cellPadding: { top: 3.5, bottom: 3.5, left: 3, right: 3 },
-      textColor: [30, 30, 30],
-      lineColor: [210, 228, 200],
+      fontSize: 8.5,
+      cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },
+      textColor: [tekst[0], tekst[1], tekst[2]] as [number, number, number],
+      lineColor: [randLicht[0], randLicht[1], randLicht[2]] as [number, number, number],
       lineWidth: 0.15,
     },
     headStyles: {
-      fillColor: [45, 90, 26],
+      fillColor: [groen[0], groen[1], groen[2]] as [number, number, number],
       textColor: [255, 255, 255],
       fontStyle: "bold",
       fontSize: 7.5,
-      cellPadding: { top: 4, bottom: 4, left: 3, right: 3 },
-    },
-    footStyles: {
-      fillColor: [238, 245, 232],
-      textColor: [30, 60, 15],
-      fontStyle: "bold",
-      fontSize: 8,
+      cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },
     },
     alternateRowStyles: {
-      fillColor: [248, 252, 245],
+      fillColor: [groenTint[0], groenTint[1], groenTint[2]] as [number, number, number],
     },
     columnStyles: {
-      0: { cellWidth: 22, textColor: [100, 100, 100] },
-      1: { cellWidth: "auto", fontStyle: "bold", textColor: [30, 60, 15] },
-      2: { cellWidth: 26 },
-      3: { cellWidth: 12, halign: "center", fontStyle: "bold" },
-      4: { cellWidth: 22, halign: "right" },
-      5: { cellWidth: 26, halign: "right", fontStyle: "bold", textColor: [30, 60, 15] },
+      0: { cellWidth: 24, textColor: [muted[0], muted[1], muted[2]] as [number, number, number] },
+      1: { cellWidth: "auto", fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number] },
+      2: { cellWidth: 28 },
+      3: { cellWidth: 14, halign: "center", fontStyle: "bold" },
+      4: { cellWidth: 24, halign: "right" },
+      5: { cellWidth: 28, halign: "right", fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number] },
     },
   });
 
   const finalY = (doc as any).lastAutoTable?.finalY || 200;
 
-  // ── TOTAAL BLOK ──────────────────
-  const totaalW = 70;
-  const totaalX = pageW - margin - totaalW;
-  const totaalY = finalY + 6;
+  // ── FINANCIEEL OVERZICHT ──────────
+  const finW = 72;
+  const finX = pageW - margin - finW;
+  let finY = finalY + 8;
 
-  doc.setFillColor(45, 90, 26);
-  doc.roundedRect(totaalX, totaalY, totaalW, 10, 2, 2, "F");
-  doc.setFontSize(8);
+  const finRegels = [
+    { label: "SUBTOTAAL EXCL. BTW", waarde: euro(order.totaal_excl_btw) },
+    { label: "BTW (21%)", waarde: euro(order.btw_bedrag) },
+  ];
+
+  finRegels.forEach((r) => {
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...faint);
+    doc.text(r.label, finX, finY);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...tekst);
+    doc.text(r.waarde, finX + finW, finY, { align: "right" });
+    finY += 7;
+  });
+
+  // Totaal box (goud)
+  const totaalBoxH = 13;
+  doc.setFillColor(...goudLicht);
+  doc.roundedRect(finX, finY, finW, totaalBoxH, 2, 2, "F");
+  doc.setDrawColor(...goud);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(finX, finY, finW, totaalBoxH, 2, 2, "S");
+
+  doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(255, 255, 255);
-  doc.text("TOTAAL INCL. BTW", totaalX + 4, totaalY + 4.5);
-  doc.setFontSize(10);
-  doc.text(euro(order.totaal_incl_btw), totaalX + totaalW - 4, totaalY + 6.5, { align: "right" });
+  doc.setTextColor(...groen);
+  doc.text("TOTAAL INCL. BTW", finX + 4, finY + 5.5);
+
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...groen);
+  doc.text(euro(order.totaal_incl_btw), finX + finW - 4, finY + 9.5, { align: "right" });
 
   // ── FOOTER ───────────────────────
-  const footerY = totaalY + 18;
+  const footerY = finY + totaalBoxH + 14;
 
-  doc.setDrawColor(210, 228, 200);
+  doc.setDrawColor(...randLicht);
   doc.setLineWidth(0.3);
   doc.line(margin, footerY, pageW - margin, footerY);
 
   const termijn = bedrijf?.betalingstermijn || 30;
   const email = bedrijf?.email || "info@terrevolt.nl";
 
-  // Links: betalingsinstructies
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(100, 140, 70);
-  doc.text("BETALINGSINSTRUCTIES", margin, footerY + 6);
+  doc.setTextColor(...faint);
+  doc.text("BETALINGSINSTRUCTIES", margin, footerY + 7);
 
+  doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
-  doc.setFontSize(7.5);
-  const betalingTekst = [
+  doc.setTextColor(...muted);
+
+  const footerRegels = [
     `Betaling binnen ${termijn} dagen na ontvangst van uw factuur.`,
     `Stuur uw factuur naar: ${email}`,
     `Vermeld ordernummer ${order.order_nummer} op uw factuur.`,
   ];
-  let footerTextY = footerY + 11;
-  betalingTekst.forEach((regel) => {
-    doc.text(regel, margin, footerTextY);
-    footerTextY += 4;
+
+  let footTY = footerY + 12;
+  footerRegels.forEach((r) => {
+    doc.text(r, margin, footTY);
+    footTY += 4;
   });
 
-  // Rechts: TerreVolt bankgegevens
+  // Rechts: bankgegevens
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(100, 140, 70);
-  doc.text("BANKGEGEVENS TERREVOLT", rechtsX, footerY + 6);
+  doc.setTextColor(...faint);
+  doc.text("BANKGEGEVENS TERREVOLT", rechtsX, footerY + 7);
 
+  doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
-  doc.setFontSize(7.5);
-  const bankTekst: string[] = [];
-  if (bedrijf?.bedrijfsnaam) bankTekst.push(bedrijf.bedrijfsnaam);
-  if (bedrijf?.iban) bankTekst.push(`IBAN: ${bedrijf.iban}`);
-  if (bedrijf?.iban_naam) bankTekst.push(`T.n.v. ${bedrijf.iban_naam}`);
-  if (bedrijf?.kvk_nummer) bankTekst.push(`KVK: ${bedrijf.kvk_nummer}`);
+  doc.setTextColor(...muted);
 
-  let bankY = footerY + 11;
-  bankTekst.forEach((r) => {
-    doc.text(r, rechtsX, bankY);
-    bankY += 4;
+  let footRY = footerY + 12;
+  const bankRegels: string[] = [];
+
+  if (bNaam) bankRegels.push(bNaam);
+  if (bedrijf?.iban) bankRegels.push(`IBAN: ${bedrijf.iban}`);
+  if (bedrijf?.iban_naam) bankRegels.push(`T.n.v. ${bedrijf.iban_naam}`);
+  if (bedrijf?.kvk_nummer) bankRegels.push(`KVK: ${bedrijf.kvk_nummer}`);
+
+  bankRegels.forEach((r) => {
+    doc.text(r, rechtsX, footRY);
+    footRY += 4;
   });
 
-  // ── DOC FOOTER ───────────────────
-  doc.setFillColor(45, 90, 26);
-  doc.rect(0, pageH - 10, pageW, 10, "F");
+  // ── ONDERSTE BALK ─────────────────
+  const balkY = pageH - 10;
+  doc.setFillColor(...groen);
+  doc.rect(0, balkY, pageW, 10, "F");
+
   doc.setFontSize(6.5);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(255, 255, 255);
   doc.text(
-    `© ${new Date().getFullYear()} ${bedrijf?.bedrijfsnaam || "TerreVolt B.V."} · Vertrouwelijk document`,
-    margin,
-    pageH - 4
+    `© ${new Date().getFullYear()} ${bNaam} · Vertrouwelijk`,
+    margin, balkY + 6
   );
   doc.text(
     `Ref: ${order.order_nummer} · Pagina 01`,
-    pageW - margin,
-    pageH - 4,
+    pageW - margin, balkY + 6,
     { align: "right" }
   );
 
