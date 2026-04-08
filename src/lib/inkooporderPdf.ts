@@ -319,27 +319,27 @@ export async function generateInkooporderPdf(
     styles: {
       fontSize: 8.5,
       cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },
-      textColor: [...tekst] as number[],
-      lineColor: [...randLicht] as number[],
+      textColor: [tekst[0], tekst[1], tekst[2]] as [number, number, number],
+      lineColor: [randLicht[0], randLicht[1], randLicht[2]] as [number, number, number],
       lineWidth: 0.15,
     },
     headStyles: {
-      fillColor: [...groen] as number[],
+      fillColor: [groen[0], groen[1], groen[2]] as [number, number, number],
       textColor: [255, 255, 255],
       fontStyle: "bold",
       fontSize: 7.5,
       cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },
     },
     alternateRowStyles: {
-      fillColor: [...groenTint] as number[],
+      fillColor: [groenTint[0], groenTint[1], groenTint[2]] as [number, number, number],
     },
     columnStyles: {
-      0: { cellWidth: 24, textColor: [...muted] as number[] },
-      1: { cellWidth: "auto", fontStyle: "bold", textColor: [...groen] as number[] },
+      0: { cellWidth: 24, textColor: [muted[0], muted[1], muted[2]] as [number, number, number] },
+      1: { cellWidth: "auto", fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number] },
       2: { cellWidth: 28 },
       3: { cellWidth: 14, halign: "center", fontStyle: "bold" },
       4: { cellWidth: 24, halign: "right" },
-      5: { cellWidth: 28, halign: "right", fontStyle: "bold", textColor: [...groen] as number[] },
+      5: { cellWidth: 28, halign: "right", fontStyle: "bold", textColor: [groen[0], groen[1], groen[2]] as [number, number, number] },
     },
   });
 
