@@ -13,7 +13,7 @@ import { Check, X, ChevronLeft, ChevronRight, Calendar, CheckCheck, CheckCircle,
 import { checkOveruren } from "@/lib/overurenCheck";
 import { useNavigate } from "react-router-dom";
 import { useGoedkeuring } from "@/hooks/useGoedkeuring";
-import { format, startOfWeek, addDays } from "date-fns";
+import { format, startOfWeek, addDays, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 
 interface EntryWithProfile {
@@ -109,21 +109,41 @@ export default function Goedkeuring() {
 
   const mainContent = (
     <main className="px-4 py-4 space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 rounded-xl p-0.5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <button className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }} onClick={() => setWeekOffset((w) => w - 1)}>
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button className="px-2 py-1 rounded-lg text-[11px] font-medium" style={{ color: "var(--text-secondary)" }} onClick={() => setWeekOffset(0)}>
-            <Calendar className="h-3 w-3 inline mr-1" />Vandaag
-          </button>
-          <button className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }} onClick={() => setWeekOffset((w) => w + 1)}>
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-        <span className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>
-          {format(weekStart, "d MMM", { locale: nl })} – {format(weekEnd, "d MMM", { locale: nl })}
-        </span>
+      {/* Week navigation */}
+      <div className="rounded-2xl p-3 flex items-center justify-between" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <button
+          className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors active:scale-95"
+          style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}
+          onClick={() => setWeekOffset((w) => w - 1)}
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+
+        <button
+          onClick={() => setWeekOffset(0)}
+          className="flex flex-col items-center gap-0.5 px-4 py-1 rounded-xl transition-colors"
+          style={{ background: weekOffset === 0 ? "var(--accent-light)" : "transparent" }}
+        >
+          <span className="text-lg font-extrabold tabular-nums" style={{ color: "var(--accent)", fontFamily: "DM Mono, monospace" }}>
+            Week {getISOWeek(weekStart)}
+          </span>
+          <span className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>
+            {format(weekStart, "d MMM", { locale: nl })} – {format(weekEnd, "d MMM yyyy", { locale: nl })}
+          </span>
+          {weekOffset !== 0 && (
+            <span className="text-[9px] font-semibold mt-0.5 px-2 py-0.5 rounded-full" style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
+              Terug naar deze week
+            </span>
+          )}
+        </button>
+
+        <button
+          className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors active:scale-95"
+          style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}
+          onClick={() => setWeekOffset((w) => w + 1)}
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
       </div>
 
       <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
