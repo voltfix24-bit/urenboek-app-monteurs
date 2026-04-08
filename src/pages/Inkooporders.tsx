@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { Plus, Download, ChevronRight, ArrowLeft, X, Check, FileText, AlertTriangle } from "lucide-react";
 import { format, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
+import { useSearchParams } from "react-router-dom";
 import { nl } from "date-fns/locale";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";

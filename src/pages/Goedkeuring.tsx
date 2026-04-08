@@ -82,7 +82,20 @@ export default function Goedkeuring() {
     if (userEntries.length === 0) return;
     const ids = userEntries.map((e) => e.id);
     if (!await mutate(supabase.from("uren_boekingen").update({ status: "goedgekeurd", approved_by: myProfileId }).in("id", ids))) return;
-    toast.success(`${userEntries.length} uren goedgekeurd voor ${userName}`);
+    toast.success(`${userEntries.length} uren goedgekeurd voor ${userName}`, {
+      action: {
+        label: "Order aanmaken →",
+        onClick: () => {
+          const params = new URLSearchParams({
+            medewerker: userEntries[0].medewerker_id,
+            van: format(weekStart, "yyyy-MM-dd"),
+            tot: format(weekEnd, "yyyy-MM-dd"),
+          });
+          navigate(`/inkooporders?${params}`);
+        },
+      },
+      duration: 8000,
+    });
     fetchEntries();
   };
 
