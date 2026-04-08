@@ -117,6 +117,10 @@ export default function Projecten() {
     if (isNew) {
       const { data: newP, error } = await supabase.from("projects").insert(data).select("id").single();
       if (error) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Casenummer bestaat al"); else toast.error("Fout bij aanmaken"); return; }
+      // Auto-create forecast if method chosen
+      if (newP && form.vergoed_methode) {
+        await supabase.from("project_forecast").insert({ project_id: newP.id, methode: form.vergoed_methode });
+      }
       toast.success("Project toegevoegd"); setForm(emptyForm); setShowAdd(false); setDesktopMode("view"); fetchData();
       if (newP) setIntakeProjectId(newP.id);
     } else {
@@ -139,12 +143,12 @@ export default function Projecten() {
 
   function startEdit(p: Project) {
     setEditId(p.id); setExpandedId(null); setShowAdd(false);
-    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "" });
+    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "", vergoed_methode: "" });
   }
 
   function startDesktopEdit(p: Project) {
     setDesktopMode("edit"); setSelectedId(p.id);
-    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "" });
+    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "", vergoed_methode: "" });
   }
 
   const activeProjects = projects.filter(p => p.active);
