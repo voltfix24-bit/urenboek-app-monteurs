@@ -26,7 +26,7 @@ export default function Onboarding() {
   const [profileData, setProfileData] = useState<any>(null);
   
   const [form, setForm] = useState({ telefoon: "", adres: "", rijbewijs: false, noodcontact_naam: "", noodcontact_tel: "" });
-  const [zzpForm, setZzpForm] = useState({ bedrijfsnaam: "", kvk_nummer: "", btw_nummer: "", iban: "", factuuradres: "", betalingstermijn: 14 });
+  const [zzpForm, setZzpForm] = useState({ bedrijfsnaam: "", kvk_nummer: "", btw_nummer: "", iban: "", factuuradres: "", betalingstermijn: 30 });
   const [zzpErrors, setZzpErrors] = useState<Record<string, string>>({});
   const [vrijeDagen, setVrijeDagen] = useState<number[]>([]);
 
@@ -53,7 +53,7 @@ export default function Onboarding() {
         btw_nummer: (profile as any).btw_nummer || "",
         iban: (profile as any).iban || "",
         factuuradres: (profile as any).factuuradres || "",
-        betalingstermijn: (profile as any).betalingstermijn || 14,
+        betalingstermijn: (profile as any).betalingstermijn || 30,
       });
       setVrijeDagen((profile as any).vaste_vrije_dagen || []);
     }

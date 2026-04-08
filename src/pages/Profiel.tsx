@@ -362,7 +362,7 @@ export default function Profiel() {
             <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>IBAN</span><span className="font-mono" style={{ color: profile?.iban ? "var(--text-primary)" : "var(--warn-text)" }}>{profile?.iban || "Niet ingevuld"}</span></div>
             {permissies.zietProjectFinancien && profile?.uurtarief != null && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Uurtarief</span><span className="font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(profile.uurtarief).toFixed(2)}</span></div>}
             <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Factuuradres</span><span style={{ color: "var(--text-primary)" }}>{profile?.factuuradres || "–"}</span></div>
-            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Betalingstermijn</span><span style={{ color: "var(--text-primary)" }}>{profile?.betalingstermijn || 14} dagen</span></div>
+            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Betalingstermijn</span><span style={{ color: "var(--text-primary)" }}>{profile?.betalingstermijn || 30} dagen</span></div>
           </div>
         </div>
 

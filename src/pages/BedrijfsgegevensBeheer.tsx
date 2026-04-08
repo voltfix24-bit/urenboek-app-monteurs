@@ -63,7 +63,7 @@ export default function BedrijfsgegevensBeheer() {
     straat: "", postcode: "", stad: "", land: "Nederland",
     email: "", telefoon: "",
     kvk_nummer: "", btw_nummer: "", iban: "", iban_naam: "",
-    betalingstermijn: 14,
+    betalingstermijn: 30,
   });
 
   useEffect(() => {
@@ -82,7 +82,7 @@ export default function BedrijfsgegevensBeheer() {
         btw_nummer: bedrijf.btw_nummer || "",
         iban: bedrijf.iban || "",
         iban_naam: bedrijf.iban_naam || "",
-        betalingstermijn: bedrijf.betalingstermijn || 14,
+        betalingstermijn: bedrijf.betalingstermijn || 30,
       });
       // Load updated_by name
       if (bedrijf.updated_by) {
