@@ -285,7 +285,14 @@ export default function Inkooporders() {
                 </div>
                 <div className="flex items-center gap-2">
                   <OrderStatusBadge status={selectedOrder.status} />
-                  <button onClick={() => generatePdf(selectedOrder, orderRegels, wizMedProfile)} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+                  <button onClick={async () => {
+                    let prof = wizMedProfile;
+                    if (!prof) {
+                      const { data } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", selectedOrder.medewerker_id).single();
+                      prof = data;
+                    }
+                    generatePdf(selectedOrder, orderRegels, prof);
+                  }} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                     <Download className="h-3.5 w-3.5" /> PDF
                   </button>
                 </div>
