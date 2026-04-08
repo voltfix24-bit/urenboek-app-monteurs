@@ -75,8 +75,9 @@ export function NavBadgesProvider({ children }: { children: ReactNode }) {
       next.nieuweOrders = nieuw || 0;
     }
 
-    const { count: unread } = await supabase.from("mededeling_leesstatus").select("id", { count: "exact", head: true }).eq("medewerker_id", profileId).is("gelezen_op", null);
-    next.ongelezen = unread || 0;
+    // Count unread chat messages (not sent by me)
+    const { count: unreadChat } = await supabase.from("chat_berichten").select("id", { count: "exact", head: true }).is("gelezen_op", null).neq("afzender_id", profileId);
+    next.ongelezen = unreadChat || 0;
 
     setBadges(prev => ({ ...prev, ...next }));
   }, [user, profileId, isManager]);
