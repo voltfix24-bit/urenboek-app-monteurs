@@ -37,43 +37,51 @@ export async function generateInkooporderPdf(
   const muted = [64, 73, 65] as const;
   const faint = [112, 121, 113] as const;
 
-  // ── LOGO BOX LINKS BOVEN ─────────
-  doc.setFillColor(...groen);
-  doc.roundedRect(margin, margin, 14, 14, 2, 2, "F");
+  // ── LOGO ───────────────────────────
+  const logoH = 10;
+  const logoW = logoH * (129 / 36);
+
+  doc.setFillColor(...groenTint);
+  doc.roundedRect(margin - 2, margin - 2, logoW + 4, logoH + 4, 2, 2, "F");
+  doc.setDrawColor(...randLicht);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(margin - 2, margin - 2, logoW + 4, logoH + 4, 2, 2, "S");
 
   try {
     doc.addImage(
       terrevoltLogoPng, "PNG",
-      margin + 1, margin + 2.5,
-      12, 9,
+      margin, margin,
+      logoW, logoH,
       undefined, "FAST"
     );
   } catch {
-    doc.setFontSize(9);
+    doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(255, 255, 255);
-    doc.text("TV", margin + 3, margin + 10);
+    doc.setTextColor(...groen);
+    doc.text("TerreVolt BV", margin, margin + 8);
   }
 
-  // Bedrijfsnaam rechts van logo box
+  // Bedrijfsnaam en subtitel onder logo
+  const naLogoY = margin + logoH + 6;
+
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...groen);
-  doc.text(bNaam, margin + 17, margin + 8);
+  doc.text(bNaam, margin, naLogoY);
 
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...groenMid);
-  doc.text("ELEKTROTECHNIEK & INSTALLATIE", margin + 17, margin + 13);
+  doc.text("ELEKTROTECHNIEK & INSTALLATIE", margin, naLogoY + 5);
 
   // ── GROTE TITEL ──────────────────
   doc.setFontSize(32);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...groen);
-  doc.text("Inkooporder", margin, margin + 35);
+  doc.text("Inkooporder", margin, naLogoY + 16);
 
   // Status badge
-  const badgeY = margin + 38;
+  const badgeY = naLogoY + 19;
   const badgeTekst = "OFFICIEEL VERZONDEN";
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
