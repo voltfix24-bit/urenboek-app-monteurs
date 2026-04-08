@@ -1,130 +1,375 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
-import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
-import { mutate } from "@/lib/supabaseHelpers";
-import { Send, ArrowLeft, AlertTriangle, Bell } from "lucide-react";
+import { Send, ArrowLeft, Plus, MessageCircle, Check, CheckCheck } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { nl } from "date-fns/locale";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface Mededeling { id: string; titel: string; inhoud: string; urgentie: string; created_at: string; verzender_naam: string; gelezen: boolean; }
+/* ─── types ─── */
+interface Gesprek {
+  id: string;
+  medewerker_id: string;
+  onderwerp: string;
+  laatste_bericht_op: string;
+  laatste_bericht_preview: string;
+  created_at: string;
+  medewerker_naam: string;
+  ongelezen: number;
+}
 
+interface ChatBericht {
+  id: string;
+  gesprek_id: string;
+  afzender_id: string;
+  inhoud: string;
+  gelezen_op: string | null;
+  created_at: string;
+  afzender_naam: string;
+  is_eigen: boolean;
+}
+
+/* ─── helpers ─── */
+function initialen(naam: string) {
+  return naam.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+function datumLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  const nu = new Date();
+  const vandaag = new Date(nu.getFullYear(), nu.getMonth(), nu.getDate());
+  const gisteren = new Date(vandaag); gisteren.setDate(gisteren.getDate() - 1);
+  if (d >= vandaag) return "Vandaag";
+  if (d >= gisteren) return "Gisteren";
+  return format(d, "d MMM yyyy", { locale: nl });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 export default function Mededelingen() {
-  const { user, isManager, permissies } = useAuth();
+  const { user, isManager } = useAuth();
   const { profileId } = useProfile();
-  const [items, setItems] = useState<Mededeling[]>([]);
+  const [gesprekken, setGesprekken] = useState<Gesprek[]>([]);
+  const [activeGesprek, setActiveGesprek] = useState<Gesprek | null>(null);
+  const [berichten, setBerichten] = useState<ChatBericht[]>([]);
+  const [nieuwBericht, setNieuwBericht] = useState("");
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<Mededeling | null>(null);
-  const [showCompose, setShowCompose] = useState(false);
-  const [titel, setTitel] = useState("");
-  const [inhoud, setInhoud] = useState("");
-  const [urgentie, setUrgentie] = useState("normaal");
-  const [ontvangerType, setOntvangerType] = useState("iedereen");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [showNieuwGesprek, setShowNieuwGesprek] = useState(false);
+  const [medewerkers, setMedewerkers] = useState<{ id: string; full_name: string }[]>([]);
+  const [nieuwOnderwerp, setNieuwOnderwerp] = useState("");
+  const [nieuwMedewerkerId, setNieuwMedewerkerId] = useState("");
+  const [nieuwEersteBericht, setNieuwEersteBericht] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const fetchMededelingen = useCallback(async () => {
-    if (!user) return;
+  /* ─── fetch gesprekken ─── */
+  const fetchGesprekken = useCallback(async () => {
+    if (!profileId) return;
     setLoading(true);
-    const { data } = await supabase.from("mededelingen").select("*").order("created_at", { ascending: false });
-    if (data && profileId) {
-      const { data: readData } = await supabase.from("mededeling_leesstatus").select("mededeling_id, gelezen_op").eq("medewerker_id", profileId);
-      const readMap = new Map(readData?.map((r: any) => [r.mededeling_id, !!r.gelezen_op]) ?? []);
-      const senderIds = [...new Set(data.map((d: any) => d.verzonden_door))];
-      const { data: profiles } = await supabase.from("profiles_public" as any).select("id, full_name").in("id", senderIds);
-      const nameMap = new Map(profiles?.map((p: any) => [p.id, p.full_name]) ?? []);
-      setItems(data.map((d: any) => ({ id: d.id, titel: d.titel, inhoud: d.inhoud, urgentie: d.urgentie, created_at: d.created_at, verzender_naam: nameMap.get(d.verzonden_door) || "Onbekend", gelezen: readMap.get(d.id) || false })));
-    }
-    setLoading(false);
-  }, [user, profileId]);
 
-  useEffect(() => { if (profileId) fetchMededelingen(); }, [fetchMededelingen, profileId]);
+    const { data: gData } = await supabase
+      .from("gesprekken")
+      .select("*")
+      .order("laatste_bericht_op", { ascending: false });
+
+    if (!gData) { setLoading(false); return; }
+
+    const medIds = [...new Set(gData.map((g: any) => g.medewerker_id))];
+    const { data: profiles } = await supabase
+      .from("profiles_public" as any)
+      .select("id, full_name")
+      .in("id", medIds);
+    const nameMap = new Map((profiles || []).map((p: any) => [p.id, p.full_name]));
+
+    // count unread per gesprek
+    const { data: unreadData } = await supabase
+      .from("chat_berichten")
+      .select("gesprek_id")
+      .is("gelezen_op", null)
+      .neq("afzender_id", profileId);
+
+    const unreadMap = new Map<string, number>();
+    (unreadData || []).forEach((b: any) => {
+      unreadMap.set(b.gesprek_id, (unreadMap.get(b.gesprek_id) || 0) + 1);
+    });
+
+    setGesprekken(gData.map((g: any) => ({
+      id: g.id,
+      medewerker_id: g.medewerker_id,
+      onderwerp: g.onderwerp,
+      laatste_bericht_op: g.laatste_bericht_op,
+      laatste_bericht_preview: g.laatste_bericht_preview,
+      created_at: g.created_at,
+      medewerker_naam: nameMap.get(g.medewerker_id) || "Onbekend",
+      ongelezen: unreadMap.get(g.id) || 0,
+    })));
+    setLoading(false);
+  }, [profileId]);
+
+  useEffect(() => { if (profileId) fetchGesprekken(); }, [fetchGesprekken, profileId]);
+
+  /* ─── fetch berichten for active gesprek ─── */
+  const fetchBerichten = useCallback(async (gesprekId: string) => {
+    if (!profileId) return;
+    setChatLoading(true);
+    const { data } = await supabase
+      .from("chat_berichten")
+      .select("*")
+      .eq("gesprek_id", gesprekId)
+      .order("created_at", { ascending: true });
+
+    if (!data) { setChatLoading(false); return; }
+
+    const afzenderIds = [...new Set(data.map((b: any) => b.afzender_id))];
+    const { data: profiles } = await supabase
+      .from("profiles_public" as any)
+      .select("id, full_name")
+      .in("id", afzenderIds);
+    const nameMap = new Map((profiles || []).map((p: any) => [p.id, p.full_name]));
+
+    setBerichten(data.map((b: any) => ({
+      id: b.id,
+      gesprek_id: b.gesprek_id,
+      afzender_id: b.afzender_id,
+      inhoud: b.inhoud,
+      gelezen_op: b.gelezen_op,
+      created_at: b.created_at,
+      afzender_naam: nameMap.get(b.afzender_id) || "Onbekend",
+      is_eigen: b.afzender_id === profileId,
+    })));
+    setChatLoading(false);
+
+    // Mark unread messages as read
+    const unread = data.filter((b: any) => !b.gelezen_op && b.afzender_id !== profileId);
+    if (unread.length > 0) {
+      await supabase
+        .from("chat_berichten")
+        .update({ gelezen_op: new Date().toISOString() })
+        .in("id", unread.map((b: any) => b.id));
+    }
+  }, [profileId]);
+
+  /* ─── auto scroll ─── */
+  useEffect(() => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    }, 100);
+  }, [berichten]);
+
+  /* ─── realtime ─── */
+  useEffect(() => {
+    if (!activeGesprek) return;
+    const ch = supabase.channel(`chat-${activeGesprek.id}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_berichten", filter: `gesprek_id=eq.${activeGesprek.id}` }, () => {
+        fetchBerichten(activeGesprek.id);
+      }).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [activeGesprek, fetchBerichten]);
 
   useEffect(() => {
-    const channel = supabase.channel("mededelingen-realtime").on("postgres_changes", { event: "INSERT", schema: "public", table: "mededelingen" }, () => { fetchMededelingen(); }).subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [fetchMededelingen]);
-
-  const markAsRead = async (mededelingId: string) => {
     if (!profileId) return;
-    await supabase.from("mededeling_leesstatus").upsert({ mededeling_id: mededelingId, medewerker_id: profileId, gelezen_op: new Date().toISOString() }, { onConflict: "mededeling_id,medewerker_id" });
+    const ch = supabase.channel("gesprekken-list")
+      .on("postgres_changes", { event: "*", schema: "public", table: "gesprekken" }, () => { fetchGesprekken(); })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_berichten" }, () => { fetchGesprekken(); })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [profileId, fetchGesprekken]);
+
+  /* ─── open gesprek ─── */
+  const openGesprek = (g: Gesprek) => {
+    setActiveGesprek(g);
+    fetchBerichten(g.id);
   };
 
-  const openDetail = (item: Mededeling) => {
-    setSelected(item);
-    if (!item.gelezen) { markAsRead(item.id); setItems(prev => prev.map(i => i.id === item.id ? { ...i, gelezen: true } : i)); }
-  };
+  /* ─── send message ─── */
+  const sendBericht = async () => {
+    if (!activeGesprek || !profileId || !nieuwBericht.trim() || sending) return;
+    setSending(true);
+    const tekst = nieuwBericht.trim();
+    setNieuwBericht("");
 
-  const sendMededeling = async () => {
-    if (!profileId || !titel.trim()) return;
-    const { data, error } = await supabase.functions.invoke("mededeling-verzenden", {
-      body: { titel: titel.trim(), inhoud: inhoud.trim(), urgentie, ontvangerType, profileId },
+    const { error } = await supabase.from("chat_berichten").insert({
+      gesprek_id: activeGesprek.id,
+      afzender_id: profileId,
+      inhoud: tekst,
     });
-    if (error || !data?.success) { toast.error("Er ging iets mis. Probeer opnieuw."); return; }
-    toast.success("Mededeling verzonden!"); setShowCompose(false); setTitel(""); setInhoud(""); setUrgentie("normaal"); setOntvangerType("iedereen"); fetchMededelingen();
+
+    if (error) { toast.error("Bericht kon niet verstuurd worden"); setSending(false); return; }
+
+    // Update gesprek preview
+    await supabase.from("gesprekken").update({
+      laatste_bericht_op: new Date().toISOString(),
+      laatste_bericht_preview: tekst.slice(0, 100),
+    }).eq("id", activeGesprek.id);
+
+    setSending(false);
+    inputRef.current?.focus();
   };
 
-  const unreadCount = items.filter(i => !i.gelezen).length;
+  /* ─── nieuw gesprek ─── */
+  const startNieuwGesprek = async () => {
+    if (!profileId) return;
+    const medId = isManager ? nieuwMedewerkerId : profileId;
+    if (!medId || !nieuwEersteBericht.trim()) return;
 
-  if (selected) {
+    const { data: gesprek, error } = await supabase.from("gesprekken").insert({
+      medewerker_id: medId,
+      onderwerp: nieuwOnderwerp.trim() || "Nieuw gesprek",
+      laatste_bericht_preview: nieuwEersteBericht.trim().slice(0, 100),
+      laatste_bericht_op: new Date().toISOString(),
+    }).select("id").single();
+
+    if (error || !gesprek) { toast.error("Gesprek kon niet gestart worden"); return; }
+
+    await supabase.from("chat_berichten").insert({
+      gesprek_id: gesprek.id,
+      afzender_id: profileId,
+      inhoud: nieuwEersteBericht.trim(),
+    });
+
+    setShowNieuwGesprek(false);
+    setNieuwOnderwerp("");
+    setNieuwMedewerkerId("");
+    setNieuwEersteBericht("");
+    await fetchGesprekken();
+    const newG = gesprekken.find(g => g.id === gesprek.id);
+    if (newG) openGesprek(newG);
+    else {
+      // fetch and open
+      const { data: gData } = await supabase.from("gesprekken").select("*").eq("id", gesprek.id).single();
+      if (gData) {
+        const { data: pData } = await supabase.from("profiles_public" as any).select("id, full_name").eq("id", (gData as any).medewerker_id).single();
+        openGesprek({
+          ...(gData as any),
+          medewerker_naam: (pData as any)?.full_name || "Onbekend",
+          ongelezen: 0,
+        });
+      }
+    }
+  };
+
+  /* ─── fetch medewerkers voor manager dropdown ─── */
+  useEffect(() => {
+    if (!isManager || !showNieuwGesprek) return;
+    supabase.from("profiles").select("id, full_name").neq("id", profileId || "").then(({ data }) => {
+      setMedewerkers((data || []).map((p: any) => ({ id: p.id, full_name: p.full_name })));
+    });
+  }, [isManager, showNieuwGesprek, profileId]);
+
+  /* ━━━━━ CHAT VIEW ━━━━━ */
+  if (activeGesprek) {
+    const gesprekNaam = isManager ? activeGesprek.medewerker_naam : (activeGesprek.onderwerp || "Chat");
+
+    // Group messages by date
+    const grouped: { label: string; items: ChatBericht[] }[] = [];
+    berichten.forEach(b => {
+      const label = datumLabel(b.created_at);
+      const last = grouped[grouped.length - 1];
+      if (last && last.label === label) last.items.push(b);
+      else grouped.push({ label, items: [b] });
+    });
+
     return (
       <PageShell>
-        <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-          <button onClick={() => setSelected(null)} className="flex items-center gap-2 text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
-            <ArrowLeft className="h-4 w-4" /> Terug
+        {/* Header */}
+        <header className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3"
+          style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
+          <button onClick={() => { setActiveGesprek(null); fetchGesprekken(); }} className="p-1" style={{ color: "var(--text-secondary)" }}>
+            <ArrowLeft className="h-5 w-5" />
           </button>
+          <Avatar className="h-9 w-9">
+            <AvatarFallback style={{ background: "var(--accent-light)", color: "var(--accent)", fontSize: 12, fontWeight: 700 }}>
+              {initialen(activeGesprek.medewerker_naam)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>{gesprekNaam}</p>
+            {activeGesprek.onderwerp && isManager && (
+              <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{activeGesprek.onderwerp}</p>
+            )}
+          </div>
         </header>
-        <div className="px-4 py-4 space-y-3">
-          {selected.urgentie === "urgent" && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }}>
-              <AlertTriangle className="h-4 w-4" style={{ color: "var(--danger)" }} />
-              <span className="text-xs font-semibold" style={{ color: "var(--danger)" }}>Urgent bericht</span>
+
+        {/* Messages */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-1" style={{ paddingBottom: 90 }}>
+          {chatLoading ? <Spinner /> : grouped.map((group, gi) => (
+            <div key={gi}>
+              <div className="flex justify-center my-3">
+                <span className="text-[10px] font-semibold px-3 py-1 rounded-full"
+                  style={{ background: "var(--bg-surface)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
+                  {group.label}
+                </span>
+              </div>
+              {group.items.map(b => (
+                <div key={b.id} className={`flex mb-1.5 ${b.is_eigen ? "justify-end" : "justify-start"}`}>
+                  <div className="max-w-[80%] px-3.5 py-2 rounded-2xl" style={{
+                    background: b.is_eigen
+                      ? "linear-gradient(135deg, var(--accent), var(--accent-dark))"
+                      : "var(--bg-surface)",
+                    color: b.is_eigen ? "#fff" : "var(--text-primary)",
+                    borderBottomRightRadius: b.is_eigen ? 6 : 16,
+                    borderBottomLeftRadius: b.is_eigen ? 16 : 6,
+                    border: b.is_eigen ? "none" : "1px solid var(--border)",
+                  }}>
+                    {!b.is_eigen && (
+                      <p className="text-[10px] font-bold mb-0.5" style={{ color: "var(--accent)" }}>{b.afzender_naam}</p>
+                    )}
+                    <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{b.inhoud}</p>
+                    <div className={`flex items-center gap-1 mt-0.5 ${b.is_eigen ? "justify-end" : ""}`}>
+                      <span className="text-[9px]" style={{ opacity: 0.6 }}>
+                        {format(new Date(b.created_at), "HH:mm")}
+                      </span>
+                      {b.is_eigen && (
+                        b.gelezen_op
+                          ? <CheckCheck className="h-3 w-3" style={{ opacity: 0.8, color: "#34d399" }} />
+                          : <Check className="h-3 w-3" style={{ opacity: 0.5 }} />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+          {berichten.length === 0 && !chatLoading && (
+            <div className="flex justify-center pt-8">
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>Begin het gesprek...</p>
             </div>
           )}
-          <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{selected.titel}</h1>
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>{selected.verzender_naam} · {formatDistanceToNow(new Date(selected.created_at), { locale: nl, addSuffix: true })}</p>
-          <div className="text-sm leading-relaxed whitespace-pre-wrap rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
-            {selected.inhoud || "Geen inhoud"}
-          </div>
+        </div>
+
+        {/* Input */}
+        <div className="fixed bottom-[72px] left-0 right-0 z-40 px-3 py-2 flex items-end gap-2"
+          style={{ background: "var(--bg-surface)", borderTop: "1px solid var(--border)", maxWidth: 430, margin: "0 auto" }}>
+          <textarea
+            ref={inputRef}
+            value={nieuwBericht}
+            onChange={e => setNieuwBericht(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendBericht(); } }}
+            placeholder="Typ een bericht..."
+            rows={1}
+            className="flex-1 resize-none text-sm px-4 py-2.5 rounded-2xl"
+            style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", maxHeight: 120 }}
+          />
+          <button onClick={sendBericht} disabled={!nieuwBericht.trim() || sending}
+            className="shrink-0 flex items-center justify-center rounded-full transition-transform active:scale-90 disabled:opacity-40"
+            style={{ width: 40, height: 40, background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+            <Send className="h-4 w-4" />
+          </button>
         </div>
       </PageShell>
     );
   }
 
-  const listContent = (
-    <main className="px-4 py-4 space-y-2">
-      {loading ? (
-        <Spinner />
-      ) : items.length === 0 ? (
-        <EmptyState icoon="🔔" titel="Geen berichten" subtitel="Er zijn nog geen mededelingen." />
-      ) : (
-        items.map(item => (
-          <button key={item.id} onClick={() => openDetail(item)} className="w-full text-left rounded-2xl p-4 transition-colors active:scale-[0.98]" style={{
-            background: item.gelezen ? "var(--bg-base)" : "var(--bg-surface)",
-            border: item.urgentie === "urgent" ? "1px solid var(--danger-border)" : "1px solid var(--border)",
-          }}>
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  {!item.gelezen && <div className="w-2 h-2 rounded-full shrink-0" style={{ background: "var(--accent)" }} />}
-                  {item.urgentie === "urgent" && <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--danger)" }} />}
-                  <p className={`text-sm font-semibold truncate`} style={{ color: item.gelezen ? "var(--text-muted)" : "var(--text-primary)" }}>{item.titel}</p>
-                </div>
-                <p className="text-xs mt-1 line-clamp-2" style={{ color: "var(--text-muted)" }}>{item.inhoud || "Geen inhoud"}</p>
-              </div>
-              <span className="text-[10px] shrink-0 mt-1" style={{ color: "var(--text-muted)" }}>
-                {formatDistanceToNow(new Date(item.created_at), { locale: nl, addSuffix: true })}
-              </span>
-            </div>
-          </button>
-        ))
-      )}
-    </main>
-  );
+  /* ━━━━━ GESPREKKEN LIJST ━━━━━ */
+  const totalOngelezen = gesprekken.reduce((s, g) => s + g.ongelezen, 0);
 
   return (
     <PageShell>
@@ -132,75 +377,121 @@ export default function Mededelingen() {
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <HeaderLogo />
-            <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Mededelingen</span>
+            <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Berichten</span>
           </div>
-          {unreadCount > 0 && (
+          {totalOngelezen > 0 && (
             <div className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ background: "var(--danger-light)", color: "var(--danger)" }}>
-              {unreadCount} nieuw
+              {totalOngelezen} nieuw
             </div>
           )}
         </div>
       </header>
 
-      <div className="lg:hidden">
-        <PullToRefresh onRefresh={async () => { await fetchMededelingen(); }}>
-          {listContent}
-        </PullToRefresh>
-      </div>
-      <div className="hidden lg:block">
-        {listContent}
-      </div>
+      <main className="px-4 py-3 space-y-1.5" style={{ paddingBottom: 100 }}>
+        {loading ? <Spinner /> : gesprekken.length === 0 ? (
+          <EmptyState icoon="💬" titel="Geen gesprekken" subtitel={isManager ? "Start een gesprek met een medewerker" : "Start een gesprek met je manager"} />
+        ) : (
+          gesprekken.map(g => (
+            <button key={g.id} onClick={() => openGesprek(g)}
+              className="w-full text-left flex items-center gap-3 p-3 rounded-2xl transition-colors active:scale-[0.98]"
+              style={{ background: g.ongelezen > 0 ? "var(--bg-surface)" : "transparent", border: "1px solid var(--border)" }}>
+              <Avatar className="h-11 w-11 shrink-0">
+                <AvatarFallback style={{ background: "var(--accent-light)", color: "var(--accent)", fontSize: 13, fontWeight: 700 }}>
+                  {initialen(g.medewerker_naam)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <p className={`text-sm truncate ${g.ongelezen > 0 ? "font-bold" : "font-medium"}`}
+                    style={{ color: g.ongelezen > 0 ? "var(--text-primary)" : "var(--text-secondary)" }}>
+                    {isManager ? g.medewerker_naam : (g.onderwerp || g.medewerker_naam)}
+                  </p>
+                  <span className="text-[10px] shrink-0 ml-2" style={{ color: g.ongelezen > 0 ? "var(--accent)" : "var(--text-muted)" }}>
+                    {formatDistanceToNow(new Date(g.laatste_bericht_op), { locale: nl, addSuffix: true })}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mt-0.5">
+                  <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>
+                    {g.laatste_bericht_preview || "Geen berichten"}
+                  </p>
+                  {g.ongelezen > 0 && (
+                    <span className="shrink-0 ml-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                      style={{ background: "var(--accent)", color: "#fff" }}>
+                      {g.ongelezen}
+                    </span>
+                  )}
+                </div>
+                {isManager && g.onderwerp && (
+                  <p className="text-[10px] mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>{g.onderwerp}</p>
+                )}
+              </div>
+            </button>
+          ))
+        )}
+      </main>
 
-      {permissies.magMededelingenVersturen && (
-        <button onClick={() => setShowCompose(true)} className="fixed z-40 flex items-center justify-center active:scale-93 transition-transform" style={{
+      {/* FAB nieuw gesprek */}
+      <button onClick={() => setShowNieuwGesprek(true)}
+        className="fixed z-40 flex items-center justify-center active:scale-90 transition-transform"
+        style={{
           bottom: 90, right: "max(24px, calc(50% - 215px + 24px))",
           width: 56, height: 56, borderRadius: "50%",
           background: "linear-gradient(135deg, var(--accent), var(--accent-dark))",
           color: "#fff", boxShadow: "0 8px 28px color-mix(in srgb, var(--accent) 35%, transparent)",
         }}>
-          <Send className="h-5 w-5" />
-        </button>
-      )}
+        <Plus className="h-6 w-6" />
+      </button>
 
-      {showCompose && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowCompose(false)}>
+      {/* Nieuw gesprek sheet */}
+      {showNieuwGesprek && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowNieuwGesprek(false)}>
           <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4"
+            style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }}
+            onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
-            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Nieuwe mededeling</h2>
+            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Nieuw gesprek</h2>
 
             <div className="space-y-3">
-              <input value={titel} onChange={e => setTitel(e.target.value)} placeholder="Titel" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-              <textarea value={inhoud} onChange={e => setInhoud(e.target.value)} placeholder="Inhoud..." rows={4} className="w-full px-3 py-2.5 rounded-xl text-sm resize-none" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              {isManager && (
+                <div>
+                  <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--text-secondary)" }}>Medewerker</label>
+                  <select value={nieuwMedewerkerId} onChange={e => setNieuwMedewerkerId(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm"
+                    style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
+                    <option value="">Kies medewerker...</option>
+                    {medewerkers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+                  </select>
+                </div>
+              )}
 
-              <div className="flex gap-2">
-                {(["normaal", "urgent"] as const).map(u => (
-                  <button key={u} onClick={() => setUrgentie(u)} className="flex-1 py-2 rounded-xl text-xs font-semibold capitalize" style={{
-                    background: urgentie === u ? (u === "urgent" ? "var(--danger-light)" : "var(--success-light)") : "var(--bg-base)",
-                    border: urgentie === u ? (u === "urgent" ? "1px solid var(--danger-border)" : "1px solid var(--success-border)") : "1px solid var(--border)",
-                    color: urgentie === u ? (u === "urgent" ? "var(--danger)" : "var(--success)") : "var(--text-muted)",
-                  }}>{u}</button>
-                ))}
+              <div>
+                <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--text-secondary)" }}>Onderwerp</label>
+                <input value={nieuwOnderwerp} onChange={e => setNieuwOnderwerp(e.target.value)}
+                  placeholder="bijv. Verlofaanvraag, Vraag over project..."
+                  className="w-full px-3 py-2.5 rounded-xl text-sm"
+                  style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
               </div>
 
-              <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-                {(["iedereen", "monteurs", "persoon"] as const).map(t => (
-                  <button key={t} onClick={() => setOntvangerType(t)} className="shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-semibold capitalize" style={{
-                    background: ontvangerType === t ? "var(--accent-light)" : "var(--bg-base)",
-                    border: ontvangerType === t ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                    color: ontvangerType === t ? "var(--accent)" : "var(--text-muted)",
-                  }}>{t}</button>
-                ))}
+              <div>
+                <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--text-secondary)" }}>Bericht</label>
+                <textarea value={nieuwEersteBericht} onChange={e => setNieuwEersteBericht(e.target.value)}
+                  placeholder="Typ je bericht..."
+                  rows={3}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm resize-none"
+                  style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
               </div>
 
-              <button onClick={sendMededeling} disabled={!titel.trim()} className="w-full py-3 rounded-2xl text-sm font-bold transition-colors disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
-                Verzenden
+              <button onClick={startNieuwGesprek}
+                disabled={(!isManager || !!nieuwMedewerkerId) && !nieuwEersteBericht.trim() || (isManager && !nieuwMedewerkerId)}
+                className="w-full py-3 rounded-2xl text-sm font-bold transition-colors disabled:opacity-40"
+                style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+                Gesprek starten
               </button>
             </div>
           </div>
         </div>
       )}
-
     </PageShell>
   );
 }

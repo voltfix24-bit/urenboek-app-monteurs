@@ -229,6 +229,55 @@ export type Database = {
           },
         ]
       }
+      chat_berichten: {
+        Row: {
+          afzender_id: string
+          created_at: string
+          gelezen_op: string | null
+          gesprek_id: string
+          id: string
+          inhoud: string
+        }
+        Insert: {
+          afzender_id: string
+          created_at?: string
+          gelezen_op?: string | null
+          gesprek_id: string
+          id?: string
+          inhoud: string
+        }
+        Update: {
+          afzender_id?: string
+          created_at?: string
+          gelezen_op?: string | null
+          gesprek_id?: string
+          id?: string
+          inhoud?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_berichten_afzender_id_fkey"
+            columns: ["afzender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_berichten_afzender_id_fkey"
+            columns: ["afzender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_berichten_gesprek_id_fkey"
+            columns: ["gesprek_id"]
+            isOneToOne: false
+            referencedRelation: "gesprekken"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_berichten: {
         Row: {
           aangemaakt_op: string
@@ -505,6 +554,48 @@ export type Database = {
           },
           {
             foreignKeyName: "forecast_regels_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gesprekken: {
+        Row: {
+          created_at: string
+          id: string
+          laatste_bericht_op: string
+          laatste_bericht_preview: string
+          medewerker_id: string
+          onderwerp: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          laatste_bericht_op?: string
+          laatste_bericht_preview?: string
+          medewerker_id: string
+          onderwerp?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          laatste_bericht_op?: string
+          laatste_bericht_preview?: string
+          medewerker_id?: string
+          onderwerp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gesprekken_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gesprekken_medewerker_id_fkey"
             columns: ["medewerker_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
