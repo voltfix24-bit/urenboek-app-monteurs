@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText, Check, X, Trash2 } from "lucide-react";
+import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText, Check, X, Trash2, Edit2, Save } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
@@ -134,6 +134,35 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
   const { profileId: myProfileId } = useProfile();
   const [contract, setContract] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    full_name: emp.full_name,
+    telefoon: emp.telefoon || "",
+    adres: emp.adres || "",
+    bedrijfsnaam: emp.bedrijfsnaam || "",
+    kvk_nummer: emp.kvk_nummer || "",
+    btw_nummer: emp.btw_nummer || "",
+    iban: emp.iban || "",
+    uurtarief: emp.uurtarief != null ? String(emp.uurtarief) : "",
+    noodcontact_naam: emp.noodcontact_naam || "",
+    noodcontact_tel: emp.noodcontact_tel || "",
+  });
+
+  useEffect(() => {
+    setEditForm({
+      full_name: emp.full_name,
+      telefoon: emp.telefoon || "",
+      adres: emp.adres || "",
+      bedrijfsnaam: emp.bedrijfsnaam || "",
+      kvk_nummer: emp.kvk_nummer || "",
+      btw_nummer: emp.btw_nummer || "",
+      iban: emp.iban || "",
+      uurtarief: emp.uurtarief != null ? String(emp.uurtarief) : "",
+      noodcontact_naam: emp.noodcontact_naam || "",
+      noodcontact_tel: emp.noodcontact_tel || "",
+    });
+    setEditing(false);
+  }, [emp.id]);
 
   useEffect(() => {
     if (!emp.id) return;
@@ -147,6 +176,26 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       .maybeSingle()
       .then(({ data }) => setContract(data));
   }, [emp.id]);
+
+  const saveProfile = async () => {
+    if (!editForm.full_name.trim()) { toast.error("Naam is verplicht"); return; }
+    const update: any = {
+      full_name: editForm.full_name.trim(),
+      telefoon: editForm.telefoon.trim(),
+      adres: editForm.adres.trim(),
+      bedrijfsnaam: editForm.bedrijfsnaam.trim() || null,
+      kvk_nummer: editForm.kvk_nummer.trim() || null,
+      btw_nummer: editForm.btw_nummer.trim() || null,
+      iban: editForm.iban.trim() || null,
+      uurtarief: editForm.uurtarief ? Number(editForm.uurtarief) : null,
+      noodcontact_naam: editForm.noodcontact_naam.trim() || null,
+      noodcontact_tel: editForm.noodcontact_tel.trim() || null,
+    };
+    if (!await mutate(supabase.from("profiles").update(update).eq("id", emp.id))) return;
+    toast.success("Gegevens opgeslagen ✓");
+    setEditing(false);
+    onRefresh?.();
+  };
 
   const contractDays = contract?.einddatum ? differenceInDays(parseISO(contract.einddatum), new Date()) : null;
 
@@ -193,18 +242,27 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
-          {emp.full_name.charAt(0).toUpperCase()}
-        </div>
-        <div>
-          <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{emp.full_name}</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-sm capitalize" style={{ color: "var(--text-muted)" }}>{roleLabels[emp.role] || emp.role}</span>
-            <StatusBadge emp={emp} />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
+            {emp.full_name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{emp.full_name}</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-sm capitalize" style={{ color: "var(--text-muted)" }}>{roleLabels[emp.role] || emp.role}</span>
+              <StatusBadge emp={emp} />
+            </div>
           </div>
         </div>
+        <button onClick={() => editing ? saveProfile() : setEditing(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: editing ? "var(--accent)" : "var(--bg-surface)", border: `1px solid ${editing ? "var(--accent)" : "var(--border)"}`, color: editing ? "#fff" : "var(--accent)" }}>
+          {editing ? <><Save className="h-3 w-3" /> Opslaan</> : <><Edit2 className="h-3 w-3" /> Bewerken</>}
+        </button>
       </div>
+
+      {editing && (
+        <button onClick={() => setEditing(false)} className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Annuleren</button>
+      )}
 
       {/* Verification panel for onboarding status */}
       {emp.account_status === "onboarding" && (
@@ -212,16 +270,44 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       )}
 
       <Section title="Contactgegevens">
-        <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Telefoon" value={emp.telefoon || "–"} isLink={emp.telefoon ? `tel:${emp.telefoon}` : undefined} />
-        <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Adres" value={emp.adres || "–"} />
-        <InfoRow icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" value="–" />
+        {editing ? (
+          <div className="space-y-2">
+            {[
+              { label: "Naam", key: "full_name" as const },
+              { label: "Telefoon", key: "telefoon" as const },
+              { label: "Adres", key: "adres" as const },
+            ].map(f => (
+              <div key={f.key}>
+                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{f.label}</label>
+                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <InfoRow icon={<Phone className="h-3.5 w-3.5" />} label="Telefoon" value={emp.telefoon || "–"} isLink={emp.telefoon ? `tel:${emp.telefoon}` : undefined} />
+            <InfoRow icon={<MapPin className="h-3.5 w-3.5" />} label="Adres" value={emp.adres || "–"} />
+            <InfoRow icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" value="–" />
+          </>
+        )}
       </Section>
 
-      <div className="rounded-xl p-3 space-y-2" style={{ background: "#FFF8DC", border: "1px solid var(--warn-border)" }}>
+      <div className="rounded-xl p-3 space-y-2" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
         <p className="text-xs font-semibold flex items-center gap-1.5" style={{ color: "var(--warn-text)" }}>
           <ShieldAlert className="h-3.5 w-3.5" /> Noodcontact
         </p>
-        {emp.noodcontact_naam ? (
+        {editing ? (
+          <div className="space-y-2">
+            <div>
+              <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Naam</label>
+              <input value={editForm.noodcontact_naam} onChange={e => setEditForm({ ...editForm, noodcontact_naam: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Telefoon</label>
+              <input value={editForm.noodcontact_tel} onChange={e => setEditForm({ ...editForm, noodcontact_tel: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+            </div>
+          </div>
+        ) : emp.noodcontact_naam ? (
           <>
             <p className="text-sm" style={{ color: "var(--text-primary)" }}>{emp.noodcontact_naam}</p>
             {emp.noodcontact_tel && (
@@ -280,7 +366,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       )}
 
       {/* ZZP incomplete warning */}
-      {(!emp.kvk_nummer || !emp.iban) && (
+      {!editing && (!emp.kvk_nummer || !emp.iban) && (
         <div className="flex items-start gap-2 rounded-xl p-3" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--warn-text)" }} />
           <span className="text-xs" style={{ color: "var(--warn-text)" }}>ZZP gegevens incompleet — inkooporder kan niet aangemaakt worden</span>
@@ -288,21 +374,38 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       )}
 
       {/* ZZP Business details */}
-      {(emp.bedrijfsnaam || emp.kvk_nummer || emp.btw_nummer || emp.iban) && (
-        <Section title="ZZP Gegevens">
-          {emp.bedrijfsnaam && <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Bedrijf" value={emp.bedrijfsnaam} />}
-          {emp.kvk_nummer && <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="KvK" value={emp.kvk_nummer} />}
-          {emp.btw_nummer && <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="BTW" value={emp.btw_nummer} />}
-          {emp.iban && <InfoRow icon={<CreditCard className="h-3.5 w-3.5" />} label="IBAN" value={emp.iban} />}
-          {emp.uurtarief != null && (
-            <div className="flex items-center gap-2">
-              <span style={{ color: "var(--text-muted)" }}>€</span>
-              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>Uurtarief:</span>
-              <span className="text-sm font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(emp.uurtarief).toFixed(2)}</span>
-            </div>
-          )}
-        </Section>
-      )}
+      <Section title="ZZP Gegevens">
+        {editing ? (
+          <div className="space-y-2">
+            {[
+              { label: "Bedrijfsnaam", key: "bedrijfsnaam" as const },
+              { label: "KvK-nummer", key: "kvk_nummer" as const },
+              { label: "BTW-nummer", key: "btw_nummer" as const },
+              { label: "IBAN", key: "iban" as const },
+              { label: "Uurtarief (€)", key: "uurtarief" as const },
+            ].map(f => (
+              <div key={f.key}>
+                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{f.label}</label>
+                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} type={f.key === "uurtarief" ? "number" : "text"} step={f.key === "uurtarief" ? "0.01" : undefined} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            {emp.bedrijfsnaam && <InfoRow icon={<Building2 className="h-3.5 w-3.5" />} label="Bedrijf" value={emp.bedrijfsnaam} />}
+            {emp.kvk_nummer ? <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="KvK" value={emp.kvk_nummer} /> : <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="KvK" value="Niet ingevuld" />}
+            {emp.btw_nummer && <InfoRow icon={<Hash className="h-3.5 w-3.5" />} label="BTW" value={emp.btw_nummer} />}
+            {emp.iban ? <InfoRow icon={<CreditCard className="h-3.5 w-3.5" />} label="IBAN" value={emp.iban} /> : <InfoRow icon={<CreditCard className="h-3.5 w-3.5" />} label="IBAN" value="Niet ingevuld" />}
+            {emp.uurtarief != null && (
+              <div className="flex items-center gap-2">
+                <span style={{ color: "var(--text-muted)" }}>€</span>
+                <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>Uurtarief:</span>
+                <span className="text-sm font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(emp.uurtarief).toFixed(2)}</span>
+              </div>
+            )}
+          </>
+        )}
+      </Section>
 
       <CertificatenOverzicht certificaten={certs} toonToevoegen={true} medewerker_id={emp.id} onRefresh={onRefreshCerts} />
 
