@@ -294,7 +294,12 @@ export default function Inkooporders() {
                       const { data } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", selectedOrder.medewerker_id).single();
                       prof = data;
                     }
-                    generatePdf(selectedOrder, orderRegels, prof);
+                    let gkNaam: string | undefined;
+                    if (selectedOrder.aangemaakt_door) {
+                      const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
+                      gkNaam = gk?.full_name || undefined;
+                    }
+                    generatePdf(selectedOrder, orderRegels, prof, gkNaam);
                   }} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                     <Download className="h-3.5 w-3.5" /> PDF
                   </button>
