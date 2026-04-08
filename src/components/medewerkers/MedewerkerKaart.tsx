@@ -16,6 +16,7 @@ interface Employee {
   contract_einddatum: string | null;
   kvk_nummer?: string | null; btw_nummer?: string | null;
   iban?: string | null; bedrijfsnaam?: string | null;
+  email?: string | null;
 }
 
 function StatusBadge({ emp }: { emp: Employee }) {
