@@ -134,6 +134,35 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
   const { profileId: myProfileId } = useProfile();
   const [contract, setContract] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    full_name: emp.full_name,
+    telefoon: emp.telefoon || "",
+    adres: emp.adres || "",
+    bedrijfsnaam: emp.bedrijfsnaam || "",
+    kvk_nummer: emp.kvk_nummer || "",
+    btw_nummer: emp.btw_nummer || "",
+    iban: emp.iban || "",
+    uurtarief: emp.uurtarief != null ? String(emp.uurtarief) : "",
+    noodcontact_naam: emp.noodcontact_naam || "",
+    noodcontact_tel: emp.noodcontact_tel || "",
+  });
+
+  useEffect(() => {
+    setEditForm({
+      full_name: emp.full_name,
+      telefoon: emp.telefoon || "",
+      adres: emp.adres || "",
+      bedrijfsnaam: emp.bedrijfsnaam || "",
+      kvk_nummer: emp.kvk_nummer || "",
+      btw_nummer: emp.btw_nummer || "",
+      iban: emp.iban || "",
+      uurtarief: emp.uurtarief != null ? String(emp.uurtarief) : "",
+      noodcontact_naam: emp.noodcontact_naam || "",
+      noodcontact_tel: emp.noodcontact_tel || "",
+    });
+    setEditing(false);
+  }, [emp.id]);
 
   useEffect(() => {
     if (!emp.id) return;
@@ -147,6 +176,26 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       .maybeSingle()
       .then(({ data }) => setContract(data));
   }, [emp.id]);
+
+  const saveProfile = async () => {
+    if (!editForm.full_name.trim()) { toast.error("Naam is verplicht"); return; }
+    const update: any = {
+      full_name: editForm.full_name.trim(),
+      telefoon: editForm.telefoon.trim(),
+      adres: editForm.adres.trim(),
+      bedrijfsnaam: editForm.bedrijfsnaam.trim() || null,
+      kvk_nummer: editForm.kvk_nummer.trim() || null,
+      btw_nummer: editForm.btw_nummer.trim() || null,
+      iban: editForm.iban.trim() || null,
+      uurtarief: editForm.uurtarief ? Number(editForm.uurtarief) : null,
+      noodcontact_naam: editForm.noodcontact_naam.trim() || null,
+      noodcontact_tel: editForm.noodcontact_tel.trim() || null,
+    };
+    if (!await mutate(supabase.from("profiles").update(update).eq("id", emp.id))) return;
+    toast.success("Gegevens opgeslagen ✓");
+    setEditing(false);
+    onRefresh?.();
+  };
 
   const contractDays = contract?.einddatum ? differenceInDays(parseISO(contract.einddatum), new Date()) : null;
 
