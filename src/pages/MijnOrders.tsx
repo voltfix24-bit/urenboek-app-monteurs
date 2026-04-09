@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,7 @@ import { Download, FileText, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { euroDecimals as euro } from "@/lib/formatting";
-import { generateInkooporderPdf } from "@/lib/inkooporderPdf";
+import { downloadInkooporderPdf } from "@/components/InkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -57,7 +58,8 @@ export default function MijnOrders() {
       const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
       gkNaam = gk?.full_name || undefined;
     }
-    await generateInkooporderPdf(selectedOrder, orderRegels, profile, gkNaam);
+    const bedrijf = await getBedrijfsgegevens();
+    await downloadInkooporderPdf(selectedOrder, orderRegels, profile, bedrijf, gkNaam);
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><Spinner /></div>;
