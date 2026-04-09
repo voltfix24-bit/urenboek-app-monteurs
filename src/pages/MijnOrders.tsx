@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,7 +58,8 @@ export default function MijnOrders() {
       const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
       gkNaam = gk?.full_name || undefined;
     }
-    await generateInkooporderPdf(selectedOrder, orderRegels, profile, gkNaam);
+    const bedrijf = await getBedrijfsgegevens();
+    await downloadInkooporderPdf(selectedOrder, orderRegels, profile, bedrijf, gkNaam);
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><Spinner /></div>;
