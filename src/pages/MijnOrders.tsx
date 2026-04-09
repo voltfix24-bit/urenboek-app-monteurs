@@ -8,7 +8,7 @@ import { Download, FileText, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { euroDecimals as euro } from "@/lib/formatting";
-import { generateInkooporderPdf } from "@/lib/inkooporderPdf";
+import { downloadInkooporderPdf } from "@/components/InkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 import { EmptyState } from "@/components/ui/EmptyState";

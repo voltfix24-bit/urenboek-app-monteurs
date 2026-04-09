@@ -15,7 +15,7 @@ import { format, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from
 import { useSearchParams } from "react-router-dom";
 import { nl } from "date-fns/locale";
 import { euroDecimals as euro } from "@/lib/formatting";
-import { generateInkooporderPdf } from "@/lib/inkooporderPdf";
+import { downloadInkooporderPdf } from "@/components/InkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
 
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
@@ -222,7 +222,7 @@ export default function Inkooporders() {
   const [betaaldDatum, setBetaaldDatum] = useState("");
   const [showStatusDialog, setShowStatusDialog] = useState<string | null>(null);
 
-  const generatePdf = generateInkooporderPdf;
+  const generatePdf = downloadInkooporderPdf;
 
   if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers.</p></div>;
 
@@ -302,7 +302,8 @@ export default function Inkooporders() {
                       const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
                       gkNaam = gk?.full_name || undefined;
                     }
-                    generatePdf(selectedOrder, orderRegels, prof, gkNaam);
+                    const bedrijf = await getBedrijfsgegevens();
+                    generatePdf(selectedOrder, orderRegels, prof, bedrijf, gkNaam);
                   }} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                     <Download className="h-3.5 w-3.5" /> PDF
                   </button>
