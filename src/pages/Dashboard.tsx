@@ -97,9 +97,10 @@ function NieuweMedewerkersSection({ navigate }: { navigate: (p: string) => void 
 
   // Realtime: herlaad als een profiel wijzigt
   useEffect(() => {
-    const channel = supabase.channel('dash-nieuwe-mw-' + Date.now());
-    channel.on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, () => fetchNieuw());
-    channel.subscribe();
+    const id = crypto.randomUUID();
+    const channel = supabase.channel('dash-nieuwe-mw-' + id)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, () => fetchNieuw())
+      .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [fetchNieuw]);
 
