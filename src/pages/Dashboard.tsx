@@ -166,11 +166,12 @@ export default function Dashboard() {
   // Realtime subscriptions
   useEffect(() => {
     if (!user) return;
+    const id = crypto.randomUUID();
     const kanalen = [
-      supabase.channel('dash-ub').on('postgres_changes', { event: '*', schema: 'public', table: 'uren_boekingen' }, refetchDashboard).subscribe(),
-      supabase.channel('dash-pl').on('postgres_changes', { event: '*', schema: 'public', table: 'planning' }, refetchDashboard).subscribe(),
-      supabase.channel('dash-besch').on('postgres_changes', { event: '*', schema: 'public', table: 'beschikbaarheid' }, refetchDashboard).subscribe(),
-      supabase.channel('dash-cert').on('postgres_changes', { event: '*', schema: 'public', table: 'certificaten' }, refetchDashboard).subscribe(),
+      supabase.channel('dash-ub-' + id).on('postgres_changes', { event: '*', schema: 'public', table: 'uren_boekingen' }, refetchDashboard).subscribe(),
+      supabase.channel('dash-pl-' + id).on('postgres_changes', { event: '*', schema: 'public', table: 'planning' }, refetchDashboard).subscribe(),
+      supabase.channel('dash-besch-' + id).on('postgres_changes', { event: '*', schema: 'public', table: 'beschikbaarheid' }, refetchDashboard).subscribe(),
+      supabase.channel('dash-cert-' + id).on('postgres_changes', { event: '*', schema: 'public', table: 'certificaten' }, refetchDashboard).subscribe(),
     ];
     return () => { kanalen.forEach(k => supabase.removeChannel(k)); };
   }, [user, refetchDashboard]);
