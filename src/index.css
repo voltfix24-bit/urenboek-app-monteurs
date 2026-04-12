@@ -129,6 +129,31 @@
   .animate-sheet-up {
     animation: sheetUp 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
+
+  .glass-card {
+    background: linear-gradient(135deg,
+      rgba(10,26,48,0.7),
+      rgba(6,19,39,0.8));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(106,118,140,0.15);
+    border-radius: 16px;
+  }
+
+  .glow-green {
+    box-shadow: 0 0 15px rgba(63,255,139,0.3);
+  }
+
+  .glow-amber {
+    box-shadow: 0 0 15px rgba(254,179,0,0.3);
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .fill-icon {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
 }
 
 @keyframes badgePulse {
