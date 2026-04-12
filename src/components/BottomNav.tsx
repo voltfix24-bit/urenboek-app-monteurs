@@ -54,55 +54,112 @@ export function BottomNav({ badges }: BottomNavProps) {
 
   return (
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full lg:hidden"
       style={{
+        position: "fixed",
+        bottom: 0,
+        left: "50%",
+        transform: "translateX(-50%)",
+        right: 0,
+        width: "100%",
         maxWidth: 430,
-        background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)",
-        backdropFilter: "blur(16px)",
-        borderTop: "1px solid var(--border)",
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        height: 72,
+        background: "rgba(3,14,32,0.9)",
+        backdropFilter: "blur(20px)",
+        borderTop: "1px solid rgba(255,255,255,0.05)",
+        borderRadius: "24px 24px 0 0",
+        boxShadow: "0 -4px 24px rgba(0,0,0,0.4)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+        zIndex: 50,
+        display: "flex",
+        alignItems: "center",
       }}
+      className="lg:hidden"
     >
-      <div className="flex items-center">
-        {tabs.map((t) => {
-          const active = isActive(t.key);
-          const Icon = t.icon;
-          return (
-            <button
-              key={t.key}
-              onClick={() => navigate(t.key)}
-              className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-colors"
-              style={{ background: "none" }}
-            >
-              <div
-                className="flex items-center justify-center transition-all"
+      {tabs.map((t) => {
+        const active = isActive(t.key);
+        const Icon = t.icon;
+        return (
+          <button
+            key={t.key}
+            onClick={() => navigate(t.key)}
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 2,
+              padding: "6px 4px",
+              border: "none",
+              cursor: "pointer",
+              background: active ? "rgba(63,255,139,0.15)" : "transparent",
+              borderRadius: active ? 16 : 0,
+              boxShadow: active ? "0 0 15px rgba(63,255,139,0.2)" : "none",
+              transition: "all 0.15s",
+              position: "relative",
+            }}
+          >
+            <span style={{ position: "relative" }}>
+              <Icon
+                size={active ? 22 : 20}
                 style={{
-                  width: 44, height: 28, borderRadius: 14,
-                  background: active ? "var(--accent-light)" : "transparent",
+                  color: active ? "#3fff8b" : "rgba(218,230,255,0.5)",
+                  transition: "all 0.15s",
                 }}
-              >
-                <span className="relative">
-                  <Icon style={{
-                    width: active ? 22 : 20, height: active ? 22 : 20,
-                    color: active ? "var(--accent)" : "var(--text-muted)",
-                    transition: "all 0.15s",
-                  }} />
-                  {(t.badge ?? 0) > 0 && <NavBadge count={t.badge!} />}
-                  {t.dot && <NavBadge count={1} dot />}
+              />
+              {(t.badge ?? 0) > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -2,
+                    right: -4,
+                    minWidth: 16,
+                    height: 16,
+                    borderRadius: 9999,
+                    background: "#ff716c",
+                    border: "2px solid #030e20",
+                    fontSize: 9,
+                    fontWeight: 700,
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "0 3px",
+                  }}
+                >
+                  {t.badge}
                 </span>
-              </div>
-              <span style={{
-                fontSize: 10,
-                color: active ? "var(--accent)" : "var(--text-muted)",
-                fontWeight: active ? 700 : 400,
-                marginTop: 2,
-              }}>
-                {t.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              )}
+              {t.dot && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -2,
+                    right: -4,
+                    width: 8,
+                    height: 8,
+                    borderRadius: 9999,
+                    background: "#ff716c",
+                    border: "2px solid #030e20",
+                  }}
+                />
+              )}
+            </span>
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: active ? 700 : 600,
+                fontFamily: "Inter",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: active ? "#3fff8b" : "rgba(218,230,255,0.5)",
+              }}
+            >
+              {t.label}
+            </span>
+          </button>
+        );
+      })}
     </nav>
   );
 }
