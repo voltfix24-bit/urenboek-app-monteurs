@@ -179,115 +179,283 @@ const Index = () => {
   };
 
   return (
-    <PageShell>
-    <div {...swipeHandlers} style={{ position: "relative" }}>
-      {/* Header */}
-      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <HeaderLogo />
+    <div {...swipeHandlers} style={{ position: "relative", minHeight: "100vh", background: "#060d18", fontFamily: "Inter, sans-serif" }}>
 
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
-                <span className="text-lg font-extrabold" style={{ color: "var(--accent)" }}>{totalHours}</span>
-                <span className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>uur</span>
-              </div>
-
-              <div className="hidden sm:flex items-center gap-1.5">
-                {isManager && (
-                  <>
-                    {[
-                      { path: "/goedkeuring", label: "Goedkeuren" },
-                      { path: "/rapportage", label: "Rapportage" },
-                      { path: "/medewerkers", label: "Medewerkers" },
-                      { path: "/projecten", label: "Projecten" },
-                      { path: "/opdrachtgevers", label: "Opdrachtgevers" },
-                    ].map(n => (
-                      <button key={n.path} onClick={() => navigate(n.path)} className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-                        {n.label}
-                      </button>
-                    ))}
-                  </>
-                )}
-              </div>
-
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: AVATAR_COLORS[0], color: "#fff" }}>
-                {profile?.full_name?.charAt(0)?.toUpperCase() || "U"}
-              </div>
-            </div>
+      {/* ── HEADER ── */}
+      <header style={{ position: "sticky", top: 0, zIndex: 30, background: "rgba(6,13,24,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(106,118,140,0.12)", padding: "12px 20px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span className="material-symbols-outlined fill-icon" style={{ fontSize: 22, color: "#3fff8b" }}>bolt</span>
+            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 13, letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)", textTransform: "uppercase" as const }}>TERREVOLT UREN</span>
           </div>
-
-          {isManager && (
-            <div className="flex gap-1.5 mt-2.5 sm:hidden overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-              <button onClick={() => navigate("/projecten")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-                <FolderOpen className="h-3 w-3" /> Projecten
-              </button>
-              <button onClick={() => navigate("/opdrachtgevers")} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shrink-0" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-                <Building2 className="h-3 w-3" /> Opdrachtgevers
-              </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #3fff8b, #16a34a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#005d2c" }}>
+              {profile?.full_name?.charAt(0)?.toUpperCase() || "U"}
             </div>
-          )}
-
-          {/* Tabs */}
-          <div className="flex mt-2.5" style={{ borderBottom: "1px solid var(--border)" }}>
-            {([["week", "Deze week"], ["overzicht", "Overzicht"]] as const).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key as "week" | "overzicht")}
-                className="flex-1 py-2.5 text-sm font-medium transition-colors"
-                style={{
-                  color: activeTab === key ? "var(--accent)" : "var(--text-muted)",
-                  borderBottom: activeTab === key ? "2px solid var(--accent)" : "2px solid transparent",
-                  background: "transparent",
-                  marginBottom: -1,
-                }}
-              >
-                {label}
-              </button>
-            ))}
+            {afgekeurdCount > 0 && (
+              <div style={{ position: "absolute", top: -2, right: -2, width: 10, height: 10, borderRadius: "50%", background: "#ff716c", border: "2px solid #060d18" }} />
+            )}
           </div>
         </div>
       </header>
 
-      <div className="lg:hidden">
-        <PullToRefresh onRefresh={handleRefresh}>
-          {renderContent()}
-        </PullToRefresh>
-      </div>
-      <div className="hidden lg:block">
-        {renderContent()}
-      </div>
+      {/* ── MAIN CONTENT ── */}
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div style={{ padding: "20px 20px 160px 20px" }}>
 
-      {/* Onboarding banner */}
-      {profileCtx?.account_status === 'onboarding' && (
-        <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-          <p className="text-xs font-medium flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Uren boeken is nog niet mogelijk. Je account moet eerst worden geverifieerd door een manager.
-          </p>
-          <button onClick={() => navigate("/onboarding-welkom")} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0" style={{ background: "var(--accent)", color: "#fff" }}>
-            Naar onboarding →
+          {/* WEEK HEADER */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+              <div style={{ width: 4, height: 14, borderRadius: 2, background: "#3fff8b" }} />
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase" as const }}>HUIDIGE WEEK</span>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <button onClick={goToPreviousWeek} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_left</span>
+              </button>
+              <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "white" }}>
+                Week {getISOWeek(currentWeekStart)}
+              </span>
+              <button onClick={goToNextWeek} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_right</span>
+              </button>
+            </div>
+
+            <div style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 10 }}>
+              {weekLabel}
+            </div>
+
+            {/* Status badge */}
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "4px 12px", borderRadius: 9999,
+                background: ingediendCount > 0 ? "rgba(110,155,255,0.1)" : goedgekeurdUren > 0 ? "rgba(63,255,139,0.1)" : "rgba(254,179,0,0.1)",
+                border: `1px solid ${ingediendCount > 0 ? "rgba(110,155,255,0.3)" : goedgekeurdUren > 0 ? "rgba(63,255,139,0.3)" : "rgba(254,179,0,0.3)"}`,
+              }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: ingediendCount > 0 ? "#6e9bff" : goedgekeurdUren > 0 ? "#3fff8b" : "#feb300" }} />
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", color: ingediendCount > 0 ? "#6e9bff" : goedgekeurdUren > 0 ? "#3fff8b" : "#feb300" }}>
+                  {ingediendCount > 0 ? "INGEDIEND" : goedgekeurdUren > 0 ? "GOEDGEKEURD" : "CONCEPT"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* PROGRESS CARD */}
+          <div className="glass-card" style={{ padding: "16px 20px", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: "#3fff8b" }}>{totalHours}</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>/ 40 uur</span>
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>{Math.round((totalHours / 40) * 100)}%</span>
+            </div>
+            <div style={{ height: 6, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 3, background: "linear-gradient(90deg, #3fff8b, #16a34a)", width: `${Math.min((totalHours / 40) * 100, 100)}%`, transition: "width 0.4s ease" }} />
+            </div>
+          </div>
+
+          {/* CONDITIONAL BANNERS */}
+
+          {/* Vorige week banner */}
+          {vorigeWeekConcept.length > 0 && (
+            <div style={{ marginBottom: 12, padding: "12px 16px", borderRadius: 16, background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#feb300", flex: 1 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>warning</span>
+                Je hebt nog {vorigeWeekConcept.reduce((s, e) => s + e.uren, 0)}u van vorige week niet ingediend.
+              </div>
+              <button
+                onClick={async () => {
+                  setSubmittingVorigeWeek(true);
+                  const ids = vorigeWeekConcept.map(e => e.id);
+                  const { error } = await supabase.from("uren_boekingen").update({ status: "ingediend" } as any).in("id", ids);
+                  if (!error) { toast.success("Ingediend ✓"); setVorigeWeekConcept([]); } else { toast.error("Er ging iets mis"); }
+                  setSubmittingVorigeWeek(false);
+                }}
+                disabled={submittingVorigeWeek}
+                style={{ background: "#feb300", color: "#523700", border: "none", borderRadius: 12, padding: "6px 12px", fontSize: 11, fontWeight: 700, fontFamily: "Inter", cursor: "pointer", whiteSpace: "nowrap" as const }}
+              >
+                Indienen
+              </button>
+            </div>
+          )}
+
+          {/* Offline banner */}
+          {isOffline && (
+            <div style={{ marginBottom: 12, padding: "12px 16px", borderRadius: 16, background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.2)", display: "flex", alignItems: "center", gap: 10 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#feb300" }}>wifi_off</span>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>
+                Geen verbinding — uren worden gesynchroniseerd als je online bent.
+                {pendingOffline > 0 && ` (${pendingOffline} wachtend)`}
+              </div>
+            </div>
+          )}
+
+          {/* Friday banner */}
+          {showFridayBanner && (
+            <div style={{ marginBottom: 12, padding: "12px 16px", borderRadius: 16, background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#feb300", flex: 1 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>warning</span>
+                Je hebt nog {conceptHours}u niet ingediend deze week.
+              </div>
+              <button onClick={submitAllConcepts} disabled={submittingAll} style={{ background: "#3fff8b", color: "#005d2c", border: "none", borderRadius: 12, padding: "6px 12px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                Alles indienen
+              </button>
+            </div>
+          )}
+
+          {/* Onboarding banner */}
+          {profileCtx?.account_status === "onboarding" && (
+            <div style={{ marginBottom: 12, padding: "12px 16px", borderRadius: 16, background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <div style={{ fontSize: 12, color: "#feb300" }}>Account moet geverifieerd worden.</div>
+              <button onClick={() => navigate("/onboarding-welkom")} style={{ background: "#3fff8b", color: "#005d2c", border: "none", borderRadius: 12, padding: "6px 12px", fontSize: 11, fontWeight: 700, fontFamily: "Inter", cursor: "pointer" }}>
+                Naar onboarding →
+              </button>
+            </div>
+          )}
+
+          {/* DAY CARDS */}
+          <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+            {weekDates.slice(0, 5).map((date, i) => {
+              const DAGEN_KORT = ["MA", "DI", "WO", "DO", "VR"];
+              const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+              const dayEntries = weekEntries.filter(e => e.date === dateStr);
+              const dayHours = dayEntries.reduce((a, b) => a + b.hours, 0);
+              const isToday = dateStr === today;
+              const hasEntries = dayEntries.length > 0;
+              const isUnder = hasEntries && dayHours < 8;
+              const hasAfgekeurd = dayEntries.some(e => e.status === "afgekeurd");
+
+              // Friday empty — dashed style
+              if (i === 4 && !hasEntries) {
+                return (
+                  <div key={i} onClick={() => openModal(date)} style={{ border: "2px dashed rgba(255,255,255,0.1)", borderRadius: 16, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", opacity: 0.5, cursor: "pointer" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", width: 36 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "0.05em" }}>{DAGEN_KORT[i]}</span>
+                        <span style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope", color: "rgba(255,255,255,0.25)" }}>{date.getDate()}</span>
+                      </div>
+                      <span style={{ fontSize: 13, color: "rgba(255,255,255,0.25)" }}>Niets geboekt</span>
+                    </div>
+                    <span style={{ fontSize: 14, color: "rgba(255,255,255,0.15)" }}>—</span>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={i} onClick={() => openModal(date)} style={{
+                  background: isToday ? "rgba(63,255,139,0.04)" : "linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))",
+                  backdropFilter: "blur(12px)",
+                  borderRadius: 16,
+                  padding: "16px 20px",
+                  border: isToday ? "1px solid #3fff8b" : hasAfgekeurd ? "1px solid rgba(255,113,108,0.4)" : "1px solid rgba(106,118,140,0.15)",
+                  borderLeft: isToday ? "4px solid #3fff8b" : hasAfgekeurd ? "4px solid #ff716c" : "1px solid rgba(106,118,140,0.15)",
+                  display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
+                  transition: "transform 0.1s", minHeight: 72,
+                }}>
+                  {/* LEFT — day + date */}
+                  <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", width: 36, marginRight: 14 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: isToday ? "#3fff8b" : "rgba(255,255,255,0.35)", letterSpacing: "0.05em" }}>{DAGEN_KORT[i]}</span>
+                    <span style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope", color: isToday ? "#3fff8b" : "white" }}>{date.getDate()}</span>
+                  </div>
+
+                  {/* CENTER — project info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {hasEntries ? (
+                      <>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "white", whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {dayEntries[0].projectNumber}
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>location_on</span>
+                          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+                            {dayEntries.length > 1 ? "Meerdere locaties" : "Zie planning"}
+                          </span>
+                          {dayEntries.length > 1 && (
+                            <span style={{ fontSize: 10, color: "#3fff8b", fontWeight: 600, marginLeft: 4 }}>+{dayEntries.length - 1} meer</span>
+                          )}
+                        </div>
+                        {isUnder && (
+                          <div style={{ marginTop: 4, display: "inline-block", padding: "2px 6px", borderRadius: 4, background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.2)", fontSize: 9, fontWeight: 700, color: "#feb300", letterSpacing: "0.05em" }}>
+                            ONDER TARGET
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div>
+                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>Niets geboekt</span>
+                        {isToday && (
+                          <span style={{ marginLeft: 8, fontSize: 9, fontWeight: 700, color: "#3fff8b", letterSpacing: "0.05em", background: "rgba(63,255,139,0.1)", padding: "2px 6px", borderRadius: 4 }}>VANDAAG</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* RIGHT — hours or + button */}
+                  {hasEntries ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 12 }}>
+                      <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b" }}>{dayHours}u</span>
+                      <span className="material-symbols-outlined" style={{ fontSize: 16, color: "rgba(255,255,255,0.2)" }}>chevron_right</span>
+                    </div>
+                  ) : isToday ? (
+                    <button onClick={(e) => { e.stopPropagation(); openModal(date); }} style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(63,255,139,0.1)", border: "none", color: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 22 }}>add</span>
+                    </button>
+                  ) : (
+                    <span style={{ fontSize: 14, color: "rgba(255,255,255,0.15)", marginLeft: 12 }}>—</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </PullToRefresh>
+
+      {/* ── FAB ── */}
+      {profileCtx?.account_status !== "onboarding" && (
+        <div style={{ position: "fixed", bottom: 90, left: 0, right: 0, zIndex: 40, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
+          <button onClick={() => openModal()} style={{
+            pointerEvents: "all", minWidth: 280, height: 56, borderRadius: 9999,
+            background: "#3fff8b", color: "#005d2c", fontFamily: "Manrope", fontWeight: 800, fontSize: 16,
+            textTransform: "uppercase" as const, letterSpacing: "0.05em", border: "none", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+            boxShadow: "0 8px 32px rgba(63,255,139,0.3)",
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>add</span>
+            UREN TOEVOEGEN
           </button>
         </div>
       )}
 
-      {/* FAB — hidden during onboarding */}
-      {profileCtx?.account_status !== 'onboarding' && (
-        <button
-          onClick={() => openModal()}
-          className="fixed z-40 flex items-center justify-center active:scale-[0.93] transition-transform sm:bottom-8"
-          style={{
-            bottom: 90,
-            right: "max(24px, calc(50% - 215px + 24px))",
-            width: 56, height: 56, borderRadius: "50%",
-            background: "linear-gradient(135deg, var(--accent), var(--accent-dark))",
-            color: "#fff", fontSize: 26, fontWeight: 300,
-            boxShadow: "0 8px 28px color-mix(in srgb, var(--accent) 35%, transparent)",
-          }}
-        >
-          +
-        </button>
-      )}
+      {/* ── BOTTOM NAV ── */}
+      <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, background: "rgba(6,13,24,0.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(106,118,140,0.1)", padding: "6px 16px 20px 16px", display: "flex", gap: 4 }}>
+        {[
+          { path: "/", icon: "schedule", label: "Uren" },
+          { path: "/planning", icon: "calendar_today", label: "Planning" },
+          { path: "/profiel", icon: "person", label: "Profiel" },
+        ].map((tab) => {
+          const isActive = location.pathname === tab.path || (tab.path !== "/" && location.pathname.startsWith(tab.path));
+          return (
+            <button key={tab.path} onClick={() => navigate(tab.path)} style={{
+              flex: 1, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 2,
+              padding: "6px 12px", borderRadius: 16, border: "none", cursor: "pointer",
+              background: isActive ? "rgba(63,255,139,0.15)" : "transparent",
+              boxShadow: isActive ? "0 0 15px rgba(63,255,139,0.2)" : "none",
+              transition: "all 0.15s", position: "relative" as const,
+            }}>
+              <span className={`material-symbols-outlined ${isActive ? "fill-icon" : ""}`} style={{ fontSize: 22, color: isActive ? "#3fff8b" : "rgba(255,255,255,0.35)" }}>{tab.icon}</span>
+              <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, color: isActive ? "#3fff8b" : "rgba(255,255,255,0.35)" }}>{tab.label}</span>
+              {tab.path === "/" && afgekeurdCount > 0 && (
+                <div style={{ position: "absolute", top: 4, right: "calc(50% - 16px)", width: 8, height: 8, borderRadius: "50%", background: "#ff716c", border: "2px solid #060d18" }} />
+              )}
+            </button>
+          );
+        })}
+      </nav>
 
+      {/* ── MODAL ── */}
       {showModal && (
         <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} onSubmit={async (entry) => {
           if (!navigator.onLine && profileId) {
@@ -302,15 +470,15 @@ const Index = () => {
               status: "concept",
               created_at: new Date().toISOString(),
             });
-            toast.success("Offline opgeslagen — wordt gesynchroniseerd bij verbinding");
+            toast.success("Offline opgeslagen");
             getPendingCount().then(setPendingOffline);
             return;
           }
           await addEntry(entry);
         }} initialDate={modalDate} />
       )}
+
     </div>
-    </PageShell>
   );
 
   function renderContent() {
