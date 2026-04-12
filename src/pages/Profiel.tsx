@@ -210,7 +210,7 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
 
 export default function Profiel() {
   const { user, roles, rolLabel, permissies, signOut } = useAuth();
-  const badges = useNavBadges();
+  const { badges } = useNavBadges();
   const { refetch: refetchProfileContext } = useProfile();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [certs, setCerts] = useState<Certificaat[]>([]);

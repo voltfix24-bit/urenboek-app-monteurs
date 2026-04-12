@@ -19,7 +19,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 
 export default function MijnOrders() {
   const { user } = useAuth();
-  const badges = useNavBadges();
+  const { badges } = useNavBadges();
   const { profileId } = useProfile();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<any[]>([]);

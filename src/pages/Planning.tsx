@@ -26,7 +26,7 @@ const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
 export default function Planning() {
   const { user } = useAuth();
-  const badges = useNavBadges();
+  const { badges } = useNavBadges();
   const { profileId, profile: profileData } = useProfile();
   const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));

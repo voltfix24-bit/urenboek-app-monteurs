@@ -54,7 +54,7 @@ const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)',
 
 const Index = () => {
   const { user, profile, isManager } = useAuth();
-  const badges = useNavBadges();
+  const { badges } = useNavBadges();
   const { profile: profileCtx } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
