@@ -205,8 +205,7 @@ const Index = () => {
 
           {/* WEEK HEADER */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-              <div style={{ width: 4, height: 14, borderRadius: 2, background: "#3fff8b" }} />
+            <div style={{ marginBottom: 8 }}>
               <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase" as const }}>HUIDIGE WEEK</span>
             </div>
 
