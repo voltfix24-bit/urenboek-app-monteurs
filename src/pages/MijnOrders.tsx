@@ -485,6 +485,7 @@ export default function MijnOrders() {
           )}
         </main>
       </div>
+      <BottomNav badges={badges} />
     </PageShell>
   );
 }

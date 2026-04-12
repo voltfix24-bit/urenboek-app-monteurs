@@ -929,6 +929,7 @@ export default function Mededelingen() {
           </div>
         )}
       </div>
+      <BottomNav badges={badges} />
     </PageShell>
   );
 }
