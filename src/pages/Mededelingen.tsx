@@ -399,17 +399,6 @@ export default function Mededelingen() {
                       alignItems: b.is_eigen ? 'flex-end' : 'flex-start',
                       gap: 4,
                     }}>
-                      {!b.is_eigen && (
-                        <span style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          color: '#3fff8b',
-                          fontFamily: 'Inter',
-                          paddingLeft: 4,
-                        }}>
-                          {b.afzender_naam}
-                        </span>
-                      )}
                       <div style={{
                         padding: '12px 16px',
                         borderRadius: b.is_eigen
@@ -484,7 +473,7 @@ export default function Mededelingen() {
             background: 'rgba(3,14,32,0.9)',
             backdropFilter: 'blur(20px)',
             borderTop: '1px solid rgba(255,255,255,0.07)',
-            zIndex: 50,
+            zIndex: 60,
           }}>
             <div style={{
               display: 'flex',
