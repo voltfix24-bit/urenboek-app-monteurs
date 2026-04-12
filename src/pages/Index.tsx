@@ -430,31 +430,7 @@ const Index = () => {
         </div>
       )}
 
-      {/* ── BOTTOM NAV ── */}
-      <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, background: "rgba(6,13,24,0.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(106,118,140,0.1)", padding: "6px 16px 20px 16px", display: "flex", gap: 4 }}>
-        {[
-          { path: "/", icon: "schedule", label: "Uren" },
-          { path: "/planning", icon: "calendar_today", label: "Planning" },
-          { path: "/profiel", icon: "person", label: "Profiel" },
-        ].map((tab) => {
-          const isActive = location.pathname === tab.path || (tab.path !== "/" && location.pathname.startsWith(tab.path));
-          return (
-            <button key={tab.path} onClick={() => navigate(tab.path)} style={{
-              flex: 1, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 2,
-              padding: "6px 12px", borderRadius: 16, border: "none", cursor: "pointer",
-              background: isActive ? "rgba(63,255,139,0.15)" : "transparent",
-              boxShadow: isActive ? "0 0 15px rgba(63,255,139,0.2)" : "none",
-              transition: "all 0.15s", position: "relative" as const,
-            }}>
-              <span className={`material-symbols-outlined ${isActive ? "fill-icon" : ""}`} style={{ fontSize: 22, color: isActive ? "#3fff8b" : "rgba(255,255,255,0.35)" }}>{tab.icon}</span>
-              <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, color: isActive ? "#3fff8b" : "rgba(255,255,255,0.35)" }}>{tab.label}</span>
-              {tab.path === "/" && afgekeurdCount > 0 && (
-                <div style={{ position: "absolute", top: 4, right: "calc(50% - 16px)", width: 8, height: 8, borderRadius: "50%", background: "#ff716c", border: "2px solid #060d18" }} />
-              )}
-            </button>
-          );
-        })}
-      </nav>
+      <BottomNav badges={badges} />
 
       {/* ── MODAL ── */}
       {showModal && (
