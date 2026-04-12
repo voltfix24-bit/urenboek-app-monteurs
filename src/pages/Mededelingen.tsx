@@ -279,90 +279,280 @@ export default function Mededelingen() {
 
     return (
       <PageShell>
-        {/* Header */}
-        <header className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3"
-          style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-          <button onClick={() => { setActiveGesprek(null); fetchGesprekken(); }} className="p-1" style={{ color: "var(--text-secondary)" }}>
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <Avatar className="h-9 w-9">
-            <AvatarFallback style={{ background: "var(--accent-light)", color: "var(--accent)", fontSize: 12, fontWeight: 700 }}>
+        <div style={{
+          background: '#030e20',
+          minHeight: '100dvh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          {/* HEADER */}
+          <header style={{
+            position: 'sticky',
+            top: 0, zIndex: 50,
+            background: 'rgba(3,14,32,0.9)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(255,255,255,0.07)',
+            padding: '12px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}>
+            <button
+              onClick={() => { setActiveGesprek(null); fetchGesprekken(); }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#3fff8b',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 24 }}>
+                arrow_back
+              </span>
+            </button>
+            <div style={{
+              width: 40, height: 40,
+              borderRadius: '50%',
+              background: '#3fff8b',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'Manrope',
+              fontWeight: 700,
+              fontSize: 14,
+              color: '#005d2c',
+              position: 'relative',
+              flexShrink: 0,
+            }}>
               {initialen(activeGesprek.medewerker_naam)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>{gesprekNaam}</p>
-            {activeGesprek.onderwerp && isManager && (
-              <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{activeGesprek.onderwerp}</p>
-            )}
-          </div>
-        </header>
-
-        {/* Messages */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-1" style={{ paddingBottom: 90 }}>
-          {chatLoading ? <Spinner /> : grouped.map((group, gi) => (
-            <div key={gi}>
-              <div className="flex justify-center my-3">
-                <span className="text-[10px] font-semibold px-3 py-1 rounded-full"
-                  style={{ background: "var(--bg-surface)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
-                  {group.label}
-                </span>
+              <div style={{
+                position: 'absolute',
+                bottom: 0, right: 0,
+                width: 10, height: 10,
+                borderRadius: '50%',
+                background: '#3fff8b',
+                border: '2px solid #030e20',
+              }} />
+            </div>
+            <div>
+              <div style={{
+                fontFamily: 'Manrope',
+                fontWeight: 800,
+                fontSize: 14,
+                color: '#dae6ff',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}>
+                {gesprekNaam}
               </div>
-              {group.items.map(b => (
-                <div key={b.id} className={`flex mb-1.5 ${b.is_eigen ? "justify-end" : "justify-start"}`}>
-                  <div className="max-w-[80%] px-3.5 py-2 rounded-2xl" style={{
-                    background: b.is_eigen
-                      ? "linear-gradient(135deg, var(--accent), var(--accent-dark))"
-                      : "var(--bg-surface)",
-                    color: b.is_eigen ? "#fff" : "var(--text-primary)",
-                    borderBottomRightRadius: b.is_eigen ? 6 : 16,
-                    borderBottomLeftRadius: b.is_eigen ? 16 : 6,
-                    border: b.is_eigen ? "none" : "1px solid var(--border)",
+              {activeGesprek.onderwerp && isManager && (
+                <div style={{
+                  fontSize: 10,
+                  color: '#a0abc3',
+                  fontFamily: 'Inter',
+                }}>
+                  {activeGesprek.onderwerp}
+                </div>
+              )}
+            </div>
+          </header>
+
+          {/* Messages */}
+          <div ref={scrollRef} style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px 20px',
+            paddingBottom: 100,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+          }}>
+            {chatLoading ? <Spinner /> : grouped.map((group, gi) => (
+              <div key={gi}>
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '12px 0' }}>
+                  <span style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    fontFamily: 'Inter',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: '#a0abc3',
+                    background: '#142640',
+                    padding: '4px 12px',
+                    borderRadius: 9999,
                   }}>
-                    {!b.is_eigen && (
-                      <p className="text-[10px] font-bold mb-0.5" style={{ color: "var(--accent)" }}>{b.afzender_naam}</p>
-                    )}
-                    <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{b.inhoud}</p>
-                    <div className={`flex items-center gap-1 mt-0.5 ${b.is_eigen ? "justify-end" : ""}`}>
-                      <span className="text-[9px]" style={{ opacity: 0.6 }}>
-                        {format(new Date(b.created_at), "HH:mm")}
-                      </span>
-                      {b.is_eigen && (
-                        b.gelezen_op
-                          ? <CheckCheck className="h-3 w-3" style={{ opacity: 0.8, color: "#34d399" }} />
-                          : <Check className="h-3 w-3" style={{ opacity: 0.5 }} />
+                    {group.label}
+                  </span>
+                </div>
+                {group.items.map(b => (
+                  <div key={b.id} style={{
+                    display: 'flex',
+                    justifyContent: b.is_eigen ? 'flex-end' : 'flex-start',
+                    marginBottom: 6,
+                  }}>
+                    <div style={{
+                      maxWidth: '80%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: b.is_eigen ? 'flex-end' : 'flex-start',
+                      gap: 4,
+                    }}>
+                      {!b.is_eigen && (
+                        <span style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: '#3fff8b',
+                          fontFamily: 'Inter',
+                          paddingLeft: 4,
+                        }}>
+                          {b.afzender_naam}
+                        </span>
                       )}
+                      <div style={{
+                        padding: '12px 16px',
+                        borderRadius: b.is_eigen
+                          ? '20px 20px 4px 20px'
+                          : '20px 20px 20px 4px',
+                        background: b.is_eigen
+                          ? '#3fff8b'
+                          : 'rgba(10,26,48,0.8)',
+                        border: b.is_eigen
+                          ? 'none'
+                          : '1px solid rgba(106,118,140,0.2)',
+                        boxShadow: b.is_eigen
+                          ? '0 0 20px rgba(63,255,139,0.15)'
+                          : 'none',
+                      }}>
+                        <p style={{
+                          fontSize: 14,
+                          fontFamily: 'Inter',
+                          fontWeight: b.is_eigen ? 600 : 400,
+                          color: b.is_eigen ? '#005d2c' : '#dae6ff',
+                          lineHeight: 1.5,
+                          margin: 0,
+                          whiteSpace: 'pre-wrap',
+                        }}>
+                          {b.inhoud}
+                        </p>
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        paddingLeft: b.is_eigen ? 0 : 4,
+                        paddingRight: b.is_eigen ? 4 : 0,
+                      }}>
+                        <span style={{
+                          fontSize: 10,
+                          color: '#a0abc3',
+                          fontFamily: 'Inter',
+                        }}>
+                          {format(new Date(b.created_at), "HH:mm")}
+                        </span>
+                        {b.is_eigen && (
+                          <span
+                            className="material-symbols-outlined"
+                            style={{
+                              fontSize: 14,
+                              color: b.gelezen_op ? '#3fff8b' : '#a0abc3',
+                              fontVariationSettings: "'FILL' 1",
+                            }}>
+                            {b.gelezen_op ? 'done_all' : 'done'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ))}
-          {berichten.length === 0 && !chatLoading && (
-            <div className="flex justify-center pt-8">
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>Begin het gesprek...</p>
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            ))}
+            {berichten.length === 0 && !chatLoading && (
+              <div style={{ textAlign: 'center', paddingTop: 40, color: '#a0abc3', fontFamily: 'Inter', fontSize: 13 }}>
+                Begin het gesprek...
+              </div>
+            )}
+          </div>
 
-        {/* Input */}
-        <div className="fixed bottom-[72px] left-0 right-0 z-40 px-3 py-2 flex items-end gap-2"
-          style={{ background: "var(--bg-surface)", borderTop: "1px solid var(--border)", maxWidth: 430, margin: "0 auto" }}>
-          <textarea
-            ref={inputRef}
-            value={nieuwBericht}
-            onChange={e => setNieuwBericht(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendBericht(); } }}
-            placeholder="Typ een bericht..."
-            rows={1}
-            className="flex-1 resize-none text-sm px-4 py-2.5 rounded-2xl"
-            style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", maxHeight: 120 }}
-          />
-          <button onClick={sendBericht} disabled={!nieuwBericht.trim() || sending}
-            className="shrink-0 flex items-center justify-center rounded-full transition-transform active:scale-90 disabled:opacity-40"
-            style={{ width: 40, height: 40, background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
-            <Send className="h-4 w-4" />
-          </button>
+          {/* MESSAGE INPUT */}
+          <div style={{
+            position: 'fixed',
+            bottom: 0, left: 0, right: 0,
+            padding: '12px 16px',
+            paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
+            background: 'rgba(3,14,32,0.9)',
+            backdropFilter: 'blur(20px)',
+            borderTop: '1px solid rgba(255,255,255,0.07)',
+            zIndex: 50,
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              maxWidth: 480,
+              margin: '0 auto',
+            }}>
+              <div style={{
+                flex: 1,
+                background: '#142640',
+                borderRadius: 9999,
+                border: '1px solid rgba(61,72,93,0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 16px',
+                height: 52,
+                gap: 8,
+              }}>
+                <textarea
+                  ref={inputRef}
+                  value={nieuwBericht}
+                  onChange={e => setNieuwBericht(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendBericht(); } }}
+                  placeholder="Typ een bericht..."
+                  rows={1}
+                  style={{
+                    flex: 1,
+                    background: 'none',
+                    border: 'none',
+                    outline: 'none',
+                    color: '#dae6ff',
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    resize: 'none',
+                    maxHeight: 80,
+                  }}
+                />
+              </div>
+              <button
+                onClick={sendBericht}
+                disabled={!nieuwBericht.trim() || sending}
+                style={{
+                  width: 52, height: 52,
+                  borderRadius: '50%',
+                  background: '#3fff8b',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(63,255,139,0.3)',
+                  opacity: !nieuwBericht.trim() || sending ? 0.5 : 1,
+                  flexShrink: 0,
+                }}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: 22,
+                    color: '#005d2c',
+                    fontVariationSettings: "'FILL' 1",
+                  }}>
+                  send
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
       </PageShell>
     );
@@ -373,125 +563,380 @@ export default function Mededelingen() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <HeaderLogo />
-            <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Berichten</span>
-          </div>
+      <div style={{
+        background: '#030e20',
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {/* HEADER */}
+        <header style={{
+          position: 'sticky',
+          top: 0, zIndex: 50,
+          background: 'rgba(3,14,32,0.9)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          padding: '12px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <span style={{
+            fontFamily: 'Manrope',
+            fontWeight: 800,
+            fontSize: 20,
+            color: '#dae6ff',
+          }}>
+            Berichten
+          </span>
           {totalOngelezen > 0 && (
-            <div className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ background: "var(--danger-light)", color: "var(--danger)" }}>
-              {totalOngelezen} nieuw
+            <div style={{
+              padding: '4px 12px',
+              borderRadius: 9999,
+              background: 'rgba(63,255,139,0.15)',
+              border: '1px solid rgba(63,255,139,0.3)',
+            }}>
+              <span style={{
+                fontSize: 11,
+                fontWeight: 700,
+                fontFamily: 'Inter',
+                color: '#3fff8b',
+              }}>
+                {totalOngelezen} nieuw
+              </span>
+            </div>
+          )}
+        </header>
+
+        {/* CONVERSATION LIST */}
+        <div style={{ padding: '16px 20px', flex: 1 }}>
+          {loading ? <Spinner /> : gesprekken.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: '#a0abc3',
+              fontFamily: 'Inter',
+            }}>
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: 48, marginBottom: 16, display: 'block' }}>
+                chat_bubble_outline
+              </span>
+              <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Geen gesprekken</p>
+              <p style={{ fontSize: 12, color: '#a0abc3' }}>
+                {isManager ? 'Start een gesprek met een medewerker' : 'Start een gesprek met je manager'}
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {gesprekken.map(g => (
+                <button
+                  key={g.id}
+                  onClick={() => openGesprek(g)}
+                  style={{
+                    width: '100%',
+                    padding: '16px 20px',
+                    borderRadius: 16,
+                    background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                    border: g.ongelezen > 0
+                      ? '1px solid rgba(63,255,139,0.3)'
+                      : '1px solid rgba(106,118,140,0.15)',
+                    borderLeft: g.ongelezen > 0
+                      ? '3px solid #3fff8b'
+                      : '1px solid rgba(106,118,140,0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{
+                    width: 48, height: 48,
+                    borderRadius: '50%',
+                    background: g.ongelezen > 0 ? '#3fff8b' : '#142640',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'Manrope',
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: g.ongelezen > 0 ? '#005d2c' : '#a0abc3',
+                    flexShrink: 0,
+                  }}>
+                    {initialen(g.medewerker_naam)}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <span style={{
+                        fontSize: 14,
+                        fontWeight: g.ongelezen > 0 ? 700 : 500,
+                        color: g.ongelezen > 0 ? '#dae6ff' : '#a0abc3',
+                        fontFamily: 'Inter',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {isManager ? g.medewerker_naam : (g.onderwerp || g.medewerker_naam)}
+                      </span>
+                      <span style={{
+                        fontSize: 10,
+                        color: g.ongelezen > 0 ? '#3fff8b' : '#a0abc3',
+                        fontFamily: 'Inter',
+                        flexShrink: 0,
+                        marginLeft: 8,
+                      }}>
+                        {formatDistanceToNow(new Date(g.laatste_bericht_op), { locale: nl, addSuffix: true })}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{
+                        fontSize: 12,
+                        color: '#a0abc3',
+                        fontFamily: 'Inter',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: 200,
+                      }}>
+                        {g.laatste_bericht_preview || "Geen berichten"}
+                      </span>
+                      {g.ongelezen > 0 && (
+                        <div style={{
+                          width: 20, height: 20,
+                          borderRadius: '50%',
+                          background: '#3fff8b',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: '#005d2c',
+                          fontFamily: 'Inter',
+                          flexShrink: 0,
+                          marginLeft: 8,
+                        }}>
+                          {g.ongelezen}
+                        </div>
+                      )}
+                    </div>
+                    {isManager && g.onderwerp && (
+                      <span style={{ fontSize: 10, color: '#a0abc3', fontFamily: 'Inter', marginTop: 2, display: 'block' }}>
+                        {g.onderwerp}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              ))}
             </div>
           )}
         </div>
-      </header>
 
-      <main className="px-4 py-3 space-y-1.5" style={{ paddingBottom: 100 }}>
-        {loading ? <Spinner /> : gesprekken.length === 0 ? (
-          <EmptyState icoon="💬" titel="Geen gesprekken" subtitel={isManager ? "Start een gesprek met een medewerker" : "Start een gesprek met je manager"} />
-        ) : (
-          gesprekken.map(g => (
-            <button key={g.id} onClick={() => openGesprek(g)}
-              className="w-full text-left flex items-center gap-3 p-3 rounded-2xl transition-colors active:scale-[0.98]"
-              style={{ background: g.ongelezen > 0 ? "var(--bg-surface)" : "transparent", border: "1px solid var(--border)" }}>
-              <Avatar className="h-11 w-11 shrink-0">
-                <AvatarFallback style={{ background: "var(--accent-light)", color: "var(--accent)", fontSize: 13, fontWeight: 700 }}>
-                  {initialen(g.medewerker_naam)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <p className={`text-sm truncate ${g.ongelezen > 0 ? "font-bold" : "font-medium"}`}
-                    style={{ color: g.ongelezen > 0 ? "var(--text-primary)" : "var(--text-secondary)" }}>
-                    {isManager ? g.medewerker_naam : (g.onderwerp || g.medewerker_naam)}
-                  </p>
-                  <span className="text-[10px] shrink-0 ml-2" style={{ color: g.ongelezen > 0 ? "var(--accent)" : "var(--text-muted)" }}>
-                    {formatDistanceToNow(new Date(g.laatste_bericht_op), { locale: nl, addSuffix: true })}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>
-                    {g.laatste_bericht_preview || "Geen berichten"}
-                  </p>
-                  {g.ongelezen > 0 && (
-                    <span className="shrink-0 ml-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
-                      style={{ background: "var(--accent)", color: "#fff" }}>
-                      {g.ongelezen}
-                    </span>
+        {/* FAB nieuw gesprek */}
+        <button
+          onClick={() => setShowNieuwGesprek(true)}
+          style={{
+            position: 'fixed',
+            bottom: 100,
+            right: 'max(24px, calc(50% - 215px + 24px))',
+            zIndex: 40,
+            width: 56, height: 56,
+            borderRadius: '50%',
+            background: '#3fff8b',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            boxShadow: '0 8px 28px rgba(63,255,139,0.35)',
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 24, color: '#005d2c' }}>
+            add
+          </span>
+        </button>
+
+        {/* Nieuw gesprek sheet */}
+        {showNieuwGesprek && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 50,
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'center',
+              background: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(6px)',
+            }}
+            onClick={() => setShowNieuwGesprek(false)}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              className="animate-sheet-up"
+              style={{
+                width: '100%',
+                maxWidth: 480,
+                background: 'rgba(10,26,48,0.97)',
+                backdropFilter: 'blur(24px)',
+                borderRadius: '40px 40px 0 0',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                maxHeight: '85vh',
+                overflowY: 'auto',
+                paddingBottom: 40,
+              }}
+            >
+              {/* Handle */}
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
+                <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
+              </div>
+
+              <div style={{ padding: '16px 24px 24px' }}>
+                <h2 style={{
+                  fontFamily: 'Manrope',
+                  fontWeight: 800,
+                  fontSize: 22,
+                  color: '#dae6ff',
+                  marginBottom: 24,
+                }}>
+                  Nieuw gesprek
+                </h2>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {isManager && (
+                    <div>
+                      <label style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        fontFamily: 'Inter',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        color: '#a0abc3',
+                        marginBottom: 8,
+                        display: 'block',
+                      }}>
+                        Medewerker
+                      </label>
+                      <select
+                        value={nieuwMedewerkerId}
+                        onChange={e => setNieuwMedewerkerId(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          borderRadius: 16,
+                          background: '#061327',
+                          border: '1px solid rgba(255,255,255,0.07)',
+                          color: '#dae6ff',
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          outline: 'none',
+                        }}
+                      >
+                        <option value="">Kies medewerker...</option>
+                        {medewerkers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+                      </select>
+                    </div>
                   )}
+
+                  <div>
+                    <label style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      fontFamily: 'Inter',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      color: '#a0abc3',
+                      marginBottom: 8,
+                      display: 'block',
+                    }}>
+                      Onderwerp
+                    </label>
+                    <input
+                      value={nieuwOnderwerp}
+                      onChange={e => setNieuwOnderwerp(e.target.value)}
+                      placeholder="bijv. Verlofaanvraag, Vraag over project..."
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: 16,
+                        background: '#061327',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        color: '#dae6ff',
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      fontFamily: 'Inter',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      color: '#a0abc3',
+                      marginBottom: 8,
+                      display: 'block',
+                    }}>
+                      Bericht
+                    </label>
+                    <textarea
+                      value={nieuwEersteBericht}
+                      onChange={e => setNieuwEersteBericht(e.target.value)}
+                      placeholder="Typ je bericht..."
+                      rows={3}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: 16,
+                        background: '#061327',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        color: '#dae6ff',
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        outline: 'none',
+                        resize: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    onClick={startNieuwGesprek}
+                    disabled={(!isManager || !!nieuwMedewerkerId) && !nieuwEersteBericht.trim() || (isManager && !nieuwMedewerkerId)}
+                    style={{
+                      width: '100%',
+                      height: 56,
+                      borderRadius: 16,
+                      background: '#3fff8b',
+                      color: '#005d2c',
+                      fontFamily: 'Manrope',
+                      fontWeight: 800,
+                      fontSize: 16,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      boxShadow: '0 8px 32px rgba(63,255,139,0.2)',
+                      opacity: ((!isManager || !!nieuwMedewerkerId) && !nieuwEersteBericht.trim()) || (isManager && !nieuwMedewerkerId) ? 0.4 : 1,
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>send</span>
+                    Gesprek starten
+                  </button>
                 </div>
-                {isManager && g.onderwerp && (
-                  <p className="text-[10px] mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>{g.onderwerp}</p>
-                )}
               </div>
-            </button>
-          ))
-        )}
-      </main>
-
-      {/* FAB nieuw gesprek */}
-      <button onClick={() => setShowNieuwGesprek(true)}
-        className="fixed z-40 flex items-center justify-center active:scale-90 transition-transform"
-        style={{
-          bottom: 90, right: "max(24px, calc(50% - 215px + 24px))",
-          width: 56, height: 56, borderRadius: "50%",
-          background: "linear-gradient(135deg, var(--accent), var(--accent-dark))",
-          color: "#fff", boxShadow: "0 8px 28px color-mix(in srgb, var(--accent) 35%, transparent)",
-        }}>
-        <Plus className="h-6 w-6" />
-      </button>
-
-      {/* Nieuw gesprek sheet */}
-      {showNieuwGesprek && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowNieuwGesprek(false)}>
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4"
-            style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }}
-            onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
-            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Nieuw gesprek</h2>
-
-            <div className="space-y-3">
-              {isManager && (
-                <div>
-                  <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--text-secondary)" }}>Medewerker</label>
-                  <select value={nieuwMedewerkerId} onChange={e => setNieuwMedewerkerId(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm"
-                    style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
-                    <option value="">Kies medewerker...</option>
-                    {medewerkers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--text-secondary)" }}>Onderwerp</label>
-                <input value={nieuwOnderwerp} onChange={e => setNieuwOnderwerp(e.target.value)}
-                  placeholder="bijv. Verlofaanvraag, Vraag over project..."
-                  className="w-full px-3 py-2.5 rounded-xl text-sm"
-                  style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold mb-1 block" style={{ color: "var(--text-secondary)" }}>Bericht</label>
-                <textarea value={nieuwEersteBericht} onChange={e => setNieuwEersteBericht(e.target.value)}
-                  placeholder="Typ je bericht..."
-                  rows={3}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm resize-none"
-                  style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-              </div>
-
-              <button onClick={startNieuwGesprek}
-                disabled={(!isManager || !!nieuwMedewerkerId) && !nieuwEersteBericht.trim() || (isManager && !nieuwMedewerkerId)}
-                className="w-full py-3 rounded-2xl text-sm font-bold transition-colors disabled:opacity-40"
-                style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
-                Gesprek starten
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </PageShell>
   );
 }
