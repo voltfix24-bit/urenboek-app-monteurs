@@ -367,7 +367,7 @@ export default function Mededelingen() {
             flex: 1,
             overflowY: 'auto',
             padding: '16px 20px',
-            paddingBottom: 100,
+            paddingBottom: 160,
             display: 'flex',
             flexDirection: 'column',
             gap: 4,
@@ -470,13 +470,12 @@ export default function Mededelingen() {
           {/* MESSAGE INPUT */}
           <div style={{
             position: 'fixed',
-            bottom: 0, left: 0, right: 0,
+            bottom: 72, left: 0, right: 0,
             padding: '12px 16px',
-            paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
-            background: 'rgba(3,14,32,0.9)',
+            background: 'rgba(3,14,32,0.95)',
             backdropFilter: 'blur(20px)',
             borderTop: '1px solid rgba(255,255,255,0.07)',
-            zIndex: 60,
+            zIndex: 49,
           }}>
             <div style={{
               display: 'flex',
