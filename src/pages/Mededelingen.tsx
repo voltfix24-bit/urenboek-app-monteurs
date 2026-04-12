@@ -56,6 +56,7 @@ function datumLabel(dateStr: string) {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 export default function Mededelingen() {
   const { user, isManager } = useAuth();
+  const badges = useNavBadges();
   const { profileId } = useProfile();
   const [gesprekken, setGesprekken] = useState<Gesprek[]>([]);
   const [activeGesprek, setActiveGesprek] = useState<Gesprek | null>(null);
