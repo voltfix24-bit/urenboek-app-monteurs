@@ -196,258 +196,378 @@ export default function Planning() {
     );
   }
 
-  const content = (
-    <main className="px-4 py-4 space-y-4">
-      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <div className="text-center">
-          <p className="text-lg font-extrabold" style={{ color: "var(--text-primary)" }}>Week {weekNumber}</p>
-          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-            {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 6), "d MMM", { locale: nl })}
-          </p>
-        </div>
-        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
+  return (
+    <PageShell>
+      <div style={{ background: '#030e20', minHeight: '100dvh', paddingBottom: 160 }}>
+        {/* HEADER */}
+        <header style={{
+          position: 'sticky', top: 0, zIndex: 50,
+          background: 'rgba(3,14,32,0.9)', backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="material-symbols-outlined" style={{ color: '#3fff8b', fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
+            <span style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 18, color: '#3fff8b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>TERREVOLT UREN</span>
+          </div>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%', background: '#142640',
+            border: '1px solid rgba(63,255,139,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'Manrope', fontWeight: 700, fontSize: 13, color: '#3fff8b',
+          }}>
+            {profileData?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+          </div>
+        </header>
 
-      {loading ? (
-        <ListSkeleton count={3} ItemSkeleton={PlanningCardSkeleton} />
-      ) : (
-        <>
-          {weekDates.map((date, i) => {
-            const dateStr = format(date, "yyyy-MM-dd");
-            const dayItems = items.filter(it => it.datum === dateStr);
-            const besch = getBeschikbaarheidForDate(dateStr);
-            if (!dayItems.length && !besch) return null;
-            const isToday = dateStr === today;
-
-            return (
-              <div key={dateStr} className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: isToday ? "var(--accent)" : "var(--text-muted)" }}>
-                  {DAGEN[i]} {format(date, "d MMM", { locale: nl })} {isToday && "· Vandaag"}
+        <PullToRefresh onRefresh={async () => { await fetchPlanning(); }}>
+          <main style={{ padding: '24px 20px' }}>
+            {/* WEEK SELECTOR */}
+            <section style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#3fff8b', marginBottom: 4 }}>JOUW PLANNING</p>
+                <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 26, color: '#dae6ff', lineHeight: 1, marginBottom: 4 }}>Week {weekNumber}</h2>
+                <p style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>
+                  {format(weekStart, 'EEE d MMM', { locale: nl })} t/m {format(addDays(weekStart, 4), 'EEE d MMM', { locale: nl })}
                 </p>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setWeekStart(w => addWeeks(w, -1))} style={{
+                  width: 44, height: 44, borderRadius: 12, background: '#102038',
+                  border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>chevron_left</span>
+                </button>
+                <button onClick={() => setWeekStart(w => addWeeks(w, 1))} style={{
+                  width: 44, height: 44, borderRadius: 12, background: '#102038',
+                  border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>chevron_right</span>
+                </button>
+              </div>
+            </section>
 
-                {besch && (
-                  <div className="rounded-2xl p-4 flex items-center gap-3" style={{
-                    background: besch.type === "ziek" ? "var(--danger-light)" : "var(--warn-light)",
-                    border: besch.type === "ziek" ? "1px solid var(--danger-border)" : "1px solid var(--warn-border)",
-                  }}>
-                    <span className="text-xl flex items-center justify-center">{besch.type === "ziek" ? <ThermometerSun className="h-5 w-5" style={{ color: "var(--danger)" }} /> : <Palmtree className="h-5 w-5" style={{ color: "var(--warn-text)" }} />}</span>
-                    <div>
-                      <p className="text-sm font-bold" style={{ color: besch.type === "ziek" ? "var(--danger)" : "var(--warn-text)" }}>
-                        {besch.type === "ziek" ? "Ziekmelding geregistreerd" : "Vakantie goedgekeurd"}
-                      </p>
-                      <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{besch.datum_van} → {besch.datum_tot}</p>
-                    </div>
-                  </div>
-                )}
+            {/* LOADING */}
+            {loading && (
+              <div style={{ textAlign: 'center', padding: 40, color: '#a0abc3', fontFamily: 'Inter' }}>Planning laden...</div>
+            )}
 
-                {dayItems.map(item => {
-                  const boekingKey = `${item.datum}|${item.project_id}`;
-                  const existing = existingBoekingen.get(boekingKey);
-                  const sc = existing ? (statusConfig[existing.status] || statusConfig.concept) : null;
+            {/* PLANNING LIST */}
+            {!loading && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                {Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)).map((day, i) => {
+                  const dateStr = format(day, 'yyyy-MM-dd');
+                  const isToday = dateStr === today;
+                  const dayItems = items.filter(item => item.datum === dateStr);
+                  const beschItem = getBeschikbaarheidForDate(dateStr);
+                  const DAGEN_LANG = ['MAANDAG', 'DINSDAG', 'WOENSDAG', 'DONDERDAG', 'VRIJDAG'];
+                  const dayLabel = `${DAGEN_LANG[i]} ${format(day, 'd MMM', { locale: nl }).toUpperCase()}`;
 
                   return (
-                    <div key={item.id} className="rounded-2xl p-4 space-y-2" style={{
-                      background: "var(--bg-surface)",
-                      border: isToday ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                      opacity: item.is_definitief ? 1 : 0.5,
-                    }}>
-                      {!item.is_definitief && (
-                        <div className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-lg mb-1" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
-                          <Lock className="h-3 w-3" /> {item.project_naam} — Planning nog concept
-                        </div>
-                      )}
-
-                      {/* Activity badge */}
-                      {item.activiteit && (
-                        <div style={{
-                          display: "inline-flex", alignItems: "center", gap: 5,
-                          padding: "3px 10px", borderRadius: 20,
-                          background: item.activiteit_kleur ? `${item.activiteit_kleur}22` : "var(--accent-light)",
-                          border: `1px solid ${item.activiteit_kleur || "var(--accent)"}44`,
-                          marginBottom: 6,
-                        }}>
-                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: item.activiteit_kleur || "var(--accent)", flexShrink: 0 }} />
-                          <span style={{ fontSize: 11, fontWeight: 600, color: item.activiteit_kleur || "var(--accent)" }}>{item.activiteit}</span>
-                        </div>
-                      )}
-
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{item.project_naam}</p>
-                          <p className="text-[11px] font-mono mt-0.5" style={{ color: "var(--text-muted)" }}>{item.project_nummer}</p>
-                        </div>
-                        <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
-                          {item.starttijd} – {item.eindtijd}
-                        </span>
+                    <div key={dateStr}>
+                      {/* Day header */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#a0abc3' }}>{dayLabel}</span>
+                        {isToday && (
+                          <span style={{ fontSize: 9, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', color: '#3fff8b', background: 'rgba(63,255,139,0.2)', borderRadius: 9999, padding: '2px 8px' }}>VANDAAG</span>
+                        )}
                       </div>
-                      {item.notitie && (
-                        <p className="text-xs flex items-center gap-1" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)", color: "var(--warn-text)", padding: "6px 10px", borderRadius: 10 }}>
-                          <MessageSquare className="h-3 w-3 shrink-0" /> {item.notitie}
-                        </p>
-                      )}
 
-                      {/* Colleagues */}
-                      {item.collega_ids && item.collega_ids.length > 0 && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, padding: "6px 10px", borderRadius: 10, background: "var(--bg-surface-2)" }}>
-                          <Users className="h-3 w-3" style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-                          <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-                            {item.collega_ids.map(id => (collegaMap.get(id) || "Collega").split(" ")[0]).join(", ")}
-                          </span>
+                      {/* Free day / absence */}
+                      {beschItem && (
+                        <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 16, padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, opacity: 0.5 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#a0abc3' }}>beach_access</span>
+                          <span style={{ fontSize: 13, color: '#a0abc3', fontStyle: 'italic', fontFamily: 'Inter' }}>{beschItem.type === 'vakantie' ? 'Vakantie' : 'Afwezig'}</span>
                         </div>
                       )}
 
-                      {/* Week remark */}
-                      {item.week_opmerking && (
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginTop: 6, padding: "8px 10px", borderRadius: 10, background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-                          <Info className="h-3 w-3 shrink-0 mt-0.5" style={{ color: "var(--warn-text)" }} />
-                          <span style={{ fontSize: 11, color: "var(--warn-text)", lineHeight: 1.4 }}>{item.week_opmerking}</span>
+                      {/* No planning */}
+                      {!beschItem && dayItems.length === 0 && (
+                        <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 16, padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, opacity: 0.5 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#a0abc3' }}>beach_access</span>
+                          <span style={{ fontSize: 13, color: '#a0abc3', fontStyle: 'italic', fontFamily: 'Inter' }}>Geen werk gepland</span>
                         </div>
                       )}
 
-                      {/* Uren boeken section */}
-                      {item.is_definitief && (
-                        existing ? (
-                          <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-xl" style={{ background: sc!.bg, border: `1px solid ${sc!.text}33` }}>
-                            <Check className="h-3.5 w-3.5" style={{ color: sc!.text }} />
-                            <span className="text-xs font-semibold" style={{ color: sc!.text }}>
-                              {existing.uren}u geboekt
-                            </span>
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full ml-auto" style={{ background: sc!.bg, color: sc!.text }}>
-                              {sc!.label}
-                            </span>
-                          </div>
-                        ) : (
-                          <button onClick={() => openUrenModal(item)} className="w-full mt-2 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors active:scale-[0.98]" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--text-primary)" }}>
-                            <Clock className="h-3.5 w-3.5" /> Uren boeken voor deze dag →
-                          </button>
-                        )
-                      )}
+                      {/* Project cards */}
+                      {!beschItem && dayItems.length > 0 && (
+                        <div style={{
+                          display: 'flex', flexDirection: 'column', borderRadius: 16, overflow: 'hidden',
+                          border: `1px solid ${isToday ? '#feb300' : 'rgba(63,255,139,0.3)'}`,
+                          borderLeft: `4px solid ${isToday ? '#feb300' : '#3fff8b'}`,
+                        }}>
+                          {dayItems.map((item, idx) => {
+                            const boeking = existingBoekingen.get(`${dateStr}|${item.project_id}`);
+                            const isGeboekt = !!boeking;
+                            const isLast = idx === dayItems.length - 1;
+                            const adres = volledigAdres({ straat: item.project_straat, postcode: item.project_postcode, stad: item.project_stad, adres: item.project_adres });
 
-                      {/* Address + Navigate */}
-                      {item.is_definitief && (() => {
-                        const adres = volledigAdres({ straat: item.project_straat, postcode: item.project_postcode, stad: item.project_stad, adres: item.project_adres });
-                        if (!adres) return null;
-                        return (
-                          <>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, padding: "6px 0", borderTop: "1px solid var(--border)" }}>
-                              <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--text-muted)" }} />
-                              <span style={{ fontSize: 12, color: "var(--text-secondary)", flex: 1 }}>{adres}</span>
-                            </div>
-                            <button onClick={() => openNavigatie(adres)}
-                              style={{ width: "100%", marginTop: 8, padding: "10px 0", borderRadius: 12, background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer" }}>
-                              <Navigation className="h-4 w-4" />
-                              Navigeer naar werklocatie
-                            </button>
-                          </>
-                        );
-                      })()}
+                            return (
+                              <div key={item.id}>
+                                <div
+                                  onClick={() => { if (!isGeboekt && item.is_definitief) openUrenModal(item); }}
+                                  style={{
+                                    padding: 20,
+                                    background: isToday ? 'rgba(254,179,0,0.04)' : 'rgba(10,26,48,0.7)',
+                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                    cursor: isGeboekt || !item.is_definitief ? 'default' : 'pointer',
+                                    opacity: item.is_definitief ? 1 : 0.5,
+                                  }}
+                                >
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    {/* Activity badge */}
+                                    {item.activiteit && (
+                                      <div style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                                        padding: '3px 10px', borderRadius: 20, marginBottom: 6,
+                                        background: item.activiteit_kleur ? `${item.activiteit_kleur}22` : 'rgba(63,255,139,0.1)',
+                                        border: `1px solid ${item.activiteit_kleur || '#3fff8b'}44`,
+                                      }}>
+                                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.activiteit_kleur || '#3fff8b', flexShrink: 0 }} />
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: item.activiteit_kleur || '#3fff8b' }}>{item.activiteit}</span>
+                                      </div>
+                                    )}
+                                    <div style={{ fontSize: 15, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter', marginBottom: 4 }}>{item.project_naam}</div>
+                                    <div style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', marginBottom: 2 }}>{item.project_nummer}</div>
+                                    <div style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>{item.starttijd} – {item.eindtijd}</div>
+                                    {item.project_stad && (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: 12, color: '#a0abc3' }}>location_on</span>
+                                        <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>{item.project_stad}</span>
+                                      </div>
+                                    )}
+                                    {item.notitie && (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, padding: '6px 10px', borderRadius: 10, background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.2)' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#feb300' }}>chat_bubble</span>
+                                        <span style={{ fontSize: 11, color: '#feb300' }}>{item.notitie}</span>
+                                      </div>
+                                    )}
+                                    {/* Colleagues */}
+                                    {item.collega_ids && item.collega_ids.length > 0 && (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, padding: '6px 10px', borderRadius: 10, background: 'rgba(255,255,255,0.03)' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#a0abc3' }}>group</span>
+                                        <span style={{ fontSize: 11, color: '#a0abc3' }}>
+                                          {item.collega_ids.map(id => (collegaMap.get(id) || 'Collega').split(' ')[0]).join(', ')}
+                                        </span>
+                                      </div>
+                                    )}
+                                    {/* Week remark */}
+                                    {item.week_opmerking && (
+                                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginTop: 6, padding: '8px 10px', borderRadius: 10, background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.2)' }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#feb300', flexShrink: 0, marginTop: 1 }}>info</span>
+                                        <span style={{ fontSize: 11, color: '#feb300', lineHeight: 1.4 }}>{item.week_opmerking}</span>
+                                      </div>
+                                    )}
+                                    {/* Navigate button */}
+                                    {item.is_definitief && adres && (
+                                      <button onClick={(e) => { e.stopPropagation(); openNavigatie(adres); }} style={{
+                                        marginTop: 8, padding: '8px 12px', borderRadius: 10,
+                                        background: 'rgba(63,255,139,0.08)', border: '1px solid rgba(63,255,139,0.2)',
+                                        color: '#3fff8b', fontSize: 12, fontWeight: 600, fontFamily: 'Inter',
+                                        display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', width: '100%', justifyContent: 'center',
+                                      }}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>navigation</span>
+                                        Navigeer
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  {/* Status chip */}
+                                  <div style={{ flexShrink: 0, marginLeft: 12 }}>
+                                    {isGeboekt ? (
+                                      <div style={{ padding: '6px 12px', borderRadius: 9999, background: 'rgba(63,255,139,0.1)', border: '1px solid rgba(63,255,139,0.3)' }}>
+                                        <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b', textTransform: 'uppercase' }}>{boeking!.uren}U GEBOEKT</span>
+                                      </div>
+                                    ) : item.is_definitief ? (
+                                      <div style={{
+                                        padding: '6px 12px', borderRadius: 9999,
+                                        background: isToday ? '#feb300' : 'rgba(254,179,0,0.1)',
+                                        border: isToday ? 'none' : '1px solid rgba(254,179,0,0.3)',
+                                        boxShadow: isToday ? '0 0 10px rgba(254,179,0,0.3)' : 'none',
+                                      }}>
+                                        <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: isToday ? '#523700' : '#feb300', textTransform: 'uppercase' }}>NOG BOEKEN</span>
+                                      </div>
+                                    ) : (
+                                      <div style={{ padding: '6px 12px', borderRadius: 9999, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: '#a0abc3', textTransform: 'uppercase' }}>CONCEPT</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                {!isLast && <div style={{ height: 1, background: 'rgba(61,72,93,0.5)', margin: '0 20px' }} />}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
+
+                {items.length === 0 && beschikbaarheid.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '48px 20px' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 48, color: '#a0abc3', marginBottom: 12, display: 'block' }}>calendar_today</span>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter', marginBottom: 6 }}>Geen bevestigde planning</p>
+                    <p style={{ fontSize: 13, color: '#a0abc3', fontFamily: 'Inter' }}>Je manager heeft de planning nog niet gepubliceerd voor deze week.</p>
+                  </div>
+                )}
               </div>
-            );
-          })}
-
-          {items.length === 0 && beschikbaarheid.length === 0 && (
-            <EmptyState icoon="📅" titel="Geen bevestigde planning" subtitel="Je manager heeft de planning nog niet gepubliceerd voor deze week." />
-          )}
-
-          {allConcept && beschikbaarheid.length === 0 && (
-            <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-              <Lock className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
-              <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Planning in voorbereiding</p>
-              <p className="text-xs mt-1 px-6" style={{ color: "var(--text-muted)" }}>Je manager werkt nog aan de planning voor deze week. Je ziet hem zodra deze definitief is gemaakt.</p>
-            </div>
-          )}
-        </>
-      )}
-    </main>
-  );
-
-  return (
-    <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="px-4 py-3 flex items-center gap-2.5">
-          <HeaderLogo />
-          <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Mijn planning</span>
-        </div>
-      </header>
-
-      <div className="lg:hidden">
-        <PullToRefresh onRefresh={async () => { await fetchPlanning(); }}>
-          {content}
+            )}
+          </main>
         </PullToRefresh>
-      </div>
-      <div className="hidden lg:block">
-        {content}
-      </div>
 
-      {/* Uren boeken modal */}
-      {showUrenModal && modalItem && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowUrenModal(false)}>
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
-            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Uren boeken</h2>
-
-            <div className="space-y-1 rounded-xl p-3" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-              <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{modalItem.project_naam}</p>
-              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                {format(new Date(modalItem.datum + "T12:00:00"), "EEEE d MMMM", { locale: nl })} · {modalItem.starttijd} – {modalItem.eindtijd}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Werkzaamheden</label>
-              <div className="flex gap-2">
-                {["schakelen", "monteren"].map(w => (
-                  <button key={w} onClick={() => setUrenForm(f => ({ ...f, werkzaamheden: w }))} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{
-                    background: urenForm.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)",
-                    border: urenForm.werkzaamheden === w ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                    color: urenForm.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)",
-                  }}>
-                    {w}
-                  </button>
-                ))}
+        {/* AMBER STICKY BANNER */}
+        {!loading && items.some(item => item.is_definitief && !existingBoekingen.get(`${item.datum}|${item.project_id}`)) && (
+          <div style={{ position: 'fixed', bottom: 88, left: 20, right: 20, zIndex: 40 }}>
+            <div style={{
+              background: '#feb300', borderRadius: 16, padding: '14px 16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              boxShadow: '0 8px 24px rgba(254,179,0,0.35)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(82,55,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#523700', fontVariationSettings: "'FILL' 1" }}>bolt</span>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'Inter', color: '#523700' }}>Dagen nog niet volledig geboekt</span>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Aantal uren</label>
-              <div className="flex items-center justify-center gap-6">
-                <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.max(0.5, f.uren - 0.5) }))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>−</button>
-                <span className="text-3xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{urenForm.uren}u</span>
-                <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>+</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#523700', fontWeight: 700, fontSize: 12, fontFamily: 'Inter' }}>
+                Bekijk
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
               </div>
-              <div className="flex justify-center gap-2 mt-2">
-                {[4, 6, 8, 9, 10].map(h => (
-                  <button key={h} onClick={() => setUrenForm(f => ({ ...f, uren: h }))} className="px-3 py-1 rounded-lg text-xs font-medium transition-colors" style={{
-                    background: urenForm.uren === h ? "var(--accent-light)" : "var(--bg-base)",
-                    border: urenForm.uren === h ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                    color: urenForm.uren === h ? "var(--accent)" : "var(--text-muted)",
-                  }}>
-                    {h}u
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <button onClick={() => saveUren(false)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
-                Opslaan als concept
-              </button>
-              <button onClick={() => saveUren(true)} className="flex-1 py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--bg-surface)", border: "1.5px solid var(--accent)", color: "var(--accent)" }}>
-                Direct indienen
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* BOTTOM NAV */}
+        <nav style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+          background: 'rgba(3,14,32,0.9)', backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px 24px 0 0',
+          display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+          padding: '8px 16px', paddingBottom: 'max(24px, env(safe-area-inset-bottom))', height: 72,
+        }}>
+          {[
+            { path: '/', icon: 'schedule', label: 'Uren' },
+            { path: '/planning', icon: 'calendar_today', label: 'Planning' },
+            { path: '/profiel', icon: 'person', label: 'Profiel' },
+          ].map((tab) => {
+            const isActive = location.pathname === tab.path || (tab.path !== '/' && location.pathname.startsWith(tab.path));
+            return (
+              <button key={tab.path} onClick={() => navigate(tab.path)} style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                padding: '6px 12px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                background: isActive ? 'rgba(63,255,139,0.15)' : 'transparent',
+                boxShadow: isActive ? '0 0 15px rgba(63,255,139,0.2)' : 'none',
+              }}>
+                <span className="material-symbols-outlined" style={{
+                  fontSize: isActive ? 22 : 20,
+                  color: isActive ? '#3fff8b' : 'rgba(218,230,255,0.5)',
+                  fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400",
+                }}>{tab.icon}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', color: isActive ? '#3fff8b' : 'rgba(218,230,255,0.5)' }}>{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* UREN MODAL */}
+        {showUrenModal && modalItem && (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}
+            onClick={() => setShowUrenModal(false)}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '100%', maxWidth: 480, background: 'rgba(10,26,48,0.97)', backdropFilter: 'blur(24px)',
+                borderRadius: '40px 40px 0 0', borderTop: '1px solid rgba(255,255,255,0.1)',
+                maxHeight: '80vh', overflowY: 'auto', paddingBottom: 40,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
+                <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
+              </div>
+              <div style={{ padding: '0 24px' }}>
+                <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 24, color: '#dae6ff', marginBottom: 20 }}>Uren boeken</h2>
+
+                <div style={{ padding: 16, borderRadius: 16, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 24 }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter' }}>{modalItem.project_naam}</p>
+                  <p style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', marginTop: 4 }}>
+                    {format(new Date(modalItem.datum + 'T12:00:00'), 'EEEE d MMMM', { locale: nl })} · {modalItem.starttijd} – {modalItem.eindtijd}
+                  </p>
+                </div>
+
+                <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 12 }}>Werkzaamheden</p>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+                  {['schakelen', 'monteren'].map(w => (
+                    <button key={w} onClick={() => setUrenForm(f => ({ ...f, werkzaamheden: w }))} style={{
+                      flex: 1, padding: '14px 0', borderRadius: 16,
+                      border: urenForm.werkzaamheden === w ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
+                      background: urenForm.werkzaamheden === w ? 'rgba(63,255,139,0.05)' : '#061327',
+                      color: urenForm.werkzaamheden === w ? '#3fff8b' : '#a0abc3',
+                      fontFamily: 'Inter', fontWeight: 700, fontSize: 14, textTransform: 'capitalize', cursor: 'pointer',
+                    }}>{w}</button>
+                  ))}
+                </div>
+
+                <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 24, textAlign: 'center' }}>Aantal uren</p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, marginBottom: 24 }}>
+                  <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.max(0.5, f.uren - 0.5) }))} style={{
+                    width: 56, height: 56, borderRadius: '50%', background: '#142640', border: '2px solid rgba(255,113,108,0.3)',
+                    color: '#dae6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>remove</span>
+                  </button>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 72, color: '#dae6ff', lineHeight: 1 }}>{urenForm.uren}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: -4 }}>UUR</div>
+                  </div>
+                  <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))} style={{
+                    width: 56, height: 56, borderRadius: '50%', background: 'rgba(63,255,139,0.2)', border: '2px solid rgba(63,255,139,0.3)',
+                    color: '#3fff8b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                    boxShadow: '0 0 20px rgba(63,255,139,0.15)',
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>add</span>
+                  </button>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 32 }}>
+                  {[4, 6, 8, 9, 10].map(h => (
+                    <button key={h} onClick={() => setUrenForm(f => ({ ...f, uren: h }))} style={{
+                      padding: '10px 18px', borderRadius: 9999,
+                      border: urenForm.uren === h ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
+                      background: urenForm.uren === h ? 'rgba(63,255,139,0.1)' : '#061327',
+                      color: urenForm.uren === h ? '#3fff8b' : '#dae6ff',
+                      fontFamily: 'Manrope', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                    }}>{h}u</button>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => saveUren(false)} style={{
+                    flex: 1, height: 56, borderRadius: 16, background: '#3fff8b', color: '#005d2c',
+                    fontFamily: 'Manrope', fontWeight: 800, fontSize: 15, textTransform: 'uppercase', letterSpacing: '0.05em',
+                    border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    boxShadow: '0 8px 32px rgba(63,255,139,0.2)',
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 20, fontVariationSettings: "'FILL' 1" }}>save</span>
+                    CONCEPT
+                  </button>
+                  <button onClick={() => saveUren(true)} style={{
+                    flex: 1, height: 56, borderRadius: 16, background: 'transparent',
+                    border: '2px solid #3fff8b', color: '#3fff8b',
+                    fontFamily: 'Manrope', fontWeight: 800, fontSize: 15, textTransform: 'uppercase', letterSpacing: '0.05em',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 20, fontVariationSettings: "'FILL' 1" }}>send</span>
+                    INDIENEN
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </PageShell>
   );
 }
