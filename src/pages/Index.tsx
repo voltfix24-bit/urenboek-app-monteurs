@@ -3,7 +3,7 @@ import { subWeeks } from "date-fns";
 import { useProfile } from "@/hooks/useProfile";
 import { useTimesheet } from "@/hooks/useTimesheet";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSwipe } from "@/hooks/useSwipe";
 import { EntryCard } from "@/components/EntryCard";
 import { ListSkeleton, UrenCardSkeleton } from "@/components/ui/Skeletons";
@@ -15,7 +15,7 @@ import { FolderOpen, Building2, ArrowRight, ClipboardList, AlertTriangle, WifiOf
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, startOfWeek, addDays } from "date-fns";
+import { format, startOfWeek, addDays, getISOWeek } from "date-fns";
 import { queueOfflineEntry, syncOfflineEntries, getPendingCount } from "@/lib/offlineQueue";
 import { checkOveruren } from "@/lib/overurenCheck";
 
