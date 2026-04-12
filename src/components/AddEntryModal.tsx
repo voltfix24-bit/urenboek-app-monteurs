@@ -74,131 +74,257 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center animate-fade-in"
-      style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)", opacity: isDragging ? Math.max(0.2, 1 - dragY / 300) : 1 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.6)',
+        backdropFilter: 'blur(6px)',
+      }}
       onClick={onClose}
     >
       <div
         ref={sheetRef}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[430px] mx-auto animate-sheet-up"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         style={{
-          background: "var(--bg-surface)",
-          borderRadius: "24px 24px 0 0",
-          padding: "20px 20px 48px",
-          border: "1px solid var(--border)",
-          borderBottom: "none",
-          minHeight: 360,
-          maxHeight: "85vh",
-          overflowY: "auto" as const,
+          width: '100%',
+          maxWidth: 480,
+          background: 'rgba(10,26,48,0.97)',
+          backdropFilter: 'blur(24px)',
+          borderRadius: '40px 40px 0 0',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           transform: `translateY(${dragY}px)`,
-          transition: isDragging ? "none" : "transform 0.3s ease",
+          transition: isDragging ? 'none' : 'transform 0.3s ease',
+          paddingBottom: 40,
         }}
       >
-        <div
-          className="flex justify-center mb-5 py-2 cursor-grab active:cursor-grabbing"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div className="w-10 h-1 rounded-full" style={{ background: "var(--border)" }} />
+        {/* Handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
+          <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
         </div>
 
-        <div className="flex gap-1.5 mb-6">
-          {[1, 2, 3].map((s) => (
-            <div key={s} className="h-1 flex-1 rounded-full transition-all duration-300" style={{ background: step >= s ? "var(--accent)" : "var(--border)" }} />
-          ))}
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px 24px' }}>
+          <span style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 28, color: '#dae6ff' }}>
+            Uren registreren
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              width: 40, height: 40, borderRadius: '50%', background: '#142640',
+              border: 'none', color: '#a0abc3', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+          </button>
         </div>
 
-        {step === 1 && (
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Kies een dag</h3>
-              <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Voor welke dag wil je uren boeken?</p>
-            </div>
-            <div className="space-y-2">
-              {weekDays.map((d, i) => {
-                const isToday = dateKey(d) === today;
+        <div style={{ padding: '0 24px' }}>
+          {/* SECTION 1 — DAG SELECTEREN */}
+          <div style={{ marginBottom: 32 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 12 }}>
+              Dag selecteren
+            </p>
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, scrollbarWidth: 'none', position: 'relative' }}>
+              {weekDays.slice(0, 5).map((day, i) => {
+                const DAGEN_SHORT = ['Ma', 'Di', 'Wo', 'Do', 'Vr'];
+                const dateStr = day.toISOString().split('T')[0];
+                const isSelected = selectedDate?.toISOString().split('T')[0] === dateStr;
                 return (
-                  <button key={i} onClick={() => { setSelectedDate(d); setStep(2); }} className="w-full flex items-center justify-between transition-colors active:scale-[0.97]" style={{ padding: "14px 16px", borderRadius: 14, background: isToday ? "var(--accent-light)" : "var(--bg-base)", border: isToday ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: "var(--text-primary)", fontSize: 14, fontWeight: 500 }}>
-                    <span>{DAGEN[i]} {d.getDate()} {MAANDEN[d.getMonth()]}</span>
-                    {isToday && <span className="text-[11px] font-medium" style={{ color: "var(--accent)" }}>Vandaag</span>}
+                  <button
+                    key={i}
+                    onClick={() => setSelectedDate(day)}
+                    style={{
+                      minWidth: 68, height: 56, borderRadius: 16,
+                      border: isSelected ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
+                      background: isSelected ? '#3fff8b' : '#102038',
+                      cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, flexShrink: 0,
+                      boxShadow: isSelected ? '0 0 12px rgba(63,255,139,0.3)' : 'none',
+                    }}
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'Inter', color: isSelected ? '#005d2c' : '#a0abc3' }}>
+                      {DAGEN_SHORT[i]}
+                    </span>
+                    <span style={{ fontSize: 10, fontWeight: 600, fontFamily: 'Inter', color: isSelected ? '#004820' : 'rgba(160,171,195,0.6)' }}>
+                      {day.getDate()} {['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][day.getMonth()]}
+                    </span>
                   </button>
                 );
               })}
             </div>
           </div>
-        )}
 
-        {step === 2 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setStep(1)} className="text-lg" style={{ background: "none", color: "var(--text-muted)" }}>←</button>
-              <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Kies project</h3>
-            </div>
-            {selectedDate && (
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                {DAGEN[selectedDate.getDay() === 0 ? 6 : selectedDate.getDay() - 1]} {selectedDate.getDate()} {MAANDEN[selectedDate.getMonth()]}
-              </p>
-            )}
-            <div className="space-y-2">
-              {loading ? (
-                <p className="text-xs text-center py-4" style={{ color: "var(--text-muted)" }}>Laden...</p>
-              ) : (
-                projects.map((p) => (
-                  <button key={p.id} onClick={() => { setForm((f) => ({ ...f, projectId: p.id })); setStep(3); }} className="w-full text-left transition-colors active:scale-[0.97]" style={{ padding: "14px 16px", borderRadius: 14, background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
-                    <p className="text-sm font-semibold">{p.naam}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{p.nummer}</p>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-5">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setStep(2)} className="text-lg" style={{ background: "none", color: "var(--text-muted)" }}>←</button>
-              <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Uren invullen</h3>
-            </div>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              {proj?.naam} · {selectedDate && `${selectedDate.getDate()} ${MAANDEN[selectedDate.getMonth()]}`}
+          {/* SECTION 2 — PROJECT SELECTEREN */}
+          <div style={{ marginBottom: 32 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 12 }}>
+              Project selecteren
             </p>
-
-            <div className="space-y-2">
-              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: formErrors.werkzaamheden ? "var(--danger)" : "var(--text-muted)" }}>Soort werkzaamheden</label>
-              <div className="flex gap-2">
-                {["schakelen", "monteren"].map((w) => (
-                  <button key={w} onClick={() => { setForm((f) => ({ ...f, werkzaamheden: w })); setFormErrors(prev => { const n = { ...prev }; delete n.werkzaamheden; return n; }); }} className="flex-1 py-3 rounded-xl text-sm font-semibold capitalize transition-colors" style={{ background: form.werkzaamheden === w ? "var(--accent-light)" : "var(--bg-base)", border: form.werkzaamheden === w ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: form.werkzaamheden === w ? "var(--accent)" : "var(--text-muted)" }}>
-                    {w}
-                  </button>
-                ))}
+            {loading ? (
+              <div style={{ padding: 20, textAlign: 'center', color: '#a0abc3', fontSize: 13 }}>Projecten laden...</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {projects.map((project) => {
+                  const isActive = form.projectId === project.id;
+                  return (
+                    <button
+                      key={project.id}
+                      onClick={() => setForm(f => ({ ...f, projectId: project.id }))}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 20, borderRadius: 16,
+                        border: isActive ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.05)',
+                        background: isActive ? 'rgba(63,255,139,0.05)' : '#061327',
+                        cursor: 'pointer', boxShadow: isActive ? '0 0 20px rgba(63,255,139,0.1)' : 'none',
+                        opacity: isActive ? 1 : 0.7, textAlign: 'left', width: '100%',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                        <div style={{
+                          width: 48, height: 48, borderRadius: 12,
+                          background: isActive ? 'rgba(63,255,139,0.2)' : '#142640',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                        }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 22, color: isActive ? '#3fff8b' : '#a0abc3' }}>factory</span>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Inter', color: isActive ? '#3fff8b' : '#dae6ff', marginBottom: 4 }}>
+                            {project.naam || project.nummer}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter' }}>0u geboekt vandaag</span>
+                            <span style={{ fontSize: 10, color: '#a0abc3', opacity: 0.4 }}>•</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: 12, color: '#a0abc3' }}>location_on</span>
+                            <span style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter' }}>{project.stad || project.adres || ''}</span>
+                          </div>
+                        </div>
+                      </div>
+                      {isActive && (
+                        <span className="material-symbols-outlined" style={{ fontSize: 24, color: '#3fff8b', fontVariationSettings: "'FILL' 1", flexShrink: 0 }}>check_circle</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-              {formErrors.werkzaamheden && <p className="text-[10px] font-medium" style={{ color: "var(--danger)" }}>⚠ {formErrors.werkzaamheden}</p>}
+            )}
+            {formErrors.projectId && (
+              <p style={{ fontSize: 11, color: '#ff716c', marginTop: 6, fontFamily: 'Inter' }}>{formErrors.projectId}</p>
+            )}
+          </div>
+
+          {/* SECTION 3 — AANTAL UREN */}
+          <div style={{ marginBottom: 32 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 24, textAlign: 'center' }}>
+              Aantal uren
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, marginBottom: 24 }}>
+              <button
+                onClick={() => setForm(f => ({ ...f, uren: Math.max(0.5, f.uren - 0.5) }))}
+                style={{
+                  width: 64, height: 64, borderRadius: '50%', background: '#142640',
+                  border: '2px solid rgba(255,113,108,0.3)', color: '#dae6ff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 28,
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 28 }}>remove</span>
+              </button>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 96, color: '#dae6ff', lineHeight: 1 }}>{form.uren}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: -8 }}>UUR</div>
+              </div>
+              <button
+                onClick={() => setForm(f => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))}
+                style={{
+                  width: 64, height: 64, borderRadius: '50%', background: 'rgba(63,255,139,0.2)',
+                  border: '2px solid rgba(63,255,139,0.3)', color: '#3fff8b',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                  boxShadow: '0 0 20px rgba(63,255,139,0.15)',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 28 }}>add</span>
+              </button>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Aantal uren</label>
-              <div className="flex items-center justify-center gap-6">
-                <button onClick={() => setForm((f) => ({ ...f, uren: Math.max(0.5, f.uren - 0.5) }))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>−</button>
-                <span className="text-3xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{form.uren}u</span>
-                <button onClick={() => setForm((f) => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>+</button>
-              </div>
-              <div className="flex justify-center gap-2 mt-2">
-                {[4, 6, 8, 9, 10].map((h) => (
-                  <button key={h} onClick={() => setForm((f) => ({ ...f, uren: h }))} className="px-3 py-1 rounded-lg text-xs font-medium transition-colors" style={{ background: form.uren === h ? "var(--accent-light)" : "var(--bg-base)", border: form.uren === h ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: form.uren === h ? "var(--accent)" : "var(--text-muted)" }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
+              {[4, 6, 8, 10].map((h) => {
+                const isActive = form.uren === h;
+                return (
+                  <button
+                    key={h}
+                    onClick={() => setForm(f => ({ ...f, uren: h }))}
+                    style={{
+                      padding: '10px 20px', borderRadius: 9999,
+                      border: isActive ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
+                      background: isActive ? 'rgba(63,255,139,0.1)' : '#061327',
+                      color: isActive ? '#3fff8b' : '#dae6ff',
+                      fontFamily: 'Manrope', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                      boxShadow: isActive ? '0 0 10px rgba(63,255,139,0.1)' : 'none',
+                    }}
+                  >
                     {h}u
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
-
-            <button onClick={handleSubmit} disabled={!form.werkzaamheden} className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff", boxShadow: "0 8px 24px color-mix(in srgb, var(--accent) 30%, transparent)" }}>
-              Opslaan als concept
-            </button>
+            {formErrors.uren && (
+              <p style={{ fontSize: 11, color: '#ff716c', marginTop: 8, textAlign: 'center', fontFamily: 'Inter' }}>{formErrors.uren}</p>
+            )}
           </div>
-        )}
+
+          {/* SECTION 4 — OPMERKINGEN */}
+          <div style={{ marginBottom: 24 }}>
+            <button
+              onClick={() => setForm(f => ({ ...f, werkzaamheden: f.werkzaamheden === null ? '' : null }))}
+              style={{
+                width: '100%', padding: '16px 20px', borderRadius: 16,
+                border: '1px solid rgba(255,255,255,0.07)', background: '#061327',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3' }}>notes</span>
+                <span style={{ fontSize: 13, fontFamily: 'Inter', color: '#a0abc3', fontStyle: 'italic' }}>
+                  {form.werkzaamheden !== null ? (form.werkzaamheden || 'Typ opmerkingen...') : 'Opmerkingen toevoegen...'}
+                </span>
+              </div>
+              <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3' }}>
+                {form.werkzaamheden !== null ? 'expand_less' : 'expand_more'}
+              </span>
+            </button>
+            {form.werkzaamheden !== null && (
+              <textarea
+                value={form.werkzaamheden}
+                onChange={(e) => setForm(f => ({ ...f, werkzaamheden: e.target.value }))}
+                placeholder="Beschrijf de werkzaamheden..."
+                rows={3}
+                style={{
+                  width: '100%', marginTop: 8, padding: '12px 16px', borderRadius: 16,
+                  border: '1px solid rgba(63,255,139,0.3)', background: '#061327',
+                  color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+            )}
+          </div>
+
+          {/* OPSLAAN BUTTON */}
+          <button
+            onClick={handleSubmit}
+            style={{
+              width: '100%', height: 64, borderRadius: 16, background: '#3fff8b', color: '#005d2c',
+              fontFamily: 'Manrope', fontWeight: 800, fontSize: 18, textTransform: 'uppercase', letterSpacing: '0.1em',
+              border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              boxShadow: '0 8px 32px rgba(63,255,139,0.2)',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>save</span>
+            OPSLAAN
+          </button>
+        </div>
       </div>
     </div>
   );
