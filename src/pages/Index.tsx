@@ -201,7 +201,7 @@ const Index = () => {
 
       {/* ── MAIN CONTENT ── */}
       <PullToRefresh onRefresh={handleRefresh}>
-        <div style={{ padding: "20px 20px 160px 20px" }}>
+        <div style={{ padding: "20px 20px 180px 20px" }}>
 
           {/* WEEK HEADER */}
           <div style={{ marginBottom: 20 }}>
@@ -414,7 +414,7 @@ const Index = () => {
 
       {/* ── FAB ── */}
       {profileCtx?.account_status !== "onboarding" && (
-        <div style={{ position: "fixed", bottom: 90, left: 0, right: 0, zIndex: 40, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
+        <div style={{ position: "fixed", bottom: 96, left: 0, right: 0, zIndex: 40, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
           <button onClick={() => openModal()} style={{
             pointerEvents: "all", minWidth: 280, height: 56, borderRadius: 9999,
             background: "#3fff8b", color: "#005d2c", fontFamily: "Manrope", fontWeight: 800, fontSize: 16,
