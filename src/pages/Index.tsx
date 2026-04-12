@@ -55,6 +55,7 @@ const Index = () => {
   const { user, profile, isManager } = useAuth();
   const { profile: profileCtx } = useProfile();
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<"week" | "overzicht">("week");
   const [showModal, setShowModal] = useState(false);
   const [modalDate, setModalDate] = useState<Date | null>(null);
