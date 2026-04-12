@@ -334,349 +334,432 @@ export default function Profiel() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="px-4 py-3 flex items-center gap-2.5">
-          <HeaderLogo />
-          <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Profiel</span>
-        </div>
-      </header>
+      <div style={{ background: '#030e20', minHeight: '100dvh', paddingBottom: 120 }}>
+        {/* HEADER */}
+        <header style={{
+          position: 'sticky', top: 0, zIndex: 50,
+          background: 'rgba(3,14,32,0.9)', backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <span style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 20, color: '#dae6ff' }}>Mijn Profiel</span>
+          <button onClick={signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#ff716c', fontSize: 13, fontFamily: 'Inter', fontWeight: 600 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>logout</span>
+          </button>
+        </header>
 
-      <main className="px-4 py-4 space-y-4">
-        <div className="flex flex-col items-center gap-3 py-4">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold" style={{ background: AVATAR_COLORS[0], color: "#fff" }}>
-            {profile?.full_name?.charAt(0)?.toUpperCase() || "?"}
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{profile?.full_name}</p>
-            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full mt-1 inline-block" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
-              {rolLabel}
-            </span>
-          </div>
-        </div>
-
-        {/* Onboarding banner */}
-        {profile?.account_status === 'onboarding' && (
-          <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--warn-text)" }}>⚠ Je account is nog niet actief</p>
-              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Vul je gegevens aan en rond je onboarding af.</p>
+        <main style={{ padding: '24px 20px' }}>
+          {/* HERO CARD */}
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+            backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)',
+            borderRadius: 24, padding: '32px 24px', marginBottom: 20,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{ position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(63,255,139,0.15), transparent)', pointerEvents: 'none' }} />
+            <div style={{
+              width: 80, height: 80, borderRadius: '50%', background: '#3fff8b',
+              border: '3px solid rgba(63,255,139,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'Manrope', fontWeight: 800, fontSize: 28, color: '#005d2c', marginBottom: 16,
+              boxShadow: '0 0 30px rgba(63,255,139,0.2)', position: 'relative', zIndex: 1,
+            }}>
+              {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
-            <button onClick={() => window.location.href = "/onboarding-welkom"} className="px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0" style={{ background: "var(--accent)", color: "#fff" }}>
-              Naar onboarding →
-            </button>
+            <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 24, color: '#dae6ff', marginBottom: 8, position: 'relative', zIndex: 1 }}>
+              {profile?.full_name || 'Naam'}
+            </h2>
+            <div style={{ padding: '4px 14px', borderRadius: 9999, background: 'rgba(63,255,139,0.15)', border: '1px solid rgba(63,255,139,0.3)', marginBottom: 6, position: 'relative', zIndex: 1 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{rolLabel}</span>
+            </div>
+            <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', position: 'relative', zIndex: 1 }}>TerreVolt BV</span>
           </div>
-        )}
 
-        {/* Mijn gegevens */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Mijn gegevens</p>
-            <button onClick={() => editing ? saveProfile() : setEditing(true)} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "var(--accent)" }}>
-              {editing ? <><Save className="h-3 w-3" /> Opslaan</> : <><Edit2 className="h-3 w-3" /> Bewerken</>}
-            </button>
-          </div>
-          {editing ? (
-            <div className="space-y-2">
-              {[{ label: "Naam", key: "full_name" as const }, { label: "Telefoon", key: "telefoon" as const }, { label: "Adres", key: "adres" as const }].map(f => (
-                <div key={f.key}>
-                  <label className="text-[10px] font-medium" style={{ color: profileErrors[f.key] ? "var(--danger)" : "var(--text-muted)" }}>{f.label}</label>
-                  <input value={editForm[f.key]} onChange={e => { setEditForm({ ...editForm, [f.key]: e.target.value }); if (profileErrors[f.key]) setProfileErrors(prev => { const n = { ...prev }; delete n[f.key]; return n; }); }} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: profileErrors[f.key] ? "1.5px solid var(--danger)" : "1px solid var(--border)", color: "var(--text-primary)" }} />
-                  {profileErrors[f.key] && <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--danger)" }}>⚠ {profileErrors[f.key]}</p>}
-                </div>
-              ))}
-              {/* Geboortedatum */}
+          {/* Onboarding banner */}
+          {profile?.account_status === 'onboarding' && (
+            <div style={{ padding: '14px 16px', borderRadius: 16, background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.2)', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <div>
-                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Geboortedatum</label>
-                <input type="date" value={editForm.geboortedatum} onChange={e => setEditForm({ ...editForm, geboortedatum: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#feb300', fontFamily: 'Inter' }}>⚠ Account nog niet actief</p>
+                <p style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', marginTop: 2 }}>Vul je gegevens aan en rond je onboarding af.</p>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Email</span><span style={{ color: "var(--text-primary)" }}>{user?.email}</span></div>
-              <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Telefoon</span><span style={{ color: "var(--text-primary)" }}>{profile?.telefoon || "–"}</span></div>
-              <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Adres</span><span style={{ color: "var(--text-primary)" }}>{profile?.adres || "–"}</span></div>
-              <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Geboortedatum</span><span style={{ color: "var(--text-primary)" }}>{profile?.geboortedatum ? formatDatum(profile.geboortedatum) : "–"}</span></div>
+              <button onClick={() => window.location.href = '/onboarding-welkom'} style={{ padding: '6px 12px', borderRadius: 12, background: '#3fff8b', color: '#005d2c', fontFamily: 'Inter', fontWeight: 700, fontSize: 11, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>Naar onboarding →</button>
             </div>
           )}
-        </div>
 
-        {/* ZZP Gegevens */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>ZZP Gegevens</p>
-            <div className="flex items-center gap-2">
-              {!editingZzp && (profile?.kvk_nummer && profile?.iban ? (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--success-light)", color: "var(--success)" }}>✓ Compleet</span>
-              ) : (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}>⚠ Incompleet</span>
-              ))}
-              <button onClick={() => editingZzp ? saveZzp() : setEditingZzp(true)} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "var(--accent)" }}>
-                {editingZzp ? <><Save className="h-3 w-3" /> Opslaan</> : <><Edit2 className="h-3 w-3" /> Bewerken</>}
+          {/* MIJN GEGEVENS */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, marginBottom: 12, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(61,72,93,0.3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3' }}>person</span>
+                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Inter', color: '#dae6ff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mijn gegevens</span>
+              </div>
+              <button onClick={() => editing ? saveProfile() : setEditing(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: '#3fff8b', fontSize: 12, fontWeight: 700, fontFamily: 'Inter' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{editing ? 'save' : 'edit'}</span>
+                {editing ? 'Opslaan' : 'Bewerken'}
               </button>
             </div>
-          </div>
-          {editingZzp ? (
-            <div className="space-y-2">
-              {[
-                { label: "Bedrijfsnaam", key: "bedrijfsnaam" as const },
-                { label: "KvK-nummer", key: "kvk_nummer" as const },
-                { label: "BTW-nummer", key: "btw_nummer" as const },
-                { label: "IBAN", key: "iban" as const },
-                { label: "Factuuradres", key: "factuuradres" as const },
-              ].map(f => (
-                <div key={f.key}>
-                  <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{f.label}</label>
-                  <input value={zzpEditForm[f.key]} onChange={e => setZzpEditForm({ ...zzpEditForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+            <div style={{ padding: '16px 20px' }}>
+              {editing ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {[{ label: 'Naam', key: 'full_name' as const }, { label: 'Telefoon', key: 'telefoon' as const }, { label: 'Adres', key: 'adres' as const }].map(f => (
+                    <div key={f.key}>
+                      <label style={{ fontSize: 10, fontWeight: 600, color: profileErrors[f.key] ? '#ff716c' : '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{f.label}</label>
+                      <input value={editForm[f.key]} onChange={e => { setEditForm({ ...editForm, [f.key]: e.target.value }); if (profileErrors[f.key]) setProfileErrors(prev => { const n = { ...prev }; delete n[f.key]; return n; }); }} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: profileErrors[f.key] ? '1.5px solid #ff716c' : '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                      {profileErrors[f.key] && <p style={{ fontSize: 10, color: '#ff716c', marginTop: 2, fontFamily: 'Inter' }}>⚠ {profileErrors[f.key]}</p>}
+                    </div>
+                  ))}
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Geboortedatum</label>
+                    <input type="date" value={editForm.geboortedatum} onChange={e => setEditForm({ ...editForm, geboortedatum: e.target.value })} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
+                  </div>
                 </div>
-              ))}
-              <div>
-                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Betalingstermijn (dagen)</label>
-                <input type="number" value={zzpEditForm.betalingstermijn} onChange={e => setZzpEditForm({ ...zzpEditForm, betalingstermijn: Number(e.target.value) || 30 })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-              </div>
-              <button onClick={() => { setEditingZzp(false); setZzpEditForm({ bedrijfsnaam: profile?.bedrijfsnaam || "", kvk_nummer: profile?.kvk_nummer || "", btw_nummer: profile?.btw_nummer || "", iban: profile?.iban || "", factuuradres: profile?.factuuradres || "", betalingstermijn: profile?.betalingstermijn || 30 }); }} className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Annuleren</button>
-            </div>
-          ) : (
-            <>
-              {(!profile?.kvk_nummer || !profile?.iban) && (
-                <div className="rounded-xl p-2.5 flex items-start gap-2" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-                  <span className="text-xs" style={{ color: "var(--warn-text)" }}>⚠ Vul je ZZP gegevens aan om inkooporders te kunnen ontvangen</span>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {[
+                    { icon: 'mail', label: 'Email', value: user?.email },
+                    { icon: 'phone', label: 'Telefoon', value: profile?.telefoon },
+                    { icon: 'home', label: 'Adres', value: profile?.adres },
+                    { icon: 'cake', label: 'Geboortedatum', value: profile?.geboortedatum ? formatDatum(profile.geboortedatum) : null },
+                  ].map((row, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: i < 3 ? '1px solid rgba(61,72,93,0.3)' : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#a0abc3' }}>{row.icon}</span>
+                        <span style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{row.label}</span>
+                      </div>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#dae6ff', fontFamily: 'Inter' }}>{row.value || '—'}</span>
+                    </div>
+                  ))}
                 </div>
               )}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Bedrijfsnaam</span><span style={{ color: "var(--text-primary)" }}>{profile?.bedrijfsnaam || "–"}</span></div>
-                <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>KvK-nummer</span><span className="font-mono" style={{ color: profile?.kvk_nummer ? "var(--text-primary)" : "var(--warn-text)" }}>{profile?.kvk_nummer || "Niet ingevuld"}</span></div>
-                <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>BTW-nummer</span><span className="font-mono" style={{ color: "var(--text-primary)" }}>{profile?.btw_nummer || "–"}</span></div>
-                <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>IBAN</span><span className="font-mono" style={{ color: profile?.iban ? "var(--text-primary)" : "var(--warn-text)" }}>{profile?.iban || "Niet ingevuld"}</span></div>
-                {permissies.zietProjectFinancien && profile?.uurtarief != null && <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Uurtarief</span><span className="font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(profile.uurtarief).toFixed(2)}</span></div>}
-                <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Factuuradres</span><span style={{ color: "var(--text-primary)" }}>{profile?.factuuradres || "–"}</span></div>
-                <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Betalingstermijn</span><span style={{ color: "var(--text-primary)" }}>{profile?.betalingstermijn || 30} dagen</span></div>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Manager handtekening section */}
-        {permissies.zietDashboard && <ManagerHandtekeningSection profileId={profile?.id || null} />}
-
-        {/* Monteur contract section */}
-        {!permissies.zietDashboard && <MonteurContractSection profileId={profile?.id || null} />}
-
-        {/* Beschikbaarheid & Kalender */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Beschikbaarheid</p>
-
-          {/* Vaste vrije dagen */}
-          <div>
-            <p className="text-[10px] font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Vaste vrije dagen</p>
-            <div className="flex gap-1.5">
-              {[1, 2, 3, 4, 5, 6, 0].map(dag => {
-                const active = profile?.vaste_vrije_dagen?.includes(dag);
-                return (
-                  <button key={dag} onClick={() => toggleVrijeDag(dag)} className="flex-1 py-2 rounded-xl text-[11px] font-semibold" style={{
-                    background: active ? "var(--accent-light)" : "var(--bg-base)",
-                    border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                    color: active ? "var(--accent)" : "var(--text-muted)",
-                  }}>{DAGEN_LABEL[dag]}</button>
-                );
-              })}
             </div>
           </div>
 
-          {/* Calendar */}
-          <div className="rounded-xl p-3" style={{ background: "var(--bg-base)", border: "1px solid var(--bg-surface-2)" }}>
-            <div className="flex items-center justify-between mb-3">
-              <button onClick={() => setCalMonth(subMonths(calMonth, 1))} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface)" }}>
-                <ChevronLeft className="h-4 w-4" style={{ color: "var(--text-secondary)" }} />
-              </button>
-              <span className="text-sm font-semibold capitalize" style={{ color: "var(--text-primary)" }}>
-                {format(calMonth, "MMMM yyyy", { locale: nl })}
-              </span>
-              <button onClick={() => setCalMonth(addMonths(calMonth, 1))} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface)" }}>
-                <ChevronRight className="h-4 w-4" style={{ color: "var(--text-secondary)" }} />
-              </button>
+          {/* ZZP GEGEVENS */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, marginBottom: 12, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(61,72,93,0.3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3' }}>business_center</span>
+                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Inter', color: '#dae6ff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ZZP Gegevens</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {!editingZzp && (profile?.kvk_nummer && profile?.iban ? (
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 9999, background: 'rgba(63,255,139,0.1)', color: '#3fff8b', fontFamily: 'Inter' }}>✓ COMPLEET</span>
+                ) : (
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 9999, background: 'rgba(254,179,0,0.1)', color: '#feb300', fontFamily: 'Inter' }}>⚠ INCOMPLEET</span>
+                ))}
+                <button onClick={() => editingZzp ? saveZzp() : setEditingZzp(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: '#3fff8b', fontSize: 12, fontWeight: 700, fontFamily: 'Inter' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{editingZzp ? 'save' : 'edit'}</span>
+                </button>
+              </div>
             </div>
-            {/* Day headers */}
-            <div className="grid grid-cols-7 gap-0.5 mb-1">
-              {["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"].map(d => (
-                <div key={d} className="text-center text-[9px] font-semibold py-1" style={{ color: "var(--text-muted)" }}>{d}</div>
-              ))}
-            </div>
-            {/* Day cells */}
-            <div className="grid grid-cols-7 gap-0.5">
-              {/* Padding for start of month (convert Sun=0 to Mon-based) */}
-              {Array.from({ length: (startPad + 6) % 7 }).map((_, i) => (
-                <div key={`pad-${i}`} className="h-9" />
-              ))}
-              {days.map(day => {
-                const status = getDayStatus(day);
-                const isToday = isSameDay(day, new Date());
-                const tc = status ? (TYPE_COLORS[status.type] || TYPE_COLORS.anders) : null;
-                return (
-                  <div key={day.toISOString()} className="h-9 flex flex-col items-center justify-center rounded-lg relative" style={{
-                    background: tc ? tc.bg : isToday ? "var(--accent-light)" : "transparent",
-                    border: isToday ? "1.5px solid var(--accent)" : tc ? `1px solid ${tc.border}` : "1px solid transparent",
-                  }}>
-                    <span className="text-[11px] font-medium" style={{ color: tc ? tc.dot : isToday ? "var(--text-primary)" : "var(--text-secondary)" }}>
-                      {format(day, "d")}
-                    </span>
-                    {tc && (
-                      <span className="w-1.5 h-1.5 rounded-full absolute bottom-1" style={{ background: tc.dot }} />
+            <div style={{ padding: '16px 20px' }}>
+              {editingZzp ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {[
+                    { label: 'Bedrijfsnaam', key: 'bedrijfsnaam' as const },
+                    { label: 'KvK-nummer', key: 'kvk_nummer' as const },
+                    { label: 'BTW-nummer', key: 'btw_nummer' as const },
+                    { label: 'IBAN', key: 'iban' as const },
+                    { label: 'Factuuradres', key: 'factuuradres' as const },
+                  ].map(f => (
+                    <div key={f.key}>
+                      <label style={{ fontSize: 10, fontWeight: 600, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{f.label}</label>
+                      <input value={zzpEditForm[f.key]} onChange={e => setZzpEditForm({ ...zzpEditForm, [f.key]: e.target.value })} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+                  ))}
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Betalingstermijn (dagen)</label>
+                    <input type="number" value={zzpEditForm.betalingstermijn} onChange={e => setZzpEditForm({ ...zzpEditForm, betalingstermijn: Number(e.target.value) || 30 })} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                  <button onClick={() => { setEditingZzp(false); setZzpEditForm({ bedrijfsnaam: profile?.bedrijfsnaam || '', kvk_nummer: profile?.kvk_nummer || '', btw_nummer: profile?.btw_nummer || '', iban: profile?.iban || '', factuuradres: profile?.factuuradres || '', betalingstermijn: profile?.betalingstermijn || 30 }); }} style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', background: 'none', border: 'none', cursor: 'pointer' }}>Annuleren</button>
+                </div>
+              ) : (
+                <>
+                  {(!profile?.kvk_nummer || !profile?.iban) && (
+                    <div style={{ padding: '10px 14px', borderRadius: 12, background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.2)', marginBottom: 12 }}>
+                      <span style={{ fontSize: 12, color: '#feb300' }}>⚠ Vul je ZZP gegevens aan om inkooporders te kunnen ontvangen</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    {[
+                      { label: 'Bedrijfsnaam', value: profile?.bedrijfsnaam },
+                      { label: 'KvK-nummer', value: profile?.kvk_nummer, warn: !profile?.kvk_nummer },
+                      { label: 'BTW-nummer', value: profile?.btw_nummer },
+                      { label: 'IBAN', value: profile?.iban, warn: !profile?.iban },
+                      { label: 'Factuuradres', value: profile?.factuuradres },
+                      { label: 'Betalingstermijn', value: `${profile?.betalingstermijn || 30} dagen` },
+                    ].map((row, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < 5 ? '1px solid rgba(61,72,93,0.3)' : 'none' }}>
+                        <span style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{row.label}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: row.warn ? '#feb300' : '#dae6ff', fontFamily: 'Inter' }}>{row.value || (row.warn ? 'Niet ingevuld' : '—')}</span>
+                      </div>
+                    ))}
+                    {permissies.zietProjectFinancien && profile?.uurtarief != null && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
+                        <span style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Uurtarief</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#3fff8b', fontFamily: 'Inter' }}>€ {Number(profile.uurtarief).toFixed(2)}</span>
+                      </div>
                     )}
                   </div>
-                );
-              })}
+                </>
+              )}
             </div>
-            {/* Legend */}
-            <div className="flex flex-wrap gap-3 mt-3 pt-2" style={{ borderTop: "1px solid var(--bg-surface-2)" }}>
-              {[
-                { label: "Vrije dag", color: "var(--text-muted)" },
-                { label: "Vakantie", color: "var(--warn-dot)" },
-                { label: "Ziek", color: "var(--danger)" },
-                { label: "Verlof", color: "var(--info)" },
-              ].map(l => (
-                <div key={l.label} className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ background: l.color }} />
-                  <span className="text-[9px]" style={{ color: "var(--text-muted)" }}>{l.label}</span>
+          </div>
+
+          {/* Manager handtekening / Monteur contract */}
+          {permissies.zietDashboard && <ManagerHandtekeningSection profileId={profile?.id || null} />}
+          {!permissies.zietDashboard && <MonteurContractSection profileId={profile?.id || null} />}
+
+          {/* BESCHIKBAARHEID */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, marginBottom: 12, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(61,72,93,0.3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3' }}>calendar_month</span>
+                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Inter', color: '#dae6ff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Beschikbaarheid</span>
+              </div>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              {/* Vaste vrije dagen */}
+              <p style={{ fontSize: 10, fontWeight: 600, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Vaste vrije dagen</p>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+                {[1, 2, 3, 4, 5, 6, 0].map(dag => {
+                  const active = profile?.vaste_vrije_dagen?.includes(dag);
+                  return (
+                    <button key={dag} onClick={() => toggleVrijeDag(dag)} style={{
+                      flex: 1, padding: '10px 0', borderRadius: 12,
+                      background: active ? 'rgba(63,255,139,0.1)' : '#061327',
+                      border: active ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
+                      color: active ? '#3fff8b' : '#a0abc3',
+                      fontFamily: 'Inter', fontWeight: 700, fontSize: 11, cursor: 'pointer',
+                    }}>{DAGEN_LABEL[dag]}</button>
+                  );
+                })}
+              </div>
+
+              {/* Calendar */}
+              <div style={{ padding: 16, borderRadius: 16, background: '#061327', border: '1px solid rgba(255,255,255,0.05)', marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <button onClick={() => setCalMonth(subMonths(calMonth, 1))} style={{ width: 32, height: 32, borderRadius: 8, background: '#102038', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_left</span>
+                  </button>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter', textTransform: 'capitalize' }}>{format(calMonth, 'MMMM yyyy', { locale: nl })}</span>
+                  <button onClick={() => setCalMonth(addMonths(calMonth, 1))} style={{ width: 32, height: 32, borderRadius: 8, background: '#102038', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>chevron_right</span>
+                  </button>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex gap-2">
-            <button onClick={() => setShowVerlof(true)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)", color: "var(--warn-text)" }}>
-              Verlof aanvragen
-            </button>
-            <button onClick={meldZiek} className="flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
-              <ThermometerSun className="h-3.5 w-3.5" /> Ziek melden
-            </button>
-          </div>
-
-          {/* Recent items */}
-          {beschikbaarheid.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Recente aanvragen</p>
-              {beschikbaarheid.slice(0, 5).map(b => {
-                const sc = statusColors[b.status] || statusColors.aangevraagd;
-                return (
-                  <div key={b.id} className="flex items-center justify-between py-2 px-3 rounded-xl" style={{ background: "var(--bg-base)" }}>
-                    <div>
-                      <span className="text-xs font-medium capitalize" style={{ color: "var(--text-primary)" }}>{b.type}</span>
-                      <span className="text-[10px] ml-2" style={{ color: "var(--text-muted)" }}>
-                        {format(parseISO(b.datum_van), "d MMM", { locale: nl })} → {format(parseISO(b.datum_tot), "d MMM", { locale: nl })}
-                      </span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 4 }}>
+                  {['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].map(d => (
+                    <div key={d} style={{ textAlign: 'center', fontSize: 9, fontWeight: 600, padding: '4px 0', color: '#a0abc3', fontFamily: 'Inter' }}>{d}</div>
+                  ))}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+                  {Array.from({ length: (startPad + 6) % 7 }).map((_, i) => (<div key={`pad-${i}`} style={{ height: 36 }} />))}
+                  {days.map(day => {
+                    const status = getDayStatus(day);
+                    const isToday = isSameDay(day, new Date());
+                    const dotColor = status ? (TYPE_COLORS[status.type]?.dot || '#a0abc3') : null;
+                    return (
+                      <div key={day.toISOString()} style={{
+                        height: 36, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 8, position: 'relative',
+                        background: status ? 'rgba(255,255,255,0.03)' : isToday ? 'rgba(63,255,139,0.1)' : 'transparent',
+                        border: isToday ? '1.5px solid #3fff8b' : status ? '1px solid rgba(255,255,255,0.05)' : '1px solid transparent',
+                      }}>
+                        <span style={{ fontSize: 11, fontWeight: 500, color: dotColor || (isToday ? '#3fff8b' : '#a0abc3') }}>{format(day, 'd')}</span>
+                        {status && <span style={{ width: 5, height: 5, borderRadius: '50%', background: dotColor, position: 'absolute', bottom: 3 }} />}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                  {[{ label: 'Vrije dag', color: '#a0abc3' }, { label: 'Vakantie', color: '#feb300' }, { label: 'Ziek', color: '#ff716c' }, { label: 'Verlof', color: '#6e9bff' }].map(l => (
+                    <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
+                      <span style={{ fontSize: 9, color: '#a0abc3', fontFamily: 'Inter' }}>{l.label}</span>
                     </div>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>{b.status}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+                <button onClick={() => setShowVerlof(true)} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 16, background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.2)',
+                  color: '#feb300', fontFamily: 'Inter', fontWeight: 700, fontSize: 12, cursor: 'pointer',
+                }}>Verlof aanvragen</button>
+                <button onClick={meldZiek} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 16, background: 'rgba(255,113,108,0.08)', border: '1px solid rgba(255,113,108,0.2)',
+                  color: '#ff716c', fontFamily: 'Inter', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>sick</span>
+                  Ziek melden
+                </button>
+              </div>
+
+              {/* Recent items */}
+              {beschikbaarheid.length > 0 && (
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 600, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Recente aanvragen</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {beschikbaarheid.slice(0, 5).map(b => {
+                      const sc = statusColors[b.status] || statusColors.aangevraagd;
+                      return (
+                        <div key={b.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 12, background: '#061327' }}>
+                          <div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#dae6ff', fontFamily: 'Inter', textTransform: 'capitalize' }}>{b.type}</span>
+                            <span style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', marginLeft: 8 }}>
+                              {format(parseISO(b.datum_van), 'd MMM', { locale: nl })} → {format(parseISO(b.datum_tot), 'd MMM', { locale: nl })}
+                            </span>
+                          </div>
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 9999, background: 'rgba(255,255,255,0.05)', color: b.status === 'goedgekeurd' ? '#3fff8b' : b.status === 'afgekeurd' ? '#ff716c' : '#feb300', fontFamily: 'Inter', textTransform: 'uppercase' }}>{b.status}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Certificaten */}
-        <CertificatenOverzicht
-          certificaten={certs}
-          toonToevoegen={true}
-          medewerker_id={profile?.id}
-          onRefresh={fetchCerts}
-        />
-
-        {/* Noodcontact */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "#FFF8DC", border: "1px solid var(--warn-border)", borderRadius: 12 }}>
-          <p className="text-xs font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>🚨 Noodcontact</p>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Naam</span><span style={{ color: "var(--text-primary)" }}>{(profile as any)?.noodcontact_naam || "–"}</span></div>
-            <div className="flex justify-between"><span style={{ color: "var(--text-muted)" }}>Telefoon</span><span style={{ color: "var(--text-primary)" }}>{(profile as any)?.noodcontact_tel || "–"}</span></div>
-          </div>
-        </div>
-
-        {/* Instellingen - Weergave */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Instellingen</p>
-          <div>
-            <p className="text-[10px] font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Weergave</p>
-            <div className="flex gap-1.5">
-              {([
-                { key: "light", label: "☀ Licht" },
-                { key: "system", label: "Systeem" },
-                { key: "dark", label: "☾ Donker" },
-              ] as const).map(opt => {
-                const current = localStorage.getItem("terrevolt_theme") || "light";
-                const active = current === opt.key;
-                return (
-                  <button key={opt.key} onClick={() => {
-                    localStorage.setItem("terrevolt_theme", opt.key);
-                    if (opt.key === "dark") {
-                      document.documentElement.dataset.theme = "dark";
-                    } else if (opt.key === "light") {
-                      delete document.documentElement.dataset.theme;
-                    } else {
-                      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-                      if (prefersDark) {
-                        document.documentElement.dataset.theme = "dark";
-                      } else {
-                        delete document.documentElement.dataset.theme;
-                      }
-                    }
-                    setLoading(l => !l);
-                    setTimeout(() => setLoading(l => !l), 0);
-                  }} className="flex-1 py-2.5 rounded-xl text-[11px] font-semibold" style={{
-                    background: active ? "var(--accent-light)" : "var(--bg-base)",
-                    border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                    color: active ? "var(--accent)" : "var(--text-muted)",
-                  }}>{opt.label}</button>
-                );
-              })}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Wachtwoord wijzigen */}
-          <PasswordChange />
-        </div>
+          {/* CERTIFICATEN */}
+          <CertificatenOverzicht certificaten={certs} toonToevoegen={true} medewerker_id={profile?.id} onRefresh={fetchCerts} />
 
-        <button onClick={signOut} className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
-          <LogOut className="h-4 w-4" /> Uitloggen
-        </button>
-      </main>
+          {/* NOODCONTACT */}
+          <div style={{ background: 'rgba(254,179,0,0.06)', border: '1px solid rgba(254,179,0,0.2)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: '#feb300', fontFamily: 'Inter', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>emergency</span> Noodcontact
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>Naam</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#dae6ff', fontFamily: 'Inter' }}>{(profile as any)?.noodcontact_naam || '—'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>Telefoon</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#dae6ff', fontFamily: 'Inter' }}>{(profile as any)?.noodcontact_tel || '—'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* INSTELLINGEN */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, marginBottom: 12, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(61,72,93,0.3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3' }}>settings</span>
+                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Inter', color: '#dae6ff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Instellingen</span>
+              </div>
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <PasswordChange />
+            </div>
+          </div>
+
+          {/* MIJN ORDERS SHORTCUT */}
+          <button onClick={() => window.location.href = '/mijn-orders'} style={{
+            width: '100%', padding: '16px 20px', borderRadius: 16,
+            background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+            border: '1px solid rgba(106,118,140,0.15)', borderLeft: '3px solid #3fff8b',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginBottom: 16,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(63,255,139,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#3fff8b' }}>receipt_long</span>
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter', marginBottom: 2 }}>Mijn inkooporders</div>
+                <div style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter' }}>Bekijk je orders en PDF's</div>
+              </div>
+            </div>
+            <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3', opacity: 0.6 }}>chevron_right</span>
+          </button>
+
+          {/* UITLOGGEN */}
+          <button onClick={signOut} style={{
+            width: '100%', padding: '16px 20px', borderRadius: 16, background: 'transparent',
+            border: '1px solid #ff716c', color: '#ff716c', fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>logout</span>
+            Uitloggen
+          </button>
+        </main>
+
+        {/* BOTTOM NAV */}
+        <nav style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+          background: 'rgba(3,14,32,0.9)', backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px 24px 0 0',
+          display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+          padding: '8px 16px', paddingBottom: 'max(24px, env(safe-area-inset-bottom))', height: 72,
+        }}>
+          {[
+            { path: '/', icon: 'schedule', label: 'Uren' },
+            { path: '/planning', icon: 'calendar_today', label: 'Planning' },
+            { path: '/profiel', icon: 'person', label: 'Profiel' },
+          ].map((tab) => {
+            const isActive = location.pathname === tab.path || (tab.path !== '/' && location.pathname.startsWith(tab.path));
+            return (
+              <button key={tab.path} onClick={() => window.location.href = tab.path} style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                padding: '6px 12px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                background: isActive ? 'rgba(63,255,139,0.15)' : 'transparent',
+                boxShadow: isActive ? '0 0 15px rgba(63,255,139,0.2)' : 'none',
+              }}>
+                <span className="material-symbols-outlined" style={{
+                  fontSize: isActive ? 22 : 20,
+                  color: isActive ? '#3fff8b' : 'rgba(218,230,255,0.5)',
+                  fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400",
+                }}>{tab.icon}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', color: isActive ? '#3fff8b' : 'rgba(218,230,255,0.5)' }}>{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
 
       {/* Verlof modal */}
       {showVerlof && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowVerlof(false)}>
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
-            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Verlof aanvragen</h2>
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                {(["vakantie", "verlof", "anders"] as const).map(t => (
-                  <button key={t} onClick={() => setVerlofForm({ ...verlofForm, type: t })} className="flex-1 py-2 rounded-xl text-xs font-semibold capitalize" style={{
-                    background: verlofForm.type === t ? "var(--accent-light)" : "var(--bg-base)",
-                    border: verlofForm.type === t ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                    color: verlofForm.type === t ? "var(--accent)" : "var(--text-muted)",
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }} onClick={() => setShowVerlof(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '100%', maxWidth: 480, background: 'rgba(10,26,48,0.97)', backdropFilter: 'blur(24px)',
+            borderRadius: '40px 40px 0 0', borderTop: '1px solid rgba(255,255,255,0.1)',
+            maxHeight: '85vh', overflowY: 'auto', paddingBottom: 40,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
+              <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
+            </div>
+            <div style={{ padding: '0 24px' }}>
+              <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 24, color: '#dae6ff', marginBottom: 20 }}>Verlof aanvragen</h2>
+              <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+                {(['vakantie', 'verlof', 'anders'] as const).map(t => (
+                  <button key={t} onClick={() => setVerlofForm({ ...verlofForm, type: t })} style={{
+                    flex: 1, padding: '12px 0', borderRadius: 16, textTransform: 'capitalize',
+                    border: verlofForm.type === t ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
+                    background: verlofForm.type === t ? 'rgba(63,255,139,0.05)' : '#061327',
+                    color: verlofForm.type === t ? '#3fff8b' : '#a0abc3',
+                    fontFamily: 'Inter', fontWeight: 700, fontSize: 13, cursor: 'pointer',
                   }}>{t}</button>
                 ))}
               </div>
-              <div className="flex gap-3">
-                <div className="flex-1 space-y-1">
-                  <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Van</label>
-                  <input type="date" value={verlofForm.datum_van} onChange={e => setVerlofForm({ ...verlofForm, datum_van: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
+              <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 10, color: '#a0abc3', fontFamily: 'Inter', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Van</label>
+                  <input type="date" value={verlofForm.datum_van} onChange={e => setVerlofForm({ ...verlofForm, datum_van: e.target.value })} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
                 </div>
-                <div className="flex-1 space-y-1">
-                  <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Tot</label>
-                  <input type="date" value={verlofForm.datum_tot} onChange={e => setVerlofForm({ ...verlofForm, datum_tot: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 10, color: '#a0abc3', fontFamily: 'Inter', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tot</label>
+                  <input type="date" value={verlofForm.datum_tot} onChange={e => setVerlofForm({ ...verlofForm, datum_tot: e.target.value })} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
                 </div>
               </div>
-              <input value={verlofForm.reden} onChange={e => setVerlofForm({ ...verlofForm, reden: e.target.value })} placeholder="Reden (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-              <button onClick={requestVerlof} disabled={!verlofForm.datum_van || !verlofForm.datum_tot} className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
-                Aanvragen
-              </button>
+              <input value={verlofForm.reden} onChange={e => setVerlofForm({ ...verlofForm, reden: e.target.value })} placeholder="Reden (optioneel)" style={{ width: '100%', padding: '12px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 20 }} />
+              <button onClick={requestVerlof} disabled={!verlofForm.datum_van || !verlofForm.datum_tot} style={{
+                width: '100%', height: 56, borderRadius: 16, background: '#3fff8b', color: '#005d2c',
+                fontFamily: 'Manrope', fontWeight: 800, fontSize: 16, textTransform: 'uppercase', letterSpacing: '0.05em',
+                border: 'none', cursor: 'pointer', opacity: (!verlofForm.datum_van || !verlofForm.datum_tot) ? 0.4 : 1,
+                boxShadow: '0 8px 32px rgba(63,255,139,0.2)',
+              }}>Aanvragen</button>
             </div>
           </div>
         </div>
       )}
-
-
     </PageShell>
   );
 }
