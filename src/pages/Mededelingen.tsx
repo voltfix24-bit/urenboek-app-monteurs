@@ -12,6 +12,8 @@ import { formatDistanceToNow, format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { BottomNav } from "@/components/BottomNav";
+import { useNavBadges } from "@/hooks/useNavBadges";
 
 /* ─── types ─── */
 interface Gesprek {
@@ -54,6 +56,7 @@ function datumLabel(dateStr: string) {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 export default function Mededelingen() {
   const { user, isManager } = useAuth();
+  const { badges } = useNavBadges();
   const { profileId } = useProfile();
   const [gesprekken, setGesprekken] = useState<Gesprek[]>([]);
   const [activeGesprek, setActiveGesprek] = useState<Gesprek | null>(null);
@@ -926,6 +929,7 @@ export default function Mededelingen() {
           </div>
         )}
       </div>
+      <BottomNav badges={badges} />
     </PageShell>
   );
 }

@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { cachePlanning, getCachedPlanning } from "@/lib/offlineQueue";
 import { mutate } from "@/lib/supabaseHelpers";
 import { ListSkeleton, PlanningCardSkeleton } from "@/components/ui/Skeletons";
+import { BottomNav } from "@/components/BottomNav";
+import { useNavBadges } from "@/hooks/useNavBadges";
 
 interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; activiteit: string | null; activiteit_kleur: string | null; collega_ids: string[] | null; week_opmerking: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
@@ -24,6 +26,7 @@ const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
 export default function Planning() {
   const { user } = useAuth();
+  const { badges } = useNavBadges();
   const { profileId, profile: profileData } = useProfile();
   const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
@@ -439,37 +442,7 @@ export default function Planning() {
           </div>
         )}
 
-        {/* BOTTOM NAV */}
-        <nav style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
-          background: 'rgba(3,14,32,0.9)', backdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px 24px 0 0',
-          display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-          padding: '8px 16px', paddingBottom: 'max(24px, env(safe-area-inset-bottom))', height: 72,
-        }}>
-          {[
-            { path: '/', icon: 'schedule', label: 'Uren' },
-            { path: '/planning', icon: 'calendar_today', label: 'Planning' },
-            { path: '/profiel', icon: 'person', label: 'Profiel' },
-          ].map((tab) => {
-            const isActive = location.pathname === tab.path || (tab.path !== '/' && location.pathname.startsWith(tab.path));
-            return (
-              <button key={tab.path} onClick={() => navigate(tab.path)} style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                padding: '6px 12px', borderRadius: 16, border: 'none', cursor: 'pointer',
-                background: isActive ? 'rgba(63,255,139,0.15)' : 'transparent',
-                boxShadow: isActive ? '0 0 15px rgba(63,255,139,0.2)' : 'none',
-              }}>
-                <span className="material-symbols-outlined" style={{
-                  fontSize: isActive ? 22 : 20,
-                  color: isActive ? '#3fff8b' : 'rgba(218,230,255,0.5)',
-                  fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400",
-                }}>{tab.icon}</span>
-                <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', color: isActive ? '#3fff8b' : 'rgba(218,230,255,0.5)' }}>{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+        <BottomNav badges={badges} />
 
         {/* UREN MODAL */}
         {showUrenModal && modalItem && (

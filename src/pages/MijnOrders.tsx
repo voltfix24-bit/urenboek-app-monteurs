@@ -14,9 +14,12 @@ import { Spinner } from "@/components/ui/Spinner";
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useNavigate } from "react-router-dom";
+import { BottomNav } from "@/components/BottomNav";
+import { useNavBadges } from "@/hooks/useNavBadges";
 
 export default function MijnOrders() {
   const { user } = useAuth();
+  const { badges } = useNavBadges();
   const { profileId } = useProfile();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<any[]>([]);
@@ -482,6 +485,7 @@ export default function MijnOrders() {
           )}
         </main>
       </div>
+      <BottomNav badges={badges} />
     </PageShell>
   );
 }

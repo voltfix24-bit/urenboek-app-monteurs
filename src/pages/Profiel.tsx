@@ -15,6 +15,8 @@ import { formatDatum } from "@/lib/formatting";
 import { CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO, differenceInDays } from "date-fns";
 import { nl } from "date-fns/locale";
+import { BottomNav } from "@/components/BottomNav";
+import { useNavBadges } from "@/hooks/useNavBadges";
 
 interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; geboortedatum?: string | null; account_status?: string; }
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; }
@@ -208,6 +210,7 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
 
 export default function Profiel() {
   const { user, roles, rolLabel, permissies, signOut } = useAuth();
+  const { badges } = useNavBadges();
   const { refetch: refetchProfileContext } = useProfile();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [certs, setCerts] = useState<Certificaat[]>([]);
@@ -682,37 +685,7 @@ export default function Profiel() {
           </button>
         </main>
 
-        {/* BOTTOM NAV */}
-        <nav style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
-          background: 'rgba(3,14,32,0.9)', backdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px 24px 0 0',
-          display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-          padding: '8px 16px', paddingBottom: 'max(24px, env(safe-area-inset-bottom))', height: 72,
-        }}>
-          {[
-            { path: '/', icon: 'schedule', label: 'Uren' },
-            { path: '/planning', icon: 'calendar_today', label: 'Planning' },
-            { path: '/profiel', icon: 'person', label: 'Profiel' },
-          ].map((tab) => {
-            const isActive = location.pathname === tab.path || (tab.path !== '/' && location.pathname.startsWith(tab.path));
-            return (
-              <button key={tab.path} onClick={() => window.location.href = tab.path} style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                padding: '6px 12px', borderRadius: 16, border: 'none', cursor: 'pointer',
-                background: isActive ? 'rgba(63,255,139,0.15)' : 'transparent',
-                boxShadow: isActive ? '0 0 15px rgba(63,255,139,0.2)' : 'none',
-              }}>
-                <span className="material-symbols-outlined" style={{
-                  fontSize: isActive ? 22 : 20,
-                  color: isActive ? '#3fff8b' : 'rgba(218,230,255,0.5)',
-                  fontVariationSettings: isActive ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400",
-                }}>{tab.icon}</span>
-                <span style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', color: isActive ? '#3fff8b' : 'rgba(218,230,255,0.5)' }}>{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+        <BottomNav badges={badges} />
       </div>
 
       {/* Verlof modal */}
