@@ -73,7 +73,7 @@ export default function MijnOrders() {
         minHeight: '100dvh',
         paddingBottom: 120,
       }}>
-        {/* HEADER */}
+        {/* ── HEADER ── */}
         <header style={{
           position: 'sticky',
           top: 0, zIndex: 50,
@@ -93,6 +93,7 @@ export default function MijnOrders() {
               cursor: 'pointer',
               color: '#3fff8b',
               display: 'flex',
+              alignItems: 'center',
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: 24 }}>
@@ -104,13 +105,29 @@ export default function MijnOrders() {
             fontWeight: 800,
             fontSize: 20,
             color: '#dae6ff',
+            flex: 1,
           }}>
             Mijn Orders
           </span>
+          <div style={{
+            width: 36, height: 36,
+            borderRadius: '50%',
+            background: '#142640',
+            border: '1px solid rgba(63,255,139,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'Manrope',
+            fontWeight: 700,
+            fontSize: 13,
+            color: '#3fff8b',
+          }}>
+            {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+          </div>
         </header>
 
         <main style={{ padding: '24px 20px' }}>
-          {/* SUMMARY CARD */}
+          {/* ── SUMMARY CARD ── */}
           <div style={{
             background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
             backdropFilter: 'blur(12px)',
@@ -129,7 +146,7 @@ export default function MijnOrders() {
               color: '#a0abc3',
               marginBottom: 8,
             }}>
-              TOTAAL
+              DIT KWARTAAL
             </p>
             <div style={{
               fontFamily: 'Manrope',
@@ -144,15 +161,16 @@ export default function MijnOrders() {
               display: 'flex',
               justifyContent: 'center',
               gap: 20,
+              flexWrap: 'wrap',
             }}>
               {[
                 { color: '#3fff8b', label: 'Betaald', count: orders.filter(o => o.status === 'betaald').length },
-                { color: '#feb300', label: 'Verzonden', count: orders.filter(o => o.status === 'verzonden').length },
-                { color: '#a0abc3', label: 'Concept', count: orders.filter(o => o.status === 'concept').length },
+                { color: '#feb300', label: 'In behandeling', count: orders.filter(o => o.status === 'verzonden').length },
+                { color: '#a0abc3', label: 'Nieuw', count: orders.filter(o => o.status === 'nieuw' || o.status === 'concept').length },
               ].map((s) => (
                 <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color }} />
-                  <span style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter' }}>
+                  <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>
                     {s.count} {s.label}
                   </span>
                 </div>
@@ -160,106 +178,213 @@ export default function MijnOrders() {
             </div>
           </div>
 
-          {/* ORDER LIST */}
-          {orders.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '60px 20px',
-              color: '#a0abc3',
-              fontFamily: 'Inter',
+          {/* ── SECTION LABEL ── */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 16,
+          }}>
+            <span style={{
+              fontFamily: 'Manrope',
+              fontWeight: 700,
+              fontSize: 16,
+              color: '#dae6ff',
             }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 48, marginBottom: 16, display: 'block' }}>
-                receipt_long
-              </span>
-              <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Nog geen inkooporders</p>
-              <p style={{ fontSize: 12 }}>Je manager maakt een inkooporder aan zodra je uren zijn goedgekeurd.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {orders.map(o => {
-                const si = INKOOPORDER_STATUS_CONFIG[o.status] || INKOOPORDER_STATUS_CONFIG.concept;
-                const isSelected = selectedOrder?.id === o.id;
-                const isBetaald = o.status === 'betaald';
-                const isVerzonden = o.status === 'verzonden';
-                const statusColor = isBetaald ? '#3fff8b' : isVerzonden ? '#feb300' : '#a0abc3';
+              Recent overzicht
+            </span>
+            <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3' }}>
+              filter_list
+            </span>
+          </div>
 
-                return (
-                  <button
-                    key={o.id}
-                    onClick={() => loadDetail(o)}
-                    style={{
-                      width: '100%',
-                      textAlign: 'left',
-                      background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
-                      backdropFilter: 'blur(12px)',
-                      borderRadius: 20,
-                      border: isSelected
-                        ? '1px solid rgba(63,255,139,0.4)'
-                        : '1px solid rgba(106,118,140,0.15)',
-                      borderLeft: `4px solid ${statusColor}`,
-                      padding: '20px',
-                      cursor: 'pointer',
-                      boxShadow: isSelected ? '0 0 20px rgba(63,255,139,0.1)' : 'none',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+          {/* ── ORDER CARDS ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {orders.map((order) => {
+              const isBetaald = order.status === 'betaald';
+              const isVerzonden = order.status === 'verzonden';
+              const isNieuw = order.status === 'nieuw' || order.status === 'concept';
+              const si = INKOOPORDER_STATUS_CONFIG[order.status] || INKOOPORDER_STATUS_CONFIG.concept;
+              const isSelected = selectedOrder?.id === order.id;
+
+              const borderColor = isBetaald ? '#3fff8b' : isVerzonden ? '#feb300' : isNieuw ? '#feb300' : '#6e9bff';
+              const badgeBg = isBetaald ? 'rgba(63,255,139,0.1)' : isNieuw ? 'rgba(254,179,0,0.1)' : isVerzonden ? 'rgba(254,179,0,0.1)' : 'rgba(110,155,255,0.1)';
+              const badgeBorder = isBetaald ? 'rgba(63,255,139,0.3)' : isNieuw ? 'rgba(254,179,0,0.3)' : isVerzonden ? 'rgba(254,179,0,0.3)' : 'rgba(110,155,255,0.3)';
+              const badgeColor = isBetaald ? '#3fff8b' : isNieuw ? '#feb300' : isVerzonden ? '#feb300' : '#6e9bff';
+              const badgeLabel = si.label;
+
+              return (
+                <button
+                  key={order.id}
+                  onClick={() => loadDetail(order)}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left' as const,
+                    background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                    backdropFilter: 'blur(12px)',
+                    borderRadius: 20,
+                    border: isSelected
+                      ? '1px solid rgba(63,255,139,0.4)'
+                      : '1px solid rgba(106,118,140,0.15)',
+                    borderLeft: `4px solid ${borderColor}`,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    boxShadow: isSelected
+                      ? '0 0 20px rgba(63,255,139,0.1)'
+                      : isNieuw
+                      ? '0 0 20px rgba(254,179,0,0.1)'
+                      : isBetaald
+                      ? '0 0 12px rgba(63,255,139,0.08)'
+                      : 'none',
+                    padding: 0,
+                  }}
+                >
+                  <div style={{ padding: '20px 20px 0' }}>
+                    {/* Order header row */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: 12,
+                    }}>
                       <div>
-                        <div style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          padding: '3px 10px',
-                          borderRadius: 9999,
-                          background: `${statusColor}15`,
-                          border: `1px solid ${statusColor}40`,
-                          marginBottom: 8,
-                        }}>
-                          <span style={{
-                            fontSize: 9,
-                            fontWeight: 700,
-                            fontFamily: 'Inter',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.1em',
-                            color: statusColor,
-                          }}>
-                            {si.label}
-                          </span>
-                        </div>
-                        <div style={{
-                          fontFamily: 'DM Mono, monospace',
+                        <p style={{
+                          fontSize: 10,
                           fontWeight: 700,
-                          fontSize: 15,
-                          color: '#dae6ff',
+                          fontFamily: 'Inter',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.15em',
+                          color: '#a0abc3',
+                          marginBottom: 4,
                         }}>
-                          {o.order_nummer}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{
+                          Order
+                        </p>
+                        <p style={{
                           fontFamily: 'Manrope',
                           fontWeight: 800,
-                          fontSize: 22,
-                          color: isBetaald ? '#3fff8b' : '#dae6ff',
+                          fontSize: 18,
+                          color: '#dae6ff',
                         }}>
-                          {euro(Number(o.totaal_incl_btw) || 0)}
-                        </div>
+                          {order.order_nummer || `IO-${order.id.slice(0, 8).toUpperCase()}`}
+                        </p>
+                      </div>
+                      {/* Status badge */}
+                      <div style={{
+                        padding: '4px 12px',
+                        borderRadius: 9999,
+                        background: badgeBg,
+                        border: `1px solid ${badgeBorder}`,
+                        whiteSpace: 'nowrap',
+                      }}>
+                        <span style={{
+                          fontSize: 9,
+                          fontWeight: 800,
+                          fontFamily: 'Inter',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                          color: badgeColor,
+                        }}>
+                          {badgeLabel}
+                        </span>
                       </div>
                     </div>
-                    <p style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter' }}>
-                      {o.periode_van} → {o.periode_tot}
-                    </p>
-                    {isBetaald && o.betaald_op && (
-                      <p style={{ fontSize: 10, color: '#3fff8b', fontFamily: 'Inter', marginTop: 4 }}>
-                        Betaald op {format(new Date(o.betaald_op), "d MMM yyyy", { locale: nl })}
-                      </p>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
 
-          {/* DETAIL PANEL */}
+                    {/* Period */}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
+                      marginBottom: 16,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#a0abc3' }}>
+                          calendar_today
+                        </span>
+                        <span style={{ fontSize: 13, color: '#a0abc3', fontFamily: 'Inter' }}>
+                          {order.periode_van} → {order.periode_tot}
+                        </span>
+                      </div>
+                      {isBetaald && order.betaald_op && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#3fff8b' }}>
+                            check_circle
+                          </span>
+                          <span style={{ fontSize: 12, color: '#3fff8b', fontFamily: 'Inter', fontWeight: 600 }}>
+                            Betaald op {format(new Date(order.betaald_op), "d MMM yyyy", { locale: nl })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Amount bar */}
+                  <div style={{
+                    margin: '0 20px 20px',
+                    background: 'rgba(0,0,0,0.25)',
+                    borderRadius: 12,
+                    padding: 16,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-end',
+                  }}>
+                    <div>
+                      <p style={{ fontSize: 10, color: '#a0abc3', fontFamily: 'Inter', marginBottom: 4 }}>
+                        Factuurbedrag
+                      </p>
+                      <p style={{
+                        fontFamily: 'Manrope',
+                        fontWeight: 800,
+                        fontSize: 24,
+                        color: isBetaald ? '#3fff8b' : '#dae6ff',
+                        lineHeight: 1,
+                      }}>
+                        {euro(Number(order.totaal_incl_btw) || 0)}
+                      </p>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '10px 16px',
+                      borderRadius: 9999,
+                      background: 'transparent',
+                      border: '1px solid rgba(106,118,140,0.4)',
+                      color: '#dae6ff',
+                      fontFamily: 'Inter',
+                      fontWeight: 700,
+                      fontSize: 11,
+                      textTransform: 'uppercase' as const,
+                      letterSpacing: '0.08em',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+                        {isSelected ? 'expand_less' : 'expand_more'}
+                      </span>
+                      DETAILS
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+
+            {/* Empty state */}
+            {orders.length === 0 && (
+              <div style={{
+                textAlign: 'center',
+                padding: '60px 20px',
+                color: '#a0abc3',
+                fontFamily: 'Inter',
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 48, marginBottom: 16, display: 'block' }}>
+                  receipt_long
+                </span>
+                <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Nog geen inkooporders</p>
+                <p style={{ fontSize: 12 }}>Je manager maakt een inkooporder aan zodra je uren zijn goedgekeurd.</p>
+              </div>
+            )}
+          </div>
+
+          {/* ── DETAIL PANEL ── */}
           {selectedOrder && (
             <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
               {/* Verzonden hint */}
