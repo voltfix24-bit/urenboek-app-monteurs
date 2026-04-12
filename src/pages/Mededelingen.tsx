@@ -12,6 +12,8 @@ import { formatDistanceToNow, format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { BottomNav } from "@/components/BottomNav";
+import { useNavBadges } from "@/hooks/useNavBadges";
 
 /* ─── types ─── */
 interface Gesprek {

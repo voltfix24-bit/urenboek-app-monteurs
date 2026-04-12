@@ -10,6 +10,7 @@ import { ListSkeleton, UrenCardSkeleton } from "@/components/ui/Skeletons";
 import { AddEntryModal } from "@/components/AddEntryModal";
 import { BottomNav } from "@/components/BottomNav";
 import { PageShell } from "@/components/PageShell";
+import { useNavBadges } from "@/hooks/useNavBadges";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { FolderOpen, Building2, ArrowRight, ClipboardList, AlertTriangle, WifiOff } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
