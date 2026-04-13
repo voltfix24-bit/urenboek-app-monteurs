@@ -373,6 +373,64 @@ export default function MijnOrders() {
                       DETAILS
                     </div>
                   </div>
+
+                  {/* Download button */}
+                  <div style={{ padding: '0 20px 20px' }}>
+                    <div
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          const { data } = await supabase.from("inkooporder_regels").select("*, uren_boekingen(beschrijving, type)").eq("inkooporder_id", order.id).order("datum");
+                          const regels = (data || []).map((r: any) => ({ ...r, activiteit: r.activiteit || (r.uren_boekingen as any)?.beschrijving || (r.uren_boekingen as any)?.type || "" }));
+                          let gkNaam: string | undefined;
+                          if (order.aangemaakt_door) {
+                            const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", order.aangemaakt_door).maybeSingle();
+                            gkNaam = gk?.full_name || undefined;
+                          }
+                          const bedrijf = await getBedrijfsgegevens();
+                          await downloadInkooporderPdf(order, regels, profile, bedrijf, gkNaam);
+                          toast.success("PDF wordt gedownload");
+                        } catch (err) {
+                          console.error("PDF download failed:", err);
+                          toast.error("PDF kon niet worden gegenereerd");
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        height: 52,
+                        borderRadius: 16,
+                        background: 'transparent',
+                        border: `1px solid ${
+                          isBetaald
+                            ? 'rgba(63,255,139,0.3)'
+                            : isNieuw
+                            ? 'rgba(254,179,0,0.3)'
+                            : 'rgba(110,155,255,0.3)'
+                        }`,
+                        color: isBetaald
+                          ? '#3fff8b'
+                          : isNieuw
+                          ? '#feb300'
+                          : '#6e9bff',
+                        fontFamily: 'Inter',
+                        fontWeight: 700,
+                        fontSize: 13,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        textTransform: 'uppercase' as const,
+                        letterSpacing: '0.05em',
+                      }}>
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: 18 }}>
+                        download
+                      </span>
+                      PDF Downloaden
+                    </div>
+                  </div>
                 </button>
               );
             })}
