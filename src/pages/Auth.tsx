@@ -20,10 +20,10 @@ const ROLE_ICONS: Record<string, React.ReactNode> = {
 
 const ROLE_COLORS: Record<string, string> = {
   manager: "#3fff8b",
-  uitvoerder: "var(--info-dark, #3b82f6)",
-  monteur: "var(--warn-dot, #f59e0b)",
-  schakelmonteur: "var(--purple, #8b5cf6)",
-  wv: "var(--danger, #ef4444)",
+  uitvoerder: "#6e9bff",
+  monteur: "#feb300",
+  schakelmonteur: "#a78bfa",
+  wv: "#ff716c",
 };
 
 function DevLoginPicker() {

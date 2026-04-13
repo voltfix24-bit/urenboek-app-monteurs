@@ -365,7 +365,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
           <div className="space-y-3">
             <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>MS moffen & eindsluitingen</h3>
             {answers.rmu_vervangen && selectedRmu && (
-              <div className="rounded-xl p-3" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid var(--info-border, rgba(106,118,140,0.15))" }}>
+              <div className="rounded-xl p-3" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
                 <p className="text-xs font-semibold" style={{ color: "#6e9bff" }}>Suggestie op basis van {selectedRmu.merk} {selectedRmu.code} ({selectedRmu.velden - 1} kabelvelden):</p>
                 <p className="text-xs mt-1" style={{ color: "#dae6ff" }}>{suggestie.moffen}× MS moffen + {suggestie.eindsluitingen}× eindsluitingen</p>
                 <div className="flex gap-2 mt-2">

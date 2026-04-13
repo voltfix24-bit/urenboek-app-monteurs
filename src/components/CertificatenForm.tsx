@@ -321,7 +321,7 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
             <div className="flex items-center gap-3" onClick={() => toggle(cfg.type)}>
               <div className="w-5 h-5 rounded flex items-center justify-center shrink-0" style={{
                 background: isChecked ? "#3fff8b" : "#030e20",
-                border: isChecked ? "none" : "1.5px solid var(--border-strong)",
+                border: isChecked ? "none" : "1.5px solid rgba(106,118,140,0.3)",
               }}>
                 {isChecked && <span className="text-white text-xs font-bold">✓</span>}
               </div>
