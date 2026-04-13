@@ -373,6 +373,52 @@ export default function MijnOrders() {
                       DETAILS
                     </div>
                   </div>
+
+                  {/* Download button */}
+                  <div style={{ padding: '0 20px 20px' }}>
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        downloadPdf();
+                        // Pre-load detail for this order so downloadPdf works
+                        if (selectedOrder?.id !== order.id) loadDetail(order);
+                      }}
+                      style={{
+                        width: '100%',
+                        height: 52,
+                        borderRadius: 16,
+                        background: 'transparent',
+                        border: `1px solid ${
+                          isBetaald
+                            ? 'rgba(63,255,139,0.3)'
+                            : isNieuw
+                            ? 'rgba(254,179,0,0.3)'
+                            : 'rgba(110,155,255,0.3)'
+                        }`,
+                        color: isBetaald
+                          ? '#3fff8b'
+                          : isNieuw
+                          ? '#feb300'
+                          : '#6e9bff',
+                        fontFamily: 'Inter',
+                        fontWeight: 700,
+                        fontSize: 13,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        textTransform: 'uppercase' as const,
+                        letterSpacing: '0.05em',
+                      }}>
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: 18 }}>
+                        download
+                      </span>
+                      PDF Downloaden
+                    </div>
+                  </div>
                 </button>
               );
             })}
