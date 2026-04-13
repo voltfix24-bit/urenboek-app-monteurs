@@ -110,6 +110,7 @@ function RealLoginForm() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [noManagers, setNoManagers] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
 
 
@@ -141,13 +142,83 @@ function RealLoginForm() {
     });
     if (!error) {
       toast.success("Reset link verstuurd! Check je e-mail.");
-      setShowForgot(false);
-      setForgotEmail("");
+      setResetSent(true);
     } else {
       toast.error("E-mailadres niet gevonden.");
     }
     setForgotLoading(false);
   };
+
+  // ── VIEW 3: E-MAIL VERSTUURD ──
+  if (resetSent) {
+    return (
+      <div style={{ background: "#030e20", minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+        {/* HEADER */}
+        <div style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => { setResetSent(false); setShowForgot(false); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#3fff8b", display: "flex", alignItems: "center" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 24 }}>arrow_back</span>
+          </button>
+          <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 16, color: "#dae6ff", textTransform: "uppercase", letterSpacing: "0.1em" }}>TERREVOLT</span>
+          <div style={{ flex: 1 }} />
+        </div>
+
+        {/* SYSTEM STATUS */}
+        <div style={{ position: "absolute", top: 16, right: 20, textAlign: "right" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end", marginBottom: 2 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#3fff8b", boxShadow: "0 0 8px #3fff8b" }} />
+            <span style={{ fontSize: 9, fontFamily: "Inter", color: "rgba(160,171,195,0.5)", textTransform: "uppercase", letterSpacing: "0.1em" }}>System: Auth_Link_Sent</span>
+          </div>
+          <span style={{ fontSize: 9, fontFamily: "Inter", color: "rgba(160,171,195,0.4)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Status: Success_200</span>
+        </div>
+
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 32px" }}>
+          <div style={{ width: "100%", maxWidth: 340, textAlign: "center" }}>
+            {/* CHECK ICON WITH HUD */}
+            <div style={{ position: "relative", width: 100, height: 100, margin: "0 auto 32px" }}>
+              {/* Glow */}
+              <div style={{ position: "absolute", inset: -20, borderRadius: "50%", background: "radial-gradient(circle, rgba(63,255,139,0.15) 0%, transparent 70%)" }} />
+              {/* Circle */}
+              <div style={{ width: 100, height: 100, borderRadius: "50%", background: "rgba(63,255,139,0.1)", border: "2px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 48, color: "#3fff8b", fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+              </div>
+              {/* HUD brackets */}
+              <div style={{ position: "absolute", top: -4, left: -4, width: 16, height: 16, borderTop: "2px solid rgba(63,255,139,0.4)", borderLeft: "2px solid rgba(63,255,139,0.4)" }} />
+              <div style={{ position: "absolute", bottom: -4, right: -4, width: 16, height: 16, borderBottom: "2px solid rgba(63,255,139,0.4)", borderRight: "2px solid rgba(63,255,139,0.4)" }} />
+            </div>
+
+            {/* HEADLINE */}
+            <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff", marginBottom: 12 }}>E-mail verstuurd!</h2>
+
+            {/* DESCRIPTION */}
+            <p style={{ fontSize: 14, color: "#a0abc3", fontFamily: "Inter", lineHeight: 1.7, marginBottom: 28 }}>
+              We hebben een link naar je e-mailadres gestuurd om je wachtwoord te herstellen. Check ook je spam-folder als je niets ziet.
+            </p>
+
+            {/* EMAIL CARD */}
+            <div style={{ background: "rgba(63,255,139,0.05)", border: "1px solid rgba(63,255,139,0.15)", borderRadius: 14, padding: "14px 16px", marginBottom: 32, textAlign: "left" }}>
+              <span style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", display: "block", marginBottom: 6 }}>Bestemmingsadres</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#3fff8b" }}>alternate_email</span>
+                <span style={{ fontSize: 15, fontFamily: "Inter", fontWeight: 600, color: "#dae6ff" }}>{forgotEmail}</span>
+              </div>
+            </div>
+
+            {/* TERUG BUTTON */}
+            <button onClick={() => { setResetSent(false); setShowForgot(false); }} style={{ width: "100%", height: 56, background: "#3fff8b", border: "none", borderRadius: 9999, color: "#005d2c", fontFamily: "Inter", fontWeight: 700, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 20, boxShadow: "0 4px 20px rgba(63,255,139,0.25)" }}>
+              Terug naar inloggen
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>login</span>
+            </button>
+
+            {/* RESEND LINK */}
+            <button onClick={() => { handleForgotPassword(); }} disabled={forgotLoading} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, fontFamily: "Inter", color: "#a0abc3", display: "inline-flex", alignItems: "center", gap: 4 }}>
+              Geen mail ontvangen?{" "}
+              <span style={{ color: "#3fff8b", fontWeight: 700 }}>{forgotLoading ? "Verzenden..." : "Stuur opnieuw"}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showForgot) {
     return (
