@@ -39,7 +39,7 @@ export function BottomNav({ badges }: BottomNavProps) {
 
   const managerTabs: TabDef[] = [
     { key: "/dashboard", icon: LayoutDashboard, label: "Overzicht" },
-    { key: "/goedkeuring", icon: CheckCircle, label: "Keuren", badge: badges.openstaandeGoedkeuringen },
+    { key: "/goedkeuring", icon: CheckCircle, label: "Keuren", badge: badges.openGoedkeuringen },
     { key: "/manager-planning", icon: CalendarDays, label: "Planning" },
     { key: "/medewerkers", icon: Users, label: "Monteurs" },
     { key: "/projecten", icon: FolderOpen, label: "Projecten" },
