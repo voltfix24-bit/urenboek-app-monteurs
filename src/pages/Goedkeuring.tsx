@@ -124,58 +124,58 @@ export default function Goedkeuring() {
   const totalIngediend = entries.filter((e) => e.status === "ingediend").length;
 
   const statusConfig: Record<string, { bg: string; text: string; dot: string }> = {
-    ingediend: { bg: "var(--warn-light)", text: "var(--warn-text)", dot: "var(--warn-dot)" },
-    goedgekeurd: { bg: "var(--success-light)", text: "var(--success)", dot: "var(--success)" },
-    afgekeurd: { bg: "var(--danger-light)", text: "var(--danger)", dot: "var(--danger)" },
-    concept: { bg: "var(--bg-surface-2)", text: "var(--text-secondary)", dot: "var(--text-muted)" },
+    ingediend: { bg: "rgba(254,179,0,0.1)", text: "#feb300", dot: "#feb300" },
+    goedgekeurd: { bg: "rgba(63,255,139,0.1)", text: "#3fff8b", dot: "#3fff8b" },
+    afgekeurd: { bg: "rgba(255,113,108,0.1)", text: "#ff716c", dot: "#ff716c" },
+    concept: { bg: "#102038", text: "#a0abc3", dot: "#a0abc3" },
   };
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   function renderEntryActions(entry: EntryWithProfile) {
     return (
       <div className="flex gap-1 items-center">
         {/* Edit */}
-        <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }} onClick={() => setEditEntry(entry)} title="Bewerken">
-          <Pencil className="h-3.5 w-3.5" style={{ color: "var(--text-secondary)" }} />
+        <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#102038" }} onClick={() => setEditEntry(entry)} title="Bewerken">
+          <Pencil className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} />
         </button>
         {/* Status-specific actions */}
         {entry.status === "concept" && (
           <>
-            <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }} onClick={() => updateStatus(entry.id, "ingediend")} title="Indienen">
-              <Send className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
+            <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }} onClick={() => updateStatus(entry.id, "ingediend")} title="Indienen">
+              <Send className="h-3.5 w-3.5" style={{ color: "#3fff8b" }} />
             </button>
-            <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }} onClick={() => updateStatus(entry.id, "goedgekeurd")} title="Direct goedkeuren">
-              <Check className="h-3.5 w-3.5" style={{ color: "var(--success)" }} />
+            <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }} onClick={() => updateStatus(entry.id, "goedgekeurd")} title="Direct goedkeuren">
+              <Check className="h-3.5 w-3.5" style={{ color: "#3fff8b" }} />
             </button>
           </>
         )}
         {entry.status === "ingediend" && (
           <>
-            <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }} onClick={() => updateStatus(entry.id, "goedgekeurd")} title="Goedkeuren">
-              <Check className="h-3.5 w-3.5" style={{ color: "var(--success)" }} />
+            <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }} onClick={() => updateStatus(entry.id, "goedgekeurd")} title="Goedkeuren">
+              <Check className="h-3.5 w-3.5" style={{ color: "#3fff8b" }} />
             </button>
-            <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }} onClick={() => setAfkeurId(entry.id)} title="Afkeuren">
-              <X className="h-3.5 w-3.5" style={{ color: "var(--danger)" }} />
+            <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.3)" }} onClick={() => setAfkeurId(entry.id)} title="Afkeuren">
+              <X className="h-3.5 w-3.5" style={{ color: "#ff716c" }} />
             </button>
           </>
         )}
         {entry.status === "goedgekeurd" && (
-          <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }} onClick={() => updateStatus(entry.id, "concept")} title="Terug naar concept">
-            <RotateCcw className="h-3.5 w-3.5" style={{ color: "var(--text-secondary)" }} />
+          <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#102038" }} onClick={() => updateStatus(entry.id, "concept")} title="Terug naar concept">
+            <RotateCcw className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} />
           </button>
         )}
         {entry.status === "afgekeurd" && (
-          <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }} onClick={() => updateStatus(entry.id, "concept")} title="Terug naar concept">
-            <RotateCcw className="h-3.5 w-3.5" style={{ color: "var(--text-secondary)" }} />
+          <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#102038" }} onClick={() => updateStatus(entry.id, "concept")} title="Terug naar concept">
+            <RotateCcw className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} />
           </button>
         )}
         {/* Delete (concept/afgekeurd only) */}
         {(entry.status === "concept" || entry.status === "afgekeurd") && (
-          <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--danger-light)" }} onClick={() => { if (confirm("Boeking verwijderen?")) deleteEntry(entry.id); }} title="Verwijderen">
-            <Trash2 className="h-3.5 w-3.5" style={{ color: "var(--danger)" }} />
+          <button className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(255,113,108,0.1)" }} onClick={() => { if (confirm("Boeking verwijderen?")) deleteEntry(entry.id); }} title="Verwijderen">
+            <Trash2 className="h-3.5 w-3.5" style={{ color: "#ff716c" }} />
           </button>
         )}
       </div>
@@ -188,17 +188,17 @@ export default function Goedkeuring() {
     return (
       <div key={entry.id} className="px-4 py-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] font-medium min-w-[60px]" style={{ color: "var(--text-muted)" }}>
+          <span className="text-[11px] font-medium min-w-[60px]" style={{ color: "#a0abc3" }}>
             {format(new Date(entry.datum), "EEE d/M", { locale: nl })}
           </span>
-          <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
+          <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md" style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b" }}>
             {entry.project_nummer}
           </span>
-          <span className="text-xs flex-1 truncate min-w-0" style={{ color: "var(--text-primary)" }}>{entry.project_naam} {entry.beschrijving ? `· ${entry.beschrijving}` : ""}</span>
-          <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>
+          <span className="text-xs flex-1 truncate min-w-0" style={{ color: "#dae6ff" }}>{entry.project_naam} {entry.beschrijving ? `· ${entry.beschrijving}` : ""}</span>
+          <span className="text-xs font-bold tabular-nums" style={{ color: "#dae6ff" }}>
             {entry.uren}u
             {hasOveruren && (
-              <span onClick={() => navigate("/overuren")} className="inline cursor-pointer"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "var(--warn-text)" }} /></span>
+              <span onClick={() => navigate("/overuren")} className="inline cursor-pointer"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "#feb300" }} /></span>
             )}
           </span>
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>
@@ -208,14 +208,14 @@ export default function Goedkeuring() {
           {renderEntryActions(entry)}
         </div>
         {entry.status === "afgekeurd" && entry.afkeur_reden && (
-          <p className="text-[10px] italic mt-1" style={{ color: "var(--danger)" }}>Reden: {entry.afkeur_reden}</p>
+          <p className="text-[10px] italic mt-1" style={{ color: "#ff716c" }}>Reden: {entry.afkeur_reden}</p>
         )}
         {afkeurId === entry.id && (
           <div className="mt-2 space-y-2">
-            <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={2} className="w-full px-3 py-2 rounded-xl text-sm resize-none" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+            <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={2} className="w-full px-3 py-2 rounded-xl text-sm resize-none" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
             <div className="flex gap-2">
-              <button onClick={() => afkeurReden.trim() ? updateStatus(afkeurId, "afgekeurd", afkeurReden.trim()) : toast.error("Vul een reden in")} className="flex-1 py-2 rounded-xl text-xs font-bold" style={{ background: "var(--danger)", color: "#fff" }}>Afkeuren</button>
-              <button onClick={() => { setAfkeurId(null); setAfkeurReden(""); }} className="px-3 py-2 rounded-xl text-xs font-medium" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>Annuleren</button>
+              <button onClick={() => afkeurReden.trim() ? updateStatus(afkeurId, "afgekeurd", afkeurReden.trim()) : toast.error("Vul een reden in")} className="flex-1 py-2 rounded-xl text-xs font-bold" style={{ background: "#ff716c", color: "#fff" }}>Afkeuren</button>
+              <button onClick={() => { setAfkeurId(null); setAfkeurReden(""); }} className="px-3 py-2 rounded-xl text-xs font-medium" style={{ background: "#102038", color: "#a0abc3" }}>Annuleren</button>
             </div>
           </div>
         )}
@@ -229,40 +229,40 @@ export default function Goedkeuring() {
       const pendingCount = userEntries.filter((e) => e.status === "ingediend").length;
       const conceptCount = userEntries.filter(e => e.status === "concept").length;
       return (
-        <div key={name} className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <div className="flex items-center justify-between px-4 py-3" style={{ background: "var(--bg-surface-2)" }}>
+        <div key={name} className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <div className="flex items-center justify-between px-4 py-3" style={{ background: "#102038" }}>
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-xs font-bold" style={{ color: "#fff" }}>
                 {name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <span className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{name}</span>
+                <span className="font-semibold text-sm" style={{ color: "#dae6ff" }}>{name}</span>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>{userEntries.length} boekingen · {totalHours}u</span>
-                  {pendingCount > 0 && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--warn-light)", color: "var(--warn-text)" }}>{pendingCount} open</span>}
+                  <span className="text-[11px]" style={{ color: "#a0abc3" }}>{userEntries.length} boekingen · {totalHours}u</span>
+                  {pendingCount > 0 && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "rgba(254,179,0,0.1)", color: "#feb300" }}>{pendingCount} open</span>}
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold tabular-nums" style={{ color: "var(--accent)" }}>{totalHours}u</span>
+              <span className="text-sm font-bold tabular-nums" style={{ color: "#3fff8b" }}>{totalHours}u</span>
               {conceptCount > 0 && (
                 <button onClick={() => {
                   const ids = userEntries.filter(e => e.status === "concept").map(e => e.id);
                   mutate(supabase.from("uren_boekingen").update({ status: "ingediend" }).in("id", ids)).then(ok => {
                     if (ok) { toast.success(`${ids.length} uren ingediend`); fetchEntries(); }
                   });
-                }} className="flex items-center gap-1 px-2 py-1 rounded-xl text-[10px] font-bold" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)" }}>
+                }} className="flex items-center gap-1 px-2 py-1 rounded-xl text-[10px] font-bold" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
                   <Send className="h-3 w-3" /> Indienen
                 </button>
               )}
               {pendingCount > 0 && (
-                <button onClick={() => approveAllForUser(name)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-colors active:scale-95" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)", color: "var(--success)" }}>
+                <button onClick={() => approveAllForUser(name)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-colors active:scale-95" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
                   <CheckCheck className="h-3.5 w-3.5" /> Alles goedkeuren
                 </button>
               )}
             </div>
           </div>
-          <div className="divide-y" style={{ borderColor: "var(--bg-surface-2)" }}>
+          <div className="divide-y" style={{ borderColor: "#102038" }}>
             {userEntries.map(renderEntryRow)}
           </div>
         </div>
@@ -273,16 +273,16 @@ export default function Goedkeuring() {
   const mainContent = (
     <main className="px-4 py-4 space-y-4">
       {/* Week navigation */}
-      <div className="rounded-2xl p-3 flex items-center justify-between" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-        <button className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors active:scale-95" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }} onClick={() => setWeekOffset((w) => w - 1)}>
+      <div className="rounded-2xl p-3 flex items-center justify-between" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <button className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors active:scale-95" style={{ background: "#102038", color: "#a0abc3" }} onClick={() => setWeekOffset((w) => w - 1)}>
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <button onClick={() => setWeekOffset(0)} className="flex flex-col items-center gap-0.5 px-4 py-1 rounded-xl transition-colors" style={{ background: weekOffset === 0 ? "var(--accent-light)" : "transparent" }}>
-          <span className="text-lg font-extrabold tabular-nums" style={{ color: "var(--accent)", fontFamily: "DM Mono, monospace" }}>Week {getISOWeek(weekStart)}</span>
-          <span className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>{format(weekStart, "d MMM", { locale: nl })} – {format(weekEnd, "d MMM yyyy", { locale: nl })}</span>
-          {weekOffset !== 0 && <span className="text-[9px] font-semibold mt-0.5 px-2 py-0.5 rounded-full" style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>Terug naar deze week</span>}
+        <button onClick={() => setWeekOffset(0)} className="flex flex-col items-center gap-0.5 px-4 py-1 rounded-xl transition-colors" style={{ background: weekOffset === 0 ? "rgba(63,255,139,0.1)" : "transparent" }}>
+          <span className="text-lg font-extrabold tabular-nums" style={{ color: "#3fff8b", fontFamily: "DM Mono, monospace" }}>Week {getISOWeek(weekStart)}</span>
+          <span className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>{format(weekStart, "d MMM", { locale: nl })} – {format(weekEnd, "d MMM yyyy", { locale: nl })}</span>
+          {weekOffset !== 0 && <span className="text-[9px] font-semibold mt-0.5 px-2 py-0.5 rounded-full" style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>Terug naar deze week</span>}
         </button>
-        <button className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors active:scale-95" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }} onClick={() => setWeekOffset((w) => w + 1)}>
+        <button className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors active:scale-95" style={{ background: "#102038", color: "#a0abc3" }} onClick={() => setWeekOffset((w) => w + 1)}>
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
@@ -290,9 +290,9 @@ export default function Goedkeuring() {
       <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
         {([["alle", "Alle"], ["ingediend", "Ingediend"], ["goedgekeurd", "Goedgekeurd"], ["afgekeurd", "Afgekeurd"], ["concept", "Concept"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setFilter(k)} className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors" style={{
-            background: filter === k ? "var(--accent-light)" : "var(--bg-surface)",
-            border: filter === k ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-            color: filter === k ? "var(--accent)" : "var(--text-muted)",
+            background: filter === k ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
+            border: filter === k ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
+            color: filter === k ? "#3fff8b" : "#a0abc3",
           }}>
             {l}
           </button>
@@ -318,16 +318,16 @@ export default function Goedkeuring() {
                 const isSelected = selectedMonteur === name;
                 return (
                   <button key={name} onClick={() => setSelectedMonteur(name)} className="w-full text-left rounded-2xl p-4 transition-colors" style={{
-                    background: isSelected ? "var(--accent-light)" : "var(--bg-surface)",
-                    border: isSelected ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+                    background: isSelected ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
+                    border: isSelected ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
                   }}>
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-xs font-bold" style={{ color: "#fff" }}>{name.charAt(0).toUpperCase()}</div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm truncate" style={{ color: "var(--text-primary)" }}>{name}</p>
-                        <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{userEntries.length} boekingen · {totalHours}u</p>
+                        <p className="font-semibold text-sm truncate" style={{ color: "#dae6ff" }}>{name}</p>
+                        <p className="text-[11px]" style={{ color: "#a0abc3" }}>{userEntries.length} boekingen · {totalHours}u</p>
                       </div>
-                      {pendingCount > 0 && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--warn-light)", color: "var(--warn-text)" }}>{pendingCount}</span>}
+                      {pendingCount > 0 && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "rgba(254,179,0,0.1)", color: "#feb300" }}>{pendingCount}</span>}
                     </div>
                   </button>
                 );
@@ -335,9 +335,9 @@ export default function Goedkeuring() {
             </div>
             <div className="w-[60%]">
               {selectedMonteur && grouped[selectedMonteur] ? (
-                <div className="rounded-2xl overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-                  <div className="flex items-center justify-between px-4 py-3" style={{ background: "var(--bg-surface-2)" }}>
-                    <span className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{selectedMonteur}</span>
+                <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+                  <div className="flex items-center justify-between px-4 py-3" style={{ background: "#102038" }}>
+                    <span className="font-semibold text-sm" style={{ color: "#dae6ff" }}>{selectedMonteur}</span>
                     <div className="flex gap-2">
                       {grouped[selectedMonteur].some(e => e.status === "concept") && (
                         <button onClick={() => {
@@ -345,24 +345,24 @@ export default function Goedkeuring() {
                           mutate(supabase.from("uren_boekingen").update({ status: "ingediend" }).in("id", ids)).then(ok => {
                             if (ok) { toast.success(`${ids.length} uren ingediend`); fetchEntries(); }
                           });
-                        }} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)" }}>
+                        }} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
                           <Send className="h-3.5 w-3.5" /> Indienen
                         </button>
                       )}
                       {grouped[selectedMonteur].some(e => e.status === "ingediend") && (
-                        <button onClick={() => approveAllForUser(selectedMonteur)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)", color: "var(--success)" }}>
+                        <button onClick={() => approveAllForUser(selectedMonteur)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
                           <CheckCheck className="h-3.5 w-3.5" /> Alles goedkeuren
                         </button>
                       )}
                     </div>
                   </div>
-                  <div className="divide-y" style={{ borderColor: "var(--bg-surface-2)" }}>
+                  <div className="divide-y" style={{ borderColor: "#102038" }}>
                     {grouped[selectedMonteur].map(renderEntryRow)}
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-20 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>Selecteer een monteur</p>
+                <div className="text-center py-20 rounded-2xl" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+                  <p className="text-sm" style={{ color: "#a0abc3" }}>Selecteer een monteur</p>
                 </div>
               )}
             </div>
@@ -646,40 +646,40 @@ function ManagerBookModal({ weekStart, onClose, onSaved }: { weekStart: Date; on
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center animate-fade-in" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className="w-full max-w-[430px] animate-sheet-up rounded-t-3xl space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", padding: "20px 20px 48px" }}>
-        <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
-        <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Uren boeken voor medewerker</h2>
+    <div className="fixed inset-0 z-50 flex items-end justify-center animate-fade-in" style={{ background: "color-mix(in srgb, #dae6ff 35%, transparent)", backdropFilter: "blur(6px)" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className="w-full max-w-[430px] animate-sheet-up rounded-t-3xl space-y-4" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", borderBottom: "none", padding: "20px 20px 48px" }}>
+        <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "rgba(106,118,140,0.15)" }} />
+        <h2 className="text-base font-bold" style={{ color: "#dae6ff" }}>Uren boeken voor medewerker</h2>
 
         <div className="space-y-3">
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Medewerker</label>
-            <select value={medId} onChange={e => setMedId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
+            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Medewerker</label>
+            <select value={medId} onChange={e => setMedId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
               <option value="">Kies medewerker...</option>
               {medewerkers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Dag</label>
-            <select value={datum} onChange={e => setDatum(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
+            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Dag</label>
+            <select value={datum} onChange={e => setDatum(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
               {weekDays.map(d => <option key={format(d, "yyyy-MM-dd")} value={format(d, "yyyy-MM-dd")}>{format(d, "EEEE d MMM", { locale: nl })}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Project</label>
-            <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
+            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Project</label>
+            <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
               <option value="">Kies project...</option>
               {projects.map(p => <option key={p.id} value={p.id}>{p.naam} ({p.nummer})</option>)}
             </select>
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Werkzaamheden</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Werkzaamheden</label>
             <div className="flex gap-2 mt-1">
               {["monteren", "schakelen"].map(w => (
-                <button key={w} type="button" onClick={() => setType(w)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize" style={{ background: type === w ? "var(--accent-light)" : "var(--bg-base)", border: type === w ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: type === w ? "var(--accent)" : "var(--text-muted)" }}>
+                <button key={w} type="button" onClick={() => setType(w)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize" style={{ background: type === w ? "rgba(63,255,139,0.1)" : "#030e20", border: type === w ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: type === w ? "#3fff8b" : "#a0abc3" }}>
                   {w}
                 </button>
               ))}
@@ -687,15 +687,15 @@ function ManagerBookModal({ weekStart, onClose, onSaved }: { weekStart: Date; on
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Uren</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Uren</label>
             <div className="flex items-center justify-center gap-6 mt-2">
-              <button type="button" onClick={() => setUren(u => Math.max(0.5, u - 0.5))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>−</button>
-              <span className="text-3xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{uren}u</span>
-              <button type="button" onClick={() => setUren(u => Math.min(24, u + 0.5))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>+</button>
+              <button type="button" onClick={() => setUren(u => Math.max(0.5, u - 0.5))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "#102038", color: "#a0abc3" }}>−</button>
+              <span className="text-3xl font-bold tabular-nums" style={{ color: "#dae6ff" }}>{uren}u</span>
+              <button type="button" onClick={() => setUren(u => Math.min(24, u + 0.5))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "#102038", color: "#a0abc3" }}>+</button>
             </div>
             <div className="flex justify-center gap-2 mt-2">
               {[4, 6, 8, 9, 10].map(h => (
-                <button key={h} type="button" onClick={() => setUren(h)} className="px-3 py-1 rounded-lg text-xs font-medium" style={{ background: uren === h ? "var(--accent-light)" : "var(--bg-base)", border: uren === h ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: uren === h ? "var(--accent)" : "var(--text-muted)" }}>
+                <button key={h} type="button" onClick={() => setUren(h)} className="px-3 py-1 rounded-lg text-xs font-medium" style={{ background: uren === h ? "rgba(63,255,139,0.1)" : "#030e20", border: uren === h ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: uren === h ? "#3fff8b" : "#a0abc3" }}>
                   {h}u
                 </button>
               ))}
@@ -703,7 +703,7 @@ function ManagerBookModal({ weekStart, onClose, onSaved }: { weekStart: Date; on
           </div>
         </div>
 
-        <button onClick={handleSubmit} disabled={saving || !medId || !projectId} className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+        <button onClick={handleSubmit} disabled={saving || !medId || !projectId} className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", color: "#fff" }}>
           {saving ? "Opslaan..." : "Opslaan als concept"}
         </button>
       </div>
@@ -735,30 +735,30 @@ function EditEntryModal({ entry, onClose, onSaved }: { entry: EntryWithProfile; 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center animate-fade-in" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className="w-full max-w-[430px] animate-sheet-up rounded-t-3xl space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", padding: "20px 20px 48px" }}>
-        <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
-        <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Boeking bewerken</h2>
-        <p className="text-xs" style={{ color: "var(--text-muted)" }}>{entry.full_name} · {entry.status}</p>
+    <div className="fixed inset-0 z-50 flex items-end justify-center animate-fade-in" style={{ background: "color-mix(in srgb, #dae6ff 35%, transparent)", backdropFilter: "blur(6px)" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className="w-full max-w-[430px] animate-sheet-up rounded-t-3xl space-y-4" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", borderBottom: "none", padding: "20px 20px 48px" }}>
+        <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "rgba(106,118,140,0.15)" }} />
+        <h2 className="text-base font-bold" style={{ color: "#dae6ff" }}>Boeking bewerken</h2>
+        <p className="text-xs" style={{ color: "#a0abc3" }}>{entry.full_name} · {entry.status}</p>
 
         <div className="space-y-3">
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Datum</label>
-            <input type="date" value={datum} onChange={e => setDatum(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Datum</label>
+            <input type="date" value={datum} onChange={e => setDatum(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Project</label>
-            <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
+            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Project</label>
+            <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
               {projects.map(p => <option key={p.id} value={p.id}>{p.naam} ({p.nummer})</option>)}
             </select>
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Werkzaamheden</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Werkzaamheden</label>
             <div className="flex gap-2 mt-1">
               {["monteren", "schakelen"].map(w => (
-                <button key={w} type="button" onClick={() => setType(w)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize" style={{ background: type === w ? "var(--accent-light)" : "var(--bg-base)", border: type === w ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: type === w ? "var(--accent)" : "var(--text-muted)" }}>
+                <button key={w} type="button" onClick={() => setType(w)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize" style={{ background: type === w ? "rgba(63,255,139,0.1)" : "#030e20", border: type === w ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: type === w ? "#3fff8b" : "#a0abc3" }}>
                   {w}
                 </button>
               ))}
@@ -766,15 +766,15 @@ function EditEntryModal({ entry, onClose, onSaved }: { entry: EntryWithProfile; 
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Uren</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Uren</label>
             <div className="flex items-center justify-center gap-6 mt-2">
-              <button type="button" onClick={() => setUren(u => Math.max(0.5, u - 0.5))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>−</button>
-              <span className="text-3xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{uren}u</span>
-              <button type="button" onClick={() => setUren(u => Math.min(24, u + 0.5))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>+</button>
+              <button type="button" onClick={() => setUren(u => Math.max(0.5, u - 0.5))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "#102038", color: "#a0abc3" }}>−</button>
+              <span className="text-3xl font-bold tabular-nums" style={{ color: "#dae6ff" }}>{uren}u</span>
+              <button type="button" onClick={() => setUren(u => Math.min(24, u + 0.5))} className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: "#102038", color: "#a0abc3" }}>+</button>
             </div>
             <div className="flex justify-center gap-2 mt-2">
               {[4, 6, 8, 9, 10].map(h => (
-                <button key={h} type="button" onClick={() => setUren(h)} className="px-3 py-1 rounded-lg text-xs font-medium" style={{ background: uren === h ? "var(--accent-light)" : "var(--bg-base)", border: uren === h ? "1px solid var(--accent-border)" : "1px solid var(--border)", color: uren === h ? "var(--accent)" : "var(--text-muted)" }}>
+                <button key={h} type="button" onClick={() => setUren(h)} className="px-3 py-1 rounded-lg text-xs font-medium" style={{ background: uren === h ? "rgba(63,255,139,0.1)" : "#030e20", border: uren === h ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: uren === h ? "#3fff8b" : "#a0abc3" }}>
                   {h}u
                 </button>
               ))}
@@ -782,7 +782,7 @@ function EditEntryModal({ entry, onClose, onSaved }: { entry: EntryWithProfile; 
           </div>
         </div>
 
-        <button onClick={handleSave} disabled={saving} className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+        <button onClick={handleSave} disabled={saving} className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", color: "#fff" }}>
           {saving ? "Opslaan..." : "Opslaan"}
         </button>
       </div>

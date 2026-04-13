@@ -23,15 +23,15 @@ interface ProfileData { id: string; full_name: string; telefoon: string; adres: 
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; reden: string | null; status: string; }
 
-const CERT_COLORS: Record<string, string> = { VCA: "var(--success)", NEN3140: "var(--info-dark)", rijbewijs_BE: "var(--warn-text)", overig: "var(--purple)" };
+const CERT_COLORS: Record<string, string> = { VCA: "#3fff8b", NEN3140: "#6e9bff", rijbewijs_BE: "#feb300", overig: "#a78bfa" };
 const DAGEN_LABEL = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"];
-const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)', 'var(--warn-text)', 'var(--purple)'];
+const AVATAR_COLORS = ['#3fff8b', '#22c55e', '#6e9bff', '#feb300', '#a78bfa'];
 
 const TYPE_COLORS: Record<string, { bg: string; border: string; dot: string }> = {
-  vakantie: { bg: "var(--warn-light)", border: "var(--warn-border)", dot: "var(--warn-dot)" },
-  verlof: { bg: "var(--info-light)", border: "var(--info-border)", dot: "var(--info)" },
-  ziek: { bg: "var(--danger-light)", border: "var(--danger-border)", dot: "var(--danger)" },
-  anders: { bg: "var(--bg-surface)", border: "var(--border)", dot: "var(--text-muted)" },
+  vakantie: { bg: "rgba(254,179,0,0.1)", border: "rgba(254,179,0,0.3)", dot: "#feb300" },
+  verlof: { bg: "rgba(110,155,255,0.1)", border: "rgba(110,155,255,0.3)", dot: "#6e9bff" },
+  ziek: { bg: "rgba(255,113,108,0.1)", border: "rgba(255,113,108,0.3)", dot: "#ff716c" },
+  anders: { bg: "rgba(10,26,48,0.7)", border: "rgba(106,118,140,0.15)", dot: "#a0abc3" },
 };
 
 function PasswordChange() {
@@ -52,10 +52,10 @@ function PasswordChange() {
 
   return (
     <div className="pt-2 space-y-2">
-      <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Wachtwoord wijzigen</p>
-      <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-      <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Herhaal nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-      <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} className="w-full py-2.5 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)" }}>
+      <p className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Wachtwoord wijzigen</p>
+      <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+      <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Herhaal nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+      <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} className="w-full py-2.5 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
         {saving ? "Bezig..." : "Wachtwoord wijzigen"}
       </button>
     </div>
@@ -76,23 +76,23 @@ function ManagerHandtekeningSection({ profileId }: { profileId: string | null })
   if (loading) return null;
 
   return (
-    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Jouw handtekening</p>
-      <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Voor digitale ondertekening van contracten</p>
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Jouw handtekening</p>
+      <p className="text-[10px]" style={{ color: "#a0abc3" }}>Voor digitale ondertekening van contracten</p>
 
       {htData?.handtekening && !showCanvas ? (
         <>
           <div style={{ maxWidth: 300 }}>
-            <img src={htData.handtekening} alt="Handtekening" style={{ width: "100%", height: 80, objectFit: "contain", background: "#fff", borderRadius: 8, border: "1px solid var(--border)" }} />
+            <img src={htData.handtekening} alt="Handtekening" style={{ width: "100%", height: 80, objectFit: "contain", background: "#fff", borderRadius: 8, border: "1px solid rgba(106,118,140,0.15)" }} />
           </div>
-          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Opgeslagen op {htData.updated_op ? formatDatum(htData.updated_op) : "–"}</p>
-          <button onClick={() => setShowCanvas(true)} className="text-xs underline" style={{ color: "var(--accent)" }}>Nieuwe handtekening tekenen</button>
+          <p className="text-[10px]" style={{ color: "#a0abc3" }}>Opgeslagen op {htData.updated_op ? formatDatum(htData.updated_op) : "–"}</p>
+          <button onClick={() => setShowCanvas(true)} className="text-xs underline" style={{ color: "#3fff8b" }}>Nieuwe handtekening tekenen</button>
         </>
       ) : (
         <>
           {!htData?.handtekening && (
-            <div className="rounded-xl p-2.5" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-              <p className="text-xs" style={{ color: "var(--warn-text)" }}>⚠ Sla je handtekening op om contracten digitaal te kunnen ondertekenen</p>
+            <div className="rounded-xl p-2.5" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
+              <p className="text-xs" style={{ color: "#feb300" }}>⚠ Sla je handtekening op om contracten digitaal te kunnen ondertekenen</p>
             </div>
           )}
           <HandtekeningCanvas hoogte={120} bestaande={htData?.handtekening} onSave={async (b64) => {
@@ -145,26 +145,26 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
   }
 
   return (
-    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Mijn contract</p>
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Mijn contract</p>
 
       {contract?.status === "ondertekend_beiden" && (
-        <div className="rounded-xl p-3.5 space-y-2" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
-          <p className="text-sm font-semibold" style={{ color: "var(--success)" }}>✅ Actief contract</p>
-          <p className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{contract.contract_nummer}</p>
+        <div className="rounded-xl p-3.5 space-y-2" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }}>
+          <p className="text-sm font-semibold" style={{ color: "#3fff8b" }}>✅ Actief contract</p>
+          <p className="text-xs font-mono" style={{ color: "#a0abc3" }}>{contract.contract_nummer}</p>
           {contract.startdatum && contract.einddatum && (
-            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Geldig: {formatDatum(contract.startdatum)} — {formatDatum(contract.einddatum)}</p>
+            <p className="text-xs" style={{ color: "#a0abc3" }}>Geldig: {formatDatum(contract.startdatum)} — {formatDatum(contract.einddatum)}</p>
           )}
           {contractDays !== null && contractDays <= 30 && contractDays >= 0 && (
-            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}>⚠ Verloopt binnenkort</span>
+            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "rgba(254,179,0,0.08)", color: "#feb300" }}>⚠ Verloopt binnenkort</span>
           )}
           <div className="flex items-center gap-3 mt-1">
             {contract.pdf_path && (
-              <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "var(--accent)" }}>
+              <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "#3fff8b" }}>
                 <Download className="h-3.5 w-3.5" /> Download PDF
               </button>
             )}
-            <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+            <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium" style={{ color: "#a0abc3" }}>
               {showDetails ? "Verberg details ▲" : "Bekijk details ▼"}
             </button>
           </div>
@@ -172,38 +172,38 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
       )}
 
       {contract?.status === "ondertekend_ot" && (
-        <div className="rounded-xl p-3.5 space-y-2" style={{ background: "var(--info-light)", border: "1px solid var(--info-border)" }}>
-          <p className="text-sm font-semibold" style={{ color: "var(--info)" }}>⏳ Wacht op TerreVolt</p>
-          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Je hebt ondertekend. TerreVolt rondt dit zo snel mogelijk af.</p>
-          <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium mt-1" style={{ color: "var(--text-secondary)" }}>
+        <div className="rounded-xl p-3.5 space-y-2" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
+          <p className="text-sm font-semibold" style={{ color: "#6e9bff" }}>⏳ Wacht op TerreVolt</p>
+          <p className="text-xs" style={{ color: "#a0abc3" }}>Je hebt ondertekend. TerreVolt rondt dit zo snel mogelijk af.</p>
+          <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium mt-1" style={{ color: "#a0abc3" }}>
             {showDetails ? "Verberg details ▲" : "Bekijk details ▼"}
           </button>
         </div>
       )}
 
       {contract?.status === "verstuurd" && (
-        <div className="rounded-xl p-3.5 space-y-1" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-          <p className="text-sm font-semibold" style={{ color: "var(--warn-text)" }}>📧 Wacht op jouw handtekening</p>
-          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Bekijk je e-mail voor de ondertekeningslink.</p>
-          <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>Geen e-mail ontvangen? Neem contact op via info@terrevolt.nl</p>
+        <div className="rounded-xl p-3.5 space-y-1" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
+          <p className="text-sm font-semibold" style={{ color: "#feb300" }}>📧 Wacht op jouw handtekening</p>
+          <p className="text-xs" style={{ color: "#a0abc3" }}>Bekijk je e-mail voor de ondertekeningslink.</p>
+          <p className="text-[10px] mt-1" style={{ color: "#a0abc3" }}>Geen e-mail ontvangen? Neem contact op via info@terrevolt.nl</p>
         </div>
       )}
 
       {/* Contract details panel */}
       {showDetails && contract && detailRows.length > 0 && (
-        <div className="rounded-xl p-3 space-y-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Contractgegevens</p>
+        <div className="rounded-xl p-3 space-y-1.5" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "#a0abc3" }}>Contractgegevens</p>
           {detailRows.map((row, i) => (
-            <div key={i} className="flex justify-between items-center py-1" style={{ borderBottom: i < detailRows.length - 1 ? "1px solid var(--border)" : "none" }}>
-              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>{row.label}</span>
-              <span className="text-xs font-medium text-right max-w-[60%]" style={{ color: "var(--text-primary)" }}>{row.value}</span>
+            <div key={i} className="flex justify-between items-center py-1" style={{ borderBottom: i < detailRows.length - 1 ? "1px solid rgba(106,118,140,0.15)" : "none" }}>
+              <span className="text-[11px]" style={{ color: "#a0abc3" }}>{row.label}</span>
+              <span className="text-xs font-medium text-right max-w-[60%]" style={{ color: "#dae6ff" }}>{row.value}</span>
             </div>
           ))}
         </div>
       )}
 
       {!contract && (
-        <p className="text-xs" style={{ color: "var(--text-muted)" }}>Geen actief contract</p>
+        <p className="text-xs" style={{ color: "#a0abc3" }}>Geen actief contract</p>
       )}
     </div>
   );
@@ -299,15 +299,15 @@ export default function Profiel() {
 
   const certStatus = (verval: string) => {
     const diff = (new Date(verval).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-    if (diff < 0) return { label: "Verlopen", color: "var(--danger)" };
-    if (diff < 30) return { label: `${Math.ceil(diff)}d`, color: "var(--warn-dot)" };
-    return { label: "Geldig", color: "var(--success)" };
+    if (diff < 0) return { label: "Verlopen", color: "#ff716c" };
+    if (diff < 30) return { label: `${Math.ceil(diff)}d`, color: "#feb300" };
+    return { label: "Geldig", color: "#3fff8b" };
   };
 
   const statusColors: Record<string, { bg: string; text: string }> = {
-    aangevraagd: { bg: "var(--warn-light)", text: "var(--warn-text)" },
-    goedgekeurd: { bg: "var(--success-light)", text: "var(--success)" },
-    afgekeurd: { bg: "var(--danger-light)", text: "var(--danger)" },
+    aangevraagd: { bg: "rgba(254,179,0,0.1)", text: "#feb300" },
+    goedgekeurd: { bg: "rgba(63,255,139,0.1)", text: "#3fff8b" },
+    afgekeurd: { bg: "rgba(255,113,108,0.1)", text: "#ff716c" },
   };
 
   // Calendar helpers
@@ -335,7 +335,7 @@ export default function Profiel() {
     return null;
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><Spinner center={false} /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><Spinner center={false} /></div>;
 
   return (
     <PageShell>
