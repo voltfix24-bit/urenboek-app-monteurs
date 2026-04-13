@@ -11,6 +11,8 @@ import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourg
 import { volledigAdres } from "@/lib/utils";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { MobileHeader } from "@/components/MobileHeader";
+import { BottomNav } from "@/components/BottomNav";
+import { useNavBadges } from "@/hooks/useNavBadges";
 import { euro } from "@/lib/formatting";
 import { DashboardSkeleton } from "@/components/ui/Skeletons";
 import { useDashboardQuery } from "@/hooks/queries/useDashboardQuery";
@@ -139,6 +141,7 @@ function NieuweMedewerkersSection({ navigate }: { navigate: (p: string) => void 
 
 export default function Dashboard() {
   const { isManager, user } = useAuth();
+  const { badges } = useNavBadges();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: dashboardData, isLoading: loading } = useDashboardQuery();
@@ -535,6 +538,8 @@ export default function Dashboard() {
             </>
           )}
         </main>
+
+        <BottomNav badges={badges} />
       </div>
     </PageShell>
   );

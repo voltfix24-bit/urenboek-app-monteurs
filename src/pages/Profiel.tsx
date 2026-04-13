@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
 import { valideer, profielSchema } from "@/lib/validatie";
 import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/Spinner";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { formatDatum } from "@/lib/formatting";
@@ -212,6 +213,7 @@ export default function Profiel() {
   const { user, roles, rolLabel, permissies, signOut } = useAuth();
   const { badges } = useNavBadges();
   const { refetch: refetchProfileContext } = useProfile();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [certs, setCerts] = useState<Certificaat[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
@@ -656,7 +658,7 @@ export default function Profiel() {
           </div>
 
           {/* MIJN ORDERS SHORTCUT */}
-          <button onClick={() => window.location.href = '/mijn-orders'} style={{
+          <button onClick={() => navigate('/mijn-orders')} style={{
             width: '100%', padding: '16px 20px', borderRadius: 16,
             background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
             border: '1px solid rgba(106,118,140,0.15)', borderLeft: '3px solid #3fff8b',
