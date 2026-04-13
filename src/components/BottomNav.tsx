@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import type { NavBadges } from "@/hooks/useNavBadges";
 import { NavBadge } from "./NavBadge";
-import { Clock, CheckCircle, CalendarDays, Bell, User, LayoutDashboard, FolderOpen, FileText, type LucideIcon } from "lucide-react";
+import { Clock, CheckCircle, CalendarDays, Bell, User, LayoutDashboard, FolderOpen, FileText, Users, type LucideIcon } from "lucide-react";
 
 interface TabDef {
   key: string;
@@ -38,11 +38,11 @@ export function BottomNav({ badges }: BottomNavProps) {
   ];
 
   const managerTabs: TabDef[] = [
-    { key: "/dashboard", icon: LayoutDashboard, label: "Dashboard", dot: badges.verlofAanvragen > 0 },
-    { key: "/goedkeuring", icon: CheckCircle, label: "Keuren", badge: badges.openGoedkeuringen },
+    { key: "/dashboard", icon: LayoutDashboard, label: "Overzicht" },
+    { key: "/goedkeuring", icon: CheckCircle, label: "Keuren", badge: badges.openstaandeGoedkeuringen },
     { key: "/manager-planning", icon: CalendarDays, label: "Planning" },
+    { key: "/medewerkers", icon: Users, label: "Monteurs" },
     { key: "/projecten", icon: FolderOpen, label: "Projecten" },
-    { key: "/mededelingen", icon: Bell, label: "Berichten", badge: badges.ongelezen },
   ];
 
   const tabs = isManager ? managerTabs : isUitvoerder ? uitvoerderTabs : monteurTabs;
