@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ListSkeleton, GoedkeuringCardSkeleton } from "@/components/ui/Skeletons";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { HeaderLogo } from "@/components/HeaderLogo";
+import { MobileHeader } from "@/components/MobileHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -389,22 +390,11 @@ export default function Goedkeuring() {
     <PageShell>
       <PullToRefresh onRefresh={fetchEntries}>
       <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 160 }}>
-        {/* HEADER */}
-        <header style={{
-          position: "sticky", top: 0, zIndex: 50,
-          background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
-          padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
-        }}>
-          <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "#dae6ff" }}>
-            Weekstaten keuren
-          </span>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button onClick={() => setShowBookModal(true)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#3fff8b" }}>add_circle</span>
-            </button>
-          </div>
-        </header>
+        <MobileHeader showBrand={false} title="Weekstaten keuren" actions={
+          <button onClick={() => setShowBookModal(true)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#3fff8b" }}>add_circle</span>
+          </button>
+        } />
 
         <main style={{ padding: "24px 20px" }}>
           {/* HEADER INFO */}

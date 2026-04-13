@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
+import { MobileHeader } from "@/components/MobileHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -277,20 +278,7 @@ export default function ManagerPlanning() {
       <PullToRefresh onRefresh={fetchAll}>
       <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 160 }}>
         {/* HEADER */}
-        <header style={{
-          position: "sticky", top: 0, zIndex: 50,
-          background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
-          padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span className="material-symbols-outlined" style={{ color: "#3fff8b", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
-            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", letterSpacing: "0.1em", textTransform: "uppercase" }}>TERREVOLT UREN</span>
-          </div>
-          <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#3fff8b" }}>
-            {user?.user_metadata?.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() || "M"}
-          </div>
-        </header>
+        <MobileHeader initials={user?.user_metadata?.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() || "M"} />
 
         <main style={{ padding: "24px 20px" }}>
           {/* WEEK SELECTOR */}

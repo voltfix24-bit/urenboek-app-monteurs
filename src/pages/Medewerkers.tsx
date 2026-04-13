@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { valideer, nieuweMedewerkerSchema } from "@/lib/validatie";
 import { useMedewerkers } from "@/hooks/useMedewerkers";
 import { HeaderLogo } from "@/components/HeaderLogo";
+import { MobileHeader } from "@/components/MobileHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -248,17 +249,11 @@ export default function Medewerkers() {
     <PageShell>
       <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 140 }}>
         {/* HEADER */}
-        <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span className="material-symbols-outlined" style={{ color: "#3fff8b", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
-            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", letterSpacing: "0.1em", textTransform: "uppercase" }}>TERREVOLT UREN</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button onClick={() => { setShowAdd(!showAdd); if (showAdd) resetForm(); }} style={{ width: 36, height: 36, borderRadius: "50%", background: showAdd ? "rgba(255,113,108,0.15)" : "rgba(63,255,139,0.15)", border: showAdd ? "1px solid rgba(255,113,108,0.3)" : "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAdd ? "#ff716c" : "#3fff8b" }}>
-              {showAdd ? <X size={18} /> : <Plus size={18} />}
-            </button>
-          </div>
-        </header>
+        <MobileHeader actions={
+          <button onClick={() => { setShowAdd(!showAdd); if (showAdd) resetForm(); }} style={{ width: 36, height: 36, borderRadius: "50%", background: showAdd ? "rgba(255,113,108,0.15)" : "rgba(63,255,139,0.15)", border: showAdd ? "1px solid rgba(255,113,108,0.3)" : "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAdd ? "#ff716c" : "#3fff8b" }}>
+            {showAdd ? <X size={18} /> : <Plus size={18} />}
+          </button>
+        } />
 
         <main style={{ padding: "24px 20px" }}>
           {/* SECTION HEADER */}
