@@ -23,7 +23,7 @@ interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
-const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)', 'var(--warn-text)', 'var(--purple)'];
+const AVATAR_COLORS = ['#3fff8b', '#22c55e', '#6e9bff', '#feb300', '#a78bfa'];
 
 function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null, weekDateStrings?: string[]): string[] {
   const conflicts: string[] = [];
@@ -54,10 +54,10 @@ function getOverplannedMedewerkers(entries: PlanningEntry[], medewerkers: Medewe
 function getModalStatus(medId: string, dateStr: string, medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], dateObj: Date): { label: string; color: string; bg: string } | null {
   const med = medewerkers.find(m => m.id === medId);
   const verlof = beschikbaarheid.find(b => b.medewerker_id === medId && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
-  if (verlof) return { label: "Op vakantie", color: "var(--danger)", bg: "var(--danger-light)" };
+  if (verlof) return { label: "Op vakantie", color: "#ff716c", bg: "rgba(255,113,108,0.1)" };
   const jsDay = dateObj.getDay();
-  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "Vaste vrije dag", color: "var(--warn-text)", bg: "var(--warn-bg)" };
-  return { label: "Beschikbaar", color: "var(--success)", bg: "var(--success-light)" };
+  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "Vaste vrije dag", color: "#feb300", bg: "rgba(254,179,0,0.08)" };
+  return { label: "Beschikbaar", color: "#3fff8b", bg: "rgba(63,255,139,0.1)" };
 }
 
 export default function ManagerPlanning() {
@@ -152,22 +152,22 @@ export default function ManagerPlanning() {
   }, [modalForm.medewerker_id, modalForm.datum, entries, medewerkers, beschikbaarheid, editId, weekDates]);
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   const gridContent = (
     <main className="px-4 py-4 space-y-4">
-      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
+      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#102038", color: "#a0abc3" }}>
           <ChevronLeft className="h-4 w-4" />
         </button>
         <div className="text-center">
-          <p className="text-lg font-extrabold" style={{ color: "var(--text-primary)" }}>Week {weekNumber}</p>
-          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+          <p className="text-lg font-extrabold" style={{ color: "#dae6ff" }}>Week {weekNumber}</p>
+          <p className="text-[11px]" style={{ color: "#a0abc3" }}>
             {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 4), "d MMM", { locale: nl })}
           </p>
         </div>
-        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
+        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#102038", color: "#a0abc3" }}>
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -190,7 +190,7 @@ export default function ManagerPlanning() {
             return (
               <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                 {Array.from(projectDays.entries()).map(([id, { name, days }]) => (
-                  <span key={id} className="shrink-0 px-2.5 py-1 rounded-full whitespace-nowrap" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-primary)", fontSize: 11, fontWeight: 500 }}>
+                  <span key={id} className="shrink-0 px-2.5 py-1 rounded-full whitespace-nowrap" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontSize: 11, fontWeight: 500 }}>
                     {name.length > 12 ? name.slice(0, 12) + "…" : name} · {days}d
                   </span>
                 ))}
@@ -202,20 +202,20 @@ export default function ManagerPlanning() {
             <div className="w-16 lg:w-40 shrink-0" />
             {weekDates.map((d, i) => (
               <div key={i} className="flex-1 text-center">
-                <p className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>{DAGEN[i]}</p>
-                <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{d.getDate()}</p>
+                <p className="text-[10px] font-semibold" style={{ color: "#a0abc3" }}>{DAGEN[i]}</p>
+                <p className="text-xs font-bold" style={{ color: "#dae6ff" }}>{d.getDate()}</p>
               </div>
             ))}
           </div>
 
 
           {overplanned.length > 0 && (
-            <div className="rounded-xl px-3 py-2.5 flex items-start gap-2" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--warn-text)" }} />
+            <div className="rounded-xl px-3 py-2.5 flex items-start gap-2" style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)" }}>
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "#feb300" }} />
               <div>
-                <p className="text-xs font-semibold" style={{ color: "var(--warn-text)" }}>Overplanning</p>
+                <p className="text-xs font-semibold" style={{ color: "#feb300" }}>Overplanning</p>
                 {overplanned.map(m => (
-                  <p key={m.id} className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+                  <p key={m.id} className="text-[11px]" style={{ color: "#a0abc3" }}>
                     {m.name}: {m.days} dagen ingepland
                   </p>
                 ))}
@@ -230,7 +230,7 @@ export default function ManagerPlanning() {
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
                     {med.full_name.charAt(0)}
                   </div>
-                  <span className="text-[10px] lg:text-xs font-medium truncate max-w-[44px] lg:max-w-[120px]" style={{ color: "var(--text-primary)" }}>{med.full_name.split(" ")[0]}<span className="hidden lg:inline"> {med.full_name.split(" ").slice(1).join(" ")}</span></span>
+                  <span className="text-[10px] lg:text-xs font-medium truncate max-w-[44px] lg:max-w-[120px]" style={{ color: "#dae6ff" }}>{med.full_name.split(" ")[0]}<span className="hidden lg:inline"> {med.full_name.split(" ").slice(1).join(" ")}</span></span>
                 </div>
               </div>
               {weekDates.map((d, i) => {
@@ -242,29 +242,29 @@ export default function ManagerPlanning() {
 
                 return (
                   <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] lg:min-h-[64px] flex flex-col items-center justify-center text-center transition-colors active:scale-95 relative" style={{
-                    background: hasConflict && !entry ? "var(--danger-light)" : entry ? (entry.activiteit_kleur ? `${entry.activiteit_kleur}18` : "var(--accent-light)") : "var(--bg-base)",
-                    border: hasConflict ? "1px solid var(--danger-border)" : entry ? `1px solid ${entry.activiteit_kleur || "var(--accent)"}44` : "1px solid var(--bg-surface-2)",
+                    background: hasConflict && !entry ? "rgba(255,113,108,0.1)" : entry ? (entry.activiteit_kleur ? `${entry.activiteit_kleur}18` : "rgba(63,255,139,0.1)") : "#030e20",
+                    border: hasConflict ? "1px solid rgba(255,113,108,0.3)" : entry ? `1px solid ${entry.activiteit_kleur || "#3fff8b"}44` : "1px solid #102038",
                   }}>
                     {entry ? (
                       <>
-                        <span className="text-[8px] lg:text-[11px] font-bold truncate lg:whitespace-normal w-full" style={{ color: "var(--text-primary)" }}>
+                        <span className="text-[8px] lg:text-[11px] font-bold truncate lg:whitespace-normal w-full" style={{ color: "#dae6ff" }}>
                           <span className="lg:hidden">{proj?.nummer?.slice(-3) || "?"}</span>
                           <span className="hidden lg:inline">{proj?.naam || proj?.nummer || "?"}</span>
                         </span>
                         {entry.activiteit && (
-                          <span className="text-[7px] lg:text-[9px] truncate w-full block" style={{ color: "var(--text-muted)", marginTop: 1 }}>
+                          <span className="text-[7px] lg:text-[9px] truncate w-full block" style={{ color: "#a0abc3", marginTop: 1 }}>
                             {entry.activiteit}
                           </span>
                         )}
-                        <span className="text-[7px] lg:text-[10px]" style={{ color: "var(--text-muted)" }}>{entry.starttijd}–{entry.eindtijd}</span>
+                        <span className="text-[7px] lg:text-[10px]" style={{ color: "#a0abc3" }}>{entry.starttijd}–{entry.eindtijd}</span>
                       </>
                     ) : hasConflict ? (
-                      <AlertTriangle className="h-3 w-3" style={{ color: "var(--danger)", opacity: 0.6 }} />
+                      <AlertTriangle className="h-3 w-3" style={{ color: "#ff716c", opacity: 0.6 }} />
                     ) : (
-                      <Plus className="h-3 w-3" style={{ color: "var(--border)" }} />
+                      <Plus className="h-3 w-3" style={{ color: "rgba(106,118,140,0.15)" }} />
                     )}
                     {hasConflict && entry && (
-                      <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "var(--danger)" }} />
+                      <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "#ff716c" }} />
                     )}
                   </button>
                 );

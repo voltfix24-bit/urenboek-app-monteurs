@@ -19,11 +19,11 @@ const ROLE_ICONS: Record<string, React.ReactNode> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  manager: "var(--accent)",
-  uitvoerder: "var(--info-dark, #3b82f6)",
-  monteur: "var(--warn-dot, #f59e0b)",
-  schakelmonteur: "var(--purple, #8b5cf6)",
-  wv: "var(--danger, #ef4444)",
+  manager: "#3fff8b",
+  uitvoerder: "#6e9bff",
+  monteur: "#feb300",
+  schakelmonteur: "#a78bfa",
+  wv: "#ff716c",
 };
 
 function DevLoginPicker() {
@@ -33,22 +33,22 @@ function DevLoginPicker() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: "var(--bg-base)" }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: "#030e20" }}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "var(--accent)" }} />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "var(--accent)" }} />
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "#3fff8b" }} />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "#3fff8b" }} />
       </div>
 
       <div className="w-full max-w-sm relative">
         <div className="text-center mb-8">
           <img src={terrevoltLogo} alt="TerreVolt BV" className="h-12 mx-auto mb-3" />
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Ontwikkelmodus</p>
+          <p className="text-sm" style={{ color: "#a0abc3" }}>Ontwikkelmodus</p>
         </div>
 
-        <div className="rounded-2xl p-6 space-y-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <div className="rounded-2xl p-6 space-y-5" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <div className="text-center">
-            <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Kies een rol</h1>
-            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Selecteer een gebruiker om de app te bekijken</p>
+            <h1 className="text-xl font-bold" style={{ color: "#dae6ff" }}>Kies een rol</h1>
+            <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>Selecteer een gebruiker om de app te bekijken</p>
           </div>
 
           <div className="space-y-2">
@@ -57,29 +57,29 @@ function DevLoginPicker() {
                 key={devUser.id}
                 onClick={() => selectUser(devUser)}
                 className="w-full flex items-center gap-4 p-4 rounded-xl transition-all active:scale-[0.97]"
-                style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}
+                style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = ROLE_COLORS[devUser.role] || "var(--accent)";
-                  e.currentTarget.style.background = "var(--bg-surface-2)";
+                  e.currentTarget.style.borderColor = ROLE_COLORS[devUser.role] || "#3fff8b";
+                  e.currentTarget.style.background = "#102038";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border)";
-                  e.currentTarget.style.background = "var(--bg-base)";
+                  e.currentTarget.style.borderColor = "rgba(106,118,140,0.15)";
+                  e.currentTarget.style.background = "#030e20";
                 }}
               >
                 <div
                   className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: `color-mix(in srgb, ${ROLE_COLORS[devUser.role] || "var(--accent)"} 15%, transparent)`, color: ROLE_COLORS[devUser.role] || "var(--accent)" }}
+                  style={{ background: `color-mix(in srgb, ${ROLE_COLORS[devUser.role] || "#3fff8b"} 15%, transparent)`, color: ROLE_COLORS[devUser.role] || "#3fff8b" }}
                 >
                   {ROLE_ICONS[devUser.role] || <User className="h-6 w-6" />}
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{devUser.label}</p>
-                  <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{devUser.fullName}</p>
+                  <p className="text-sm font-bold" style={{ color: "#dae6ff" }}>{devUser.label}</p>
+                  <p className="text-[11px]" style={{ color: "#a0abc3" }}>{devUser.fullName}</p>
                 </div>
                 <div className="ml-auto">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ border: "2px solid var(--border)" }}>
-                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>→</span>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ border: "2px solid rgba(106,118,140,0.15)" }}>
+                    <span className="text-xs" style={{ color: "#a0abc3" }}>→</span>
                   </div>
                 </div>
               </button>
@@ -87,13 +87,13 @@ function DevLoginPicker() {
           </div>
 
           <div className="text-center pt-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-medium" style={{ background: "var(--warn-bg)", color: "var(--warn-text)", border: "1px solid var(--warn-border)" }}>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-medium" style={{ background: "rgba(254,179,0,0.08)", color: "#feb300", border: "1px solid rgba(254,179,0,0.3)" }}>
               ⚠️ Dev-modus — geen echte authenticatie
             </div>
           </div>
         </div>
 
-        <p className="text-center text-[11px] mt-6" style={{ color: "var(--text-muted)" }}>
+        <p className="text-center text-[11px] mt-6" style={{ color: "#a0abc3" }}>
           © {new Date().getFullYear()} TerreVolt BV · Alle rechten voorbehouden
         </p>
       </div>

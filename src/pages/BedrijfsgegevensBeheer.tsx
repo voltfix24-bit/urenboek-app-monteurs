@@ -15,7 +15,7 @@ import { Info, Zap } from "lucide-react";
 const SECTION_HEADER = "text-[11px] font-bold uppercase tracking-wider mb-3 pb-1.5";
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <p className={SECTION_HEADER} style={{ color: "var(--text-muted)", borderBottom: "1px solid var(--border)" }}>{children}</p>;
+  return <p className={SECTION_HEADER} style={{ color: "#a0abc3", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>{children}</p>;
 }
 
 function Field({ label, hint, value, onChange, placeholder, mono }: {
@@ -23,11 +23,11 @@ function Field({ label, hint, value, onChange, placeholder, mono }: {
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>{label}</label>
+      <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>{label}</label>
       <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
         className="w-full px-3 py-2.5 rounded-xl text-sm"
-        style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", fontFamily: mono ? "DM Mono, monospace" : "inherit" }} />
-      {hint && <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{hint}</p>}
+        style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: mono ? "DM Mono, monospace" : "inherit" }} />
+      {hint && <p className="text-[10px]" style={{ color: "#a0abc3" }}>{hint}</p>}
     </div>
   );
 }
@@ -37,11 +37,11 @@ function NumberField({ label, hint, value, onChange }: {
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>{label}</label>
+      <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>{label}</label>
       <input type="number" value={value} onChange={e => onChange(Number(e.target.value))}
         className="w-full px-3 py-2.5 rounded-xl text-sm"
-        style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }} />
-      {hint && <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{hint}</p>}
+        style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: "DM Mono, monospace" }} />
+      {hint && <p className="text-[10px]" style={{ color: "#a0abc3" }}>{hint}</p>}
     </div>
   );
 }
@@ -137,39 +137,39 @@ export default function BedrijfsgegevensBeheer() {
     setSaving(false);
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><Spinner center={false} /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><Spinner center={false} /></div>;
 
   return (
     <>
       <DesktopSidebar badges={badges} />
       <PageShell>
-        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
+        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, rgba(10,26,48,0.7) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
           <div className="px-4 py-3 flex items-center gap-2.5">
             <HeaderLogo />
-            <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Bedrijfsgegevens</span>
+            <span className="text-base font-bold tracking-tight" style={{ color: "#dae6ff" }}>Bedrijfsgegevens</span>
           </div>
         </header>
 
         <main className="px-4 py-4 space-y-4" style={{ maxWidth: 640, margin: "0 auto" }}>
           <div>
-            <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>TerreVolt Bedrijfsgegevens</h2>
-            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Deze gegevens verschijnen op alle inkooporders en facturen</p>
+            <h2 className="text-lg font-bold" style={{ color: "#dae6ff" }}>TerreVolt Bedrijfsgegevens</h2>
+            <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>Deze gegevens verschijnen op alle inkooporders en facturen</p>
           </div>
 
           {/* Info banner */}
-          <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "var(--info-light)", border: "1px solid var(--info-border)" }}>
-            <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--info)" }} />
-            <p className="text-xs" style={{ color: "var(--info)" }}>Wijzigingen worden automatisch meegenomen in alle nieuwe inkooporders en PDF's.</p>
+          <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
+            <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "#6e9bff" }} />
+            <p className="text-xs" style={{ color: "#6e9bff" }}>Wijzigingen worden automatisch meegenomen in alle nieuwe inkooporders en PDF's.</p>
           </div>
 
           {/* Form card */}
-          <div className="rounded-2xl p-6 space-y-5" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl p-6 space-y-5" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             {/* Bedrijfsinformatie */}
             <div>
               <SectionTitle>Bedrijfsinformatie</SectionTitle>
               <div className="space-y-3">
                 <Field label="Bedrijfsnaam *" value={form.bedrijfsnaam} onChange={v => set("bedrijfsnaam", v)} placeholder="TerreVolt B.V." />
-                {errors.bedrijfsnaam && <p className="text-[10px]" style={{ color: "var(--danger)" }}>⚠ {errors.bedrijfsnaam}</p>}
+                {errors.bedrijfsnaam && <p className="text-[10px]" style={{ color: "#ff716c" }}>⚠ {errors.bedrijfsnaam}</p>}
                 <Field label="Rechtsvorm" value={form.rechtsvorm} onChange={v => set("rechtsvorm", v)} placeholder="B.V. - Besloten vennootschap" />
                 <Field label="Website" value={form.website} onChange={v => set("website", v)} placeholder="https://terrevolt.nl" />
               </div>
@@ -202,11 +202,11 @@ export default function BedrijfsgegevensBeheer() {
               <SectionTitle>Financieel</SectionTitle>
               <div className="space-y-3">
                 <Field label="KVK-nummer" hint="8 cijfers" value={form.kvk_nummer} onChange={v => set("kvk_nummer", v)} placeholder="98495976" mono />
-                {errors.kvk_nummer && <p className="text-[10px]" style={{ color: "var(--danger)" }}>⚠ {errors.kvk_nummer}</p>}
+                {errors.kvk_nummer && <p className="text-[10px]" style={{ color: "#ff716c" }}>⚠ {errors.kvk_nummer}</p>}
                 <Field label="BTW-nummer" hint="Format: NL123456789B01" value={form.btw_nummer} onChange={v => set("btw_nummer", v)} placeholder="NL868519522B01" mono />
-                {errors.btw_nummer && <p className="text-[10px]" style={{ color: "var(--danger)" }}>⚠ {errors.btw_nummer}</p>}
+                {errors.btw_nummer && <p className="text-[10px]" style={{ color: "#ff716c" }}>⚠ {errors.btw_nummer}</p>}
                 <Field label="IBAN" hint="Format: NL49INGB0113028776" value={form.iban} onChange={v => set("iban", v)} placeholder="NL49INGB0113028776" mono />
-                {errors.iban && <p className="text-[10px]" style={{ color: "var(--danger)" }}>⚠ {errors.iban}</p>}
+                {errors.iban && <p className="text-[10px]" style={{ color: "#ff716c" }}>⚠ {errors.iban}</p>}
                 <Field label="IBAN tenaamstelling" value={form.iban_naam} onChange={v => set("iban_naam", v)} placeholder="TerreVolt B.V." />
                 <NumberField label="Betalingstermijn (dagen)" value={form.betalingstermijn} onChange={v => set("betalingstermijn", v)} />
               </div>
@@ -215,35 +215,35 @@ export default function BedrijfsgegevensBeheer() {
             {/* Preview */}
             <div>
               <SectionTitle>Voorbeeld op inkooporder</SectionTitle>
-              <div className="rounded-xl p-4" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
+              <div className="rounded-xl p-4" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Zap className="h-4 w-4" style={{ color: "var(--accent)" }} />
-                  <span className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>{form.bedrijfsnaam || "—"}</span>
+                  <Zap className="h-4 w-4" style={{ color: "#3fff8b" }} />
+                  <span className="text-[15px] font-bold" style={{ color: "#dae6ff" }}>{form.bedrijfsnaam || "—"}</span>
                 </div>
-                <div className="space-y-0.5 text-[13px]" style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                <div className="space-y-0.5 text-[13px]" style={{ color: "#a0abc3", lineHeight: 1.6 }}>
                   {form.straat && <p>{form.straat}</p>}
                   {(form.postcode || form.stad) && <p>{[form.postcode, form.stad].filter(Boolean).join(" ")}</p>}
                   {form.land && <p>{form.land}</p>}
                 </div>
-                <div className="mt-3 space-y-0.5" style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: "var(--text-muted)" }}>
+                <div className="mt-3 space-y-0.5" style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: "#a0abc3" }}>
                   {form.kvk_nummer && <p>KVK: {form.kvk_nummer}</p>}
                   {form.btw_nummer && <p>BTW: {form.btw_nummer}</p>}
                   {form.iban && <p>IBAN: {formatIban(form.iban)}</p>}
                   {form.iban_naam && <p className="pl-[3.2em]">t.n.v. {form.iban_naam}</p>}
                 </div>
-                {form.email && <p className="mt-2 text-[13px]" style={{ color: "var(--text-secondary)" }}>{form.email}</p>}
+                {form.email && <p className="mt-2 text-[13px]" style={{ color: "#a0abc3" }}>{form.email}</p>}
               </div>
             </div>
           </div>
 
           {/* Save button */}
-          <button onClick={save} disabled={saving} className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-50" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+          <button onClick={save} disabled={saving} className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-50" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", color: "#fff" }}>
             {saving ? "Opslaan..." : "Opslaan"}
           </button>
 
           {/* Last updated */}
           {bedrijf?.updated_at && (
-            <p className="text-[11px] text-center" style={{ color: "var(--text-muted)" }}>
+            <p className="text-[11px] text-center" style={{ color: "#a0abc3" }}>
               Laatst gewijzigd op {format(parseISO(bedrijf.updated_at), "d MMMM yyyy 'om' HH:mm", { locale: nl })}
               {updatedByName && ` door ${updatedByName}`}
             </p>

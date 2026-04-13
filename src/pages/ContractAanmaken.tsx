@@ -141,11 +141,11 @@ export default function ContractAanmaken() {
         <div className="space-y-1">
           <p className="text-xs font-semibold">Ondertekeningslink:</p>
           <div className="flex items-center gap-2">
-            <code className="text-[10px] break-all flex-1" style={{ color: "var(--accent)" }}>{ondertekeningsLink}</code>
+            <code className="text-[10px] break-all flex-1" style={{ color: "#3fff8b" }}>{ondertekeningsLink}</code>
             <button
               onClick={() => { navigator.clipboard.writeText(ondertekeningsLink); toast.success("Link gekopieerd ✓"); }}
               className="shrink-0 px-2 py-1 rounded text-[10px] font-medium"
-              style={{ background: "var(--accent)", color: "#fff" }}>
+              style={{ background: "#3fff8b", color: "#fff" }}>
               Kopieer
             </button>
           </div>
@@ -161,29 +161,29 @@ export default function ContractAanmaken() {
   }
 
   if (loading) return <PageShell><Spinner /></PageShell>;
-  if (!kandidaat) return <PageShell><p style={{ color: "var(--text-muted)" }}>Kandidaat niet gevonden</p></PageShell>;
+  if (!kandidaat) return <PageShell><p style={{ color: "#a0abc3" }}>Kandidaat niet gevonden</p></PageShell>;
 
   return (
     <PageShell>
       {/* Progress */}
       <div className="flex gap-1 mb-6">
         {[1, 2, 3].map(s => (
-          <div key={s} className="flex-1 h-1 rounded-full" style={{ background: stap >= s ? "var(--accent)" : "var(--bg-surface-2)" }} />
+          <div key={s} className="flex-1 h-1 rounded-full" style={{ background: stap >= s ? "#3fff8b" : "#102038" }} />
         ))}
       </div>
 
       {stap === 1 && (
         <div className="space-y-6">
           {/* Opdrachtgever */}
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <SectieHeader>TerreVolt BV (Opdrachtgever)</SectieHeader>
             <ReadonlyField label="Bedrijfsnaam" value={bedrijf?.bedrijfsnaam || "TerreVolt B.V."} />
             <ReadonlyField label="Adres" value={`${bedrijf?.straat || ""}, ${bedrijf?.postcode || ""} ${bedrijf?.stad || ""}`} />
             <ReadonlyField label="KVK" value={bedrijf?.kvk_nummer || ""} />
             <div>
-              <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Vertegenwoordigd door</label>
+              <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Vertegenwoordigd door</label>
               <select value={ogVertegenwoordiger} onChange={e => setOgVertegenwoordiger(e.target.value)}
-                className="w-full mt-1 rounded-lg p-2.5 text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
+                className="w-full mt-1 rounded-lg p-2.5 text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
                 {managers.map(m => (
                   <option key={m.id} value={m.full_name}>
                     {m.full_name} {m.heeft_handtekening ? "✓" : ""}
@@ -195,7 +195,7 @@ export default function ContractAanmaken() {
           </div>
 
           {/* Opdrachtnemer */}
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <SectieHeader>Opdrachtnemer</SectieHeader>
             <Input placeholder="Volledige naam" value={otNaam} onChange={e => setOtNaam(e.target.value)} />
             <Input placeholder="Handelsnaam (optioneel)" value={otHandelsnaam} onChange={e => setOtHandelsnaam(e.target.value)} />
@@ -208,7 +208,7 @@ export default function ContractAanmaken() {
             <Input placeholder="BTW-nummer (optioneel)" value={otBtw} onChange={e => setOtBtw(e.target.value)} />
           </div>
 
-          <button onClick={() => setStap(2)} className="w-full py-3 rounded-xl text-sm font-semibold" style={{ background: "var(--accent)", color: "#fff" }}>
+          <button onClick={() => setStap(2)} className="w-full py-3 rounded-xl text-sm font-semibold" style={{ background: "#3fff8b", color: "#fff" }}>
             Volgende →
           </button>
         </div>
@@ -216,59 +216,59 @@ export default function ContractAanmaken() {
 
       {stap === 2 && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <SectieHeader>Contractdetails</SectieHeader>
             <div>
-              <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Uurtarief (€/uur)</label>
+              <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Uurtarief (€/uur)</label>
               <Input type="number" value={uurtarief} onChange={e => setUurtarief(e.target.value)} className="mt-1" />
             </div>
             <div>
-              <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Ingangsdatum</label>
+              <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Ingangsdatum</label>
               <Input type="date" value={startdatum} onChange={e => setStartdatum(e.target.value)} className="mt-1" />
             </div>
             <ReadonlyField label="Einddatum" value={einddatum ? `${formatDatum(einddatum)} (12 maanden)` : ""} />
             <div>
-              <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Ondertekeningsplaats</label>
+              <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Ondertekeningsplaats</label>
               <Input value={plaats} onChange={e => setPlaats(e.target.value)} className="mt-1" />
             </div>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setStap(1)} className="flex-1 py-3 rounded-xl text-sm" style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}>← Vorige</button>
-            <button onClick={() => setStap(3)} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: "var(--accent)", color: "#fff" }}>Volgende →</button>
+            <button onClick={() => setStap(1)} className="flex-1 py-3 rounded-xl text-sm" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>← Vorige</button>
+            <button onClick={() => setStap(3)} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: "#3fff8b", color: "#fff" }}>Volgende →</button>
           </div>
         </div>
       )}
 
       {stap === 3 && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <SectieHeader>Contract preview</SectieHeader>
-            <div className="max-h-[400px] overflow-y-auto pr-2 space-y-3 text-xs" style={{ color: "var(--text-secondary)" }}>
+            <div className="max-h-[400px] overflow-y-auto pr-2 space-y-3 text-xs" style={{ color: "#a0abc3" }}>
               <p><strong>Opdrachtgever:</strong> {contractData.og_naam}, {contractData.og_adres}</p>
               <p><strong>Opdrachtnemer:</strong> {contractData.ot_handelsnaam || contractData.ot_naam}, {contractData.ot_adres}</p>
               <p><strong>Uurtarief:</strong> €{contractData.uurtarief.toFixed(2)}/uur excl. btw</p>
               <p><strong>Looptijd:</strong> {contractData.startdatum} — {contractData.einddatum}</p>
-              <hr style={{ borderColor: "var(--border)" }} />
+              <hr style={{ borderColor: "rgba(106,118,140,0.15)" }} />
               {ALLE_ARTIKELEN.map((a, i) => (
                 <div key={i}>
-                  <p className="font-semibold text-[11px]" style={{ color: "var(--text-primary)" }}>{a.split('\n')[0]}</p>
+                  <p className="font-semibold text-[11px]" style={{ color: "#dae6ff" }}>{a.split('\n')[0]}</p>
                   <p className="mt-1 whitespace-pre-line">{a.split('\n').slice(1).join('\n').trim().slice(0, 200)}...</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-xl p-3" style={{ background: "var(--info-light)", border: "1px solid var(--info-border)" }}>
-            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+          <div className="rounded-xl p-3" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
+            <p className="text-xs" style={{ color: "#a0abc3" }}>
               ℹ Na het versturen ontvangt {kandidaat.voornaam} een ondertekeningslink (geldig 7 dagen).
             </p>
           </div>
 
           <div className="flex gap-2">
-            <button onClick={() => setStap(2)} className="flex-1 py-3 rounded-xl text-sm" style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}>← Vorige</button>
+            <button onClick={() => setStap(2)} className="flex-1 py-3 rounded-xl text-sm" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>← Vorige</button>
             <button onClick={versturen} disabled={saving}
               className="flex-1 py-3 rounded-xl text-sm font-semibold"
-              style={{ background: "var(--accent)", color: "#fff", opacity: saving ? 0.6 : 1 }}>
+              style={{ background: "#3fff8b", color: "#fff", opacity: saving ? 0.6 : 1 }}>
               {saving ? "Versturen..." : "Contract versturen →"}
             </button>
           </div>
@@ -280,7 +280,7 @@ export default function ContractAanmaken() {
 
 function SectieHeader({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-bold uppercase tracking-wider pb-1.5 mb-1" style={{ color: "var(--text-muted)", borderBottom: "1px solid var(--border)" }}>
+    <p className="text-[11px] font-bold uppercase tracking-wider pb-1.5 mb-1" style={{ color: "#a0abc3", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
       {children}
     </p>
   );
@@ -289,8 +289,8 @@ function SectieHeader({ children }: { children: React.ReactNode }) {
 function ReadonlyField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>{label}</p>
-      <p className="text-sm" style={{ color: "var(--text-primary)" }}>{value || "—"}</p>
+      <p className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>{label}</p>
+      <p className="text-sm" style={{ color: "#dae6ff" }}>{value || "—"}</p>
     </div>
   );
 }

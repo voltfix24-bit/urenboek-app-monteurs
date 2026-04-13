@@ -116,7 +116,7 @@ export function HandtekeningCanvas({ onSave, bestaande, readonly = false, hoogte
 
   return (
     <div className="space-y-2">
-      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)', background: '#fff' }}>
+      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(106,118,140,0.15)', background: '#fff' }}>
         <canvas
           ref={canvasRef}
           style={{ width: '100%', height: hoogte, touchAction: 'none', cursor: readonly ? 'default' : 'crosshair' }}
@@ -131,10 +131,10 @@ export function HandtekeningCanvas({ onSave, bestaande, readonly = false, hoogte
       </div>
       {!readonly && (
         <div className="flex gap-2">
-          <button onClick={wissen} className="flex-1 py-2 rounded-lg text-xs font-medium" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'var(--bg-surface)' }}>
+          <button onClick={wissen} className="flex-1 py-2 rounded-lg text-xs font-medium" style={{ border: '1px solid rgba(106,118,140,0.15)', color: '#a0abc3', background: 'rgba(10,26,48,0.7)' }}>
             ✕ Wissen
           </button>
-          <button onClick={opslaan} className="flex-1 py-2 rounded-lg text-xs font-medium" style={{ background: isEmpty ? 'var(--bg-surface-2)' : 'var(--accent)', color: isEmpty ? 'var(--text-muted)' : '#fff', border: 'none', opacity: isEmpty ? 0.5 : 1 }} disabled={isEmpty}>
+          <button onClick={opslaan} className="flex-1 py-2 rounded-lg text-xs font-medium" style={{ background: isEmpty ? '#102038' : '#3fff8b', color: isEmpty ? '#a0abc3' : '#fff', border: 'none', opacity: isEmpty ? 0.5 : 1 }} disabled={isEmpty}>
             ✓ Handtekening gebruiken
           </button>
         </div>

@@ -215,23 +215,23 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
 
     if (isUploading) {
       return (
-        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-          <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--accent)" }} />
-          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Uploaden...</span>
+        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <Loader2 className="h-4 w-4 animate-spin" style={{ color: "#3fff8b" }} />
+          <span className="text-xs" style={{ color: "#a0abc3" }}>Uploaden...</span>
         </div>
       );
     }
 
     if (file) {
       return (
-        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
-          <Check className="h-4 w-4 shrink-0" style={{ color: "var(--success)" }} />
+        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }}>
+          <Check className="h-4 w-4 shrink-0" style={{ color: "#3fff8b" }} />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>{file.name}</p>
-            <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{formatFileSize(file.size)}</p>
+            <p className="text-xs font-medium truncate" style={{ color: "#dae6ff" }}>{file.name}</p>
+            <p className="text-[10px]" style={{ color: "#a0abc3" }}>{formatFileSize(file.size)}</p>
           </div>
           <button type="button" onClick={(e) => { e.stopPropagation(); removeUpload(cfg.type); }} className="shrink-0">
-            <X className="h-4 w-4" style={{ color: "var(--text-muted)" }} />
+            <X className="h-4 w-4" style={{ color: "#a0abc3" }} />
           </button>
         </div>
       );
@@ -239,15 +239,15 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
 
     if (hasExisting) {
       return (
-        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}>
-          <Paperclip className="h-4 w-4 shrink-0" style={{ color: "var(--success)" }} />
-          <span className="text-xs font-medium flex-1" style={{ color: "var(--success)" }}>📎 Bewijs aanwezig</span>
+        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }}>
+          <Paperclip className="h-4 w-4 shrink-0" style={{ color: "#3fff8b" }} />
+          <span className="text-xs font-medium flex-1" style={{ color: "#3fff8b" }}>📎 Bewijs aanwezig</span>
           <button type="button" onClick={(e) => { e.stopPropagation(); openSignedUrl(s.existingFileUrl!); }}
-            className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+            className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
             Bekijken
           </button>
           <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRefs.current[cfg.type]?.click(); }}
-            className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+            className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
             Vervangen
           </button>
           <input ref={el => { fileInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
@@ -263,16 +263,16 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
           <div className="flex gap-2">
             <button type="button" onClick={() => cameraInputRefs.current[cfg.type]?.click()}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-[9px] text-xs"
-              style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+              style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
               <Camera className="h-3.5 w-3.5" /> Foto maken
             </button>
             <button type="button" onClick={() => fileInputRefs.current[cfg.type]?.click()}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-[9px] text-xs"
-              style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+              style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
               <FolderOpen className="h-3.5 w-3.5" /> Bestand kiezen
             </button>
           </div>
-          <p className="text-[10px] text-center" style={{ color: "var(--text-muted)" }}>{uploadHint}</p>
+          <p className="text-[10px] text-center" style={{ color: "#a0abc3" }}>{uploadHint}</p>
           <input ref={el => { cameraInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
             accept="image/*" capture="environment" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
           <input ref={el => { fileInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
@@ -285,12 +285,12 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
       <div className="mt-2" onClick={e => e.stopPropagation()}>
         <button type="button" onClick={() => fileInputRefs.current[cfg.type]?.click()}
           className="w-full p-3 rounded-[10px] text-center transition-colors group"
-          style={{ background: "var(--bg-base)", border: "1.5px dashed var(--border)", cursor: "pointer" }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent-border)"; e.currentTarget.style.background = "var(--accent-light)"; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg-base)"; }}>
-          <Paperclip className="h-4 w-4 mx-auto mb-1" style={{ color: "var(--text-muted)" }} />
-          <p className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>Bewijs uploaden</p>
-          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{uploadHint}</p>
+          style={{ background: "#030e20", border: "1.5px dashed rgba(106,118,140,0.15)", cursor: "pointer" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(63,255,139,0.3)"; e.currentTarget.style.background = "rgba(63,255,139,0.1)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(106,118,140,0.15)"; e.currentTarget.style.background = "#030e20"; }}>
+          <Paperclip className="h-4 w-4 mx-auto mb-1" style={{ color: "#a0abc3" }} />
+          <p className="text-xs font-medium" style={{ color: "#a0abc3" }}>Bewijs uploaden</p>
+          <p className="text-[10px]" style={{ color: "#a0abc3" }}>{uploadHint}</p>
         </button>
         <input ref={el => { fileInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
           accept="image/*,application/pdf" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
@@ -300,7 +300,7 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
 
   if (loading) return (
     <div className="flex items-center justify-center py-8">
-      <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} />
+      <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: "#3fff8b", borderTopColor: "transparent" }} />
     </div>
   );
 
@@ -312,25 +312,25 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
 
         return (
           <div key={cfg.type} className="rounded-[14px] transition-all" style={{
-            background: isChecked ? "var(--accent-light)" : "var(--bg-surface)",
-            border: isChecked ? "1.5px solid var(--accent-border)" : "1px solid var(--border)",
+            background: isChecked ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
+            border: isChecked ? "1.5px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
             padding: "14px 16px",
             opacity: isChecked ? 1 : 0.8,
             cursor: "pointer",
           }}>
             <div className="flex items-center gap-3" onClick={() => toggle(cfg.type)}>
               <div className="w-5 h-5 rounded flex items-center justify-center shrink-0" style={{
-                background: isChecked ? "var(--accent)" : "var(--bg-base)",
-                border: isChecked ? "none" : "1.5px solid var(--border-strong)",
+                background: isChecked ? "#3fff8b" : "#030e20",
+                border: isChecked ? "none" : "1.5px solid rgba(106,118,140,0.3)",
               }}>
                 {isChecked && <span className="text-white text-xs font-bold">✓</span>}
               </div>
-              <span className="text-sm font-semibold flex-1" style={{ color: "var(--text-primary)" }}>
+              <span className="text-sm font-semibold flex-1" style={{ color: "#dae6ff" }}>
                 {cfg.kortLabel || cfg.label}
               </span>
               {cfg.type === "POORT" && (
                 <button type="button" onClick={e => { e.stopPropagation(); setShowPoortInfo(true); }} className="shrink-0">
-                  <AlertCircle className="h-4 w-4" style={{ color: "var(--warn-text)" }} />
+                  <AlertCircle className="h-4 w-4" style={{ color: "#feb300" }} />
                 </button>
               )}
             </div>
@@ -339,15 +339,15 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
               <div className="mt-3 space-y-3" onClick={e => e.stopPropagation()}>
                 {cfg.heeftNiveau && cfg.niveaus && (
                   <div className="space-y-1.5">
-                    <span className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Niveau</span>
+                    <span className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Niveau</span>
                     <div className="flex gap-2 flex-wrap">
                       {cfg.niveaus.map(n => {
                         const sel = s.niveaus.includes(n);
                         return (
                           <button key={n} type="button" onClick={() => setNiveau(cfg.type, n)} className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors" style={{
-                            background: sel ? "var(--accent-light)" : "var(--bg-base)",
-                            border: sel ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                            color: sel ? "var(--accent)" : "var(--text-muted)",
+                            background: sel ? "rgba(63,255,139,0.1)" : "#030e20",
+                            border: sel ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
+                            color: sel ? "#3fff8b" : "#a0abc3",
                             fontWeight: sel ? 600 : 400,
                           }}>{n}</button>
                         );
@@ -358,7 +358,7 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
 
                 {cfg.heeftGebieden && cfg.gebieden && (
                   <div className="space-y-1.5">
-                    <span className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>
+                    <span className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>
                       Vink aan welke gebieden je hebt (met screenshot vanuit Certwell)
                     </span>
                     <div className="flex gap-2 flex-wrap">
@@ -368,15 +368,15 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
                           <button key={g.code} type="button" onClick={() => setGebied(cfg.type, g.code)}
                             className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
                             style={{
-                              background: sel ? "var(--accent-light)" : "var(--bg-base)",
-                              border: sel ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                              color: sel ? "var(--accent)" : "var(--text-muted)",
+                              background: sel ? "rgba(63,255,139,0.1)" : "#030e20",
+                              border: sel ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
+                              color: sel ? "#3fff8b" : "#a0abc3",
                               fontWeight: sel ? 600 : 400,
                             }}
                             title={g.info || undefined}
                           >
                             {g.label}
-                            {g.info && <Info className="h-3 w-3" style={{ color: "var(--text-muted)" }} />}
+                            {g.info && <Info className="h-3 w-3" style={{ color: "#a0abc3" }} />}
                           </button>
                         );
                       })}
@@ -386,23 +386,23 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
 
                 {cfg.heeftVervaldatum && (
                   <div className="space-y-1">
-                    <span className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Geldig tot</span>
+                    <span className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Geldig tot</span>
                     <input type="date" value={s.vervaldatum} onChange={e => setDatum(cfg.type, e.target.value)}
                       className="w-full px-3 py-2 rounded-[10px] text-[13px]"
-                      style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light", marginTop: 4 }}
+                      style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", colorScheme: "light", marginTop: 4 }}
                     />
                   </div>
                 )}
 
                 {cfg.type === "POORT" && (
-                  <p className="text-xs" style={{ color: "var(--success)" }}>✓ Geregistreerd als behaald</p>
+                  <p className="text-xs" style={{ color: "#3fff8b" }}>✓ Geregistreerd als behaald</p>
                 )}
 
                 {/* Upload zone */}
                 {renderUploadZone(cfg, s)}
 
                 {errors[cfg.type] && (
-                  <p className="text-xs font-medium" style={{ color: "var(--danger)" }}>{errors[cfg.type]}</p>
+                  <p className="text-xs font-medium" style={{ color: "#ff716c" }}>{errors[cfg.type]}</p>
                 )}
               </div>
             )}
@@ -412,36 +412,36 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
 
       <button onClick={handleSave} disabled={saving}
         className="w-full py-[14px] rounded-[14px] text-[15px] font-bold text-white disabled:opacity-50"
-        style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", marginTop: 16 }}
+        style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", marginTop: 16 }}
       >
         {saving ? "Opslaan..." : "Opslaan"}
       </button>
 
       {onCancel && (
-        <button onClick={onCancel} className="w-full py-2.5 text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+        <button onClick={onCancel} className="w-full py-2.5 text-xs font-medium" style={{ color: "#a0abc3" }}>
           Overslaan
         </button>
       )}
 
       {showPoortInfo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowPoortInfo(false)}>
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, #dae6ff 35%, transparent)", backdropFilter: "blur(6px)" }} />
           <div className="relative rounded-xl p-4 space-y-3 max-w-[300px] w-full" onClick={e => e.stopPropagation()} style={{
-            background: "var(--bg-surface)", border: "1px solid var(--border)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", zIndex: 100,
+            background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", zIndex: 100,
           }}>
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Poortinstructie TSO/DSO</h3>
-              <button onClick={() => setShowPoortInfo(false)}><X className="h-4 w-4" style={{ color: "var(--text-muted)" }} /></button>
+              <h3 className="text-sm font-bold" style={{ color: "#dae6ff" }}>Poortinstructie TSO/DSO</h3>
+              <button onClick={() => setShowPoortInfo(false)}><X className="h-4 w-4" style={{ color: "#a0abc3" }} /></button>
             </div>
-            <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: "var(--text-primary)" }}>
+            <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: "#dae6ff" }}>
               {CERT_CONFIG.find(c => c.type === "POORT")?.info}
             </p>
             <a href="https://www.poortinstructienetbeheernederland.nl" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs font-semibold" style={{ color: "var(--accent)" }}>
+              className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#3fff8b" }}>
               <ExternalLink className="h-3 w-3" /> www.poortinstructienetbeheernederland.nl
             </a>
             <button onClick={() => setShowPoortInfo(false)} className="w-full py-2 rounded-xl text-xs font-semibold"
-              style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+              style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
               Sluiten
             </button>
           </div>

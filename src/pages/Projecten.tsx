@@ -177,17 +177,17 @@ export default function Projecten() {
       <DesktopSidebar badges={badges} />
 
       {/* DESKTOP */}
-      <div className="hidden lg:block" style={{ marginLeft: 240, minHeight: "100vh", background: "var(--bg-base)" }}>
+      <div className="hidden lg:block" style={{ marginLeft: 240, minHeight: "100vh", background: "#030e20" }}>
         <header className="flex items-center justify-between px-10 pt-8 pb-4">
           <div>
-            <h1 className="text-[22px] font-medium" style={{ color: "var(--text-primary)" }}>Projecten</h1>
-            <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>{activeProjects.length} projecten actief</p>
+            <h1 className="text-[22px] font-medium" style={{ color: "#dae6ff" }}>Projecten</h1>
+            <p className="text-sm mt-0.5" style={{ color: "#a0abc3" }}>{activeProjects.length} projecten actief</p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/opdrachtgevers")} className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+            <button onClick={() => navigate("/opdrachtgevers")} className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
               <Building2 className="h-3.5 w-3.5" /> Opdrachtgevers →
             </button>
-            <button onClick={() => { setDesktopMode("add"); setSelectedId(null); setForm(emptyForm); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+            <button onClick={() => { setDesktopMode("add"); setSelectedId(null); setForm(emptyForm); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
               <Plus className="h-3.5 w-3.5" /> Nieuw project
             </button>
           </div>
@@ -208,7 +208,7 @@ export default function Projecten() {
             ) : selectedProject ? (
               <DesktopProjectDetail project={selectedProject} ogNaam={getOgNaam(selectedProject.opdrachtgever_id)} isManager={isManager} confirmDeleteId={confirmDeleteId} onEdit={() => startDesktopEdit(selectedProject)} onToggle={() => toggleActive(selectedProject)} onDelete={() => handleDelete(selectedProject)} onCancelDelete={() => setConfirmDeleteId(null)} navigate={navigate} onStartIntake={() => setIntakeProjectId(selectedProject.id)} />
             ) : (
-              <div className="flex flex-col items-center justify-center h-full" style={{ color: "var(--text-muted)" }}>
+              <div className="flex flex-col items-center justify-center h-full" style={{ color: "#a0abc3" }}>
                 <FolderOpen className="h-8 w-8 mb-3" />
                 <p className="text-sm font-medium">Selecteer een project</p>
                 <p className="text-xs mt-1">Klik op een project links om de details te bekijken</p>
