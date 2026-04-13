@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -58,13 +59,19 @@ export default function MijnOrders() {
 
   const downloadPdf = async () => {
     if (!selectedOrder) return;
-    let gkNaam: string | undefined;
-    if (selectedOrder.aangemaakt_door) {
-      const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
-      gkNaam = gk?.full_name || undefined;
+    try {
+      let gkNaam: string | undefined;
+      if (selectedOrder.aangemaakt_door) {
+        const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
+        gkNaam = gk?.full_name || undefined;
+      }
+      const bedrijf = await getBedrijfsgegevens();
+      await downloadInkooporderPdf(selectedOrder, orderRegels, profile, bedrijf, gkNaam);
+      toast.success("PDF wordt gedownload");
+    } catch (err) {
+      console.error("PDF download failed:", err);
+      toast.error("PDF kon niet worden gegenereerd");
     }
-    const bedrijf = await getBedrijfsgegevens();
-    await downloadInkooporderPdf(selectedOrder, orderRegels, profile, bedrijf, gkNaam);
   };
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#030e20' }}><Spinner /></div>;

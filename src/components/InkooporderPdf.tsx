@@ -492,8 +492,8 @@ export function InkooporderDocument({
               <Text style={styles.footerStrong}>{order.order_nummer}</Text>{"\n"}
               naar <Text style={styles.footerStrong}>{email}</Text>{"\n\n"}
               Betaling binnen <Text style={styles.footerStrong}>{termijn} dagen</Text> na ontvangst van een correcte factuur.
-              {bedrijf?.iban ? `\n\nIBAN: ${formatIban(bedrijf.iban)}` : ""}
-              {bedrijf?.iban_naam ? `\nT.n.v. ${bedrijf.iban_naam}` : ""}
+              {bedrijf?.iban ? `\n\nIBAN: ${formatIban(bedrijf.iban)}` : null}
+              {bedrijf?.iban_naam ? `\nT.n.v. ${bedrijf.iban_naam}` : null}
             </Text>
           </View>
         </View>
@@ -515,29 +515,36 @@ export async function downloadInkooporderPdf(
   bedrijf: any,
   goedkeurderNaam?: string
 ) {
-  const logoResponse = await fetch(terrevoltLogoPng);
-  const logoBlob = await logoResponse.blob();
-  const logoPng = await new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.readAsDataURL(logoBlob);
-  });
+  try {
+    const logoResponse = await fetch(terrevoltLogoPng);
+    const logoBlob = await logoResponse.blob();
+    const logoPng = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(logoBlob);
+    });
 
-  const blob = await pdf(
-    <InkooporderDocument
-      order={order}
-      regels={regels}
-      prof={prof}
-      bedrijf={bedrijf}
-      goedkeurderNaam={goedkeurderNaam}
-      logoPng={logoPng}
-    />
-  ).toBlob();
+    const blob = await pdf(
+      <InkooporderDocument
+        order={order}
+        regels={regels}
+        prof={prof}
+        bedrijf={bedrijf}
+        goedkeurderNaam={goedkeurderNaam}
+        logoPng={logoPng}
+      />
+    ).toBlob();
 
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `Inkooporder_${order.order_nummer}.pdf`;
-  a.click();
-  URL.revokeObjectURL(url);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Inkooporder_${order.order_nummer}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+    throw err;
+  }
 }
