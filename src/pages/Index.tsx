@@ -14,6 +14,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { FolderOpen, Building2, ArrowRight, ClipboardList, AlertTriangle, WifiOff } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
+import { MobileHeader } from "@/components/MobileHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, addDays, getISOWeek } from "date-fns";
