@@ -377,11 +377,23 @@ export default function MijnOrders() {
                   {/* Download button */}
                   <div style={{ padding: '0 20px 20px' }}>
                     <div
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
-                        downloadPdf();
-                        // Pre-load detail for this order so downloadPdf works
-                        if (selectedOrder?.id !== order.id) loadDetail(order);
+                        try {
+                          const { data } = await supabase.from("inkooporder_regels").select("*, uren_boekingen(beschrijving, type)").eq("inkooporder_id", order.id).order("datum");
+                          const regels = (data || []).map((r: any) => ({ ...r, activiteit: r.activiteit || (r.uren_boekingen as any)?.beschrijving || (r.uren_boekingen as any)?.type || "" }));
+                          let gkNaam: string | undefined;
+                          if (order.aangemaakt_door) {
+                            const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", order.aangemaakt_door).maybeSingle();
+                            gkNaam = gk?.full_name || undefined;
+                          }
+                          const bedrijf = await getBedrijfsgegevens();
+                          await downloadInkooporderPdf(order, regels, profile, bedrijf, gkNaam);
+                          toast.success("PDF wordt gedownload");
+                        } catch (err) {
+                          console.error("PDF download failed:", err);
+                          toast.error("PDF kon niet worden gegenereerd");
+                        }
                       }}
                       style={{
                         width: '100%',
