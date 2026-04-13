@@ -274,49 +274,193 @@ export default function ManagerPlanning() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="px-4 py-3 flex items-center gap-2.5">
-          <HeaderLogo />
-          <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Planning</span>
-        </div>
-      </header>
+      <PullToRefresh onRefresh={fetchAll}>
+      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 160 }}>
+        {/* HEADER */}
+        <header style={{
+          position: "sticky", top: 0, zIndex: 50,
+          background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span className="material-symbols-outlined" style={{ color: "#3fff8b", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
+            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", letterSpacing: "0.1em", textTransform: "uppercase" }}>TERREVOLT UREN</span>
+          </div>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#3fff8b" }}>
+            {user?.user_metadata?.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() || "M"}
+          </div>
+        </header>
 
-      <div className="lg:hidden">
-        <PullToRefresh onRefresh={async () => { await fetchAll(); }}>
-          {gridContent}
-        </PullToRefresh>
-      </div>
-      <div className="hidden lg:block" style={{ maxWidth: "none" }}>
-        {gridContent}
-      </div>
+        <main style={{ padding: "24px 20px" }}>
+          {/* WEEK SELECTOR */}
+          <section style={{ marginBottom: 28, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#3fff8b", marginBottom: 4 }}>
+                TEAM PLANNING
+              </p>
+              <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff", lineHeight: 1, marginBottom: 4 }}>
+                Week {weekNumber}
+              </h2>
+              <p style={{ fontSize: 12, color: "#a0abc3", fontFamily: "Inter" }}>
+                {format(weekStart, "EEE d MMM", { locale: nl })} t/m {format(addDays(weekStart, 4), "EEE d MMM", { locale: nl })}
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => setWeekStart(w => addWeeks(w, -1))} style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(255,255,255,0.07)", color: "#dae6ff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <ChevronLeft size={20} />
+              </button>
+              <button onClick={() => setWeekStart(w => addWeeks(w, 1))} style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(255,255,255,0.07)", color: "#dae6ff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </section>
 
+          {/* PROJECT FILTER CHIPS */}
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none", marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
+            <button style={{ padding: "8px 16px", borderRadius: 9999, background: "#3fff8b", border: "none", color: "#005d2c", fontFamily: "Inter", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 12px rgba(63,255,139,0.3)" }}>
+              Alle projecten
+            </button>
+            {projects.slice(0, 3).map(p => (
+              <button key={p.id} style={{ padding: "8px 16px", borderRadius: 9999, background: "#152640", border: "none", color: "#a0abc3", fontFamily: "Inter", fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
+                {p.naam || p.nummer}
+              </button>
+            ))}
+          </div>
+
+          {/* DAY HEADERS */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8, paddingRight: 4 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, width: 168 }}>
+              {["Ma", "Di", "Wo", "Do", "Vr"].map(d => (
+                <span key={d} style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", textAlign: "center" }}>{d}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* LOADING */}
+          {loading && (
+            <div style={{ textAlign: "center", padding: 40, color: "#a0abc3" }}>Planning laden...</div>
+          )}
+
+          {/* OVERPLANNING WARNING */}
+          {overplanned.length > 0 && (
+            <div style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)", borderRadius: 16, padding: "14px 16px", marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <AlertTriangle size={16} style={{ color: "#feb300", marginTop: 2, flexShrink: 0 }} />
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "#feb300", fontFamily: "Inter", marginBottom: 4 }}>Overplanning</p>
+                {overplanned.map(m => (
+                  <p key={m.id} style={{ fontSize: 11, color: "#a0abc3", fontFamily: "Inter" }}>{m.name}: {m.days} dagen ingepland</p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* MONTEUR ROWS */}
+          {!loading && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {medewerkers.map((med) => {
+                const initials = med.full_name?.split(" ").map(n => n[0]).slice(0, 2).join("") || "XX";
+                return (
+                  <div key={med.id} style={{ background: "#061327", borderRadius: 16, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    {/* Avatar + name */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 12, color: "#3fff8b", border: "1px solid rgba(63,255,139,0.15)", flexShrink: 0 }}>
+                        {initials}
+                      </div>
+                      <div>
+                        <p style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#dae6ff", lineHeight: 1.2 }}>
+                          {med.full_name?.split(" ")[0]} {med.full_name?.split(" ").slice(-1)[0]?.[0]}.
+                        </p>
+                        <p style={{ fontSize: 9, color: "#a0abc3", fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em" }}>Monteur</p>
+                      </div>
+                    </div>
+
+                    {/* Day blocks */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+                      {weekDates.map((date, i) => {
+                        const dateStr = format(date, "yyyy-MM-dd");
+                        const entry = entries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
+                        const heeftEntry = !!entry;
+                        const verlof = beschikbaarheid.find(b => b.medewerker_id === med.id && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
+                        const bgColor = verlof ? "#152640" : !heeftEntry ? "rgba(61,72,93,0.3)" : entry?.activiteit_kleur || "#3fff8b";
+                        return (
+                          <div key={i} onClick={() => openAddModal(med.id, dateStr)} style={{
+                            width: 28, height: 36, borderRadius: 8, background: bgColor, cursor: "pointer",
+                            boxShadow: heeftEntry ? `0 0 8px ${bgColor}50` : "none",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                          }}>
+                            {verlof && <span className="material-symbols-outlined" style={{ fontSize: 12, color: "#a0abc3" }}>beach_access</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* CAPACITEIT CARD */}
+          {!loading && (
+            <div style={{ marginTop: 24, background: "#000000", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", border: "1px solid rgba(61,72,93,0.2)" }}>
+              <div>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 4 }}>Capaciteit</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: "#3fff8b" }}>
+                  {medewerkers.length > 0 ? `${Math.round((entries.filter(e => weekDateStrings.includes(e.datum)).length / (medewerkers.length * 5)) * 100)}%` : "—"}
+                </span>
+              </div>
+              <div style={{ height: 4, width: 80, background: "#152640", borderRadius: 9999, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, Math.round((entries.filter(e => weekDateStrings.includes(e.datum)).length / (medewerkers.length * 5)) * 100)) : 0}%`, background: "#3fff8b" }} />
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 4 }}>Incidenten</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: overplanned.length > 0 ? "#ff716c" : "#3fff8b" }}>{overplanned.length}</span>
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* FAB */}
+        <button onClick={() => setShowModal(true)} style={{
+          position: "fixed", bottom: 96, left: "50%", transform: "translateX(-50%)", zIndex: 40,
+          background: "#3fff8b", color: "#005d2c", border: "none", borderRadius: 9999,
+          height: 56, padding: "0 32px", display: "flex", alignItems: "center", gap: 8,
+          fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase",
+          letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 8px 24px rgba(63,255,139,0.3)", whiteSpace: "nowrap",
+        }}>
+          <Plus size={20} /> Inplannen
+        </button>
+      </div>
+      </PullToRefresh>
+
+      {/* MODAL */}
       {showModal && (() => {
         const modalBody = (
           <>
-            <div className="w-10 h-1 rounded-full mx-auto lg:hidden" style={{ background: "var(--border)" }} />
-            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
+            <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 20px" }} />
+            <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "#dae6ff", marginBottom: 4 }}>
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
             </h2>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>{modalForm.datum}</p>
+            <p style={{ fontSize: 12, color: "#a0abc3", fontFamily: "Inter", marginBottom: 16 }}>{modalForm.datum}</p>
             {modalStatus && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: modalStatus.bg, border: `1px solid ${modalStatus.color}33` }}>
-                <span className="text-xs font-semibold" style={{ color: modalStatus.color }}>{modalStatus.label}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: modalStatus.bg, border: `1px solid ${modalStatus.color}33`, marginBottom: 12 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: modalStatus.color, fontFamily: "Inter" }}>{modalStatus.label}</span>
               </div>
             )}
             {modalConflicts.length > 0 && (
-              <div className="space-y-1.5">
+              <div style={{ marginBottom: 12 }}>
                 {modalConflicts.map((c, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)" }}>
-                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--danger)" }} />
-                    <span className="text-xs font-medium" style={{ color: "var(--danger)" }}>Conflict: {c}</span>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: "rgba(255,113,108,0.08)", border: "1px solid rgba(255,113,108,0.3)", marginBottom: 6 }}>
+                    <AlertTriangle size={14} style={{ color: "#ff716c", flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, fontWeight: 500, color: "#ff716c", fontFamily: "Inter" }}>Conflict: {c}</span>
                   </div>
                 ))}
               </div>
             )}
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Project</label>
-                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", display: "block", marginBottom: 6 }}>Project</label>
+                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "#030e20", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }}>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
                 </select>
                 {(() => {
@@ -324,31 +468,29 @@ export default function ManagerPlanning() {
                   if (!selProj) return null;
                   const addr = volledigAdres(selProj);
                   return (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-                      <MapPin className="h-3 w-3 shrink-0" style={{ color: "var(--text-muted)" }} />
-                      <span className="text-[11px]" style={{ color: addr ? "var(--text-secondary)" : "var(--warn-text)" }}>
-                        {addr || "⚠ Geen adres ingevuld"}
-                      </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, marginTop: 6, background: "#061327", border: "1px solid rgba(61,72,93,0.2)" }}>
+                      <MapPin size={12} style={{ color: "#a0abc3", flexShrink: 0 }} />
+                      <span style={{ fontSize: 11, color: addr ? "#a0abc3" : "#feb300", fontFamily: "Inter" }}>{addr || "⚠ Geen adres ingevuld"}</span>
                     </div>
                   );
                 })()}
               </div>
-              <div className="flex gap-3">
-                <div className="flex-1 space-y-1">
-                  <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Start</label>
-                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
+              <div style={{ display: "flex", gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", display: "block", marginBottom: 6 }}>Start</label>
+                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "#030e20", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
                 </div>
-                <div className="flex-1 space-y-1">
-                  <label className="text-[10px]" style={{ color: "var(--text-muted)" }}>Eind</label>
-                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", colorScheme: "light" }} />
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", display: "block", marginBottom: 6 }}>Eind</label>
+                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "#030e20", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
                 </div>
               </div>
-              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-              <button onClick={savePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "#030e20", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
+              <button onClick={savePlanning} style={{ width: "100%", height: 52, borderRadius: 14, background: "#3fff8b", border: "none", color: "#005d2c", fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 4px 16px rgba(63,255,139,0.2)" }}>
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>
               {editId && (
-                <button onClick={deletePlanning} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
+                <button onClick={deletePlanning} style={{ width: "100%", height: 48, borderRadius: 14, background: "transparent", border: "1px solid rgba(255,113,108,0.4)", color: "#ff716c", fontFamily: "Inter", fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer" }}>
                   Verwijderen
                 </button>
               )}
@@ -356,23 +498,14 @@ export default function ManagerPlanning() {
           </>
         );
         return (
-          <>
-            <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowModal(false)}>
-              <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-              <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-                {modalBody}
-              </div>
+          <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }} onClick={() => setShowModal(false)}>
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
+            <div style={{ position: "relative", background: "#0a1a30", borderRadius: "40px 40px 0 0", padding: "24px 24px 48px", borderTop: "1px solid rgba(255,255,255,0.1)", maxHeight: "85vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+              {modalBody}
             </div>
-            <div className="hidden lg:flex fixed inset-0 z-50 items-center justify-center" onClick={() => setShowModal(false)}>
-              <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-              <div className="relative w-full max-w-md rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }} onClick={e => e.stopPropagation()}>
-                {modalBody}
-              </div>
-            </div>
-          </>
+          </div>
         );
       })()}
-
     </PageShell>
   );
 }
