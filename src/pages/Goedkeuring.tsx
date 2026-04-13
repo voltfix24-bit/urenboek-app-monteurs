@@ -368,74 +368,247 @@ export default function Goedkeuring() {
     </main>
   );
 
+  const weekNumber = getISOWeek(weekStart);
+
+  // Build monteurGroups from grouped data for the new UI
+  const monteurGroups = Object.entries(grouped).map(([name, userEntries]) => {
+    const statuses = userEntries.map(e => e.status);
+    const overallStatus = statuses.every(s => s === "goedgekeurd") ? "goedgekeurd"
+      : statuses.some(s => s === "afgekeurd") ? "afgekeurd"
+      : statuses.some(s => s === "ingediend") ? "ingediend"
+      : "concept";
+    return {
+      id: userEntries[0]?.medewerker_id || name,
+      full_name: name,
+      status: overallStatus,
+      entries: userEntries,
+    };
+  });
+
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <HeaderLogo />
-              <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Goedkeuren</span>
-            </div>
-            {totalIngediend > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-                <span className="text-lg font-extrabold" style={{ color: "var(--warn-text)" }}>{totalIngediend}</span>
-                <span className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>open</span>
-              </div>
-            )}
+      <PullToRefresh onRefresh={fetchEntries}>
+      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 160 }}>
+        {/* HEADER */}
+        <header style={{
+          position: "sticky", top: 0, zIndex: 50,
+          background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "#dae6ff" }}>
+            Weekstaten keuren
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={() => setShowBookModal(true)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#3fff8b" }}>add_circle</span>
+            </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="lg:hidden">
-        <PullToRefresh onRefresh={async () => { await fetchEntries(); }}>
-          {mainContent}
-        </PullToRefresh>
-      </div>
-      <div className="hidden lg:block">
-        {mainContent}
-      </div>
+        <main style={{ padding: "24px 20px" }}>
+          {/* HEADER INFO */}
+          <section style={{ marginBottom: 24 }}>
+            <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff", marginBottom: 4 }}>
+              {monteurGroups.filter(g => g.status === "ingediend").length} openstaande weekstaten
+            </h2>
+            <p style={{ fontSize: 13, color: "#a0abc3", fontFamily: "Inter" }}>
+              Week {weekNumber} — {format(weekStart, "EEE d MMM", { locale: nl })} t/m {format(weekEnd, "EEE d MMM", { locale: nl })}
+            </p>
+          </section>
 
-      {/* FAB — Uren boeken voor medewerker */}
-      <button
-        onClick={() => setShowBookModal(true)}
-        className="fixed z-40 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform active:scale-90"
-        style={{ bottom: 90, right: 20, background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff", boxShadow: "0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent)" }}
-      >
-        <Plus className="h-6 w-6" />
-      </button>
+          {/* WEEK NAV */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+            <button onClick={() => setWeekOffset(w => w - 1)} style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(255,255,255,0.07)", color: "#dae6ff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <ChevronLeft size={20} />
+            </button>
+            <button onClick={() => setWeekOffset(0)} style={{ flex: 1, textAlign: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, color: "#dae6ff", background: weekOffset === 0 ? "rgba(63,255,139,0.08)" : "transparent", border: "none", borderRadius: 12, padding: "8px 0", cursor: "pointer" }}>
+              Week {weekNumber}
+              {weekOffset !== 0 && <span style={{ display: "block", fontSize: 10, color: "#3fff8b", marginTop: 2 }}>↩ Terug naar deze week</span>}
+            </button>
+            <button onClick={() => setWeekOffset(w => w + 1)} style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(255,255,255,0.07)", color: "#dae6ff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <ChevronRight size={20} />
+            </button>
+          </div>
+
+          {/* FILTER CHIPS */}
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none" }}>
+            {["alle", "ingediend", "goedgekeurd", "afgekeurd"].map((f) => (
+              <button key={f} onClick={() => setFilter(f)} style={{
+                padding: "8px 16px", borderRadius: 9999,
+                border: filter === f ? "2px solid #3fff8b" : "1px solid rgba(255,255,255,0.07)",
+                background: filter === f ? "rgba(63,255,139,0.1)" : "#102038",
+                color: filter === f ? "#3fff8b" : "#a0abc3",
+                fontFamily: "Inter", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", textTransform: "capitalize",
+              }}>
+                {f === "alle" ? "Alle" : f === "ingediend" ? "Ingediend" : f === "goedgekeurd" ? "Goedgekeurd" : "Afgekeurd"}
+              </button>
+            ))}
+          </div>
+
+          {/* LOADING */}
+          {loading && (
+            <div style={{ textAlign: "center", padding: 40, color: "#a0abc3" }}>Laden...</div>
+          )}
+
+          {/* MONTEUR CARDS */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {monteurGroups
+              .filter(g => filter === "alle" || g.status === filter)
+              .map((group) => {
+              const isGoedgekeurd = group.status === "goedgekeurd";
+              const isAfgekeurd = group.status === "afgekeurd";
+              const borderColor = isGoedgekeurd ? "#3fff8b" : isAfgekeurd ? "#ff716c" : "#feb300";
+              const totalUren = group.entries.reduce((s: number, e: any) => s + e.uren, 0);
+              const pct = Math.min(100, Math.round((totalUren / 40) * 100));
+              const initials = group.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("") || "XX";
+
+              return (
+                <div key={group.id} style={{
+                  background: "linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))",
+                  backdropFilter: "blur(12px)", borderRadius: 20,
+                  border: "1px solid rgba(106,118,140,0.15)",
+                  borderLeft: `6px solid ${borderColor}`,
+                  overflow: "hidden", opacity: isGoedgekeurd ? 0.65 : 1,
+                }}>
+                  <div style={{ padding: "20px 20px 16px" }}>
+                    {/* Card header */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 12, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 14, color: "#dae6ff" }}>
+                          {initials}
+                        </div>
+                        <div>
+                          <p style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 16, color: "#dae6ff", marginBottom: 2 }}>{group.full_name}</p>
+                          <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3" }}>
+                            Week {weekNumber} · {totalUren} uur
+                          </p>
+                        </div>
+                      </div>
+                      <div style={{ padding: "4px 12px", borderRadius: 9999, background: isGoedgekeurd ? "rgba(63,255,139,0.1)" : isAfgekeurd ? "rgba(255,113,108,0.1)" : "rgba(254,179,0,0.1)", border: `1px solid ${borderColor}50`, whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: 9, fontWeight: 800, fontFamily: "Inter", textTransform: "uppercase", color: borderColor }}>{group.status.toUpperCase()}</span>
+                      </div>
+                    </div>
+
+                    {/* Day entries */}
+                    <div style={{ marginBottom: 12 }}>
+                      {group.entries.map((e: any) => {
+                        const hasOveruren = overurenIds.has(`${e.medewerker_id}_${e.datum}`);
+                        return (
+                          <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(61,72,93,0.15)" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <span style={{ fontSize: 11, color: "#a0abc3", fontFamily: "Inter", minWidth: 52 }}>{format(new Date(e.datum), "EEE d/M", { locale: nl })}</span>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: "#3fff8b", fontFamily: "Inter", padding: "1px 6px", borderRadius: 6, background: "rgba(63,255,139,0.08)" }}>{e.project_nummer}</span>
+                              <span style={{ fontSize: 11, color: "#dae6ff", fontFamily: "Inter" }}>{e.beschrijving || ""}</span>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: "#dae6ff", fontFamily: "Inter" }}>{e.uren}u</span>
+                              {hasOveruren && (
+                                <span className="material-symbols-outlined" style={{ fontSize: 14, color: "#feb300", cursor: "pointer" }} onClick={() => navigate("/overuren")}>warning</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Progress bar */}
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ height: 6, background: "#000", borderRadius: 9999, overflow: "hidden", marginBottom: 6 }}>
+                        <div style={{ height: "100%", width: `${pct}%`, background: isGoedgekeurd ? "#3fff8b" : pct < 100 ? "#feb300" : "#3fff8b", borderRadius: 9999 }} />
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        {["Ma", "Di", "Wo", "Do", "Vr"].map(d => (
+                          <span key={d} style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", color: pct === 100 ? "#3fff8b" : "#a0abc3" }}>{d}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    {!isGoedgekeurd && (
+                      <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                        <button onClick={() => { setAfkeurId(group.entries[0]?.id); setAfkeurReden(""); }} style={{
+                          flex: 1, height: 52, borderRadius: 14, background: "transparent",
+                          border: "1px solid rgba(255,113,108,0.4)", color: "#ff716c",
+                          fontFamily: "Inter", fontWeight: 700, fontSize: 12, textTransform: "uppercase",
+                          letterSpacing: "0.1em", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        }}>
+                          <X size={16} /> Afwijzen
+                        </button>
+                        <button onClick={() => { group.entries.forEach((e: any) => updateStatus(e.id, "goedgekeurd")); }} style={{
+                          flex: 1, height: 52, borderRadius: 14, background: "#3fff8b", border: "none",
+                          color: "#005d2c", fontFamily: "Manrope", fontWeight: 800, fontSize: 12, textTransform: "uppercase",
+                          letterSpacing: "0.1em", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                          boxShadow: "0 4px 16px rgba(63,255,139,0.2)",
+                        }}>
+                          <Check size={16} /> Goedkeuren
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* EMPTY STATE */}
+          {!loading && monteurGroups.length === 0 && (
+            <EmptyState icoon="✓" titel="Alles behandeld" subtitel="Er zijn geen openstaande weekstaten voor deze week." />
+          )}
+        </main>
+
+        {/* AFKEUR BOTTOM SHEET */}
+        {afkeurId && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+            <div onClick={() => setAfkeurId(null)} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
+            <div style={{ position: "relative", background: "#0a1a30", borderRadius: "40px 40px 0 0", padding: "24px 24px 48px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+              <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 24px" }} />
+              <h3 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 22, color: "#dae6ff", marginBottom: 20 }}>Reden van afwijzing</h3>
+              {["Onjuiste uren / project", "Dubbele boeking", "Geen omschrijving", "Anders..."].map((opt) => (
+                <button key={opt} onClick={() => setAfkeurReden(opt)} style={{
+                  width: "100%", padding: 16, borderRadius: 16,
+                  background: afkeurReden === opt ? "rgba(254,179,0,0.1)" : "rgba(10,26,48,0.5)",
+                  border: afkeurReden === opt ? "1px solid rgba(254,179,0,0.4)" : "1px solid rgba(61,72,93,0.3)",
+                  display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", marginBottom: 8,
+                }}>
+                  <span style={{ fontSize: 14, fontFamily: "Inter", fontWeight: 500, color: "#dae6ff" }}>{opt}</span>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", border: afkeurReden === opt ? "6px solid #feb300" : "2px solid #a0abc3" }} />
+                </button>
+              ))}
+              <textarea
+                value={afkeurReden.startsWith("Onjuiste") || afkeurReden === "Dubbele boeking" || afkeurReden === "Geen omschrijving" ? "" : afkeurReden}
+                onChange={(e) => setAfkeurReden(e.target.value)}
+                placeholder="Toelichting (optioneel)..."
+                rows={3}
+                style={{ width: "100%", marginTop: 8, marginBottom: 16, padding: "12px 16px", borderRadius: 16, border: "1px solid rgba(61,72,93,0.4)", background: "#030e20", color: "#dae6ff", fontFamily: "Inter", fontSize: 14, resize: "none", outline: "none", boxSizing: "border-box" }}
+              />
+              <button onClick={() => { updateStatus(afkeurId, "afgekeurd", afkeurReden); setAfkeurId(null); }} style={{
+                width: "100%", height: 56, borderRadius: 16, background: "#feb300", border: "none",
+                color: "#523700", fontFamily: "Manrope", fontWeight: 800, fontSize: 15, textTransform: "uppercase",
+                letterSpacing: "0.1em", cursor: "pointer", marginBottom: 12,
+              }}>
+                AFWIJZEN
+              </button>
+              <button onClick={() => setAfkeurId(null)} style={{
+                width: "100%", height: 48, background: "transparent", border: "none",
+                color: "#a0abc3", fontFamily: "Inter", fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer",
+              }}>
+                ANNULEREN
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+      </PullToRefresh>
 
       {/* Book modal */}
       {showBookModal && (
-        <ManagerBookModal
-          weekStart={weekStart}
-          onClose={() => setShowBookModal(false)}
-          onSaved={() => { setShowBookModal(false); fetchEntries(); }}
-        />
+        <ManagerBookModal weekStart={weekStart} onClose={() => setShowBookModal(false)} onSaved={() => { setShowBookModal(false); fetchEntries(); }} />
       )}
 
       {/* Edit modal */}
       {editEntry && (
-        <EditEntryModal
-          entry={editEntry}
-          onClose={() => setEditEntry(null)}
-          onSaved={() => { setEditEntry(null); fetchEntries(); }}
-        />
-      )}
-
-      {/* Mobile afkeur sheet */}
-      {afkeurId && (
-        <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center" onClick={() => setAfkeurId(null)}>
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-sheet-up rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
-            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Uren afkeuren</h2>
-            <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={3} className="w-full px-3 py-2.5 rounded-xl text-sm resize-none" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-            <button onClick={() => afkeurReden.trim() ? updateStatus(afkeurId, "afgekeurd", afkeurReden.trim()) : toast.error("Vul een reden in")} className="w-full py-3 rounded-2xl text-sm font-bold" style={{ background: "var(--danger)", color: "#fff" }}>
-              Afkeuren
-            </button>
-          </div>
-        </div>
+        <EditEntryModal entry={editEntry} onClose={() => setEditEntry(null)} onSaved={() => { setEditEntry(null); fetchEntries(); }} />
       )}
     </PageShell>
   );
