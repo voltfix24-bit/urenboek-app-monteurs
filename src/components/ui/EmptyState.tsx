@@ -13,11 +13,11 @@ export function EmptyState({ icoon, titel, subtitel, actie }: EmptyStateProps) {
       {icoon && (
         <div className="text-4xl mb-3">{icoon}</div>
       )}
-      <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+      <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>
         {titel}
       </p>
       {subtitel && (
-        <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+        <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>
           {subtitel}
         </p>
       )}

@@ -24,11 +24,11 @@ interface Props {
 }
 
 function vervaldatumStatus(verval: string | null) {
-  if (!verval) return { label: "Geen vervaldatum", color: "var(--text-muted)" };
+  if (!verval) return { label: "Geen vervaldatum", color: "#a0abc3" };
   const diff = differenceInDays(parseISO(verval), new Date());
-  if (diff < 0) return { label: "✕ Verlopen", color: "var(--danger)" };
-  if (diff <= 30) return { label: "⚠ Verloopt binnenkort", color: "var(--warn-dot)" };
-  return { label: "Geldig", color: "var(--success)" };
+  if (diff < 0) return { label: "✕ Verlopen", color: "#ff716c" };
+  if (diff <= 30) return { label: "⚠ Verloopt binnenkort", color: "#feb300" };
+  return { label: "Geldig", color: "#3fff8b" };
 }
 
 export default function CertificatenOverzicht({ certificaten, toonToevoegen, medewerker_id, onRefresh }: Props) {
@@ -41,8 +41,8 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
 
   if (showForm && medewerker_id) {
     return (
-      <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Certificaten beheren</p>
+      <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Certificaten beheren</p>
         <CertificatenForm
           medewerker_id={medewerker_id}
           onSaved={() => { setShowForm(false); onRefresh?.(); }}
@@ -61,11 +61,11 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
   const hasAnyCerts = certificaten.length > 0;
 
   return (
-    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Certificaten</p>
+        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Certificaten</p>
         {toonToevoegen && medewerker_id && (
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "var(--accent)" }}>
+          <button onClick={() => setShowForm(true)} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "#3fff8b" }}>
             <Pencil className="h-3 w-3" /> Bewerken
           </button>
         )}
@@ -73,11 +73,11 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
 
       {!hasAnyCerts ? (
         <div className="text-center py-6">
-          <Award className="h-6 w-6 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>📋 Nog geen certificaten</p>
+          <Award className="h-6 w-6 mx-auto mb-2" style={{ color: "#a0abc3" }} />
+          <p className="text-xs" style={{ color: "#a0abc3" }}>📋 Nog geen certificaten</p>
           {toonToevoegen && medewerker_id && (
             <button onClick={() => setShowForm(true)} className="mt-2 px-4 py-2 rounded-xl text-xs font-semibold"
-              style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)" }}>
+              style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
               + Certificaten toevoegen
             </button>
           )}
@@ -91,8 +91,8 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
             const hasFile = items.some(c => c.bestand_url);
 
             return (
-              <div key={cfg.type} className="p-3 rounded-xl" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-                <p className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
+              <div key={cfg.type} className="p-3 rounded-xl" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+                <p className="text-sm font-semibold mb-1" style={{ color: "#dae6ff" }}>
                   {cfg.kortLabel || cfg.label}
                 </p>
 
@@ -100,7 +100,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                   <div className="flex flex-wrap gap-1 mb-1">
                     {items.map(c => c.subtype && (
                       <span key={c.id} className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                        style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
+                        style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>
                         {c.subtype}
                       </span>
                     ))}
@@ -111,7 +111,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                   <div className="flex flex-wrap gap-1 mb-1">
                     {items[0].ggi_gebieden.map(g => (
                       <span key={g} className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                        style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
+                        style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>
                         {cfg.gebieden?.find(gb => gb.code === g)?.label || g}
                       </span>
                     ))}
@@ -120,7 +120,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
 
                 {cfg.type === "POORT" && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                    style={{ background: "var(--success-light)", color: "var(--success)" }}>
+                    style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b" }}>
                     ✓ Behaald
                   </span>
                 )}
@@ -129,7 +129,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                   const status = vervaldatumStatus(items[0].vervaldatum);
                   return (
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                      <span className="text-[11px]" style={{ color: "#a0abc3" }}>
                         Geldig tot: {format(parseISO(items[0].vervaldatum!), "d MMM yyyy", { locale: nl })}
                       </span>
                       <span className="text-[10px] font-bold" style={{ color: status.color }}>{status.label}</span>
@@ -144,11 +144,11 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                       const fileItem = items.find(c => c.bestand_url);
                       if (fileItem?.bestand_url) openFile(fileItem.bestand_url);
                     }}
-                      className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "var(--success)" }}>
+                      className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "#3fff8b" }}>
                       <Paperclip className="h-3 w-3" /> Bewijs aanwezig
                     </button>
                   ) : (
-                    <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                    <span className="flex items-center gap-1 text-[11px]" style={{ color: "#a0abc3" }}>
                       <Paperclip className="h-3 w-3" /> Geen bewijs
                     </span>
                   )}

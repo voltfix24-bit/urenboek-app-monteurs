@@ -15,8 +15,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl p-3 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-      <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{title}</p>
+    <div className="rounded-xl p-3 space-y-2" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+      <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>{title}</p>
       {children}
     </div>
   );
@@ -25,12 +25,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function InfoRow({ icon, label, value, isLink }: { icon: React.ReactNode; label: string; value: string; isLink?: string }) {
   return (
     <div className="flex items-center gap-2">
-      <span style={{ color: "var(--text-muted)" }}>{icon}</span>
-      <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>{label}:</span>
+      <span style={{ color: "#a0abc3" }}>{icon}</span>
+      <span className="text-[11px]" style={{ color: "#a0abc3" }}>{label}:</span>
       {isLink ? (
-        <a href={isLink} className="text-sm underline" style={{ color: "var(--accent)" }}>{value}</a>
+        <a href={isLink} className="text-sm underline" style={{ color: "#3fff8b" }}>{value}</a>
       ) : (
-        <span className="text-sm" style={{ color: "var(--text-primary)" }}>{value}</span>
+        <span className="text-sm" style={{ color: "#dae6ff" }}>{value}</span>
       )}
     </div>
   );
@@ -66,62 +66,62 @@ function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
 
   return (
     <>
-      <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-        <p className="text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--warn-text)" }}>
+      <div className="rounded-xl p-4 space-y-3" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
+        <p className="text-sm font-bold flex items-center gap-1.5" style={{ color: "#feb300" }}>
           <AlertTriangle className="h-4 w-4" /> Verificatie vereist
         </p>
-        <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{emp.full_name} heeft het onboarding profiel ingevuld.</p>
+        <p className="text-xs" style={{ color: "#a0abc3" }}>{emp.full_name} heeft het onboarding profiel ingevuld.</p>
 
         <div className="space-y-1.5 mt-2">
           {checks.map((c, i) => (
             <div key={i} className="flex items-center gap-2">
               {c.ok ? (
-                <Check className="h-3.5 w-3.5" style={{ color: "var(--success)" }} />
+                <Check className="h-3.5 w-3.5" style={{ color: "#3fff8b" }} />
               ) : (
-                <AlertTriangle className="h-3.5 w-3.5" style={{ color: "var(--warn-text)" }} />
+                <AlertTriangle className="h-3.5 w-3.5" style={{ color: "#feb300" }} />
               )}
-              <span className="text-xs" style={{ color: c.ok ? "var(--success)" : "var(--warn-text)" }}>{c.label}</span>
+              <span className="text-xs" style={{ color: c.ok ? "#3fff8b" : "#feb300" }}>{c.label}</span>
             </div>
           ))}
         </div>
 
         <div className="flex gap-2 mt-3">
-          <button onClick={() => setShowActiveer(true)} disabled={!alleChecks} className="flex-1 py-2 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "var(--success)", color: "#fff" }}>
+          <button onClick={() => setShowActiveer(true)} disabled={!alleChecks} className="flex-1 py-2 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "#3fff8b", color: "#fff" }}>
             ✓ Activeren
           </button>
-          <button onClick={() => setShowAfwijzen(true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}>
+          <button onClick={() => setShowAfwijzen(true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c", border: "1px solid rgba(255,113,108,0.3)" }}>
             ✕ Afwijzen
           </button>
         </div>
       </div>
 
       <AlertDialog open={showActiveer} onOpenChange={setShowActiveer}>
-        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <AlertDialogContent style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <AlertDialogHeader>
-            <AlertDialogTitle style={{ color: "var(--text-primary)" }}>Account activeren</AlertDialogTitle>
-            <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+            <AlertDialogTitle style={{ color: "#dae6ff" }}>Account activeren</AlertDialogTitle>
+            <AlertDialogDescription style={{ color: "#a0abc3" }}>
               Weet je zeker dat je <strong>{emp.full_name}</strong> wilt activeren? Ze kunnen daarna worden ingepland en uren boeken.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>Annuleren</AlertDialogCancel>
-            <AlertDialogAction onClick={onActivate} style={{ background: "var(--success)", color: "#fff" }}>Ja, activeren</AlertDialogAction>
+            <AlertDialogCancel style={{ background: "#142640", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogAction onClick={onActivate} style={{ background: "#3fff8b", color: "#fff" }}>Ja, activeren</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <AlertDialog open={showAfwijzen} onOpenChange={setShowAfwijzen}>
-        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <AlertDialogContent style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <AlertDialogHeader>
-            <AlertDialogTitle style={{ color: "var(--text-primary)" }}>Account afwijzen</AlertDialogTitle>
-            <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+            <AlertDialogTitle style={{ color: "#dae6ff" }}>Account afwijzen</AlertDialogTitle>
+            <AlertDialogDescription style={{ color: "#a0abc3" }}>
               Geef een reden op voor het afwijzen van <strong>{emp.full_name}</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <textarea value={afwijsReden} onChange={e => setAfwijsReden(e.target.value)} placeholder="Reden..." rows={3} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+          <textarea value={afwijsReden} onChange={e => setAfwijsReden(e.target.value)} placeholder="Reden..." rows={3} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
           <AlertDialogFooter>
-            <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>Annuleren</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { onAfwijzen(afwijsReden); setShowAfwijzen(false); }} disabled={!afwijsReden.trim()} style={{ background: "var(--danger)", color: "#fff" }}>Afwijzen</AlertDialogAction>
+            <AlertDialogCancel style={{ background: "#142640", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { onAfwijzen(afwijsReden); setShowAfwijzen(false); }} disabled={!afwijsReden.trim()} style={{ background: "#ff716c", color: "#fff" }}>Afwijzen</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -247,24 +247,24 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
+          <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold" style={{ background: "#3fff8b", color: "#fff" }}>
             {emp.full_name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{emp.full_name}</h2>
+            <h2 className="text-lg font-bold" style={{ color: "#dae6ff" }}>{emp.full_name}</h2>
             <div className="flex items-center gap-2">
-              <span className="text-sm capitalize" style={{ color: "var(--text-muted)" }}>{roleLabels[emp.role] || emp.role}</span>
+              <span className="text-sm capitalize" style={{ color: "#a0abc3" }}>{roleLabels[emp.role] || emp.role}</span>
               <StatusBadge emp={emp} />
             </div>
           </div>
         </div>
-        <button onClick={() => editing ? saveProfile() : setEditing(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: editing ? "var(--accent)" : "var(--bg-surface)", border: `1px solid ${editing ? "var(--accent)" : "var(--border)"}`, color: editing ? "#fff" : "var(--accent)" }}>
+        <button onClick={() => editing ? saveProfile() : setEditing(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: editing ? "#3fff8b" : "rgba(10,26,48,0.7)", border: `1px solid ${editing ? "#3fff8b" : "rgba(106,118,140,0.15)"}`, color: editing ? "#fff" : "#3fff8b" }}>
           {editing ? <><Save className="h-3 w-3" /> Opslaan</> : <><Edit2 className="h-3 w-3" /> Bewerken</>}
         </button>
       </div>
 
       {editing && (
-        <button onClick={() => setEditing(false)} className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Annuleren</button>
+        <button onClick={() => setEditing(false)} className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Annuleren</button>
       )}
 
       {/* Verification panel for onboarding status */}
@@ -282,8 +282,8 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
               { label: "Adres", key: "adres" as const },
             ].map(f => (
               <div key={f.key}>
-                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{f.label}</label>
-                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>{f.label}</label>
+                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
               </div>
             ))}
           </div>
@@ -296,30 +296,30 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
         )}
       </Section>
 
-      <div className="rounded-xl p-3 space-y-2" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-        <p className="text-xs font-semibold flex items-center gap-1.5" style={{ color: "var(--warn-text)" }}>
+      <div className="rounded-xl p-3 space-y-2" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
+        <p className="text-xs font-semibold flex items-center gap-1.5" style={{ color: "#feb300" }}>
           <ShieldAlert className="h-3.5 w-3.5" /> Noodcontact
         </p>
         {editing ? (
           <div className="space-y-2">
             <div>
-              <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Naam</label>
-              <input value={editForm.noodcontact_naam} onChange={e => setEditForm({ ...editForm, noodcontact_naam: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Naam</label>
+              <input value={editForm.noodcontact_naam} onChange={e => setEditForm({ ...editForm, noodcontact_naam: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
             </div>
             <div>
-              <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Telefoon</label>
-              <input value={editForm.noodcontact_tel} onChange={e => setEditForm({ ...editForm, noodcontact_tel: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+              <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Telefoon</label>
+              <input value={editForm.noodcontact_tel} onChange={e => setEditForm({ ...editForm, noodcontact_tel: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
             </div>
           </div>
         ) : emp.noodcontact_naam ? (
           <>
-            <p className="text-sm" style={{ color: "var(--text-primary)" }}>{emp.noodcontact_naam}</p>
+            <p className="text-sm" style={{ color: "#dae6ff" }}>{emp.noodcontact_naam}</p>
             {emp.noodcontact_tel && (
-              <a href={`tel:${emp.noodcontact_tel}`} className="text-sm underline" style={{ color: "var(--accent)" }}>{emp.noodcontact_tel}</a>
+              <a href={`tel:${emp.noodcontact_tel}`} className="text-sm underline" style={{ color: "#3fff8b" }}>{emp.noodcontact_tel}</a>
             )}
           </>
         ) : (
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Geen noodcontact ingesteld</p>
+          <p className="text-sm" style={{ color: "#a0abc3" }}>Geen noodcontact ingesteld</p>
         )}
       </div>
 
@@ -328,7 +328,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
         <Section title="Contract">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{contract.contract_nummer}</span>
+              <span className="text-xs font-mono" style={{ color: "#a0abc3" }}>{contract.contract_nummer}</span>
               {(() => {
                 const cfg = CONTRACT_STATUS_CONFIG[contract.status];
                 if (!cfg) return null;
@@ -340,30 +340,30 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
               })()}
             </div>
             {contract.startdatum && contract.einddatum && (
-              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              <p className="text-xs" style={{ color: "#a0abc3" }}>
                 Geldig: {formatDatum(contract.startdatum)} — {formatDatum(contract.einddatum)}
               </p>
             )}
             {contractDays !== null && (
               <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{
-                background: contractDays < 0 ? "var(--danger-light)" : contractDays <= 30 ? "var(--warn-bg)" : "var(--success-light)",
-                color: contractDays < 0 ? "var(--danger)" : contractDays <= 30 ? "var(--warn-text)" : "var(--success)",
+                background: contractDays < 0 ? "rgba(255,113,108,0.1)" : contractDays <= 30 ? "rgba(254,179,0,0.08)" : "rgba(63,255,139,0.1)",
+                color: contractDays < 0 ? "#ff716c" : contractDays <= 30 ? "#feb300" : "#3fff8b",
               }}>
                 {contractDays < 0 ? "✕ Verlopen" : contractDays <= 30 ? `⚠ Verloopt binnenkort (${contractDays} dagen)` : `${contractDays} dagen resterend`}
               </span>
             )}
             {contract.pdf_path && (
-              <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium mt-1" style={{ color: "var(--accent)" }}>
+              <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium mt-1" style={{ color: "#3fff8b" }}>
                 <Download className="h-3.5 w-3.5" /> PDF downloaden
               </button>
             )}
           </div>
         </Section>
       ) : (
-        <div className="rounded-xl p-3 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Contract</p>
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>Geen actief contract</p>
-          <button onClick={() => navigate("/kandidaten")} className="text-xs font-medium flex items-center gap-1" style={{ color: "var(--accent)" }}>
+        <div className="rounded-xl p-3 space-y-2" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Contract</p>
+          <p className="text-xs" style={{ color: "#a0abc3" }}>Geen actief contract</p>
+          <button onClick={() => navigate("/kandidaten")} className="text-xs font-medium flex items-center gap-1" style={{ color: "#3fff8b" }}>
             <FileText className="h-3.5 w-3.5" /> Contract aanmaken
           </button>
         </div>
@@ -371,9 +371,9 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
 
       {/* ZZP incomplete warning */}
       {!editing && (!emp.kvk_nummer || !emp.iban) && (
-        <div className="flex items-start gap-2 rounded-xl p-3" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--warn-text)" }} />
-          <span className="text-xs" style={{ color: "var(--warn-text)" }}>ZZP gegevens incompleet — inkooporder kan niet aangemaakt worden</span>
+        <div className="flex items-start gap-2 rounded-xl p-3" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "#feb300" }} />
+          <span className="text-xs" style={{ color: "#feb300" }}>ZZP gegevens incompleet — inkooporder kan niet aangemaakt worden</span>
         </div>
       )}
 
@@ -389,8 +389,8 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
               { label: "Uurtarief (€)", key: "uurtarief" as const },
             ].map(f => (
               <div key={f.key}>
-                <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{f.label}</label>
-                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} type={f.key === "uurtarief" ? "number" : "text"} step={f.key === "uurtarief" ? "0.01" : undefined} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>{f.label}</label>
+                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} type={f.key === "uurtarief" ? "number" : "text"} step={f.key === "uurtarief" ? "0.01" : undefined} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
               </div>
             ))}
           </div>
@@ -402,9 +402,9 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
             {emp.iban ? <InfoRow icon={<CreditCard className="h-3.5 w-3.5" />} label="IBAN" value={emp.iban} /> : <InfoRow icon={<CreditCard className="h-3.5 w-3.5" />} label="IBAN" value="Niet ingevuld" />}
             {emp.uurtarief != null && (
               <div className="flex items-center gap-2">
-                <span style={{ color: "var(--text-muted)" }}>€</span>
-                <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>Uurtarief:</span>
-                <span className="text-sm font-mono font-semibold" style={{ color: "var(--accent)" }}>€ {Number(emp.uurtarief).toFixed(2)}</span>
+                <span style={{ color: "#a0abc3" }}>€</span>
+                <span className="text-[11px]" style={{ color: "#a0abc3" }}>Uurtarief:</span>
+                <span className="text-sm font-mono font-semibold" style={{ color: "#3fff8b" }}>€ {Number(emp.uurtarief).toFixed(2)}</span>
               </div>
             )}
           </>
@@ -416,8 +416,8 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       <Section title="Account info">
         <div className="space-y-1">
           <div className="flex items-center gap-2"><StatusBadge emp={emp} /></div>
-          {emp.invited_at && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Uitgenodigd op: {format(parseISO(emp.invited_at), "d MMM yyyy HH:mm", { locale: nl })}</p>}
-          {emp.activated_at && <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Geactiveerd op: {format(parseISO(emp.activated_at), "d MMM yyyy HH:mm", { locale: nl })}</p>}
+          {emp.invited_at && <p className="text-[11px]" style={{ color: "#a0abc3" }}>Uitgenodigd op: {format(parseISO(emp.invited_at), "d MMM yyyy HH:mm", { locale: nl })}</p>}
+          {emp.activated_at && <p className="text-[11px]" style={{ color: "#a0abc3" }}>Geactiveerd op: {format(parseISO(emp.activated_at), "d MMM yyyy HH:mm", { locale: nl })}</p>}
         </div>
       </Section>
 
@@ -426,27 +426,27 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
         <button
           onClick={() => setShowDeleteConfirm(true)}
           className="w-full py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
-          style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}
+          style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c", border: "1px solid rgba(255,113,108,0.3)" }}
         >
           <Trash2 className="h-3.5 w-3.5" /> Medewerker verwijderen
         </button>
       )}
 
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <AlertDialogContent style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2" style={{ color: "var(--danger)" }}>
+            <AlertDialogTitle className="flex items-center gap-2" style={{ color: "#ff716c" }}>
               <Trash2 className="h-4 w-4" /> Medewerker verwijderen
             </AlertDialogTitle>
-            <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+            <AlertDialogDescription style={{ color: "#a0abc3" }}>
               Weet je zeker dat je <strong>{emp.full_name}</strong> wilt verwijderen? Dit verwijdert ook alle uren, planning, certificaten en andere gerelateerde data. Dit kan niet ongedaan worden gemaakt.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogCancel style={{ background: "#142640", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>Annuleren</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => { onDelete?.(emp.user_id, emp.full_name); setShowDeleteConfirm(false); }}
-              style={{ background: "var(--danger)", color: "#fff" }}
+              style={{ background: "#ff716c", color: "#fff" }}
             >
               Ja, verwijderen
             </AlertDialogAction>

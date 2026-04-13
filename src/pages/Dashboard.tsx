@@ -43,42 +43,42 @@ function ContractAttentionSection({ navigate }: { navigate: (p: string) => void 
   if (wachtend.length === 0 && correcties.length === 0 && verlopen.length === 0) return null;
 
   return (
-    <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-      <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+    <div className="rounded-2xl p-4 space-y-2" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+      <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "#a0abc3" }}>
         <FileSignature className="h-3.5 w-3.5" /> Contracten die aandacht vragen
       </p>
       {correcties.map(c => (
-        <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--bg-base)", border: "1px solid var(--danger-border)" }}>
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: "var(--danger-light)", color: "var(--danger)" }}>⚠️</div>
+        <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "#030e20", border: "1px solid rgba(255,113,108,0.3)" }}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c" }}>⚠️</div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{c.ot_naam || "Opdrachtnemer"}</p>
-            <p className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>{c.contract_nummer}</p>
+            <p className="text-sm font-medium truncate" style={{ color: "#dae6ff" }}>{c.ot_naam || "Opdrachtnemer"}</p>
+            <p className="text-[10px] font-mono" style={{ color: "#a0abc3" }}>{c.contract_nummer}</p>
           </div>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0" style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}>Correctie gevraagd</span>
-          <button onClick={() => navigate("/kandidaten")} className="text-xs font-medium shrink-0" style={{ color: "var(--accent)" }}>Bekijken</button>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0" style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c", border: "1px solid rgba(255,113,108,0.3)" }}>Correctie gevraagd</span>
+          <button onClick={() => navigate("/kandidaten")} className="text-xs font-medium shrink-0" style={{ color: "#3fff8b" }}>Bekijken</button>
         </div>
       ))}
       {wachtend.map(c => (
-        <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: "var(--warn-light)", color: "var(--warn-text)" }}>⏳</div>
+        <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: "rgba(254,179,0,0.1)", color: "#feb300" }}>⏳</div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{c.ot_naam || "Opdrachtnemer"}</p>
-            <p className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>{c.contract_nummer}</p>
+            <p className="text-sm font-medium truncate" style={{ color: "#dae6ff" }}>{c.ot_naam || "Opdrachtnemer"}</p>
+            <p className="text-[10px] font-mono" style={{ color: "#a0abc3" }}>{c.contract_nummer}</p>
           </div>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0" style={{ background: "var(--warn-light)", color: "var(--warn-text)", border: "1px solid var(--warn-border)" }}>Wacht op handtekening</span>
-          <button onClick={() => navigate("/kandidaten")} className="text-xs font-medium shrink-0" style={{ color: "var(--accent)" }}>Ondertekenen</button>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0" style={{ background: "rgba(254,179,0,0.1)", color: "#feb300", border: "1px solid rgba(254,179,0,0.3)" }}>Wacht op handtekening</span>
+          <button onClick={() => navigate("/kandidaten")} className="text-xs font-medium shrink-0" style={{ color: "#3fff8b" }}>Ondertekenen</button>
         </div>
       ))}
       {verlopen.map(c => {
         const days = c.einddatum ? Math.ceil((new Date(c.einddatum).getTime() - Date.now()) / 86400000) : 0;
         return (
-          <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: days < 0 ? "var(--danger-light)" : "var(--warn-light)", color: days < 0 ? "var(--danger)" : "var(--warn-text)" }}>⏰</div>
+          <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: days < 0 ? "rgba(255,113,108,0.1)" : "rgba(254,179,0,0.1)", color: days < 0 ? "#ff716c" : "#feb300" }}>⏰</div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{c.contract_nummer}</p>
-              <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Verloopt {formatDatum(c.einddatum)}</p>
+              <p className="text-sm font-medium truncate" style={{ color: "#dae6ff" }}>{c.contract_nummer}</p>
+              <p className="text-[10px]" style={{ color: "#a0abc3" }}>Verloopt {formatDatum(c.einddatum)}</p>
             </div>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0" style={{ background: days < 0 ? "var(--danger-light)" : "var(--warn-light)", color: days < 0 ? "var(--danger)" : "var(--warn-text)" }}>{days < 0 ? "Verlopen" : `${days}d`}</span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0" style={{ background: days < 0 ? "rgba(255,113,108,0.1)" : "rgba(254,179,0,0.1)", color: days < 0 ? "#ff716c" : "#feb300" }}>{days < 0 ? "Verlopen" : `${days}d`}</span>
           </div>
         );
       })}
@@ -110,27 +110,27 @@ function NieuweMedewerkersSection({ navigate }: { navigate: (p: string) => void 
   if (medewerkers.length === 0) return null;
 
   return (
-    <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+    <div className="rounded-2xl p-4 space-y-2" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+        <p className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "#a0abc3" }}>
           <UserCheck className="h-3.5 w-3.5" /> Nieuwe medewerkers
         </p>
-        <button onClick={() => navigate("/medewerkers")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "var(--accent)" }}>
+        <button onClick={() => navigate("/medewerkers")} className="text-[11px] font-semibold flex items-center gap-0.5" style={{ color: "#3fff8b" }}>
           Alle <ChevronRight className="h-3 w-3" />
         </button>
       </div>
       {medewerkers.map(m => (
-        <div key={m.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
+        <div key={m.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid #102038" }}>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "var(--accent)", color: "#fff" }}>
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: "#3fff8b", color: "#fff" }}>
               {m.full_name?.charAt(0)?.toUpperCase() || "?"}
             </div>
             <div>
-              <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{m.full_name}</p>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--success-light)", color: "var(--success)", border: "1px solid var(--success-border)" }}>Klaar voor verificatie</span>
+              <p className="text-sm font-medium" style={{ color: "#dae6ff" }}>{m.full_name}</p>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>Klaar voor verificatie</span>
             </div>
           </div>
-          <button onClick={() => navigate("/medewerkers")} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold" style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>
+          <button onClick={() => navigate("/medewerkers")} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold" style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>
             Verifiëren →
           </button>
         </div>
@@ -196,11 +196,11 @@ export default function Dashboard() {
     toast.success(status === "goedgekeurd" ? "Goedgekeurd" : "Afgekeurd"); refetchDashboard();
   };
 
-  const margeColor = (m: number) => m >= 30 ? "var(--success)" : m >= 15 ? "var(--warn-dot)" : "var(--danger)";
-  const margeBg = (m: number) => m >= 30 ? "var(--success-light)" : m >= 15 ? "var(--warn-light)" : "var(--danger-light)";
+  const margeColor = (m: number) => m >= 30 ? "#3fff8b" : m >= 15 ? "#feb300" : "#ff716c";
+  const margeBg = (m: number) => m >= 30 ? "rgba(63,255,139,0.1)" : m >= 15 ? "rgba(254,179,0,0.1)" : "rgba(255,113,108,0.1)";
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   const greeting = (() => {

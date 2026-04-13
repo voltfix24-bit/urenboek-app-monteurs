@@ -49,7 +49,7 @@ export default function OnboardingWelkom() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><Spinner center={false} /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><Spinner center={false} /></div>;
   if (!profile) return null;
 
   const voornaam = profile.full_name.split(" ")[0];
@@ -109,23 +109,23 @@ export default function OnboardingWelkom() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg-base)" }}>
+    <div className="min-h-screen" style={{ background: "#030e20" }}>
       <div className="mx-auto px-5 py-8 space-y-6" style={{ maxWidth: 480 }}>
         {/* Header */}
         <div className="text-center space-y-3">
           <img src={terrevoltLogo} alt="TerreVolt" className="h-10 mx-auto" />
-          <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Welkom, {voornaam}! 👋</h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Vul je gegevens aan om aan de slag te kunnen.</p>
+          <h1 className="text-xl font-bold" style={{ color: "#dae6ff" }}>Welkom, {voornaam}! 👋</h1>
+          <p className="text-sm" style={{ color: "#a0abc3" }}>Vul je gegevens aan om aan de slag te kunnen.</p>
         </div>
 
         {/* Progress */}
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>{voltooid} van 4 stappen voltooid</span>
-            <span className="text-sm font-bold" style={{ color: "var(--accent)", fontFamily: "DM Mono, monospace" }}>{percentage}%</span>
+            <span className="text-xs font-semibold" style={{ color: "#a0abc3" }}>{voltooid} van 4 stappen voltooid</span>
+            <span className="text-sm font-bold" style={{ color: "#3fff8b", fontFamily: "DM Mono, monospace" }}>{percentage}%</span>
           </div>
-          <div className="w-full rounded-full overflow-hidden" style={{ height: 8, background: "var(--bg-surface-2)" }}>
-            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${percentage}%`, background: "var(--accent)" }} />
+          <div className="w-full rounded-full overflow-hidden" style={{ height: 8, background: "#102038" }}>
+            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${percentage}%`, background: "#3fff8b" }} />
           </div>
         </div>
 
@@ -133,45 +133,45 @@ export default function OnboardingWelkom() {
         <div className="space-y-3">
           {stappenData.map((s, i) => (
             <button key={i} onClick={() => navigate(s.link)} className="w-full flex items-center gap-3 p-4 rounded-2xl text-left transition-all active:scale-[0.98]" style={{
-              background: s.compleet ? "var(--success-light)" : "var(--bg-surface)",
-              border: s.compleet ? "1px solid var(--success-border)" : "1px solid var(--border)",
+              background: s.compleet ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
+              border: s.compleet ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
             }}>
               <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{
-                background: s.compleet ? "var(--success)" : "var(--bg-surface-2)",
-                color: s.compleet ? "#fff" : "var(--text-muted)",
+                background: s.compleet ? "#3fff8b" : "#102038",
+                color: s.compleet ? "#fff" : "#a0abc3",
               }}>
                 {s.compleet ? <Check className="h-4 w-4" /> : <span className="text-xs font-bold">{i + 1}</span>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{s.label}</p>
-                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{s.sub}</p>
+                <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>{s.label}</p>
+                <p className="text-[11px]" style={{ color: "#a0abc3" }}>{s.sub}</p>
               </div>
-              <ChevronRight className="h-4 w-4 shrink-0" style={{ color: "var(--text-muted)" }} />
+              <ChevronRight className="h-4 w-4 shrink-0" style={{ color: "#a0abc3" }} />
             </button>
           ))}
 
           {/* Step 4: Afronden */}
           <div className="p-4 rounded-2xl space-y-3" style={{
-            background: stap4 ? "var(--success-light)" : "var(--bg-surface)",
-            border: stap4 ? "1px solid var(--success-border)" : "1px solid var(--border)",
+            background: stap4 ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
+            border: stap4 ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
             opacity: allesKlaar || stap4 ? 1 : 0.5,
           }}>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{
-                background: stap4 ? "var(--success)" : "var(--bg-surface-2)",
-                color: stap4 ? "#fff" : "var(--text-muted)",
+                background: stap4 ? "#3fff8b" : "#102038",
+                color: stap4 ? "#fff" : "#a0abc3",
               }}>
                 {stap4 ? <Check className="h-4 w-4" /> : <span className="text-xs font-bold">4</span>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Profiel afronden</p>
-                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>Profiel afronden</p>
+                <p className="text-[11px]" style={{ color: "#a0abc3" }}>
                   {stap4 ? "Afgerond — wacht op verificatie" : allesKlaar ? "Klaar om in te dienen" : "Voltooi eerst stap 1-3"}
                 </p>
               </div>
             </div>
             {!stap4 && allesKlaar && (
-              <button onClick={handleAfronden} disabled={afronden} className="w-full py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50" style={{ background: "var(--accent)", color: "#fff" }}>
+              <button onClick={handleAfronden} disabled={afronden} className="w-full py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50" style={{ background: "#3fff8b", color: "#fff" }}>
                 {afronden ? "Bezig..." : "Afronden →"}
               </button>
             )}
@@ -180,36 +180,36 @@ export default function OnboardingWelkom() {
 
         {/* Status banner */}
         {!profile.onboarding_voltooid ? (
-          <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+          <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
             <span className="text-lg">⏳</span>
             <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--warn-text)" }}>Je account is nog niet actief</p>
-              <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>Vul alle stappen in zodat je manager je kan verifiëren.</p>
+              <p className="text-sm font-semibold" style={{ color: "#feb300" }}>Je account is nog niet actief</p>
+              <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>Vul alle stappen in zodat je manager je kan verifiëren.</p>
             </div>
           </div>
         ) : profile.account_status === "onboarding" ? (
-          <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background: "var(--info-light)", border: "1px solid var(--info-border)" }}>
+          <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
             <span className="text-lg">✓</span>
             <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--info)" }}>Profiel ingediend</p>
-              <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>Je manager verifieert je gegevens. Je ontvangt een bericht zodra je account actief is.</p>
+              <p className="text-sm font-semibold" style={{ color: "#6e9bff" }}>Profiel ingediend</p>
+              <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>Je manager verifieert je gegevens. Je ontvangt een bericht zodra je account actief is.</p>
             </div>
           </div>
         ) : null}
 
         {/* Contract section */}
         {contract && (
-          <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Contract</p>
+          <div className="rounded-2xl p-4 space-y-2" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Contract</p>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{contract.contract_nummer}</span>
+              <span className="text-xs font-mono" style={{ color: "#a0abc3" }}>{contract.contract_nummer}</span>
               {(() => {
                 const cfg = CONTRACT_STATUS_CONFIG[contract.status];
                 return cfg ? <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>{cfg.icoon} {cfg.label}</span> : null;
               })()}
             </div>
             {contract.pdf_path && (
-              <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "var(--accent)" }}>
+              <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "#3fff8b" }}>
                 <Download className="h-3.5 w-3.5" /> Download contract PDF
               </button>
             )}
@@ -223,7 +223,7 @@ export default function OnboardingWelkom() {
               toast("Je account is nog niet actief. Je kunt nog geen uren boeken of worden ingepland.", { icon: "⚠️" });
             }
             navigate("/");
-          }} className="text-xs font-semibold" style={{ color: "var(--accent)" }}>
+          }} className="text-xs font-semibold" style={{ color: "#3fff8b" }}>
             Ga naar de app →
           </button>
         </div>

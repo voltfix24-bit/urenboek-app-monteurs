@@ -22,7 +22,7 @@ export function PageShell({ children, mobileConstrained = true }: PageShellProps
       <DesktopSidebar badges={badges} />
       <div
         className="min-h-screen overflow-x-hidden"
-        style={{ background: "var(--bg-base)" }}
+        style={{ background: "#030e20" }}
       >
         {/* Mobile wrapper */}
         <div

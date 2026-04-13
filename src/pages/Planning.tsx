@@ -164,10 +164,10 @@ export default function Planning() {
   };
 
   const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-    concept: { bg: "var(--bg-surface-2)", text: "var(--text-secondary)", label: "Concept" },
-    ingediend: { bg: "var(--warn-light)", text: "var(--warn-text)", label: "Ingediend" },
-    goedgekeurd: { bg: "var(--success-light)", text: "var(--success)", label: "Goedgekeurd" },
-    afgekeurd: { bg: "var(--danger-light)", text: "var(--danger)", label: "Afgekeurd" },
+    concept: { bg: "#102038", text: "#a0abc3", label: "Concept" },
+    ingediend: { bg: "rgba(254,179,0,0.1)", text: "#feb300", label: "Ingediend" },
+    goedgekeurd: { bg: "rgba(63,255,139,0.1)", text: "#3fff8b", label: "Goedgekeurd" },
+    afgekeurd: { bg: "rgba(255,113,108,0.1)", text: "#ff716c", label: "Afgekeurd" },
   };
 
   const definitiefItems = items.filter(it => it.is_definitief);
@@ -176,22 +176,22 @@ export default function Planning() {
   if (profileData?.account_status === 'onboarding') {
     return (
       <PageShell>
-        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
+        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, rgba(10,26,48,0.7) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
           <div className="px-4 py-3 flex items-center gap-2.5">
             <HeaderLogo />
-            <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Planning</span>
+            <span className="text-base font-bold tracking-tight" style={{ color: "#dae6ff" }}>Planning</span>
           </div>
         </header>
         <div style={{ padding: "48px 20px", textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
-          <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)", marginBottom: 8 }}>Account nog niet actief</h2>
-          <p className="text-sm" style={{ color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 20 }}>
+          <h2 className="text-lg font-bold" style={{ color: "#dae6ff", marginBottom: 8 }}>Account nog niet actief</h2>
+          <p className="text-sm" style={{ color: "#a0abc3", lineHeight: 1.6, marginBottom: 20 }}>
             Je kunt je planning bekijken zodra je account door een manager is geverifieerd.
           </p>
           <button
             onClick={() => navigate("/onboarding-welkom")}
             className="px-5 py-2.5 rounded-xl text-sm font-semibold"
-            style={{ background: "var(--accent)", color: "#fff", border: "none", cursor: "pointer" }}
+            style={{ background: "#3fff8b", color: "#fff", border: "none", cursor: "pointer" }}
           >
             Naar onboarding →
           </button>

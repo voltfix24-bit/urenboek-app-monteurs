@@ -7,14 +7,14 @@ export function NavBadge({ count, dot }: { count?: number; dot?: boolean }) {
     return (
       <span
         className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full animate-pulse"
-        style={{ background: "var(--warn-dot)" }}
+        style={{ background: "#feb300" }}
       />
     );
   }
   return (
     <span
       className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center rounded-full text-white text-[9px] font-bold px-1"
-      style={{ background: "var(--danger)", animation: "badgePulse 0.3s ease" }}
+      style={{ background: "#ff716c", animation: "badgePulse 0.3s ease" }}
     >
       {count! > 9 ? "9+" : count}
     </span>

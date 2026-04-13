@@ -224,19 +224,19 @@ export default function Inkooporders() {
 
   const generatePdf = downloadInkooporderPdf;
 
-  if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers.</p></div>;
+  if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers.</p></div>;
 
   return (
     <>
       <DesktopSidebar badges={badges} />
       <PageShell>
-        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
+        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, rgba(10,26,48,0.7) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <HeaderLogo />
-              <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Inkooporders</span>
+              <span className="text-base font-bold tracking-tight" style={{ color: "#dae6ff" }}>Inkooporders</span>
             </div>
-            <button onClick={() => { setShowCreate(true); resetWizard(); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+            <button onClick={() => { setShowCreate(true); resetWizard(); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
               <Plus className="h-3.5 w-3.5" /> Nieuwe order
             </button>
           </div>
@@ -247,9 +247,9 @@ export default function Inkooporders() {
           <div className="flex flex-wrap gap-1.5">
             {["alle", "concept", "verzonden", "factuur_ontvangen", "betaald"].map(s => (
               <button key={s} onClick={() => setStatusFilter(s)} className="px-3 py-1.5 rounded-full text-[11px] font-semibold" style={{
-                background: statusFilter === s ? "var(--accent-light)" : "var(--bg-surface)",
-                border: `1px solid ${statusFilter === s ? "var(--accent-border)" : "var(--border)"}`,
-                color: statusFilter === s ? "var(--accent)" : "var(--text-muted)",
+                background: statusFilter === s ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
+                border: `1px solid ${statusFilter === s ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`,
+                color: statusFilter === s ? "#3fff8b" : "#a0abc3",
               }}>
                 {s === "alle" ? "Alle" : INKOOPORDER_STATUS_CONFIG[s]?.label || s}
               </button>
@@ -259,23 +259,23 @@ export default function Inkooporders() {
           {loading ? (
             <Spinner padding="py-8" />
           ) : filteredOrders.length === 0 ? (
-            <div className="text-center py-12 rounded-2xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-              <FileText className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
-              <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen inkooporders</p>
+            <div className="text-center py-12 rounded-2xl" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+              <FileText className="h-8 w-8 mx-auto mb-2" style={{ color: "#a0abc3" }} />
+              <p className="text-sm font-medium" style={{ color: "#dae6ff" }}>Geen inkooporders</p>
             </div>
           ) : (
             <div className="space-y-2">
               {filteredOrders.map(o => (
-                <button key={o.id} onClick={() => loadOrderDetail(o)} className="w-full text-left rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: `1px solid ${selectedOrder?.id === o.id ? "var(--accent)" : "var(--border)"}` }}>
+                <button key={o.id} onClick={() => loadOrderDetail(o)} className="w-full text-left rounded-2xl p-4" style={{ background: "rgba(10,26,48,0.7)", border: `1px solid ${selectedOrder?.id === o.id ? "#3fff8b" : "rgba(106,118,140,0.15)"}` }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[13px] font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{o.order_nummer}</span>
-                      <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>· {o.medewerker_naam}</span>
+                      <span className="text-[13px] font-bold" style={{ fontFamily: "DM Mono, monospace", color: "#dae6ff" }}>{o.order_nummer}</span>
+                      <span className="text-xs ml-2" style={{ color: "#a0abc3" }}>· {o.medewerker_naam}</span>
                     </div>
                     <OrderStatusBadge status={o.status} />
                   </div>
-                  <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>{o.periode_van} → {o.periode_tot}</p>
-                  <p className="text-lg font-bold mt-1" style={{ fontFamily: "DM Mono, monospace", color: "var(--accent)" }}>{euro(Number(o.totaal_incl_btw) || 0)}</p>
+                  <p className="text-[11px] mt-1" style={{ color: "#a0abc3" }}>{o.periode_van} → {o.periode_tot}</p>
+                  <p className="text-lg font-bold mt-1" style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(Number(o.totaal_incl_btw) || 0)}</p>
                 </button>
               ))}
             </div>
@@ -283,11 +283,11 @@ export default function Inkooporders() {
 
           {/* Order Detail */}
           {selectedOrder && (
-            <div className="rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>
+            <div className="rounded-2xl p-5 space-y-4" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(63,255,139,0.3)" }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{selectedOrder.order_nummer}</h3>
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>{selectedOrder.medewerker_naam} · {selectedOrder.periode_van} → {selectedOrder.periode_tot}</p>
+                  <h3 className="text-lg font-bold" style={{ fontFamily: "DM Mono, monospace", color: "#dae6ff" }}>{selectedOrder.order_nummer}</h3>
+                  <p className="text-xs" style={{ color: "#a0abc3" }}>{selectedOrder.medewerker_naam} · {selectedOrder.periode_van} → {selectedOrder.periode_tot}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <OrderStatusBadge status={selectedOrder.status} />
@@ -304,7 +304,7 @@ export default function Inkooporders() {
                     }
                     const bedrijf = await getBedrijfsgegevens();
                     generatePdf(selectedOrder, orderRegels, prof, bedrijf, gkNaam);
-                  }} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+                  }} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
                     <Download className="h-3.5 w-3.5" /> PDF
                   </button>
                 </div>
@@ -314,21 +314,21 @@ export default function Inkooporders() {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                    <tr style={{ borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
                       {["Datum", "Project", "Activiteit", "Uren", "Tarief", "Bedrag"].map(h => (
-                        <th key={h} className="text-left pb-2 px-2 font-semibold" style={{ color: "var(--text-muted)", fontSize: 10, textTransform: "uppercase" }}>{h}</th>
+                        <th key={h} className="text-left pb-2 px-2 font-semibold" style={{ color: "#a0abc3", fontSize: 10, textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {orderRegels.map(r => (
-                      <tr key={r.id} style={{ borderBottom: "1px solid var(--bg-surface-2)" }}>
-                        <td className="py-2 px-2" style={{ color: "var(--text-primary)" }}>{r.datum}</td>
+                      <tr key={r.id} style={{ borderBottom: "1px solid #102038" }}>
+                        <td className="py-2 px-2" style={{ color: "#dae6ff" }}>{r.datum}</td>
                         <td className="py-2 px-2">
-                          <span style={{ color: "var(--text-primary)" }}>{r.project_naam}</span>
-                          {r._project_nummer && <span className="block text-[10px]" style={{ color: "var(--text-muted)", fontFamily: "DM Mono, monospace" }}>{r._project_nummer}</span>}
+                          <span style={{ color: "#dae6ff" }}>{r.project_naam}</span>
+                          {r._project_nummer && <span className="block text-[10px]" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>{r._project_nummer}</span>}
                         </td>
-                        <td className="py-2 px-2" style={{ color: "var(--text-muted)" }}>{r.activiteit || "—"}</td>
+                        <td className="py-2 px-2" style={{ color: "#a0abc3" }}>{r.activiteit || "—"}</td>
                         <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace" }}>{r.uren}</td>
                         <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace" }}>{euro(r.uurtarief)}</td>
                         <td className="py-2 px-2 font-semibold" style={{ fontFamily: "DM Mono, monospace" }}>{euro(r.bedrag)}</td>
@@ -336,46 +336,46 @@ export default function Inkooporders() {
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr style={{ borderTop: "2px solid var(--accent-border)" }}>
+                    <tr style={{ borderTop: "2px solid rgba(63,255,139,0.3)" }}>
                       <td colSpan={3} />
                       <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace" }}>{selectedOrder.totaal_uren}u</td>
-                      <td className="py-2 px-2 text-right font-semibold" style={{ color: "var(--text-muted)" }}>excl BTW:</td>
+                      <td className="py-2 px-2 text-right font-semibold" style={{ color: "#a0abc3" }}>excl BTW:</td>
                       <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace" }}>{euro(Number(selectedOrder.totaal_excl_btw))}</td>
                     </tr>
                     <tr>
                       <td colSpan={4} />
-                      <td className="py-1 px-2 text-right" style={{ color: "var(--text-muted)" }}>BTW 21%:</td>
+                      <td className="py-1 px-2 text-right" style={{ color: "#a0abc3" }}>BTW 21%:</td>
                       <td className="py-1 px-2" style={{ fontFamily: "DM Mono, monospace" }}>{euro(Number(selectedOrder.btw_bedrag))}</td>
                     </tr>
                     <tr>
                       <td colSpan={4} />
-                      <td className="py-1 px-2 text-right font-bold" style={{ color: "var(--accent)" }}>Totaal:</td>
-                      <td className="py-1 px-2 font-bold text-base" style={{ fontFamily: "DM Mono, monospace", color: "var(--accent)" }}>{euro(Number(selectedOrder.totaal_incl_btw))}</td>
+                      <td className="py-1 px-2 text-right font-bold" style={{ color: "#3fff8b" }}>Totaal:</td>
+                      <td className="py-1 px-2 font-bold text-base" style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(Number(selectedOrder.totaal_incl_btw))}</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
 
               {/* Status actions */}
-              <div className="flex flex-wrap items-center gap-2 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
+              <div className="flex flex-wrap items-center gap-2 pt-2" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
                 {selectedOrder.status === "concept" && (
-                  <button onClick={() => updateOrderStatus(selectedOrder.id, "verzonden")} className="px-4 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+                  <button onClick={() => updateOrderStatus(selectedOrder.id, "verzonden")} className="px-4 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
                     Verzenden naar monteur
                   </button>
                 )}
                 {selectedOrder.status === "verzonden" && (
                   <div className="flex items-center gap-2">
-                    <input value={factuurNummer} onChange={e => setFactuurNummer(e.target.value)} placeholder="Factuurnummer" className="px-3 py-2 rounded-xl text-xs" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-                    <input type="date" value={factuurDatum} onChange={e => setFactuurDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-                    <button onClick={() => { if (!factuurNummer) { toast.error("Vul factuurnummer in"); return; } updateOrderStatus(selectedOrder.id, "factuur_ontvangen", { factuur_nummer: factuurNummer, factuur_datum: factuurDatum || new Date().toISOString() }); }} className="px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--info-light)", border: "1px solid var(--info-border)", color: "var(--info)" }}>
+                    <input value={factuurNummer} onChange={e => setFactuurNummer(e.target.value)} placeholder="Factuurnummer" className="px-3 py-2 rounded-xl text-xs" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                    <input type="date" value={factuurDatum} onChange={e => setFactuurDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                    <button onClick={() => { if (!factuurNummer) { toast.error("Vul factuurnummer in"); return; } updateOrderStatus(selectedOrder.id, "factuur_ontvangen", { factuur_nummer: factuurNummer, factuur_datum: factuurDatum || new Date().toISOString() }); }} className="px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)", color: "#6e9bff" }}>
                       Factuur registreren
                     </button>
                   </div>
                 )}
                 {selectedOrder.status === "factuur_ontvangen" && (
                   <div className="flex items-center gap-2">
-                    <input type="date" value={betaaldDatum} onChange={e => setBetaaldDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
-                    <button onClick={() => updateOrderStatus(selectedOrder.id, "betaald", { betaald_op: betaaldDatum || new Date().toISOString() })} className="px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)", color: "var(--success)" }}>
+                    <input type="date" value={betaaldDatum} onChange={e => setBetaaldDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                    <button onClick={() => updateOrderStatus(selectedOrder.id, "betaald", { betaald_op: betaaldDatum || new Date().toISOString() })} className="px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
                       Betaling registreren
                     </button>
                   </div>
@@ -390,7 +390,7 @@ export default function Inkooporders() {
                   setSelectedOrder(null);
                   fetchOrders();
                 }} className="ml-auto px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5"
-                  style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
+                  style={{ background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.3)", color: "#ff716c" }}>
                   <Trash2 className="h-3.5 w-3.5" /> Verwijderen
                 </button>
               </div>
@@ -401,20 +401,20 @@ export default function Inkooporders() {
         {/* Create wizard modal */}
         {showCreate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-            <div className="w-full max-w-lg mx-4 rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+            <div className="w-full max-w-lg mx-4 rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Nieuwe inkooporder</h3>
-                <button onClick={() => { setShowCreate(false); resetWizard(); }} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><X className="h-4 w-4" style={{ color: "var(--text-muted)" }} /></button>
+                <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Nieuwe inkooporder</h3>
+                <button onClick={() => { setShowCreate(false); resetWizard(); }} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#102038" }}><X className="h-4 w-4" style={{ color: "#a0abc3" }} /></button>
               </div>
 
               {wizStep === 1 && (
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Stap 1 — Selecteer monteur</p>
-                  <select value={wizMedewerker} onChange={e => setWizMedewerker(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
+                  <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Stap 1 — Selecteer monteur</p>
+                  <select value={wizMedewerker} onChange={e => setWizMedewerker(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
                     <option value="">Kies medewerker...</option>
                     {medewerkers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
                   </select>
-                  <button disabled={!wizMedewerker} onClick={() => setWizStep(2)} className="w-full py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+                  <button disabled={!wizMedewerker} onClick={() => setWizStep(2)} className="w-full py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
                     Volgende →
                   </button>
                 </div>
@@ -422,20 +422,20 @@ export default function Inkooporders() {
 
               {wizStep === 2 && (
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Stap 2 — Selecteer periode</p>
+                  <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Stap 2 — Selecteer periode</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Van</label>
-                      <input type="date" value={wizVan} onChange={e => setWizVan(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                      <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Van</label>
+                      <input type="date" value={wizVan} onChange={e => setWizVan(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                     </div>
                     <div>
-                      <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Tot</label>
-                      <input type="date" value={wizTot} onChange={e => setWizTot(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                      <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Tot</label>
+                      <input type="date" value={wizTot} onChange={e => setWizTot(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => setWizStep(1)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Vorige</button>
-                    <button disabled={!wizVan || !wizTot} onClick={loadBoekingen} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+                    <button onClick={() => setWizStep(1)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
+                    <button disabled={!wizVan || !wizTot} onClick={loadBoekingen} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
                       {wizLoading ? "Laden..." : "Boekingen ophalen →"}
                     </button>
                   </div>
@@ -444,30 +444,30 @@ export default function Inkooporders() {
 
               {wizStep === 3 && (
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Stap 3 — Selecteer uren ({wizBoekingen.length} beschikbaar)</p>
+                  <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Stap 3 — Selecteer uren ({wizBoekingen.length} beschikbaar)</p>
                   {wizBoekingen.length === 0 ? (
-                    <p className="text-sm py-4 text-center" style={{ color: "var(--text-muted)" }}>Geen goedgekeurde uren gevonden in deze periode</p>
+                    <p className="text-sm py-4 text-center" style={{ color: "#a0abc3" }}>Geen goedgekeurde uren gevonden in deze periode</p>
                   ) : (
                     <div className="space-y-1 max-h-48 overflow-y-auto">
                       {wizBoekingen.map(b => (
-                        <label key={b.id} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer" style={{ background: wizSelected.has(b.id) ? "var(--accent-light)" : "var(--bg-base)", border: `1px solid ${wizSelected.has(b.id) ? "var(--accent-border)" : "var(--border)"}` }}>
+                        <label key={b.id} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer" style={{ background: wizSelected.has(b.id) ? "rgba(63,255,139,0.1)" : "#030e20", border: `1px solid ${wizSelected.has(b.id) ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}` }}>
                           <input type="checkbox" checked={wizSelected.has(b.id)} onChange={() => {
                             const next = new Set(wizSelected);
                             next.has(b.id) ? next.delete(b.id) : next.add(b.id);
                             setWizSelected(next);
                           }} />
                           <div className="flex-1 min-w-0">
-                            <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>{b.datum}</span>
-                            <span className="text-[11px] ml-2" style={{ color: "var(--text-muted)" }}>{b.project_naam} · {b.activiteit || b.type}</span>
+                            <span className="text-xs font-medium" style={{ color: "#dae6ff" }}>{b.datum}</span>
+                            <span className="text-[11px] ml-2" style={{ color: "#a0abc3" }}>{b.project_naam} · {b.activiteit || b.type}</span>
                           </div>
-                          <span className="text-xs font-bold shrink-0" style={{ fontFamily: "DM Mono, monospace", color: "var(--accent)" }}>{b.uren}u</span>
+                          <span className="text-xs font-bold shrink-0" style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{b.uren}u</span>
                         </label>
                       ))}
                     </div>
                   )}
                   <div className="flex gap-2">
-                    <button onClick={() => setWizStep(2)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Vorige</button>
-                    <button disabled={wizSelected.size === 0} onClick={() => setWizStep(4)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+                    <button onClick={() => setWizStep(2)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
+                    <button disabled={wizSelected.size === 0} onClick={() => setWizStep(4)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
                       Controleren → ({wizTotaalUren}u)
                     </button>
                   </div>
@@ -476,33 +476,33 @@ export default function Inkooporders() {
 
               {wizStep === 4 && (
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Stap 4 — Controleer & bevestig</p>
+                  <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Stap 4 — Controleer & bevestig</p>
                   {wizMedProfile && !wizMedProfile.kvk_nummer && (
-                    <div className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--warn-text)" }} />
-                      <span className="text-[11px]" style={{ color: "var(--warn-text)" }}>Monteur heeft nog geen ZZP gegevens ingevuld. PDF is incompleet.</span>
+                    <div className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)" }}>
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#feb300" }} />
+                      <span className="text-[11px]" style={{ color: "#feb300" }}>Monteur heeft nog geen ZZP gegevens ingevuld. PDF is incompleet.</span>
                     </div>
                   )}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Uurtarief</label>
-                      <input type="number" value={wizTarief} onChange={e => setWizTarief(Number(e.target.value))} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }} />
+                      <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Uurtarief</label>
+                      <input type="number" value={wizTarief} onChange={e => setWizTarief(Number(e.target.value))} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: "DM Mono, monospace" }} />
                     </div>
                     <div>
-                      <label className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Betalingstermijn</label>
-                      <span className="block px-3 py-2 text-sm" style={{ color: "var(--text-primary)" }}>{wizMedProfile?.betalingstermijn || 30} dagen</span>
+                      <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Betalingstermijn</label>
+                      <span className="block px-3 py-2 text-sm" style={{ color: "#dae6ff" }}>{wizMedProfile?.betalingstermijn || 30} dagen</span>
                     </div>
                   </div>
-                  <div className="rounded-xl p-3 space-y-1" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-                    <div className="flex justify-between text-xs"><span style={{ color: "var(--text-muted)" }}>Uren</span><span style={{ fontFamily: "DM Mono, monospace" }}>{wizTotaalUren}u × €{wizTarief}</span></div>
-                    <div className="flex justify-between text-xs"><span style={{ color: "var(--text-muted)" }}>Subtotaal excl BTW</span><span style={{ fontFamily: "DM Mono, monospace" }}>{euro(wizSubtotaal)}</span></div>
-                    <div className="flex justify-between text-xs"><span style={{ color: "var(--text-muted)" }}>BTW 21%</span><span style={{ fontFamily: "DM Mono, monospace" }}>{euro(wizBtw)}</span></div>
-                    <div className="flex justify-between text-sm font-bold pt-1" style={{ borderTop: "1px solid var(--border)" }}><span style={{ color: "var(--text-primary)" }}>Totaal incl BTW</span><span style={{ fontFamily: "DM Mono, monospace", color: "var(--accent)" }}>{euro(wizTotaalIncl)}</span></div>
+                  <div className="rounded-xl p-3 space-y-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+                    <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>Uren</span><span style={{ fontFamily: "DM Mono, monospace" }}>{wizTotaalUren}u × €{wizTarief}</span></div>
+                    <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>Subtotaal excl BTW</span><span style={{ fontFamily: "DM Mono, monospace" }}>{euro(wizSubtotaal)}</span></div>
+                    <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>BTW 21%</span><span style={{ fontFamily: "DM Mono, monospace" }}>{euro(wizBtw)}</span></div>
+                    <div className="flex justify-between text-sm font-bold pt-1" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}><span style={{ color: "#dae6ff" }}>Totaal incl BTW</span><span style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(wizTotaalIncl)}</span></div>
                   </div>
-                  <textarea value={wizNotitie} onChange={e => setWizNotitie(e.target.value)} placeholder="Notitie (optioneel)" className="w-full px-3 py-2 rounded-xl text-sm" rows={2} style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)" }} />
+                  <textarea value={wizNotitie} onChange={e => setWizNotitie(e.target.value)} placeholder="Notitie (optioneel)" className="w-full px-3 py-2 rounded-xl text-sm" rows={2} style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   <div className="flex gap-2">
-                    <button onClick={() => setWizStep(3)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Vorige</button>
-                    <button onClick={createOrder} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+                    <button onClick={() => setWizStep(3)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
+                    <button onClick={createOrder} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
                       Order aanmaken
                     </button>
                   </div>

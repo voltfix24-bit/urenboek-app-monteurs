@@ -181,11 +181,11 @@ export default function Kandidaten() {
         <div className="space-y-1">
           <p className="text-xs font-semibold">Nieuwe ondertekeningslink:</p>
           <div className="flex items-center gap-2">
-            <code className="text-[10px] break-all flex-1" style={{ color: "var(--accent)" }}>{link}</code>
+            <code className="text-[10px] break-all flex-1" style={{ color: "#3fff8b" }}>{link}</code>
             <button
               onClick={() => { navigator.clipboard.writeText(link); toast.success("Link gekopieerd ✓"); }}
               className="shrink-0 px-2 py-1 rounded text-[10px] font-medium"
-              style={{ background: "var(--accent)", color: "#fff" }}>
+              style={{ background: "#3fff8b", color: "#fff" }}>
               Kopieer
             </button>
           </div>
@@ -364,17 +364,17 @@ export default function Kandidaten() {
   return (
     <>
     <PageShell>
-      <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Kandidaten</h1>
-      <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Werving en contractbeheer</p>
+      <h1 className="text-lg font-bold" style={{ color: "#dae6ff" }}>Kandidaten</h1>
+      <p className="text-xs mb-4" style={{ color: "#a0abc3" }}>Werving en contractbeheer</p>
       {/* Filter chips */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
         {STATUSSEN.map(s => (
           <button key={s} onClick={() => setFilter(s)}
             className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
             style={{
-              background: filter === s ? "var(--accent-light)" : "var(--bg-surface-2)",
-              color: filter === s ? "var(--accent)" : "var(--text-muted)",
-              border: `1px solid ${filter === s ? "var(--accent-border)" : "var(--border)"}`,
+              background: filter === s ? "rgba(63,255,139,0.1)" : "#102038",
+              color: filter === s ? "#3fff8b" : "#a0abc3",
+              border: `1px solid ${filter === s ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`,
             }}>
             {STATUS_LABELS[s]}
           </button>
@@ -394,25 +394,25 @@ export default function Kandidaten() {
             const ongelezen = contractBerichten.filter(b => !b.gelezen_op && b.richting === "kandidaat_naar_manager").length;
 
             return (
-              <div key={k.id} className="rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: `1px solid ${heeftCorrectie ? "var(--danger-border)" : "var(--border)"}` }}>
+              <div key={k.id} className="rounded-2xl p-4" style={{ background: "rgba(10,26,48,0.7)", border: `1px solid ${heeftCorrectie ? "rgba(255,113,108,0.3)" : "rgba(106,118,140,0.15)"}` }}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>
+                    <p className="text-sm font-semibold truncate" style={{ color: "#dae6ff" }}>
                       {k.voornaam} {k.achternaam}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{k.email}</p>
-                    {k.telefoon && <p className="text-xs" style={{ color: "var(--text-muted)" }}>{k.telefoon}</p>}
+                    <p className="text-xs mt-0.5" style={{ color: "#a0abc3" }}>{k.email}</p>
+                    {k.telefoon && <p className="text-xs" style={{ color: "#a0abc3" }}>{k.telefoon}</p>}
                     {k.notities && (
-                      <p className="text-xs mt-1 line-clamp-2" style={{ color: "var(--text-secondary)" }}>
+                      <p className="text-xs mt-1 line-clamp-2" style={{ color: "#a0abc3" }}>
                         {k.notities.length > 80 ? k.notities.slice(0, 80) + "..." : k.notities}
                       </p>
                     )}
                     {k.afgesproken_tarief && (
-                      <p className="text-xs mt-1 font-mono" style={{ color: "var(--info)" }}>
+                      <p className="text-xs mt-1 font-mono" style={{ color: "#6e9bff" }}>
                         {euro(k.afgesproken_tarief, 2)}/uur
                       </p>
                     )}
-                    <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
+                    <p className="text-[10px] mt-1" style={{ color: "#a0abc3" }}>
                       {formatDatumKort(k.aangemaakt_op)}
                     </p>
                   </div>
@@ -426,19 +426,19 @@ export default function Kandidaten() {
                     {heeftCorrectie && (
                       <>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap flex items-center gap-1"
-                          style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}>
+                          style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c", border: "1px solid rgba(255,113,108,0.3)" }}>
                           <AlertTriangle className="w-3 h-3" />
                           Correctie gevraagd
                           {ongelezen > 0 && (
                             <span className="ml-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
-                              style={{ background: "var(--danger)", color: "#fff" }}>
+                              style={{ background: "#ff716c", color: "#fff" }}>
                               {ongelezen}
                             </span>
                           )}
                         </span>
                         <button onClick={() => openCorrectieModal(k, contract)}
                           className="text-xs px-3 py-1.5 rounded-lg font-medium"
-                          style={{ background: "var(--danger-light)", color: "var(--danger)", border: "1px solid var(--danger-border)" }}>
+                          style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c", border: "1px solid rgba(255,113,108,0.3)" }}>
                           Bekijken & aanpassen
                         </button>
                       </>
@@ -447,12 +447,12 @@ export default function Kandidaten() {
                     {wachtOpManager && (
                       <>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
-                          style={{ background: "var(--warn-light)", color: "var(--warn-text)", border: "1px solid var(--warn-border)" }}>
+                          style={{ background: "rgba(254,179,0,0.1)", color: "#feb300", border: "1px solid rgba(254,179,0,0.3)" }}>
                           ⏳ Wacht op jouw handtekening
                         </span>
                         <button onClick={() => openSignModal(k)}
                           className="text-xs px-3 py-1.5 rounded-lg font-medium"
-                          style={{ background: "var(--accent)", color: "#fff" }}>
+                          style={{ background: "#3fff8b", color: "#fff" }}>
                           Ondertekenen
                         </button>
                       </>
@@ -460,20 +460,20 @@ export default function Kandidaten() {
                     {k.status === "gesprek" && (
                       <button onClick={() => { setShowTarief(k.id); setTariefForm({ tarief: "", notitie: "" }); }}
                         className="text-xs px-3 py-1.5 rounded-lg font-medium"
-                        style={{ background: "var(--info-light)", color: "var(--info)", border: `1px solid var(--info-border)` }}>
+                        style={{ background: "rgba(110,155,255,0.1)", color: "#6e9bff", border: `1px solid rgba(110,155,255,0.3)` }}>
                         Tarief instellen
                       </button>
                     )}
                     {k.status === "tarief_afgesproken" && (
                       <button onClick={() => navigate(`/kandidaten/${k.id}/contract`)}
                         className="text-xs px-3 py-1.5 rounded-lg font-medium flex items-center gap-1"
-                        style={{ background: "var(--accent)", color: "#fff" }}>
+                        style={{ background: "#3fff8b", color: "#fff" }}>
                         Contract <ChevronRight className="w-3 h-3" />
                       </button>
                     )}
                     {!wachtOpManager && !heeftCorrectie && k.status === "uitgenodigd" && contract && (
                       <div className="flex flex-col items-end gap-1">
-                        <span className="text-[10px] font-medium" style={{ color: "var(--info)" }}>📧 Uitgenodigd</span>
+                        <span className="text-[10px] font-medium" style={{ color: "#6e9bff" }}>📧 Uitgenodigd</span>
                         {(contract.contract_data as any)?._token && (
                           <button
                             onClick={() => {
@@ -482,35 +482,35 @@ export default function Kandidaten() {
                               toast.success("Link gekopieerd ✓");
                             }}
                             className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg font-medium"
-                            style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                            style={{ background: "#102038", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>
                             <Copy className="w-3 h-3" /> Link kopiëren
                           </button>
                         )}
                       </div>
                     )}
                     {!wachtOpManager && !heeftCorrectie && k.status === "gecontracteerd" && (
-                      <span className="text-[10px] font-medium" style={{ color: "var(--success)" }}>
+                      <span className="text-[10px] font-medium" style={{ color: "#3fff8b" }}>
                         ✓ Gecontracteerd
                       </span>
                     )}
                     {k.status !== "afgewezen" && k.status !== "gecontracteerd" && k.status !== "on_hold" && !wachtOpManager && !heeftCorrectie && (
                       <div className="flex items-center gap-2">
-                        <button onClick={() => onHold(k.id)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--warning)" }}>
+                        <button onClick={() => onHold(k.id)} className="flex items-center gap-1 text-[10px]" style={{ color: "#feb300" }}>
                           <Pause className="w-3 h-3" /> On hold
                         </button>
-                        <button onClick={() => afwijzen(k.id)} className="text-[10px]" style={{ color: "var(--danger)" }}>
+                        <button onClick={() => afwijzen(k.id)} className="text-[10px]" style={{ color: "#ff716c" }}>
                           Afwijzen
                         </button>
                       </div>
                     )}
                     {k.status === "on_hold" && (
                       <div className="flex items-center gap-2">
-                        <button onClick={() => reactiveer(k.id)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--success)" }}>
+                        <button onClick={() => reactiveer(k.id)} className="flex items-center gap-1 text-[10px]" style={{ color: "#3fff8b" }}>
                           <Play className="w-3 h-3" /> Heractiveren
                         </button>
                       </div>
                     )}
-                    <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "var(--danger)" }}>
+                    <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "#ff716c" }}>
                       <Trash2 className="w-3 h-3" /> Verwijderen
                     </button>
                   </div>
@@ -518,17 +518,17 @@ export default function Kandidaten() {
 
                 {/* Inline tarief modal */}
                 {showTarief === k.id && (
-                  <div className="mt-3 pt-3 space-y-2" style={{ borderTop: "1px solid var(--border)" }}>
+                  <div className="mt-3 pt-3 space-y-2" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
                     <Input type="number" placeholder="Uurtarief (€/uur)" value={tariefForm.tarief}
                       onChange={e => setTariefForm(p => ({ ...p, tarief: e.target.value }))} />
                     <Input placeholder="Notitie (optioneel)" value={tariefForm.notitie}
                       onChange={e => setTariefForm(p => ({ ...p, notitie: e.target.value }))} />
                     <div className="flex gap-2">
                       <button onClick={() => setShowTarief(null)} className="flex-1 py-2 rounded-lg text-xs"
-                        style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}>Annuleren</button>
+                        style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
                       <button onClick={() => tariefOpslaan(k.id)} disabled={saving}
                         className="flex-1 py-2 rounded-lg text-xs font-medium"
-                        style={{ background: "var(--accent)", color: "#fff" }}>
+                        style={{ background: "#3fff8b", color: "#fff" }}>
                         {saving ? "Opslaan..." : "Opslaan"}
                       </button>
                     </div>
@@ -543,9 +543,9 @@ export default function Kandidaten() {
       {/* Nieuw modal */}
       {showNieuw && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="w-full max-w-lg rounded-t-2xl p-5 space-y-3 animate-in slide-in-from-bottom" style={{ background: "var(--bg-surface)", maxHeight: "85vh", overflowY: "auto" }}>
-            <div className="w-10 h-1 rounded-full mx-auto mb-2" style={{ background: "var(--border)" }} />
-            <h3 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>Nieuwe kandidaat</h3>
+          <div className="w-full max-w-lg rounded-t-2xl p-5 space-y-3 animate-in slide-in-from-bottom" style={{ background: "rgba(10,26,48,0.7)", maxHeight: "85vh", overflowY: "auto" }}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-2" style={{ background: "rgba(106,118,140,0.15)" }} />
+            <h3 className="text-base font-semibold" style={{ color: "#dae6ff" }}>Nieuwe kandidaat</h3>
             <div className="grid grid-cols-2 gap-2">
               <Input placeholder="Voornaam *" value={nieuwForm.voornaam} onChange={e => setNieuwForm(p => ({ ...p, voornaam: e.target.value }))} />
               <Input placeholder="Achternaam *" value={nieuwForm.achternaam} onChange={e => setNieuwForm(p => ({ ...p, achternaam: e.target.value }))} />
@@ -555,13 +555,13 @@ export default function Kandidaten() {
             <textarea placeholder="Aantekeningen van het gesprek..." value={nieuwForm.notities}
               onChange={e => setNieuwForm(p => ({ ...p, notities: e.target.value }))}
               className="w-full rounded-lg p-3 text-sm resize-none"
-              style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-primary)", minHeight: 80 }} />
+              style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", minHeight: 80 }} />
             <div className="flex gap-2 pt-2">
               <button onClick={() => setShowNieuw(false)} className="flex-1 py-2.5 rounded-xl text-sm"
-                style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}>Annuleren</button>
+                style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
               <button onClick={opslaan} disabled={saving}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                style={{ background: "var(--accent)", color: "#fff" }}>
+                style={{ background: "#3fff8b", color: "#fff" }}>
                 {saving ? "Opslaan..." : "Toevoegen"}
               </button>
             </div>
@@ -572,40 +572,40 @@ export default function Kandidaten() {
       {/* Manager onderteken modal */}
       {signKandidaat && signContract && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setSignKandidaat(null); setSignContract(null); }}>
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
-          <div className="relative w-full animate-in slide-in-from-bottom rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
-            <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Contract ondertekenen</h3>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, #dae6ff 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="relative w-full animate-in slide-in-from-bottom rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "rgba(106,118,140,0.15)" }} />
+            <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Contract ondertekenen</h3>
+            <p className="text-xs" style={{ color: "#a0abc3" }}>
               {signKandidaat.voornaam} {signKandidaat.achternaam} · {signContract.contract_nummer}
             </p>
 
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Jouw handtekening</p>
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Jouw handtekening</p>
 
               {managerHt && !showCanvas ? (
                 <>
-                  <div className="rounded-xl p-2" style={{ background: "#fff", border: "1px solid var(--border)" }}>
+                  <div className="rounded-xl p-2" style={{ background: "#fff", border: "1px solid rgba(106,118,140,0.15)" }}>
                     <img src={managerHt} alt="Handtekening" style={{ width: "100%", height: 80, objectFit: "contain" }} />
                   </div>
-                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Opgeslagen handtekening</p>
-                  <label className="flex items-center gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+                  <p className="text-[10px]" style={{ color: "#a0abc3" }}>Opgeslagen handtekening</p>
+                  <label className="flex items-center gap-2 text-xs" style={{ color: "#a0abc3" }}>
                     <input type="checkbox" checked={useOpgeslagen} onChange={e => setUseOpgeslagen(e.target.checked)} />
                     Gebruik opgeslagen handtekening
                   </label>
-                  <button onClick={() => setShowCanvas(true)} className="text-xs underline" style={{ color: "var(--accent)" }}>
+                  <button onClick={() => setShowCanvas(true)} className="text-xs underline" style={{ color: "#3fff8b" }}>
                     Andere handtekening tekenen
                   </button>
                 </>
               ) : (
                 <>
                   {!managerHt && (
-                    <div className="rounded-xl p-2.5" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-                      <p className="text-xs" style={{ color: "var(--warn-text)" }}>Je hebt nog geen handtekening opgeslagen. Teken hieronder.</p>
+                    <div className="rounded-xl p-2.5" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
+                      <p className="text-xs" style={{ color: "#feb300" }}>Je hebt nog geen handtekening opgeslagen. Teken hieronder.</p>
                     </div>
                   )}
                   <HandtekeningCanvas hoogte={150} onSave={(b64) => setNieuweHt(b64)} />
-                  <label className="flex items-center gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+                  <label className="flex items-center gap-2 text-xs" style={{ color: "#a0abc3" }}>
                     <input type="checkbox" checked={saveHt} onChange={e => setSaveHt(e.target.checked)} />
                     Sla op voor toekomstige contracten
                   </label>
@@ -615,7 +615,7 @@ export default function Kandidaten() {
 
             <button onClick={voltooiContract} disabled={signing || (!(useOpgeslagen && managerHt && !showCanvas) && !nieuweHt)}
               className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40"
-              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+              style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", color: "#fff" }}>
               {signing ? "Bezig met ondertekenen..." : "Contract voltooien ✓"}
             </button>
           </div>
@@ -625,29 +625,29 @@ export default function Kandidaten() {
       {/* Correctie modal */}
       {correctieKandidaat && correctieContract && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setCorrectieContract(null); setCorrectieKandidaat(null); }}>
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, #dae6ff 35%, transparent)", backdropFilter: "blur(6px)" }} />
           <div className="relative w-full animate-in slide-in-from-bottom rounded-t-3xl p-5 space-y-4"
-            style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--border)", borderBottom: "none", paddingBottom: 40 }}
+            style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", borderBottom: "none", paddingBottom: 40 }}
             onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--border)" }} />
-            <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Correctie gevraagd</h3>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "rgba(106,118,140,0.15)" }} />
+            <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Correctie gevraagd</h3>
+            <p className="text-xs" style={{ color: "#a0abc3" }}>
               {correctieKandidaat.voornaam} {correctieKandidaat.achternaam} · {correctieContract.contract_nummer}
             </p>
 
             {/* Berichten thread */}
             <div className="space-y-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Berichten</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Berichten</p>
               {correctieBerichten.length === 0 ? (
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Geen berichten</p>
+                <p className="text-xs" style={{ color: "#a0abc3" }}>Geen berichten</p>
               ) : (
                 correctieBerichten.map(b => (
                   <div key={b.id} className="rounded-xl p-3 text-xs" style={{
-                    background: b.richting === "kandidaat_naar_manager" ? "var(--danger-light)" : "var(--info-light)",
-                    border: `1px solid ${b.richting === "kandidaat_naar_manager" ? "var(--danger-border)" : "var(--info-border)"}`,
+                    background: b.richting === "kandidaat_naar_manager" ? "rgba(255,113,108,0.1)" : "rgba(110,155,255,0.1)",
+                    border: `1px solid ${b.richting === "kandidaat_naar_manager" ? "rgba(255,113,108,0.3)" : "rgba(110,155,255,0.3)"}`,
                   }}>
                     <p className="font-semibold text-[10px] mb-1" style={{
-                      color: b.richting === "kandidaat_naar_manager" ? "var(--danger)" : "var(--info)",
+                      color: b.richting === "kandidaat_naar_manager" ? "#ff716c" : "#6e9bff",
                     }}>
                       {b.richting === "kandidaat_naar_manager" ? "📨 Kandidaat" : "📤 Manager"}
                       {b.bericht_type === "correctie_verzoek" && " — Correctie verzoek"}
@@ -657,16 +657,16 @@ export default function Kandidaten() {
                       <div className="flex flex-wrap gap-1 mb-1">
                         {b.wat_klopt_niet.map((item: string) => (
                           <span key={item} className="px-1.5 py-0.5 rounded text-[9px] font-medium"
-                            style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}>
+                            style={{ background: "#102038", color: "#a0abc3" }}>
                             {CORRECTIE_LABELS[item] || item}
                           </span>
                         ))}
                       </div>
                     )}
                     {b.toelichting && (
-                      <p style={{ color: "var(--text-secondary)" }}>{b.toelichting}</p>
+                      <p style={{ color: "#a0abc3" }}>{b.toelichting}</p>
                     )}
-                    <p className="text-[9px] mt-1" style={{ color: "var(--text-muted)" }}>
+                    <p className="text-[9px] mt-1" style={{ color: "#a0abc3" }}>
                       {new Date(b.aangemaakt_op).toLocaleDateString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
@@ -676,7 +676,7 @@ export default function Kandidaten() {
 
             {/* Editable fields */}
             <div className="space-y-3">
-              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Contract aanpassen</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Contract aanpassen</p>
               <Input placeholder="Naam" value={editFields.ot_naam} onChange={e => setEditFields(p => ({ ...p, ot_naam: e.target.value }))} />
               <Input placeholder="Handelsnaam" value={editFields.ot_handelsnaam} onChange={e => setEditFields(p => ({ ...p, ot_handelsnaam: e.target.value }))} />
               <Input placeholder="Adres" value={editFields.ot_adres} onChange={e => setEditFields(p => ({ ...p, ot_adres: e.target.value }))} />
@@ -687,14 +687,14 @@ export default function Kandidaten() {
               <Input placeholder="KVK-nummer" value={editFields.ot_kvk} onChange={e => setEditFields(p => ({ ...p, ot_kvk: e.target.value }))} />
               <Input placeholder="BTW-nummer" value={editFields.ot_btw} onChange={e => setEditFields(p => ({ ...p, ot_btw: e.target.value }))} />
               <div>
-                <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>Uurtarief (€/uur)</label>
+                <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Uurtarief (€/uur)</label>
                 <Input type="number" value={editFields.uurtarief} onChange={e => setEditFields(p => ({ ...p, uurtarief: e.target.value }))} className="mt-1" />
               </div>
             </div>
 
             <button onClick={opnieuwVersturen} disabled={resending}
               className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40"
-              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+              style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", color: "#fff" }}>
               {resending ? "Versturen..." : "Aanpassen & nieuwe link versturen →"}
             </button>
           </div>
@@ -704,25 +704,25 @@ export default function Kandidaten() {
       {/* FAB */}
       <button onClick={() => setShowNieuw(true)}
         className="fixed z-30 flex items-center justify-center rounded-full shadow-lg"
-        style={{ bottom: 88, right: 20, width: 56, height: 56, background: "var(--accent)" }}>
+        style={{ bottom: 88, right: 20, width: 56, height: 56, background: "#3fff8b" }}>
         <UserPlus className="w-6 h-6 text-white" />
       </button>
     </PageShell>
 
     <AlertDialog open={!!deleteConfirm} onOpenChange={(o) => !o && setDeleteConfirm(null)}>
-      <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}>
+      <AlertDialogContent style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(61,72,93,0.3)" }}>
         <AlertDialogHeader>
-          <AlertDialogTitle style={{ color: "var(--danger)" }}>Kandidaat verwijderen</AlertDialogTitle>
-          <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+          <AlertDialogTitle style={{ color: "#ff716c" }}>Kandidaat verwijderen</AlertDialogTitle>
+          <AlertDialogDescription style={{ color: "#a0abc3" }}>
             Weet je zeker dat je <strong>{deleteConfirm?.voornaam} {deleteConfirm?.achternaam}</strong> wilt verwijderen? 
             Alle bijbehorende contracten en berichten worden ook verwijderd. Dit kan niet ongedaan worden.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>
+          <AlertDialogCancel style={{ background: "#142640", color: "#a0abc3", border: "1px solid rgba(61,72,93,0.3)" }}>
             Annuleren
           </AlertDialogCancel>
-          <AlertDialogAction onClick={() => deleteConfirm && verwijderKandidaat(deleteConfirm.id)} style={{ background: "var(--danger)", color: "#fff" }}>
+          <AlertDialogAction onClick={() => deleteConfirm && verwijderKandidaat(deleteConfirm.id)} style={{ background: "#ff716c", color: "#fff" }}>
             Ja, verwijderen
           </AlertDialogAction>
         </AlertDialogFooter>

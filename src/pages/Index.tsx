@@ -51,7 +51,7 @@ function isFridayAfternoon(): boolean {
   }
 }
 
-const AVATAR_COLORS = ['var(--accent)', 'var(--accent-mid)', 'var(--info-dark)', 'var(--warn-text)', 'var(--purple)'];
+const AVATAR_COLORS = ['#3fff8b', '#22c55e', '#6e9bff', '#feb300', '#a78bfa'];
 
 const Index = () => {
   const { user, profile, isManager } = useAuth();
@@ -462,15 +462,15 @@ const Index = () => {
       <>
         {/* Vorige week reminder */}
         {vorigeWeekConcept.length > 0 && (
-          <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-            <p className="text-xs font-medium flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
+          <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)" }}>
+            <p className="text-xs font-medium flex items-center gap-1" style={{ color: "#feb300" }}>
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Je hebt nog {vorigeWeekUren}u van vorige week niet ingediend.
             </p>
             <button
               onClick={submitVorigeWeek}
               disabled={submittingVorigeWeek}
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0 transition-colors disabled:opacity-50"
-              style={{ background: "var(--accent)", color: "#fff" }}
+              style={{ background: "#3fff8b", color: "#fff" }}
             >
               Alles indienen <ArrowRight className="h-3 w-3" />
             </button>
@@ -478,20 +478,20 @@ const Index = () => {
         )}
         {/* Offline banner */}
         {isOffline && (
-          <div className="mx-4 mt-3 flex items-center gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-            <WifiOff className="h-4 w-4 shrink-0" style={{ color: "var(--warn-text)" }} />
-            <p className="text-xs font-medium" style={{ color: "var(--warn-text)" }}>
+          <div className="mx-4 mt-3 flex items-center gap-2 px-4 py-3 rounded-2xl" style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)" }}>
+            <WifiOff className="h-4 w-4 shrink-0" style={{ color: "#feb300" }} />
+            <p className="text-xs font-medium" style={{ color: "#feb300" }}>
               📡 Geen verbinding — je kunt nog wel uren boeken. Ze worden ingediend als je weer online bent.
               {pendingOffline > 0 && ` (${pendingOffline} wachtend)`}
             </p>
           </div>
         )}
         {showOnboarding && !isManager && (
-          <div className="mx-4 mt-3 rounded-2xl p-5 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: "var(--accent-light)" }}>👋</div>
+          <div className="mx-4 mt-3 rounded-2xl p-5 space-y-4" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: "rgba(63,255,139,0.1)" }}>👋</div>
             <div>
-              <p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Welkom bij TerreVolt Urenregistratie</p>
-              <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Boek hier je gewerkte uren per project. Je manager plant je in en keurt je uren goed.</p>
+              <p className="text-base font-bold" style={{ color: "#dae6ff" }}>Welkom bij TerreVolt Urenregistratie</p>
+              <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>Boek hier je gewerkte uren per project. Je manager plant je in en keurt je uren goed.</p>
             </div>
             <div className="space-y-2">
               {[
@@ -500,12 +500,12 @@ const Index = () => {
                 { step: "3", text: "Dien je uren in ter goedkeuring" },
               ].map(s => (
                 <div key={s.step} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "var(--accent)", color: "#fff" }}>{s.step}</div>
-                  <span className="text-sm" style={{ color: "var(--text-primary)" }}>{s.text}</span>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#3fff8b", color: "#fff" }}>{s.step}</div>
+                  <span className="text-sm" style={{ color: "#dae6ff" }}>{s.text}</span>
                 </div>
               ))}
             </div>
-            <button onClick={dismissOnboarding} style={{ marginTop: 12, fontSize: 11, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+            <button onClick={dismissOnboarding} style={{ marginTop: 12, fontSize: 11, color: "#a0abc3", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
               Niet meer tonen
             </button>
           </div>
@@ -513,15 +513,15 @@ const Index = () => {
 
         {/* Friday afternoon banner */}
         {showFridayBanner && (
-          <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
-            <p className="text-xs font-medium flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
+          <div className="mx-4 mt-3 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl" style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)" }}>
+            <p className="text-xs font-medium flex items-center gap-1" style={{ color: "#feb300" }}>
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Je hebt nog {conceptHours}u niet ingediend deze week.
             </p>
             <button
               onClick={submitAllConcepts}
               disabled={submittingAll}
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold shrink-0 transition-colors disabled:opacity-50"
-              style={{ background: "var(--accent)", color: "#fff" }}
+              style={{ background: "#3fff8b", color: "#fff" }}
             >
               Alles indienen <ArrowRight className="h-3 w-3" />
             </button>
@@ -533,16 +533,16 @@ const Index = () => {
           <div className="px-4 py-4 space-y-4 animate-fade-in">
             {/* Week navigation */}
             <div className="flex items-center justify-between">
-              <button onClick={goToPreviousWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+              <button onClick={goToPreviousWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
                 ‹
               </button>
               <div className="text-center">
-                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{weekLabel}</p>
-                <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>{weekLabel}</p>
+                <p className="text-[11px] mt-0.5" style={{ color: "#a0abc3" }}>
                   {totalHours}u geboekt deze week
                 </p>
               </div>
-              <button onClick={goToNextWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+              <button onClick={goToNextWeek} className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
                 ›
               </button>
             </div>
@@ -563,12 +563,12 @@ const Index = () => {
                     style={{
                       padding: "10px 0",
                       borderRadius: 12,
-                      background: isToday ? "var(--accent-light)" : "var(--bg-surface)",
-                      border: isToday ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+                      background: isToday ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
+                      border: isToday ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
                     }}
                   >
-                    <span className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{DAGEN[i]}</span>
-                    <span className={`text-sm font-bold`} style={{ color: isToday ? "var(--accent)" : "var(--text-primary)" }}>
+                    <span className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>{DAGEN[i]}</span>
+                    <span className={`text-sm font-bold`} style={{ color: isToday ? "#3fff8b" : "#dae6ff" }}>
                       {d.getDate()}
                     </span>
                     {hasEntries ? (
@@ -577,16 +577,16 @@ const Index = () => {
                           className="w-1.5 h-1.5 rounded-full"
                           style={{
                             background: dayEntries.some((e) => e.status === "afgekeurd")
-                              ? "var(--danger)"
+                              ? "#ff716c"
                               : dayEntries.some((e) => e.status === "goedgekeurd")
-                              ? "var(--success)"
-                              : "var(--warn-dot)",
+                              ? "#3fff8b"
+                              : "#feb300",
                           }}
                         />
-                        <span className="text-[9px] font-bold" style={{ color: "var(--text-muted)" }}>{dayHours}u</span>
+                        <span className="text-[9px] font-bold" style={{ color: "#a0abc3" }}>{dayHours}u</span>
                       </div>
                     ) : (
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--border)" }} />
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(106,118,140,0.15)" }} />
                     )}
                   </button>
                 );
@@ -604,7 +604,7 @@ const Index = () => {
                 if (dayEntries.length === 0) return null;
                 return (
                   <div key={key} className="space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>
+                    <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "#a0abc3" }}>
                       {DAGEN[i]} {d.getDate()} {MAANDEN[d.getMonth()]}
                     </p>
                     {dayEntries.map((entry) => (
@@ -615,9 +615,9 @@ const Index = () => {
               })}
               {weekEntries.length === 0 && !showOnboarding && (
                 <div className="text-center py-12">
-                  <ClipboardList className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
-                  <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Geen uren geboekt</p>
-                  <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Druk op + om uren toe te voegen</p>
+                  <ClipboardList className="h-8 w-8 mx-auto mb-2" style={{ color: "#a0abc3" }} />
+                  <p className="text-sm font-medium" style={{ color: "#dae6ff" }}>Geen uren geboekt</p>
+                  <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>Druk op + om uren toe te voegen</p>
                 </div>
               )}
             </div>
@@ -630,13 +630,13 @@ const Index = () => {
           <div className="px-4 py-4 space-y-4 animate-fade-in">
             <div className="flex gap-2">
               {[
-                { label: "Goedgekeurd", value: goedgekeurdUren + "u", color: "var(--success)" },
-                { label: "In behandeling", value: String(ingediendCount), color: "var(--warn-dot)" },
-                { label: "Afgekeurd", value: String(afgekeurdCount), color: "var(--danger)" },
+                { label: "Goedgekeurd", value: goedgekeurdUren + "u", color: "#3fff8b" },
+                { label: "In behandeling", value: String(ingediendCount), color: "#feb300" },
+                { label: "Afgekeurd", value: String(afgekeurdCount), color: "#ff716c" },
               ].map((s, i) => (
-                <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
                   <p className="text-lg font-bold" style={{ color: s.color }}>{s.value}</p>
-                  <p className="text-[10px] mt-0.5 font-medium" style={{ color: "var(--text-muted)" }}>{s.label}</p>
+                  <p className="text-[10px] mt-0.5 font-medium" style={{ color: "#a0abc3" }}>{s.label}</p>
                 </div>
               ))}
             </div>
@@ -647,7 +647,7 @@ const Index = () => {
               ))}
               {allEntries.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="text-sm" style={{ color: "var(--text-muted)" }}>Nog geen uren geregistreerd</p>
+                  <p className="text-sm" style={{ color: "#a0abc3" }}>Nog geen uren geregistreerd</p>
                 </div>
               )}
             </div>

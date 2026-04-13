@@ -161,7 +161,7 @@ export default function Medewerkers() {
     toast.success("Inloggegevens gekopieerd!");
   };
 
-  if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-base)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
+  if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
 
   const monteurs = employees.filter(e => e.role !== "manager" && e.role !== "–");
   const managers = employees.filter(e => e.role === "manager");
@@ -221,12 +221,12 @@ export default function Medewerkers() {
         </div>
       </PageShell>
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}>
+        <AlertDialogContent style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(61,72,93,0.3)" }}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2" style={{ color: "var(--warning)" }}>
+            <AlertDialogTitle className="flex items-center gap-2" style={{ color: "#feb300" }}>
               <AlertTriangle className="h-5 w-5" /> Uitzonderingsgeval bevestigen
             </AlertDialogTitle>
-            <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+            <AlertDialogDescription style={{ color: "#a0abc3" }}>
               Je staat op het punt een medewerker aan te maken <strong>buiten de kandidaat-flow</strong> om. 
               Normaal gesproken worden nieuwe medewerkers aangemaakt via <strong>Kandidaten → Contract → Ondertekenen</strong>.
               <br /><br />
@@ -234,8 +234,8 @@ export default function Medewerkers() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>Annuleren</AlertDialogCancel>
-            <AlertDialogAction onClick={doCreate} style={{ background: "var(--warning)", color: "#000" }}>Ja, toch aanmaken</AlertDialogAction>
+            <AlertDialogCancel style={{ background: "#142640", color: "#a0abc3", border: "1px solid rgba(61,72,93,0.3)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogAction onClick={doCreate} style={{ background: "#feb300", color: "#000" }}>Ja, toch aanmaken</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -428,12 +428,12 @@ export default function Medewerkers() {
     </PageShell>
 
     <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-      <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}>
+      <AlertDialogContent style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(61,72,93,0.3)" }}>
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2" style={{ color: "var(--warning)" }}>
+          <AlertDialogTitle className="flex items-center gap-2" style={{ color: "#feb300" }}>
             <AlertTriangle className="h-5 w-5" /> Uitzonderingsgeval bevestigen
           </AlertDialogTitle>
-          <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+          <AlertDialogDescription style={{ color: "#a0abc3" }}>
             Je staat op het punt een medewerker aan te maken <strong>buiten de kandidaat-flow</strong> om. 
             Normaal gesproken worden nieuwe medewerkers aangemaakt via <strong>Kandidaten → Contract → Ondertekenen</strong>.
             <br /><br />
@@ -441,8 +441,8 @@ export default function Medewerkers() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>Annuleren</AlertDialogCancel>
-          <AlertDialogAction onClick={doCreate} style={{ background: "var(--warning)", color: "#000" }}>Ja, toch aanmaken</AlertDialogAction>
+          <AlertDialogCancel style={{ background: "#142640", color: "#a0abc3", border: "1px solid rgba(61,72,93,0.3)" }}>Annuleren</AlertDialogCancel>
+          <AlertDialogAction onClick={doCreate} style={{ background: "#feb300", color: "#000" }}>Ja, toch aanmaken</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
