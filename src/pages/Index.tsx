@@ -183,23 +183,7 @@ const Index = () => {
   return (
     <div {...swipeHandlers} style={{ position: "relative", minHeight: "100vh", background: "#060d18", fontFamily: "Inter, sans-serif" }}>
 
-      {/* ── HEADER ── */}
-      <header style={{ position: "sticky", top: 0, zIndex: 30, background: "rgba(6,13,24,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(106,118,140,0.12)", padding: "12px 20px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span className="material-symbols-outlined fill-icon" style={{ fontSize: 22, color: "#3fff8b" }}>bolt</span>
-            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 13, letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)", textTransform: "uppercase" as const }}>TERREVOLT UREN</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #3fff8b, #16a34a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#005d2c" }}>
-              {profile?.full_name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
-            {afgekeurdCount > 0 && (
-              <div style={{ position: "absolute", top: -2, right: -2, width: 10, height: 10, borderRadius: "50%", background: "#ff716c", border: "2px solid #060d18" }} />
-            )}
-          </div>
-        </div>
-      </header>
+      <MobileHeader initials={profile?.full_name?.charAt(0)?.toUpperCase() || "U"} />
 
       {/* ── MAIN CONTENT ── */}
       <PullToRefresh onRefresh={handleRefresh}>
