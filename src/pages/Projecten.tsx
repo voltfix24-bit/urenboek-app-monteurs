@@ -219,60 +219,168 @@ export default function Projecten() {
 
       {/* MOBILE */}
       <div className="lg:hidden">
-        <div className="min-h-screen" style={{ background: "var(--bg-base)", maxWidth: 430, margin: "0 auto" }}>
-          <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-            <div className="flex items-center gap-3">
-              <button onClick={() => navigate("/")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}><ArrowLeft className="h-4 w-4" /></button>
-              <h1 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Projecten</h1>
-              <div className="flex-1" />
-              <button onClick={() => navigate("/opdrachtgevers")} className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1" style={{ background: "var(--bg-surface-2)", color: "var(--text-secondary)" }}><Building2 className="h-3.5 w-3.5" /> Opdrachtgevers</button>
-              <button onClick={() => { setShowAdd(true); setEditId(null); setExpandedId(null); setForm(emptyForm); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--success-light)", border: "1px solid var(--success-border)" }}><Plus className="h-4 w-4" style={{ color: "var(--success)" }} /></button>
+        <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 140 }}>
+          {/* HEADER */}
+          <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="material-symbols-outlined" style={{ color: "#3fff8b", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
+              <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", letterSpacing: "0.1em", textTransform: "uppercase" }}>TERREVOLT UREN</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button onClick={() => navigate("/mededelingen")} style={{ background: "none", border: "none", cursor: "pointer", color: "#a0abc3", display: "flex" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 24 }}>notifications</span>
+              </button>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#3fff8b" }}>HG</div>
             </div>
           </header>
-          <div className="px-4 py-4 space-y-4 pb-24">
-            {showAdd && (
-              <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>
-                <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Nieuw project</h3>
-                {formFields}
-                <div className="flex gap-2 pt-1">
-                  <button onClick={() => setShowAdd(false)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-base)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>Annuleren</button>
-                  <button onClick={() => handleSubmit(true)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>Toevoegen</button>
-                </div>
+
+          <main style={{ padding: "24px 20px" }}>
+            {/* SECTION HEADER */}
+            <section style={{ marginBottom: 20 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#3fff8b", marginBottom: 4 }}>PROJECTEN</p>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff" }}>{activeProjects.length} actieve projecten</h2>
+              </div>
+            </section>
+
+            {/* SEARCH */}
+            <div style={{ position: "relative", marginBottom: 16 }}>
+              <span className="material-symbols-outlined" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 20, color: "#a0abc3" }}>search</span>
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Zoek op naam, adres of ID..." style={{ width: "100%", height: 52, paddingLeft: 44, paddingRight: 16, background: "#000000", border: "none", borderRadius: 14, color: "#dae6ff", fontFamily: "Inter", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+            </div>
+
+            {/* FILTER CHIPS */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 24, overflowX: "auto", scrollbarWidth: "none" }}>
+              {[
+                { key: "alle", label: "Alles" },
+                { key: "actief", label: `Actief (${activeProjects.length})` },
+                { key: "concept", label: `Concept (${projects.filter(p => p.status === "concept").length})` },
+                { key: "afgerond", label: "Voltooid" },
+              ].map(f => (
+                <button key={f.key} onClick={() => setStatusFilter(f.key)} style={{
+                  padding: "8px 16px", borderRadius: 9999,
+                  border: statusFilter === f.key ? "none" : "1px solid rgba(255,255,255,0.07)",
+                  background: statusFilter === f.key ? "#3fff8b" : "#152640",
+                  color: statusFilter === f.key ? "#005d2c" : "#a0abc3",
+                  fontFamily: "Inter", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap",
+                }}>{f.label}</button>
+              ))}
+            </div>
+
+            {/* LOADING */}
+            {loading && <div style={{ textAlign: "center", padding: 40, color: "#a0abc3" }}>Laden...</div>}
+
+            {/* PROJECT CARDS */}
+            {!loading && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {projects
+                  .filter(p => {
+                    if (statusFilter === "actief") return p.active;
+                    if (statusFilter === "concept") return p.status === "concept";
+                    if (statusFilter === "afgerond") return !p.active;
+                    return true;
+                  })
+                  .filter(p => !searchQuery || p.naam?.toLowerCase().includes(searchQuery.toLowerCase()) || p.nummer?.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((project) => {
+                    const isConcept = project.status === "concept";
+                    const borderColor = isConcept ? "#feb300" : "#3fff8b";
+                    return (
+                      <div key={project.id} onClick={() => setSelectedId(project.id)} style={{
+                        background: "linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))",
+                        backdropFilter: "blur(12px)", borderRadius: 20,
+                        border: "1px solid rgba(106,118,140,0.15)", borderLeft: `4px solid ${borderColor}`,
+                        overflow: "hidden", cursor: "pointer",
+                      }}>
+                        <div style={{ padding: 20 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                            <div>
+                              <p style={{ fontSize: 10, fontFamily: "Inter", fontWeight: 700, color: "#a0abc3", fontVariant: "tabular-nums", marginBottom: 4 }}>ID #{project.nummer}</p>
+                              <h3 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 16, color: "#dae6ff", lineHeight: 1.3 }}>{project.naam}</h3>
+                              {project.stad && (
+                                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
+                                  <span className="material-symbols-outlined" style={{ fontSize: 14, color: "#a0abc3" }}>location_on</span>
+                                  <span style={{ fontSize: 13, color: "#a0abc3", fontFamily: "Inter" }}>{project.stad}</span>
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ padding: "4px 12px", borderRadius: 9999, background: isConcept ? "rgba(254,179,0,0.1)" : "rgba(63,255,139,0.1)", border: `1px solid ${borderColor}50` }}>
+                              <span style={{ fontSize: 9, fontWeight: 800, fontFamily: "Inter", textTransform: "uppercase", color: borderColor }}>
+                                {isConcept ? "CONCEPT" : project.active ? "ACTIEF" : "AFGEROND"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Progress */}
+                          {!isConcept && (
+                            <div style={{ marginBottom: 8 }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                                <span style={{ fontSize: 12, color: "#a0abc3", fontFamily: "Inter" }}>
+                                  {margeMap.get(project.id)?.omzet ? `€ ${margeMap.get(project.id)!.omzet.toLocaleString("nl")}` : "0 uur geboekt"}
+                                </span>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: "#3fff8b", fontFamily: "Inter" }}>
+                                  {margeMap.get(project.id)?.marge ? `${Math.round(margeMap.get(project.id)!.marge)}%` : "—"}
+                                </span>
+                              </div>
+                              <div style={{ height: 4, background: "#000", borderRadius: 9999, overflow: "hidden" }}>
+                                <div style={{ height: "100%", width: `${Math.min(100, margeMap.get(project.id)?.marge || 0)}%`, background: "#3fff8b", borderRadius: 9999, boxShadow: "0 0 8px rgba(63,255,139,0.5)" }} />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Concept warning */}
+                          {isConcept && (
+                            <div style={{ background: "rgba(254,179,0,0.08)", borderTop: "1px solid rgba(254,179,0,0.15)", padding: "10px 0 0", display: "flex", alignItems: "center", gap: 8 }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#feb300", fontVariationSettings: "'FILL' 1" }}>warning</span>
+                              <span style={{ fontSize: 12, color: "#feb300", fontFamily: "Inter", fontWeight: 600 }}>Nog geen monteurs ingepland</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             )}
-            {loading ? <ListSkeleton count={4} ItemSkeleton={ProjectCardSkeleton} /> : (
-              <>
-                <div className="space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Actief ({activeProjects.length})</p>
-                  {activeProjects.map(p => (
-                    <ProjectCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isManager={isManager}
-                      isEditing={editId === p.id} isExpanded={expandedId === p.id} isConfirmingDelete={confirmDeleteId === p.id}
-                      renderFormFields={() => formFields}
-                      onEdit={() => startEdit(p)} onCancel={() => { setEditId(null); setForm(emptyForm); }}
-                      onSave={() => handleSubmit(false, p.id)} onToggle={() => toggleActive(p)}
-                      onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)}
-                      onToggleExpand={() => setExpandedId(expandedId === p.id ? null : p.id)} />
-                  ))}
+          </main>
+
+          {/* FAB */}
+          <button onClick={() => { setShowAdd(true); setEditId(null); setExpandedId(null); setForm(emptyForm); }} style={{
+            position: "fixed", bottom: 96, left: "50%", transform: "translateX(-50%)", zIndex: 40,
+            background: "#3fff8b", color: "#005d2c", border: "none", borderRadius: 9999,
+            height: 56, padding: "0 28px", display: "flex", alignItems: "center", gap: 8,
+            fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase",
+            letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 8px 24px rgba(63,255,139,0.3)", whiteSpace: "nowrap",
+          }}>
+            <Plus size={20} /> NIEUW PROJECT
+          </button>
+
+          {/* NEW PROJECT BOTTOM SHEET */}
+          {showAdd && (
+            <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+              <div onClick={() => setShowAdd(false)} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
+              <div style={{ position: "relative", background: "#030e20", borderRadius: "40px 40px 0 0", padding: 24, paddingBottom: 48, borderTop: "1px solid rgba(255,255,255,0.1)", maxHeight: "90vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+                <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 24px" }} />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                  <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 24, color: "#dae6ff" }}>Nieuw project</h2>
+                  <button onClick={() => setShowAdd(false)} style={{ width: 40, height: 40, borderRadius: "50%", background: "#142640", border: "none", color: "#a0abc3", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                    <X size={20} />
+                  </button>
                 </div>
-                {inactiveProjects.length > 0 && (
-                  <div className="space-y-2 pt-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Inactief ({inactiveProjects.length})</p>
-                    {inactiveProjects.map(p => (
-                      <ProjectCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} isManager={isManager}
-                        isEditing={editId === p.id} isExpanded={expandedId === p.id} isConfirmingDelete={confirmDeleteId === p.id}
-                        renderFormFields={() => formFields}
-                        onEdit={() => startEdit(p)} onCancel={() => { setEditId(null); setForm(emptyForm); }}
-                        onSave={() => handleSubmit(false, p.id)} onToggle={() => toggleActive(p)}
-                        onDelete={() => handleDelete(p)} onCancelDelete={() => setConfirmDeleteId(null)}
-                        onToggleExpand={() => setExpandedId(expandedId === p.id ? null : p.id)} />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+                <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} />
+                <button onClick={() => handleSubmit(true)} style={{
+                  width: "100%", height: 64, borderRadius: 16, background: "#3fff8b", border: "none", color: "#005d2c",
+                  fontFamily: "Manrope", fontWeight: 800, fontSize: 16, textTransform: "uppercase", letterSpacing: "0.1em",
+                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                  boxShadow: "0 8px 32px rgba(63,255,139,0.2)", marginTop: 24,
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  PROJECT AANMAKEN
+                </button>
+              </div>
+            </div>
+          )}
+
+          <BottomNav badges={badges} />
         </div>
-        <BottomNav badges={badges} />
       </div>
 
       {intakeProjectId && (() => {
