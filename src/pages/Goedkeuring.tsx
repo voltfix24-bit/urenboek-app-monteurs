@@ -553,7 +553,7 @@ export default function Goedkeuring() {
 
           {/* EMPTY STATE */}
           {!loading && monteurGroups.length === 0 && (
-            <EmptyState icon={<CheckCheck />} title="Alles behandeld" description="Er zijn geen openstaande weekstaten voor deze week." />
+            <EmptyState icoon="✓" titel="Alles behandeld" subtitel="Er zijn geen openstaande weekstaten voor deze week." />
           )}
         </main>
 
