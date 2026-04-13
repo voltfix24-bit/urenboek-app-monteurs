@@ -360,7 +360,7 @@ export default function Dashboard() {
                             </p>
                           </div>
                         </div>
-                        <div style={{ display: "flex", gap: 6, shrinkContent: 0 }}>
+                        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                           <button onClick={() => handleApprove(e.id)} style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", cursor: "pointer" }}>
                             <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#3fff8b", fontVariationSettings: "'FILL' 1" }}>check</span>
                           </button>
