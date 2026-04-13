@@ -170,160 +170,266 @@ export default function Medewerkers() {
     ? monteurs.filter(e => e.account_status === "onboarding")
     : monteurs;
 
-  const listContent = (
-    <>
-      {/* Filter chips */}
-      <div className="flex gap-2">
-        {(["alle", "verificatie"] as const).map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-colors"
-            style={{
-              background: filter === f ? (f === "verificatie" ? "var(--warn-light)" : "var(--accent-light)") : "var(--bg-surface)",
-              border: filter === f ? (f === "verificatie" ? "1px solid var(--warn-border)" : "1px solid var(--accent-border)") : "1px solid var(--border)",
-              color: filter === f ? (f === "verificatie" ? "var(--warn-text)" : "var(--accent)") : "var(--text-muted)",
-            }}
-          >
-            {f === "alle" ? `Alle (${monteurs.length + managers.length})` : `Verificatie nodig (${verificatieCount})`}
-          </button>
-        ))}
-      </div>
-      {showAdd && (
-        <>
-          <div className="rounded-xl px-3 py-2.5 flex items-start gap-2 animate-slide-up" style={{ background: "var(--warning-light)", border: "1px solid var(--warning-border)" }}>
-            <span className="text-sm" style={{ color: "var(--warning)" }}>⚠️ Dit formulier is alleen bedoeld voor uitzonderingsgevallen. Nieuwe medewerkers worden normaal aangemaakt via <strong>Kandidaten → Contract → Ondertekenen</strong>.</span>
-          </div>
-          <NieuweGebruikerForm voornaam={voornaam} setVoornaam={setVoornaam} achternaam={achternaam} setAchternaam={setAchternaam}
-            email={email} setEmail={setEmail} telefoon={telefoon} setTelefoon={setTelefoon}
-            adres={adres} setAdres={setAdres} role={role} setRole={setRole}
-            uurtarief={uurtarief} setUurtarief={setUurtarief} rijbewijs={rijbewijs} setRijbewijs={setRijbewijs}
-            contractEinddatum={contractEinddatum} setContractEinddatum={setContractEinddatum}
-            noodcontactNaam={noodcontactNaam} setNoodcontactNaam={setNoodcontactNaam}
-            noodcontactTel={noodcontactTel} setNoodcontactTel={setNoodcontactTel}
-            inviteMode={inviteMode} setInviteMode={setInviteMode}
-            password={password} setPassword={setPassword} showPw={showPw} setShowPw={setShowPw}
-            generatePassword={generatePassword} loading={loading} onSubmit={handleCreate}
-            formErrors={formErrors} clearError={(f: string) => setFormErrors(prev => { const n = { ...prev }; delete n[f]; return n; })} />
-        </>
-      )}
+  const weekNum = (() => {
+    const d = new Date();
+    const oneJan = new Date(d.getFullYear(), 0, 1);
+    return Math.ceil(((d.getTime() - oneJan.getTime()) / 86400000 + oneJan.getDay() + 1) / 7);
+  })();
 
-      {createdUsers.length > 0 && (
-        <div className="rounded-2xl overflow-hidden animate-slide-up" style={{ background: "var(--bg-surface)", border: "1px solid var(--accent-border)" }}>
-          <div className="px-4 py-2.5" style={{ background: "var(--accent-light)" }}>
-            <span className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Zojuist aangemaakt</span>
-          </div>
-          <div className="p-3 space-y-2">
-            {createdUsers.map((u, i) => (
-              <div key={i} className="p-3 rounded-xl space-y-2" style={{ background: "var(--bg-base)", border: "1px solid var(--border)" }}>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{u.fullName}</p>
-                    <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{u.email} · {roleLabels[u.role]}</p>
-                  </div>
-                  {u.inviteOnly ? (
-                    <span className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{ background: "var(--warn-bg)", color: "var(--warn-text)" }}>📧 Uitgenodigd</span>
-                  ) : (
-                    <button onClick={() => copyCredentials(u)} className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-                      <Copy className="h-3 w-3" /> Kopieer
-                    </button>
-                  )}
-                </div>
-                {!u.inviteOnly && u.password && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>Wachtwoord:</span>
-                    <code className="text-[11px] px-2 py-0.5 rounded-md font-mono" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-primary)" }}>
-                      {showPasswords[i] ? u.password : "••••••••••"}
-                    </code>
-                    <button className="w-6 h-6 flex items-center justify-center" style={{ color: "var(--text-muted)" }} onClick={() => setShowPasswords(prev => ({ ...prev, [i]: !prev[i] }))}>
-                      {showPasswords[i] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                    </button>
-                  </div>
-                )}
+  // Detail view
+  if (selectedEmployee) {
+    return (
+      <>
+      <PageShell>
+        <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 120 }}>
+          <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={() => setSelectedEmployee(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3fff8b", display: "flex" }}>
+              <ArrowLeft size={24} />
+            </button>
+            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              {selectedEmployee.full_name}
+            </span>
+          </header>
+          <main style={{ padding: "24px 20px" }}>
+            {/* HERO CARD */}
+            <div style={{ background: "linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))", borderRadius: 24, padding: "32px 24px", marginBottom: 20, display: "flex", flexDirection: "column", alignItems: "center", position: "relative", overflow: "hidden", border: "1px solid rgba(106,118,140,0.15)" }}>
+              <div style={{ position: "absolute", top: -40, left: "50%", transform: "translateX(-50%)", width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle, rgba(63,255,139,0.15), transparent)", pointerEvents: "none" }} />
+              <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 800, fontSize: 24, color: "#005d2c", marginBottom: 16, boxShadow: "0 0 30px rgba(63,255,139,0.2)", position: "relative", zIndex: 1 }}>
+                {selectedEmployee.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("")}
               </div>
-            ))}
-          </div>
+              <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 22, color: "#dae6ff", marginBottom: 8, position: "relative", zIndex: 1 }}>{selectedEmployee.full_name}</h2>
+              <div style={{ padding: "4px 14px", borderRadius: 9999, background: "rgba(63,255,139,0.15)", border: "1px solid rgba(63,255,139,0.3)", marginBottom: 6, position: "relative", zIndex: 1 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "Inter", color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  {roleLabels[selectedEmployee.role] || selectedEmployee.role}
+                </span>
+              </div>
+              <span style={{ fontSize: 12, color: "#a0abc3", fontFamily: "Inter", position: "relative", zIndex: 1 }}>TerreVolt BV</span>
+            </div>
+
+            {/* DETAIL CONTENT */}
+            <MedewerkerDetail emp={selectedEmployee} certs={employeeCerts} onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)} onRefresh={() => { refetchMedewerkers(); setSelectedEmployee(null); }} onDelete={handleDelete} />
+
+            {/* ACTION BUTTONS */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 20 }}>
+              <button onClick={() => navigate("/mededelingen")} style={{ height: 56, borderRadius: 16, background: "transparent", border: "2px solid rgba(254,179,0,0.4)", color: "#feb300", fontFamily: "Inter", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>chat_bubble</span>
+                Stuur bericht
+              </button>
+            </div>
+          </main>
         </div>
-      )}
+      </PageShell>
+      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)" }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2" style={{ color: "var(--warning)" }}>
+              <AlertTriangle className="h-5 w-5" /> Uitzonderingsgeval bevestigen
+            </AlertDialogTitle>
+            <AlertDialogDescription style={{ color: "var(--text-secondary)" }}>
+              Je staat op het punt een medewerker aan te maken <strong>buiten de kandidaat-flow</strong> om. 
+              Normaal gesproken worden nieuwe medewerkers aangemaakt via <strong>Kandidaten → Contract → Ondertekenen</strong>.
+              <br /><br />
+              Weet je zeker dat je wilt doorgaan?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogAction onClick={doCreate} style={{ background: "var(--warning)", color: "#000" }}>Ja, toch aanmaken</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      </>
+    );
+  }
 
-      {filter === "alle" && managers.length > 0 && (
-        <>
-          <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Managers ({managers.length})</p>
-          <div className="space-y-1.5">
-            {managers.map((emp, i) => (
-              <MedewerkerKaart key={emp.user_id} emp={emp} idx={i} isSelected={selectedEmployee?.user_id === emp.user_id} onSelect={() => selectEmployee(emp)} />
-            ))}
-          </div>
-        </>
-      )}
-
-      {filteredMonteurs.length > 0 && (
-        <>
-          <p className="text-[11px] font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>Medewerkers ({filteredMonteurs.length})</p>
-          <div className="space-y-1.5">
-            {filteredMonteurs.map((emp, i) => (
-              <MedewerkerKaart key={emp.user_id} emp={emp} idx={i + managers.length} isSelected={selectedEmployee?.user_id === emp.user_id} onSelect={() => selectEmployee(emp)} />
-            ))}
-          </div>
-        </>
-      )}
-
-      {medewerkersLoading && employees.length === 0 && (
-        <ListSkeleton count={5} ItemSkeleton={MedewerkerSkeleton} />
-      )}
-
-      {!medewerkersLoading && employees.length === 0 && (
-        <EmptyState icoon="👥" titel="Geen medewerkers" subtitel="Voeg een medewerker toe om te beginnen." />
-      )}
-    </>
-  );
-
+  // Main list view
   return (
     <>
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <HeaderLogo />
-            <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Team</span>
+      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 140 }}>
+        {/* HEADER */}
+        <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span className="material-symbols-outlined" style={{ color: "#3fff8b", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
+            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", letterSpacing: "0.1em", textTransform: "uppercase" }}>TERREVOLT UREN</span>
           </div>
-          <button onClick={() => { setShowAdd(!showAdd); if (showAdd) resetForm(); }} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{
-            background: showAdd ? "var(--danger-light)" : "var(--success-light)",
-            border: showAdd ? "1px solid var(--danger-border)" : "1px solid var(--success-border)",
-            color: showAdd ? "var(--danger)" : "var(--success)",
-          }}>
-            {showAdd ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          </button>
-        </div>
-      </header>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={() => { setShowAdd(!showAdd); if (showAdd) resetForm(); }} style={{ width: 36, height: 36, borderRadius: "50%", background: showAdd ? "rgba(255,113,108,0.15)" : "rgba(63,255,139,0.15)", border: showAdd ? "1px solid rgba(255,113,108,0.3)" : "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAdd ? "#ff716c" : "#3fff8b" }}>
+              {showAdd ? <X size={18} /> : <Plus size={18} />}
+            </button>
+          </div>
+        </header>
 
-      {isDesktop ? (
-        <div className="flex flex-1 overflow-hidden">
-          <div className="w-[40%] border-r overflow-y-auto p-4 space-y-4" style={{ borderColor: "var(--border)" }}>{listContent}</div>
-          <div className="w-[60%] overflow-y-auto p-4">
-            {selectedEmployee ? (
-              <MedewerkerDetail emp={selectedEmployee} certs={employeeCerts} onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)} onRefresh={() => { refetchMedewerkers(); setSelectedEmployee(null); }} onDelete={handleDelete} />
-            ) : (
-              <div className="flex items-center justify-center h-full" style={{ color: "var(--text-muted)" }}>
-                <p className="text-sm">Selecteer een medewerker</p>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <>
-          {selectedEmployee ? (
-            <main className="px-4 py-4 space-y-4">
-              <button onClick={() => setSelectedEmployee(null)} className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--accent)" }}>
-                <ArrowLeft className="h-4 w-4" /> Terug naar lijst
+        <main style={{ padding: "24px 20px" }}>
+          {/* SECTION HEADER */}
+          <section style={{ marginBottom: 20 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#3fff8b", marginBottom: 4 }}>TEAM OVERZICHT</p>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+              <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff" }}>{employees.length} medewerkers</h2>
+              <span style={{ fontSize: 13, color: "#a0abc3", fontFamily: "Inter" }}>Week {weekNum}</span>
+            </div>
+          </section>
+
+          {/* FILTER CHIPS */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 20, overflowX: "auto", scrollbarWidth: "none" }}>
+            {(["alle", "verificatie"] as const).map(f => (
+              <button key={f} onClick={() => setFilter(f)} style={{
+                padding: "8px 16px", borderRadius: 9999,
+                border: filter === f ? "2px solid #3fff8b" : "1px solid rgba(255,255,255,0.07)",
+                background: filter === f ? "rgba(63,255,139,0.1)" : "#102038",
+                color: filter === f ? "#3fff8b" : "#a0abc3",
+                fontFamily: "Inter", fontWeight: 700, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap",
+              }}>
+                {f === "alle" ? `Alle (${monteurs.length + managers.length})` : `Verificatie (${verificatieCount})`}
               </button>
-              <MedewerkerDetail emp={selectedEmployee} certs={employeeCerts} onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)} onRefresh={() => { refetchMedewerkers(); setSelectedEmployee(null); }} onDelete={handleDelete} />
-            </main>
-          ) : (
-            <main className="px-4 py-4 space-y-4">{listContent}</main>
+            ))}
+          </div>
+
+          {/* ADD FORM */}
+          {showAdd && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)", borderRadius: 16, padding: "14px 16px", marginBottom: 12, display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <AlertTriangle size={16} style={{ color: "#feb300", marginTop: 2, flexShrink: 0 }} />
+                <span style={{ fontSize: 12, fontFamily: "Inter", color: "#feb300" }}>Dit formulier is alleen bedoeld voor uitzonderingsgevallen. Nieuwe medewerkers worden normaal aangemaakt via <strong>Kandidaten → Contract → Ondertekenen</strong>.</span>
+              </div>
+              <NieuweGebruikerForm voornaam={voornaam} setVoornaam={setVoornaam} achternaam={achternaam} setAchternaam={setAchternaam}
+                email={email} setEmail={setEmail} telefoon={telefoon} setTelefoon={setTelefoon}
+                adres={adres} setAdres={setAdres} role={role} setRole={setRole}
+                uurtarief={uurtarief} setUurtarief={setUurtarief} rijbewijs={rijbewijs} setRijbewijs={setRijbewijs}
+                contractEinddatum={contractEinddatum} setContractEinddatum={setContractEinddatum}
+                noodcontactNaam={noodcontactNaam} setNoodcontactNaam={setNoodcontactNaam}
+                noodcontactTel={noodcontactTel} setNoodcontactTel={setNoodcontactTel}
+                inviteMode={inviteMode} setInviteMode={setInviteMode}
+                password={password} setPassword={setPassword} showPw={showPw} setShowPw={setShowPw}
+                generatePassword={generatePassword} loading={loading} onSubmit={handleCreate}
+                formErrors={formErrors} clearError={(f: string) => setFormErrors(prev => { const n = { ...prev }; delete n[f]; return n; })} />
+            </div>
           )}
-        </>
-      )}
+
+          {/* CREATED USERS */}
+          {createdUsers.length > 0 && (
+            <div style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(63,255,139,0.3)", borderRadius: 16, marginBottom: 20, overflow: "hidden" }}>
+              <div style={{ padding: "10px 16px", background: "rgba(63,255,139,0.08)" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "Inter", color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.1em" }}>Zojuist aangemaakt</span>
+              </div>
+              <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                {createdUsers.map((u, i) => (
+                  <div key={i} style={{ padding: 12, borderRadius: 12, background: "#030e20", border: "1px solid rgba(61,72,93,0.3)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                      <div>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: "#dae6ff", fontFamily: "Inter" }}>{u.fullName}</p>
+                        <p style={{ fontSize: 11, color: "#a0abc3", fontFamily: "Inter" }}>{u.email} · {roleLabels[u.role]}</p>
+                      </div>
+                      {u.inviteOnly ? (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#feb300", background: "rgba(254,179,0,0.1)", padding: "3px 8px", borderRadius: 9999 }}>📧 Uitgenodigd</span>
+                      ) : (
+                        <button onClick={() => copyCredentials(u)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 10px", borderRadius: 8, background: "#102038", border: "1px solid rgba(61,72,93,0.3)", color: "#a0abc3", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                          <Copy size={12} /> Kopieer
+                        </button>
+                      )}
+                    </div>
+                    {!u.inviteOnly && u.password && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+                        <span style={{ fontSize: 11, color: "#a0abc3" }}>Wachtwoord:</span>
+                        <code style={{ fontSize: 11, padding: "2px 6px", borderRadius: 6, background: "#102038", border: "1px solid rgba(61,72,93,0.3)", color: "#dae6ff", fontFamily: "monospace" }}>
+                          {showPasswords[i] ? u.password : "••••••••••"}
+                        </code>
+                        <button style={{ color: "#a0abc3", background: "none", border: "none", cursor: "pointer", display: "flex" }} onClick={() => setShowPasswords(prev => ({ ...prev, [i]: !prev[i] }))}>
+                          {showPasswords[i] ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* MANAGERS */}
+          {filter === "alle" && managers.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 10, paddingLeft: 2 }}>Managers ({managers.length})</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {managers.map((emp) => {
+                  const initials = emp.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("") || "XX";
+                  return (
+                    <div key={emp.user_id} onClick={() => selectEmployee(emp)} style={{ background: "#061327", borderRadius: 14, borderLeft: "4px solid #3fff8b", padding: 16, cursor: "pointer" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 12, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 14, color: "#dae6ff", flexShrink: 0 }}>{initials}</div>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: 15, fontWeight: 700, fontFamily: "Inter", color: "#dae6ff", marginBottom: 2 }}>{emp.full_name}</p>
+                          <p style={{ fontSize: 11, color: "#a0abc3", fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.08em" }}>Manager</p>
+                        </div>
+                        <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#a0abc3" }}>chevron_right</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* MONTEURS */}
+          {filteredMonteurs.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 10, paddingLeft: 2 }}>Medewerkers ({filteredMonteurs.length})</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {filteredMonteurs.map((emp) => {
+                  const initials = emp.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("") || "XX";
+                  const isInactief = emp.account_status === "inactive";
+                  const isOnboarding = emp.account_status === "onboarding" || emp.account_status === "invited";
+                  const statusColor = isInactief ? "#a0abc3" : isOnboarding ? "#feb300" : "#3fff8b";
+                  const statusLabel = isInactief ? "INACTIEF" : isOnboarding ? "ONBOARDING" : "ACTIEF";
+                  const statusBg = isInactief ? "rgba(160,171,195,0.1)" : isOnboarding ? "rgba(254,179,0,0.1)" : "rgba(63,255,139,0.1)";
+                  return (
+                    <div key={emp.user_id} onClick={() => selectEmployee(emp)} style={{ background: "#061327", borderRadius: 14, borderLeft: `4px solid ${statusColor}`, padding: 16, cursor: "pointer", opacity: isInactief ? 0.6 : 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 12, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 14, color: "#dae6ff", flexShrink: 0 }}>{initials}</div>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: 15, fontWeight: 700, fontFamily: "Inter", color: "#dae6ff", marginBottom: 2 }}>{emp.full_name}</p>
+                          <p style={{ fontSize: 11, color: "#a0abc3", fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.08em" }}>{roleLabels[emp.role] || emp.role}</p>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ padding: "4px 10px", borderRadius: 9999, background: statusBg, border: `1px solid ${statusColor}50` }}>
+                            <span style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", color: statusColor }}>{statusLabel}</span>
+                          </div>
+                          <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#a0abc3" }}>chevron_right</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* LOADING / EMPTY */}
+          {medewerkersLoading && employees.length === 0 && (
+            <div style={{ textAlign: "center", padding: 40, color: "#a0abc3" }}>Laden...</div>
+          )}
+          {!medewerkersLoading && employees.length === 0 && (
+            <EmptyState icoon="👥" titel="Geen medewerkers" subtitel="Voeg een medewerker toe om te beginnen." />
+          )}
+
+          {/* SUMMARY BAR */}
+          <div style={{ position: "fixed", bottom: 72, left: 20, right: 20, zIndex: 40 }}>
+            <div style={{ background: "rgba(21,38,64,0.9)", backdropFilter: "blur(12px)", borderRadius: 9999, padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(61,72,93,0.3)" }}>
+              <div style={{ display: "flex", gap: 16 }}>
+                {[
+                  { color: "#3fff8b", label: `${employees.filter(e => e.account_status === "active").length} actief` },
+                  { color: "#feb300", label: `${employees.filter(e => e.account_status === "onboarding" || e.account_status === "invited").length} onboarding` },
+                  { color: "#a0abc3", label: `${employees.filter(e => e.account_status === "inactive").length} inactief` },
+                ].map(s => (
+                  <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: s.color }} />
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#dae6ff", fontFamily: "Inter" }}>{s.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
     </PageShell>
 
     <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
@@ -340,12 +446,8 @@ export default function Medewerkers() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>
-            Annuleren
-          </AlertDialogCancel>
-          <AlertDialogAction onClick={doCreate} style={{ background: "var(--warning)", color: "#000" }}>
-            Ja, toch aanmaken
-          </AlertDialogAction>
+          <AlertDialogCancel style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>Annuleren</AlertDialogCancel>
+          <AlertDialogAction onClick={doCreate} style={{ background: "var(--warning)", color: "#000" }}>Ja, toch aanmaken</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
