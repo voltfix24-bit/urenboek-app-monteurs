@@ -39,7 +39,7 @@ export const SPEC_CODES: SpecCode[] = [
   { code: 'R330050', omschrijving: 'Vrijschakelen trafo', eenheid: 'st', tarief: 300.81, groep: 'R33x' },
   { code: 'R340010', omschrijving: 'LS-rek ≤630kVA', eenheid: 'st', tarief: 2460.94, groep: 'R34x' },
   { code: 'R340020', omschrijving: 'LS-rek >630kVA', eenheid: 'st', tarief: 2808.08, groep: 'R34x' },
-  { code: 'R340030', omschrijving: 'Uitbreidingsrek', eenheid: 'st', tarief: 509.43, groep: 'R34x' },
+  { code: 'R340030', omschrijving: 'Uitbreidingsrek', eenheid: 'st', tarief: 606.46, groep: 'R34x' },
   { code: 'R340040', omschrijving: 'LS stroken', eenheid: 'st', tarief: 101.89, groep: 'R34x' },
   { code: 'R340050', omschrijving: 'LS-kabel aansluiten', eenheid: 'st', tarief: 165.55, groep: 'R34x' },
   { code: 'R340060', omschrijving: 'Zekeringen wisselen', eenheid: 'st', tarief: 73.45, groep: 'R34x' },
