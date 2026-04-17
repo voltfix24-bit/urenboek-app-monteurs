@@ -62,16 +62,24 @@ export default function Medewerkers() {
 
   useEffect(() => {
     if (medewerkersData.length > 0) {
-      setEmployees(medewerkersData.map((m) => ({
+      const mapped = medewerkersData.map((m) => ({
         id: m.id, user_id: m.user_id, full_name: m.full_name, role: m.role,
         uurtarief: m.uurtarief, telefoon: m.telefoon, adres: m.adres,
         rijbewijs: m.rijbewijs, account_status: m.account_status,
         invited_at: m.invited_at, activated_at: m.activated_at,
         noodcontact_naam: m.noodcontact_naam, noodcontact_tel: m.noodcontact_tel,
         contract_einddatum: m.contract_einddatum,
+        email: (m as any).email,
         kvk_nummer: (m as any).kvk_nummer, btw_nummer: (m as any).btw_nummer,
         iban: (m as any).iban, bedrijfsnaam: (m as any).bedrijfsnaam,
-      })));
+      }));
+      setEmployees(mapped);
+      // Sync selectedEmployee with refreshed data so name/field updates propagate
+      setSelectedEmployee((prev) => {
+        if (!prev) return prev;
+        const fresh = mapped.find((e) => e.id === prev.id);
+        return fresh ? { ...prev, ...fresh } : prev;
+      });
     }
   }, [medewerkersData]);
 
@@ -211,7 +219,7 @@ export default function Medewerkers() {
             </div>
 
             {/* DETAIL CONTENT */}
-            <MedewerkerDetail emp={selectedEmployee} certs={employeeCerts} onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)} onRefresh={() => { refetchMedewerkers(); setSelectedEmployee(null); }} onDelete={handleDelete} />
+            <MedewerkerDetail emp={selectedEmployee} certs={employeeCerts} onRefreshCerts={() => loadEmployeeCerts(selectedEmployee.id)} onRefresh={() => { refetchMedewerkers(); }} onDelete={handleDelete} />
 
             {/* ACTION BUTTONS */}
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 20 }}>
