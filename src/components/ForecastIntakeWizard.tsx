@@ -583,6 +583,34 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
     }
   };
 
+  if (confirmRedo) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
+        <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" style={{ background: "#030e20", border: "1px solid rgba(254,179,0,0.3)" }}>
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(254,179,0,0.1)" }}>
+              <AlertTriangle className="h-5 w-5" style={{ color: "#feb300" }} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Bestaande forecast overschrijven?</h3>
+              <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>
+                Dit project heeft al een forecast. Als je doorgaat worden de huidige gegevens vervangen door de nieuwe intake-resultaten.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+              Annuleren
+            </button>
+            <button onClick={() => setConfirmRedo(false)} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1" style={{ background: "#feb300" }}>
+              <RotateCcw className="h-4 w-4" /> Doorgaan
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
       <div className="w-full sm:max-w-lg max-h-[92vh] flex flex-col rounded-t-2xl sm:rounded-2xl" style={{ background: "#030e20" }}>
