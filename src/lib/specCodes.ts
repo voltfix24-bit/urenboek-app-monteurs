@@ -31,7 +31,7 @@ export const SPEC_CODES: SpecCode[] = [
   { code: 'R320010', omschrijving: 'Basis MS-installatie', eenheid: 'st', tarief: 10733.98, groep: 'R32x' },
   { code: 'R320020', omschrijving: 'Extra MS-veld', eenheid: 'st', tarief: 1696.24, groep: 'R32x' },
   { code: 'R320030', omschrijving: 'Ombouw MS → iMS', eenheid: 'st', tarief: 813.27, groep: 'R32x' },
-  { code: 'R320040', omschrijving: 'Compactstation', eenheid: 'st', tarief: 6493.32, groep: 'R32x' },
+  { code: 'R320040', omschrijving: 'Compactstation', eenheid: 'st', tarief: 7271.82, groep: 'R32x' },
   { code: 'R330010', omschrijving: 'Plaatsen transformator', eenheid: 'st', tarief: 1504.04, groep: 'R33x' },
   { code: 'R330020', omschrijving: 'Draaien transformator', eenheid: 'st', tarief: 1241.86, groep: 'R33x' },
   { code: 'R330030', omschrijving: 'Trafokabel betreedbaar', eenheid: 'st', tarief: 821.25, groep: 'R33x' },
