@@ -212,7 +212,11 @@ export default function Dashboard() {
     return "Goedenavond";
   })();
 
-  const userName = user?.user_metadata?.full_name?.split(" ")[0] || "Manager";
+  const userName =
+    profile?.full_name?.split(" ")[0]
+    || user?.user_metadata?.full_name
+      ?.split(" ")[0]
+    || "Manager";
 
   return (
     <PageShell>
