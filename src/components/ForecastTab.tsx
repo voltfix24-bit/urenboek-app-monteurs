@@ -51,6 +51,10 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     if (fc) {
       setForecastId(fc.id);
       setMethode(fc.methode);
+      // Load saved verwachte omzet
+      if ((fc as any).verwachte_omzet != null) {
+        setVerwachteOmzet(Number((fc as any).verwachte_omzet) || 0);
+      }
       const { data: r } = await supabase.from("forecast_regels").select("*").eq("forecast_id", fc.id);
       if (r) {
         const updatedRegels = r.map((regel: any) => {
@@ -107,6 +111,14 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     if (!data) return;
     setForecastId(data.id);
     setMethode(m);
+  }
+
+  async function saveVerwachteOmzet(omzet: number) {
+    if (!forecastId) return;
+    await supabase
+      .from("project_forecast")
+      .update({ verwachte_omzet: omzet } as any)
+      .eq("id", forecastId);
   }
 
   async function saveRegels(newRegels: ForecastRegel[]) {
@@ -176,7 +188,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     return <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} saved={saved} />;
   }
 
-  return <UrenEditor regels={regels} monteurs={monteurs} alleProfielen={alleProfielen} onUpdate={updateRegels} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} saved={saved} />;
+  return <UrenEditor regels={regels} monteurs={monteurs} alleProfielen={alleProfielen} onUpdate={updateRegels} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} saveVerwachteOmzet={saveVerwachteOmzet} saved={saved} />;
 }
 
 function StuksprijzenEditor({ regels, onUpdate, specCodes, saved }: { regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; specCodes: SpecCode[]; saved: boolean }) {
@@ -322,9 +334,9 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, saved }: { regels: Fo
   );
 }
 
-function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, verwachteOmzet, setVerwachteOmzet, saved }: {
+function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, verwachteOmzet, setVerwachteOmzet, saveVerwachteOmzet, saved }: {
   regels: ForecastRegel[]; monteurs: MonteurOption[]; alleProfielen: Map<string, string>; onUpdate: (r: ForecastRegel[]) => void;
-  verwachteOmzet: number; setVerwachteOmzet: (v: number) => void; saved: boolean;
+  verwachteOmzet: number; setVerwachteOmzet: (v: number) => void; saveVerwachteOmzet: (v: number) => void; saved: boolean;
 }) {
   const [selectedMonteur, setSelectedMonteur] = useState("");
 
@@ -410,7 +422,11 @@ function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, verwachteOmzet,
                 <p className="text-[11px]" style={{ color: "#a0abc3" }}>
                   Wat factureert TerreVolt aan Van Gelder voor dit project? Dit staat in de opdrachtbevestiging of is op basis van stuksprijzen afgesproken.
                 </p>
-                <input type="number" value={verwachteOmzet || ""} onChange={e => setVerwachteOmzet(parseFloat(e.target.value) || 0)} placeholder="bijv. 25000" className={`w-full mt-1 px-3 py-2 rounded-xl text-sm ${mono}`} style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                <input type="number" value={verwachteOmzet || ""} onChange={e => {
+                  const val = parseFloat(e.target.value) || 0;
+                  setVerwachteOmzet(val);
+                  saveVerwachteOmzet(val);
+                }} placeholder="bijv. 25000" className={`w-full mt-1 px-3 py-2 rounded-xl text-sm ${mono}`} style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
               </div>
             </div>
             {verwachteOmzet === 0 && (

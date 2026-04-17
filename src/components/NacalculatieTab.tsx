@@ -47,12 +47,15 @@ export function NacalculatieTab({ projectId }: Props) {
     }
     setForecastRegels(regels);
 
-    // Verwachte omzet for uren methode: sum of (geplande_uren * tarief) as fallback
     if (fc?.methode === "uren") {
       const urenRegels = regels.filter(r => r.type === "uren");
-      // Use tarief field if set (verwachte_omzet stored there), otherwise sum
-      const omzet = urenRegels.reduce((s, r) => s + (Number(r.tarief) || 0), 0);
-      setVerwachteOmzet(omzet);
+      // Correct: geplande_uren × uurtarief
+      const kosten = urenRegels.reduce(
+        (s, r) =>
+          s + (Number(r.geplande_uren) || 0) * (Number(r.uurtarief_snap) || 0),
+        0
+      );
+      setVerwachteOmzet(kosten);
     }
 
     // Profielen
