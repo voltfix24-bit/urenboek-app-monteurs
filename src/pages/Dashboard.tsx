@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
 import { useNavigate } from "react-router-dom";
@@ -141,6 +142,7 @@ function NieuweMedewerkersSection({ navigate }: { navigate: (p: string) => void 
 
 export default function Dashboard() {
   const { isManager, user } = useAuth();
+  const { profile } = useProfile();
   const { badges } = useNavBadges();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -211,13 +213,11 @@ export default function Dashboard() {
   })();
 
   const userName = user?.user_metadata?.full_name?.split(" ")[0] || "Manager";
-  const userInitials = (user?.user_metadata?.full_name || "M")
-    .split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase();
 
   return (
     <PageShell>
       <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 120 }}>
-        <MobileHeader initials={userInitials} />
+        <MobileHeader initials={profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'} />
 
         <main style={{ padding: "24px 20px" }}>
           {loading ? (
