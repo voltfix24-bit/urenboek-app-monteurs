@@ -40,6 +40,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const [verwachteOmzet, setVerwachteOmzet] = useState<number>(0);
   const [specCodes, setSpecCodes] = useState<SpecCode[]>(SPEC_CODES);
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const loadForecast = useCallback(async () => {
     setLoading(true);
@@ -51,7 +52,25 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       setForecastId(fc.id);
       setMethode(fc.methode);
       const { data: r } = await supabase.from("forecast_regels").select("*").eq("forecast_id", fc.id);
-      if (r) setRegels(r as any);
+      if (r) {
+        const updatedRegels = r.map((regel: any) => {
+          if (regel.spec_code) {
+            const spec = codes.find(s => s.code === regel.spec_code);
+            if (spec && spec.tarief !== Number(regel.tarief)) {
+              return { ...regel, tarief: spec.tarief };
+            }
+          }
+          return regel;
+        });
+        setRegels(updatedRegels as any);
+        // Persist any updated tarieven
+        const changed = updatedRegels.filter((u: any, i: number) => Number(u.tarief) !== Number((r as any)[i].tarief));
+        if (changed.length > 0) {
+          for (const regel of changed) {
+            await supabase.from("forecast_regels").update({ tarief: regel.tarief }).eq("id", regel.id);
+          }
+        }
+      }
     } else {
       setForecastId(null);
       setMethode(null);
@@ -91,25 +110,30 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   }
 
   async function saveRegels(newRegels: ForecastRegel[]) {
-    if (!forecastId) return;
-    await supabase.from("forecast_regels").delete().eq("forecast_id", forecastId);
-    if (newRegels.length > 0) {
-      const inserts = newRegels.map(r => ({
-        forecast_id: forecastId,
-        type: r.type,
-        spec_code: r.spec_code || null,
-        spec_omschrijving: r.spec_omschrijving || null,
-        tarief: r.tarief ?? null,
-        eigen_kosten: r.eigen_kosten ?? null,
-        aantal: r.aantal ?? 1,
-        medewerker_id: r.medewerker_id || null,
-        geplande_uren: r.geplande_uren ?? null,
-        uurtarief_snap: r.uurtarief_snap ?? null,
-      }));
-      if (!await mutate(supabase.from("forecast_regels").insert(inserts))) return;
+    if (!forecastId || isSaving) return;
+    setIsSaving(true);
+    try {
+      await supabase.from("forecast_regels").delete().eq("forecast_id", forecastId);
+      if (newRegels.length > 0) {
+        const inserts = newRegels.map(r => ({
+          forecast_id: forecastId,
+          type: r.type,
+          spec_code: r.spec_code || null,
+          spec_omschrijving: r.spec_omschrijving || null,
+          tarief: r.tarief ?? null,
+          eigen_kosten: r.eigen_kosten ?? null,
+          aantal: r.aantal ?? 1,
+          medewerker_id: r.medewerker_id || null,
+          geplande_uren: r.geplande_uren ?? null,
+          uurtarief_snap: r.uurtarief_snap ?? null,
+        }));
+        if (!await mutate(supabase.from("forecast_regels").insert(inserts))) return;
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } finally {
+      setIsSaving(false);
     }
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
   }
 
   const [saveTimer, setSaveTimer] = useState<NodeJS.Timeout | null>(null);

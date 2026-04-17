@@ -1,4 +1,4 @@
-import { SPEC_CODES } from "./specCodes";
+import { SPEC_CODES, type SpecCode } from "./specCodes";
 
 export interface IntakeAntwoorden {
   // Stap 1 — RMU
@@ -189,15 +189,16 @@ export function suggesteerEindsluitingen(rmuConfig: RmuConfiguratie | null): { m
   return { moffen: kabelvelden, eindsluitingen: kabelvelden };
 }
 
-function getSpec(code: string) {
-  return SPEC_CODES.find(s => s.code === code);
-}
-
 export function berekenRegels(
   antwoorden: IntakeAntwoorden,
   caseType: string | null,
-  dbRegels: IntakeRegel[]
+  dbRegels: IntakeRegel[],
+  specCodesOverride?: SpecCode[]
 ): BerekendeRegel[] {
+  const getSpec = (code: string) => {
+    const codes = specCodesOverride || SPEC_CODES;
+    return codes.find(s => s.code === code);
+  };
   const actief = new Map<string, BerekendeRegel>();
   const caseTypeLower = caseType?.toLowerCase() || "";
 
