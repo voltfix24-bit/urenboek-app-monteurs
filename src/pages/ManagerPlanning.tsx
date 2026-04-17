@@ -560,11 +560,7 @@ export default function ManagerPlanning() {
                           <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Manrope', color: '#005d2c' }}>
                             {entries
                               .filter(e => e.medewerker_id === med.id && weekDateStrings.includes(e.datum))
-                              .reduce((sum, e) => {
-                                const s = e.starttijd ? parseInt(e.starttijd.split(':')[0]) : 7;
-                                const ei = e.eindtijd ? parseInt(e.eindtijd.split(':')[0]) : s + 8;
-                                return sum + (ei - s);
-                              }, 0)}u
+                              .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0)}u
                           </span>
                         </div>
                       </div>
