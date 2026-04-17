@@ -128,13 +128,17 @@ export default function Inkooporders() {
     const { data } = await supabase.from("uren_boekingen").select("id, datum, project_id, uren, beschrijving, type").eq("medewerker_id", wizMedewerker).eq("status", "goedgekeurd").gte("datum", wizVan).lte("datum", wizTot).order("datum");
     // Filter out boekingen already on an order
     const { data: existingRegels } = await supabase.from("inkooporder_regels").select("uren_boeking_id");
-    const usedIds = new Set((existingRegels || []).map((r: any) => r.uren_boeking_id).filter(Boolean));
-    const available = (data || []).filter((b: any) => !usedIds.has(b.id));
+    const usedIds = new Set(
+      (existingRegels || [])
+        .map((r: any) => r.uren_boeking_id)
+        .filter(Boolean)
+    );
+    const beschikbaar = (data || []).filter((b: any) => !usedIds.has(b.id));
     // Get project names
-    const projIds = [...new Set(available.map((b: any) => b.project_id))];
+    const projIds = [...new Set(beschikbaar.map((b: any) => b.project_id))];
     const { data: projs } = projIds.length > 0 ? await supabase.from("projects").select("id, naam, nummer").in("id", projIds) : { data: [] };
     const projMap = new Map((projs || []).map((p: any) => [p.id, p]));
-    const enriched = available.map((b: any) => {
+    const enriched = beschikbaar.map((b: any) => {
       const proj = projMap.get(b.project_id) || { naam: "", nummer: "" };
       return { ...b, project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, activiteit: b.type || null };
     });

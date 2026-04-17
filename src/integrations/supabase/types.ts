@@ -1394,6 +1394,7 @@ export type Database = {
           methode: string
           project_id: string
           updated_at: string
+          verwachte_omzet: number | null
         }
         Insert: {
           created_at?: string
@@ -1401,6 +1402,7 @@ export type Database = {
           methode: string
           project_id: string
           updated_at?: string
+          verwachte_omzet?: number | null
         }
         Update: {
           created_at?: string
@@ -1408,6 +1410,7 @@ export type Database = {
           methode?: string
           project_id?: string
           updated_at?: string
+          verwachte_omzet?: number | null
         }
         Relationships: [
           {

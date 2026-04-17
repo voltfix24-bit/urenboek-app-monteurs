@@ -117,8 +117,9 @@ export default function Goedkeuring() {
 
   const filteredEntries = entries.filter((e) => filter === "alle" || e.status === filter);
   const grouped = filteredEntries.reduce<Record<string, EntryWithProfile[]>>((acc, e) => {
-    if (!acc[e.full_name]) acc[e.full_name] = [];
-    acc[e.full_name].push(e);
+    const key = e.medewerker_id;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(e);
     return acc;
   }, {});
   const totalIngediend = entries.filter((e) => e.status === "ingediend").length;
@@ -374,16 +375,16 @@ export default function Goedkeuring() {
 
   const weekNumber = getISOWeek(weekStart);
 
-  // Build monteurGroups from grouped data for the new UI
-  const monteurGroups = Object.entries(grouped).map(([name, userEntries]) => {
+  // Build monteurGroups from grouped data for the new UI (keyed by medewerker_id)
+  const monteurGroups = Object.entries(grouped).map(([medewerker_id, userEntries]) => {
     const statuses = userEntries.map(e => e.status);
     const overallStatus = statuses.every(s => s === "goedgekeurd") ? "goedgekeurd"
       : statuses.some(s => s === "afgekeurd") ? "afgekeurd"
       : statuses.some(s => s === "ingediend") ? "ingediend"
       : "concept";
     return {
-      id: userEntries[0]?.medewerker_id || name,
-      full_name: name,
+      id: medewerker_id,
+      full_name: userEntries[0]?.full_name || "Onbekend",
       status: overallStatus,
       entries: userEntries,
     };
