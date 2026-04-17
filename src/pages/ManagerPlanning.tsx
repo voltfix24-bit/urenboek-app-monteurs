@@ -153,6 +153,18 @@ export default function ManagerPlanning() {
     return getConflicts(modalForm.medewerker_id, modalForm.datum, dayIndex, entries, medewerkers, beschikbaarheid, editId, weekDateStrings);
   }, [modalForm.medewerker_id, modalForm.datum, entries, medewerkers, beschikbaarheid, editId, weekDates]);
 
+  const berekenUren = (starttijd: string | null, eindtijd: string | null): number => {
+    const s = starttijd
+      ? parseInt(starttijd.split(':')[0]) + parseFloat(starttijd.split(':')[1] || '0') / 60
+      : 7;
+    const e = eindtijd
+      ? parseInt(eindtijd.split(':')[0]) + parseFloat(eindtijd.split(':')[1] || '0') / 60
+      : s + 9;
+    const klokuren = e - s;
+    const productief = Math.max(0, klokuren - 1);
+    return Math.round(productief);
+  };
+
   if (!isManager) {
     return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
   }
