@@ -656,11 +656,7 @@ export default function ManagerPlanning() {
                       const dateStr = format(date, 'yyyy-MM-dd');
                       const dagEntries = projectEntries.filter(e => e.datum === dateStr);
                       if (dagEntries.length === 0) return null;
-                      const dagTotaal = dagEntries.reduce((sum, e) => {
-                        const s = e.starttijd ? parseInt(e.starttijd.split(':')[0]) : 7;
-                        const ei = e.eindtijd ? parseInt(e.eindtijd.split(':')[0]) : s + 8;
-                        return sum + (ei - s);
-                      }, 0);
+                      const dagTotaal = dagEntries.reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
                       return (
                         <div key={dateStr}>
                           <div style={{
