@@ -606,11 +606,7 @@ export default function ManagerPlanning() {
               )).map((projectId) => {
                 const project = projects.find(p => p.id === projectId);
                 const projectEntries = entries.filter(e => e.project_id === projectId && weekDateStrings.includes(e.datum));
-                const totalUren = projectEntries.reduce((sum, e) => {
-                  const s = e.starttijd ? parseInt(e.starttijd.split(':')[0]) : 7;
-                  const ei = e.eindtijd ? parseInt(e.eindtijd.split(':')[0]) : s + 8;
-                  return sum + (ei - s);
-                }, 0);
+                const totalUren = projectEntries.reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
                 const DAGEN_LBL = ['Ma','Di','Wo','Do','Vr'];
                 return (
                   <div key={projectId} style={{
