@@ -15,7 +15,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 import { volledigAdres } from "@/lib/utils";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
-import { generatePlanningPdf } from "@/lib/planningPdf";
+import { generatePlanningPdf, generatePersoneelsPdf } from "@/lib/planningPdf";
 
 interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; }
 interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; }

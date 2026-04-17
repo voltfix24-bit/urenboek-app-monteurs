@@ -24,7 +24,9 @@ interface ProjectInfo {
   id: string;
   naam: string;
   nummer: string;
+  straat?: string | null;
   stad?: string | null;
+  adres?: string | null;
 }
 
 function berekenUren(starttijd: string | null, eindtijd: string | null): number {
