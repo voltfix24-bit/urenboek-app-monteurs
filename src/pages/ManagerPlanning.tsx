@@ -678,9 +678,7 @@ export default function ManagerPlanning() {
                           </div>
                           {dagEntries.map((entry, ei) => {
                             const monteur = medewerkers.find(m => m.id === entry.medewerker_id);
-                            const s = entry.starttijd ? parseInt(entry.starttijd.split(':')[0]) : 7;
-                            const e2 = entry.eindtijd ? parseInt(entry.eindtijd.split(':')[0]) : s + 8;
-                            const uren = e2 - s;
+                            const uren = berekenUren(entry.starttijd, entry.eindtijd);
                             const initials = monteur?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('') || 'XX';
                             return (
                               <div key={entry.id} style={{
