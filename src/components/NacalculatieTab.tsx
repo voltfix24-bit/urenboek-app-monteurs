@@ -27,7 +27,7 @@ export function NacalculatieTab({ projectId }: Props) {
 
     // Parallel fetch
     const [fcRes, urenRes] = await Promise.all([
-      supabase.from("project_forecast").select("id, methode").eq("project_id", projectId).maybeSingle(),
+      supabase.from("project_forecast").select("id, methode, verwachte_omzet").eq("project_id", projectId).maybeSingle(),
       supabase.from("uren_boekingen").select("medewerker_id, uren, status").eq("project_id", projectId),
     ]);
 
@@ -48,14 +48,19 @@ export function NacalculatieTab({ projectId }: Props) {
     setForecastRegels(regels);
 
     if (fc?.methode === "uren") {
-      const urenRegels = regels.filter(r => r.type === "uren");
-      // Correct: geplande_uren × uurtarief
-      const kosten = urenRegels.reduce(
-        (s, r) =>
-          s + (Number(r.geplande_uren) || 0) * (Number(r.uurtarief_snap) || 0),
-        0
-      );
-      setVerwachteOmzet(kosten);
+      // Prefer persisted verwachte_omzet from the forecast record
+      if ((fc as any).verwachte_omzet != null && Number((fc as any).verwachte_omzet) > 0) {
+        setVerwachteOmzet(Number((fc as any).verwachte_omzet));
+      } else {
+        const urenRegels = regels.filter(r => r.type === "uren");
+        // Fallback: geplande_uren × uurtarief
+        const kosten = urenRegels.reduce(
+          (s, r) =>
+            s + (Number(r.geplande_uren) || 0) * (Number(r.uurtarief_snap) || 0),
+          0
+        );
+        setVerwachteOmzet(kosten);
+      }
     }
 
     // Profielen
