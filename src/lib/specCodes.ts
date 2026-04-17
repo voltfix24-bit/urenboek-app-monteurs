@@ -34,7 +34,7 @@ export const SPEC_CODES: SpecCode[] = [
   { code: 'R320040', omschrijving: 'Compactstation', eenheid: 'st', tarief: 7271.82, groep: 'R32x' },
   { code: 'R330010', omschrijving: 'Plaatsen transformator', eenheid: 'st', tarief: 1504.04, groep: 'R33x' },
   { code: 'R330020', omschrijving: 'Draaien transformator', eenheid: 'st', tarief: 1241.86, groep: 'R33x' },
-  { code: 'R330030', omschrijving: 'Trafokabel betreedbaar', eenheid: 'st', tarief: 821.25, groep: 'R33x' },
+  { code: 'R330030', omschrijving: 'Trafokabel betreedbaar', eenheid: 'st', tarief: 1008.75, groep: 'R33x' },
   { code: 'R330040', omschrijving: 'Trafokabel compact', eenheid: 'st', tarief: 810.46, groep: 'R33x' },
   { code: 'R330050', omschrijving: 'Vrijschakelen trafo', eenheid: 'st', tarief: 300.81, groep: 'R33x' },
   { code: 'R340010', omschrijving: 'LS-rek ≤630kVA', eenheid: 'st', tarief: 2460.94, groep: 'R34x' },
