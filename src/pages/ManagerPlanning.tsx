@@ -73,6 +73,7 @@ export default function ManagerPlanning() {
   const [showModal, setShowModal] = useState(false);
   const [modalForm, setModalForm] = useState({ medewerker_id: "", project_id: "", datum: "", starttijd: "07:00", eindtijd: "16:00", notitie: "" });
   const [editId, setEditId] = useState<string | null>(null);
+  const [expandedMedewerker, setExpandedMedewerker] = useState<string | null>(null);
 
   const weekNumber = getISOWeek(weekStart);
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
