@@ -584,6 +584,160 @@ export default function ManagerPlanning() {
               </div>
             </div>
           )}
+          </>)}
+
+          {planningView === 'klus' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {Array.from(new Set(
+                entries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)
+              )).map((projectId) => {
+                const project = projects.find(p => p.id === projectId);
+                const projectEntries = entries.filter(e => e.project_id === projectId && weekDateStrings.includes(e.datum));
+                const totalUren = projectEntries.reduce((sum, e) => {
+                  const s = e.starttijd ? parseInt(e.starttijd.split(':')[0]) : 7;
+                  const ei = e.eindtijd ? parseInt(e.eindtijd.split(':')[0]) : s + 8;
+                  return sum + (ei - s);
+                }, 0);
+                const DAGEN_LBL = ['Ma','Di','Wo','Do','Vr'];
+                return (
+                  <div key={projectId} style={{
+                    background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                    backdropFilter: 'blur(12px)',
+                    borderRadius: 20,
+                    border: '1px solid rgba(106,118,140,0.15)',
+                    borderLeft: '4px solid #3fff8b',
+                    overflow: 'hidden',
+                  }}>
+                    {/* PROJECT HEADER */}
+                    <div style={{
+                      padding: '16px 20px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      borderBottom: '1px solid rgba(61,72,93,0.3)',
+                    }}>
+                      <div>
+                        <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#a0abc3', marginBottom: 2 }}>
+                          {project?.nummer || '—'}
+                        </p>
+                        <h3 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 16, color: '#dae6ff' }}>
+                          {project?.naam || 'Onbekend project'}
+                        </h3>
+                        {project?.stad && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 12, color: '#a0abc3' }}>location_on</span>
+                            <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>{project.stad}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 4 }}>
+                          Week totaal
+                        </p>
+                        <div style={{ padding: '4px 14px', borderRadius: 9999, background: '#3fff8b', display: 'inline-block' }}>
+                          <span style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 16, color: '#005d2c' }}>
+                            {totalUren}u
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* DAG ROWS */}
+                    {weekDates.map((date, di) => {
+                      const dateStr = format(date, 'yyyy-MM-dd');
+                      const dagEntries = projectEntries.filter(e => e.datum === dateStr);
+                      if (dagEntries.length === 0) return null;
+                      const dagTotaal = dagEntries.reduce((sum, e) => {
+                        const s = e.starttijd ? parseInt(e.starttijd.split(':')[0]) : 7;
+                        const ei = e.eindtijd ? parseInt(e.eindtijd.split(':')[0]) : s + 8;
+                        return sum + (ei - s);
+                      }, 0);
+                      return (
+                        <div key={dateStr}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px 20px',
+                            background: 'rgba(0,0,0,0.2)',
+                          }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#3fff8b' }}>
+                              {DAGEN_LBL[di]}{' '}
+                              <span style={{ color: '#a0abc3', fontWeight: 500 }}>
+                                {format(date, 'd MMM', { locale: nl })}
+                              </span>
+                            </span>
+                            <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: '#a0abc3' }}>
+                              {dagTotaal}u totaal
+                            </span>
+                          </div>
+                          {dagEntries.map((entry, ei) => {
+                            const monteur = medewerkers.find(m => m.id === entry.medewerker_id);
+                            const s = entry.starttijd ? parseInt(entry.starttijd.split(':')[0]) : 7;
+                            const e2 = entry.eindtijd ? parseInt(entry.eindtijd.split(':')[0]) : s + 8;
+                            const uren = e2 - s;
+                            const initials = monteur?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('') || 'XX';
+                            return (
+                              <div key={entry.id} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '12px 20px',
+                                gap: 12,
+                                borderTop: ei > 0 ? '1px solid rgba(61,72,93,0.15)' : 'none',
+                                borderBottom: '1px solid rgba(61,72,93,0.15)',
+                              }}>
+                                <div style={{
+                                  width: 36,
+                                  height: 36,
+                                  borderRadius: 10,
+                                  background: '#142640',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontFamily: 'Manrope',
+                                  fontWeight: 700,
+                                  fontSize: 11,
+                                  color: '#3fff8b',
+                                  flexShrink: 0,
+                                  border: '1px solid rgba(63,255,139,0.15)',
+                                }}>
+                                  {initials}
+                                </div>
+                                <span style={{ flex: 1, fontSize: 14, fontWeight: 600, fontFamily: 'Inter', color: '#dae6ff' }}>
+                                  {monteur?.full_name || 'Onbekend'}
+                                </span>
+                                <div style={{
+                                  padding: '4px 12px',
+                                  borderRadius: 9999,
+                                  background: 'rgba(63,255,139,0.1)',
+                                  border: '1px solid rgba(63,255,139,0.25)',
+                                }}>
+                                  <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Manrope', color: '#3fff8b' }}>
+                                    {uren}u
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+
+              {entries.filter(e => weekDateStrings.includes(e.datum)).length === 0 && (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#a0abc3', fontFamily: 'Inter' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 48, display: 'block', marginBottom: 12, opacity: 0.4 }}>
+                    calendar_today
+                  </span>
+                  <p style={{ fontSize: 14 }}>
+                    Geen planning voor week {weekNumber}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </main>
 
         {/* FAB */}
