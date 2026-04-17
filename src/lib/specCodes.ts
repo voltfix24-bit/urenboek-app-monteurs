@@ -61,8 +61,8 @@ export const SPEC_CODES: SpecCode[] = [
   { code: 'R440030', omschrijving: 'Vrijschakelen kabeldeel', eenheid: 'keer', tarief: 300.81, groep: 'R44x' },
   { code: 'R500010', omschrijving: 'Revisiedossier volledig', eenheid: 'st', tarief: 1393.63, groep: 'R50x' },
   { code: 'R500020', omschrijving: 'Revisiedossier excl civiel', eenheid: 'st', tarief: 939.49, groep: 'R50x' },
-  { code: 'R610040', omschrijving: 'VP', eenheid: 'uur', tarief: 70.00, groep: 'R61x' },
-  { code: 'R610050', omschrijving: 'AVP distributie', eenheid: 'uur', tarief: 75.00, groep: 'R61x' },
+  { code: 'R610040', omschrijving: 'VP', eenheid: 'uur', tarief: 75.00, groep: 'R61x' },
+  { code: 'R610050', omschrijving: 'AVP distributie', eenheid: 'uur', tarief: 97.50, groep: 'R61x' },
   { code: 'R610060', omschrijving: 'VOP', eenheid: 'uur', tarief: 55.00, groep: 'R61x' },
 ];
 
