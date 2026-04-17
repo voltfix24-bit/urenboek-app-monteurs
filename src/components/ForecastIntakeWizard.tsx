@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { X, Minus, Plus, Zap, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Loader2, AlertTriangle, RotateCcw, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { SPEC_CODES, GROEP_LABELS } from "@/lib/specCodes";
+import { SPEC_CODES, GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/specCodes";
 import {
   IntakeAntwoorden, RmuConfiguratie, BerekendeRegel, IntakeRegel,
   LEGE_ANTWOORDEN, initAntwoorden, berekenRegels, suggesteerEindsluitingen,
@@ -106,6 +106,8 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
   const [showNewRmu, setShowNewRmu] = useState(false);
   const [newRmu, setNewRmu] = useState({ code: "", velden: 3 });
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+  const [specCodes, setSpecCodes] = useState<SpecCode[]>(SPEC_CODES);
+  const [confirmRedo, setConfirmRedo] = useState(false);
 
   const set = useCallback((patch: Partial<IntakeAntwoorden>) => setAnswers(a => ({ ...a, ...patch })), []);
 
@@ -113,20 +115,24 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
     Promise.all([
       supabase.from("rmu_configuraties").select("*").eq("actief", true).order("volgorde"),
       supabase.from("intake_regels").select("*").eq("actief", true).order("volgorde"),
-    ]).then(([rmu, regels]) => {
+      loadSpecCodes(supabase),
+      supabase.from("project_forecast").select("id").eq("project_id", projectId).maybeSingle(),
+    ]).then(([rmu, regels, codes, existingFc]) => {
       if (rmu.data) setRmuConfigs(rmu.data as RmuConfiguratie[]);
       if (regels.data) setDbRegels(regels.data as IntakeRegel[]);
+      if (codes) setSpecCodes(codes);
+      if (existingFc.data) setConfirmRedo(true);
     });
-  }, []);
+  }, [projectId]);
 
   const selectedRmu = rmuConfigs.find(c => c.id === answers.rmu_configuratie_id) || null;
   const suggestie = suggesteerEindsluitingen(selectedRmu);
-  const overzichtRegels = useMemo(() => berekenRegels(answers, project.case_type, dbRegels), [answers, project.case_type, dbRegels]);
+  const overzichtRegels = useMemo(() => berekenRegels(answers, project.case_type, dbRegels, specCodes), [answers, project.case_type, dbRegels, specCodes]);
   const caseTypeLower = project.case_type?.toLowerCase() || "";
   const isProvisiorium = caseTypeLower.includes("provisorium");
   const isCompact = caseTypeLower.includes("compact");
 
-  const getSpec = (code: string) => SPEC_CODES.find(s => s.code === code);
+  const getSpec = (code: string) => specCodes.find(s => s.code === code);
 
   const totalSteps = STAPPEN.length;
   const isOverzicht = step === totalSteps - 1;
@@ -154,11 +160,29 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { data: fc } = await supabase.from("project_forecast").insert({ project_id: projectId, methode: "intake" } as any).select().single();
-      if (!fc) throw new Error("Forecast niet aangemaakt");
+      // Bug fix 1: check existing forecast and reuse/replace
+      const { data: existing } = await supabase
+        .from("project_forecast")
+        .select("id")
+        .eq("project_id", projectId)
+        .maybeSingle();
+
+      let forecastId: string;
+      if (existing) {
+        await supabase.from("forecast_regels").delete().eq("forecast_id", existing.id);
+        forecastId = existing.id;
+      } else {
+        const { data: fc } = await supabase
+          .from("project_forecast")
+          .insert({ project_id: projectId, methode: "intake" } as any)
+          .select()
+          .single();
+        if (!fc) throw new Error("Forecast niet aangemaakt");
+        forecastId = fc.id;
+      }
 
       const rows = overzichtRegels.map(r => ({
-        forecast_id: fc.id,
+        forecast_id: forecastId,
         type: "spec",
         spec_code: r.spec_code,
         spec_omschrijving: r.label,
@@ -171,7 +195,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
         if (error) throw error;
       }
       await supabase.from("projects").update({ intake_gedaan: true, rmu_merk: answers.rmu_merk, rmu_configuratie_id: answers.rmu_configuratie_id } as any).eq("id", projectId);
-      toast.success("Forecast aangemaakt!");
+      toast.success(existing ? "Forecast bijgewerkt!" : "Forecast aangemaakt!");
       onComplete();
     } catch (e: any) {
       toast.error(e.message || "Fout bij opslaan");
