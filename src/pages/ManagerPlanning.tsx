@@ -309,6 +309,38 @@ export default function ManagerPlanning() {
             </div>
           </section>
 
+          {/* VIEW TOGGLE */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+            {[
+              { key: 'grid', label: 'Overzicht', icon: 'grid_view' },
+              { key: 'klus', label: 'Per klus', icon: 'table_rows' },
+            ].map((v) => (
+              <button
+                key={v.key}
+                onClick={() => setPlanningView(v.key as 'grid' | 'klus')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 16px',
+                  borderRadius: 9999,
+                  border: planningView === v.key ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                  background: planningView === v.key ? '#3fff8b' : '#102038',
+                  color: planningView === v.key ? '#005d2c' : '#a0abc3',
+                  fontFamily: 'Inter',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  boxShadow: planningView === v.key ? '0 0 12px rgba(63,255,139,0.25)' : 'none',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{v.icon}</span>
+                {v.label}
+              </button>
+            ))}
+          </div>
+
+          {planningView === 'grid' && (<>
           {/* PROJECT FILTER CHIPS */}
           <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none", marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
             <button style={{ padding: "8px 16px", borderRadius: 9999, background: "#3fff8b", border: "none", color: "#005d2c", fontFamily: "Inter", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 12px rgba(63,255,139,0.3)" }}>
