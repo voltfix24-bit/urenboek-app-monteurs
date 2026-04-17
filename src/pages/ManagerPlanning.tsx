@@ -494,9 +494,7 @@ export default function ManagerPlanning() {
                           <div key={dateStr} style={{ borderBottom: i < 4 ? '1px solid rgba(61,72,93,0.2)' : 'none' }}>
                             {dayEntries.map((entry, ei) => {
                               const project = projects.find(p => p.id === entry.project_id);
-                              const startuur = entry.starttijd ? parseInt(entry.starttijd.split(':')[0]) : 7;
-                              const einduur = entry.eindtijd ? parseInt(entry.eindtijd.split(':')[0]) : startuur + 8;
-                              const uren = einduur - startuur;
+                              const uren = berekenUren(entry.starttijd, entry.eindtijd);
                               return (
                                 <div key={entry.id} style={{
                                   display: 'flex',
