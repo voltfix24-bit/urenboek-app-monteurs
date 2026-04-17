@@ -29,7 +29,7 @@ interface EntryWithProfile {
 export default function Goedkeuring() {
   const { isManager, user } = useAuth();
   const { badges } = useNavBadges();
-  const { profileId: myProfileId } = useProfile();
+  const { profile } = useProfile();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<string>("alle");
   const [weekOffset, setWeekOffset] = useState(0);

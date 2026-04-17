@@ -63,7 +63,7 @@ function getModalStatus(medId: string, dateStr: string, medewerkers: MedewerkerI
 export default function ManagerPlanning() {
   const { isManager, user } = useAuth();
   const { badges } = useNavBadges();
-  const { profileId: myProfileId } = useProfile();
+  const { profile, profileId: myProfileId } = useProfile();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [entries, setEntries] = useState<PlanningEntry[]>([]);
   const [medewerkers, setMedewerkers] = useState<MedewerkerInfo[]>([]);
@@ -281,7 +281,7 @@ export default function ManagerPlanning() {
       <PullToRefresh onRefresh={fetchAll}>
       <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 160 }}>
         {/* HEADER */}
-        <MobileHeader initials={user?.user_metadata?.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() || "M"} />
+        <MobileHeader initials={profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'} />
 
         <main style={{ padding: "24px 20px" }}>
           {/* WEEK SELECTOR */}

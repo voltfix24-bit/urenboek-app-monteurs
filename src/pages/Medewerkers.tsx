@@ -21,7 +21,7 @@ interface CreatedUser { email: string; fullName: string; role: string; password?
 
 export default function Medewerkers() {
   const { isManager, user } = useAuth();
-  const { refetch: refetchProfile } = useProfile();
+  const { profile, refetch: refetchProfile } = useProfile();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [createdUsers, setCreatedUsers] = useState<CreatedUser[]>([]);
@@ -190,6 +190,9 @@ export default function Medewerkers() {
             <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               {selectedEmployee.full_name}
             </span>
+            <div style={{ marginLeft: 'auto', width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#3fff8b" }}>
+              {profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'}
+            </div>
           </header>
           <main style={{ padding: "24px 20px" }}>
             {/* HERO CARD */}
@@ -249,11 +252,20 @@ export default function Medewerkers() {
     <PageShell>
       <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 140 }}>
         {/* HEADER */}
-        <MobileHeader actions={
-          <button onClick={() => { setShowAdd(!showAdd); if (showAdd) resetForm(); }} style={{ width: 36, height: 36, borderRadius: "50%", background: showAdd ? "rgba(255,113,108,0.15)" : "rgba(63,255,139,0.15)", border: showAdd ? "1px solid rgba(255,113,108,0.3)" : "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAdd ? "#ff716c" : "#3fff8b" }}>
-            {showAdd ? <X size={18} /> : <Plus size={18} />}
-          </button>
-        } />
+        <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span className="material-symbols-outlined" style={{ color: "#3fff8b", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
+            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", letterSpacing: "0.1em", textTransform: "uppercase" }}>TERREVOLT UREN</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={() => { setShowAdd(!showAdd); if (showAdd) resetForm(); }} style={{ width: 36, height: 36, borderRadius: "50%", background: showAdd ? "rgba(255,113,108,0.15)" : "rgba(63,255,139,0.15)", border: showAdd ? "1px solid rgba(255,113,108,0.3)" : "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAdd ? "#ff716c" : "#3fff8b" }}>
+              {showAdd ? <X size={18} /> : <Plus size={18} />}
+            </button>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#3fff8b" }}>
+              {profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'}
+            </div>
+          </div>
+        </header>
 
         <main style={{ padding: "24px 20px" }}>
           {/* SECTION HEADER */}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
@@ -222,7 +223,7 @@ export default function Projecten() {
       <div className="lg:hidden">
         <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 140 }}>
           {/* HEADER */}
-          <MobileHeader />
+          <MobileHeader initials={profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'} />
 
           <main style={{ padding: "24px 20px" }}>
             {/* SECTION HEADER */}
