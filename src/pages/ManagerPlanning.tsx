@@ -573,23 +573,30 @@ export default function ManagerPlanning() {
           )}
 
           {/* CAPACITEIT CARD */}
-          {!loading && (
+          {!loading && (() => {
+            const totalGeplandUren = entries
+              .filter(e => weekDateStrings.includes(e.datum))
+              .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
+            const maxUren = medewerkers.length * 5 * 8;
+            const capaciteitPct = maxUren > 0 ? Math.round((totalGeplandUren / maxUren) * 100) : 0;
+            return (
             <div style={{ marginTop: 24, background: "#000000", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", border: "1px solid rgba(61,72,93,0.2)" }}>
               <div>
                 <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 4 }}>Capaciteit</p>
                 <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: "#3fff8b" }}>
-                  {medewerkers.length > 0 ? `${Math.round((entries.filter(e => weekDateStrings.includes(e.datum)).length / (medewerkers.length * 5)) * 100)}%` : "—"}
+                  {medewerkers.length > 0 ? `${capaciteitPct}%` : "—"}
                 </span>
               </div>
               <div style={{ height: 4, width: 80, background: "#152640", borderRadius: 9999, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, Math.round((entries.filter(e => weekDateStrings.includes(e.datum)).length / (medewerkers.length * 5)) * 100)) : 0}%`, background: "#3fff8b" }} />
+                <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, capaciteitPct) : 0}%`, background: "#3fff8b" }} />
               </div>
               <div style={{ textAlign: "right" }}>
                 <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 4 }}>Incidenten</p>
                 <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: overplanned.length > 0 ? "#ff716c" : "#3fff8b" }}>{overplanned.length}</span>
               </div>
             </div>
-          )}
+            );
+          })()}
           </>)}
 
           {planningView === 'klus' && (
