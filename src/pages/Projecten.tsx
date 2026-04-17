@@ -33,6 +33,7 @@ interface Project {
 
 export default function Projecten() {
   const { isManager, permissies } = useAuth(); const navigate = useNavigate();
+  const { profile } = useProfile();
   const { badges } = useNavBadges();
   const queryClient = useQueryClient();
   const { data: projects = [], isLoading: projectsLoading, refetch: refetchProjects } = useProjectenQuery();
