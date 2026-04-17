@@ -24,7 +24,9 @@ interface ProjectInfo {
   id: string;
   naam: string;
   nummer: string;
+  straat?: string | null;
   stad?: string | null;
+  adres?: string | null;
 }
 
 function berekenUren(starttijd: string | null, eindtijd: string | null): number {
@@ -273,5 +275,195 @@ export async function generatePlanningPdf(
   }
 
   const filename = `TerreVolt_Planning_Week${weekNumber}_${format(weekStart, "yyyy")}.pdf`;
+  doc.save(filename);
+}
+
+export async function generatePersoneelsPdf(
+  weekNumber: number,
+  weekStart: Date,
+  entries: PlanningEntry[],
+  medewerkers: MedewerkerInfo[],
+  projects: ProjectInfo[],
+  managerNaam: string
+) {
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const ml = 16;
+  const mr = 16;
+
+  const groen = [45, 74, 30] as [number, number, number];
+  const groenTint = [238, 245, 232] as [number, number, number];
+  const groenLicht = [245, 247, 240] as [number, number, number];
+  const rand = [200, 217, 184] as [number, number, number];
+  const tekst = [7, 33, 0] as [number, number, number];
+  const muted = [90, 122, 66] as [number, number, number];
+
+  const weekDates = Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+  const weekDateStrings = weekDates.map((d) => format(d, "yyyy-MM-dd"));
+
+  const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
+
+  // Get monteurs who have entries this week
+  const activeMonteurIds = Array.from(
+    new Set(
+      entries
+        .filter((e) => weekDateStrings.includes(e.datum))
+        .map((e) => e.medewerker_id)
+    )
+  );
+
+  activeMonteurIds.forEach((monteurId, pageIndex) => {
+    if (pageIndex > 0) doc.addPage();
+
+    // Background
+    doc.setFillColor(...groenLicht);
+    doc.rect(0, 0, pageW, pageH, "F");
+
+    const monteur = medewerkers.find((m) => m.id === monteurId);
+    const naam = monteur?.full_name || "Monteur";
+
+    // Logo
+    try {
+      const logoH = 8;
+      const logoW = logoH * (129 / 36);
+      doc.addImage(terrevoltLogoPng, "PNG", ml, ml, logoW, logoH, undefined, "FAST");
+    } catch {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...groen);
+      doc.text("TerreVolt B.V.", ml, ml + 6);
+    }
+
+    // Monteur naam header
+    let y = ml + 18;
+    doc.setFillColor(...groen);
+    doc.rect(ml, y, pageW - ml - mr, 16, "F");
+
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(245, 247, 240);
+    doc.text(naam, ml + 5, y + 10.5);
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      `Week ${weekNumber}  •  ${format(weekStart, "d MMM", { locale: nl })} t/m ${format(
+        weekDates[4],
+        "d MMM yyyy",
+        { locale: nl }
+      )}`,
+      pageW - mr - 4,
+      y + 10.5,
+      { align: "right" }
+    );
+
+    y += 22;
+
+    // Entries for this monteur
+    const monteurEntries = entries.filter(
+      (e) => e.medewerker_id === monteurId && weekDateStrings.includes(e.datum)
+    );
+
+    const tableRows: any[] = [];
+    let weekTotaal = 0;
+
+    weekDates.forEach((date, di) => {
+      const dateStr = format(date, "yyyy-MM-dd");
+      const dagEntries = monteurEntries.filter((e) => e.datum === dateStr);
+
+      if (dagEntries.length === 0) {
+        tableRows.push([
+          `${DAGEN[di]} ${format(date, "d MMM", { locale: nl })}`,
+          "—",
+          "—",
+          "—",
+          "",
+        ]);
+        return;
+      }
+
+      dagEntries.forEach((entry, ei) => {
+        const project = projects.find((p) => p.id === entry.project_id);
+        const uren = berekenUren(entry.starttijd, entry.eindtijd);
+        weekTotaal += uren;
+        const tijden =
+          entry.starttijd && entry.eindtijd
+            ? `${entry.starttijd.slice(0, 5)} – ${entry.eindtijd.slice(0, 5)}`
+            : "07:00 – 16:00";
+        const adres = [project?.straat, project?.stad].filter(Boolean).join(", ") || project?.adres || "—";
+
+        tableRows.push([
+          ei === 0 ? `${DAGEN[di]} ${format(date, "d MMM", { locale: nl })}` : "",
+          project?.naam || project?.nummer || "—",
+          adres,
+          tijden,
+          `${uren}u`,
+        ]);
+      });
+    });
+
+    autoTable(doc, {
+      startY: y,
+      head: [["Dag", "Klus", "Locatie", "Tijden", "Uren"]],
+      body: tableRows,
+      theme: "plain",
+      styles: {
+        fontSize: 9,
+        cellPadding: 4,
+        font: "helvetica",
+        textColor: tekst,
+      },
+      headStyles: {
+        fillColor: groenTint,
+        textColor: groen,
+        fontStyle: "bold",
+        lineColor: rand,
+        lineWidth: 0.3,
+      },
+      bodyStyles: {
+        lineColor: rand,
+        lineWidth: 0.2,
+      },
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 26 },
+        1: { cellWidth: 50 },
+        2: { cellWidth: 55, textColor: muted },
+        3: { cellWidth: 32, textColor: muted },
+        4: { cellWidth: 16, halign: "right", fontStyle: "bold", textColor: groen },
+      },
+      margin: { left: ml, right: mr },
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY;
+
+    // Week totaal balk
+    doc.setFillColor(...groenTint);
+    doc.rect(ml, finalY + 4, pageW - ml - mr, 10, "F");
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...groen);
+    doc.text("Week totaal", ml + 4, finalY + 10.5);
+    doc.text(`${weekTotaal} uur`, pageW - mr - 4, finalY + 10.5, { align: "right" });
+
+    // Footer
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...muted);
+    doc.line(ml, pageH - 12, pageW - mr, pageH - 12);
+    doc.text(`TerreVolt B.V. — Persoonlijke planning week ${weekNumber}`, ml, pageH - 7);
+    doc.text(`Gegenereerd door ${managerNaam}`, pageW - mr, pageH - 7, { align: "right" });
+  });
+
+  const filename = `TerreVolt_Planning_Persoonlijk_Week${weekNumber}.pdf`;
   doc.save(filename);
 }

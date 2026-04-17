@@ -15,7 +15,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 import { volledigAdres } from "@/lib/utils";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
-import { generatePlanningPdf } from "@/lib/planningPdf";
+import { generatePlanningPdf, generatePersoneelsPdf } from "@/lib/planningPdf";
 
 interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; }
 interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; }
@@ -107,6 +107,22 @@ export default function ManagerPlanning() {
         weekNumber,
         weekStart,
         addDays(weekStart, 4),
+        entries,
+        medewerkers,
+        projects,
+        profile?.full_name || "Manager"
+      );
+    } catch (err) {
+      console.error("PDF generation failed", err);
+      toast.error("PDF genereren mislukt");
+    }
+  };
+
+  const handleDownloadPersoneelsPdf = async () => {
+    try {
+      await generatePersoneelsPdf(
+        weekNumber,
+        weekStart,
         entries,
         medewerkers,
         projects,
@@ -335,6 +351,9 @@ export default function ManagerPlanning() {
               </button>
               <button onClick={handleDownloadPdf} title="Download planning PDF" style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 20 }}>picture_as_pdf</span>
+              </button>
+              <button onClick={handleDownloadPersoneelsPdf} title="Download persoonlijke planning per monteur" style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>group</span>
               </button>
               <button onClick={() => setWeekStart(w => addWeeks(w, 1))} style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(255,255,255,0.07)", color: "#dae6ff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <ChevronRight size={20} />
