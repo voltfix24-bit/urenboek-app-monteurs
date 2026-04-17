@@ -28,7 +28,7 @@ export const SPEC_CODES: SpecCode[] = [
   { code: 'R310020', omschrijving: 'Dichtzetten doorvoeringen', eenheid: 'st', tarief: 59.13, groep: 'R31x' },
   { code: 'R310030', omschrijving: 'GGI', eenheid: 'st', tarief: 235.99, groep: 'R31x' },
   { code: 'R310040', omschrijving: 'Traanplaat', eenheid: 'st', tarief: 302.66, groep: 'R31x' },
-  { code: 'R320010', omschrijving: 'Basis MS-installatie', eenheid: 'st', tarief: 9200.98, groep: 'R32x' },
+  { code: 'R320010', omschrijving: 'Basis MS-installatie', eenheid: 'st', tarief: 10733.98, groep: 'R32x' },
   { code: 'R320020', omschrijving: 'Extra MS-veld', eenheid: 'st', tarief: 1696.24, groep: 'R32x' },
   { code: 'R320030', omschrijving: 'Ombouw MS → iMS', eenheid: 'st', tarief: 813.27, groep: 'R32x' },
   { code: 'R320040', omschrijving: 'Compactstation', eenheid: 'st', tarief: 6493.32, groep: 'R32x' },
