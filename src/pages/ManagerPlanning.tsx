@@ -153,6 +153,18 @@ export default function ManagerPlanning() {
     return getConflicts(modalForm.medewerker_id, modalForm.datum, dayIndex, entries, medewerkers, beschikbaarheid, editId, weekDateStrings);
   }, [modalForm.medewerker_id, modalForm.datum, entries, medewerkers, beschikbaarheid, editId, weekDates]);
 
+  const berekenUren = (starttijd: string | null, eindtijd: string | null): number => {
+    const s = starttijd
+      ? parseInt(starttijd.split(':')[0]) + parseFloat(starttijd.split(':')[1] || '0') / 60
+      : 7;
+    const e = eindtijd
+      ? parseInt(eindtijd.split(':')[0]) + parseFloat(eindtijd.split(':')[1] || '0') / 60
+      : s + 9;
+    const klokuren = e - s;
+    const productief = Math.max(0, klokuren - 1);
+    return Math.round(productief);
+  };
+
   if (!isManager) {
     return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
   }
@@ -482,9 +494,7 @@ export default function ManagerPlanning() {
                           <div key={dateStr} style={{ borderBottom: i < 4 ? '1px solid rgba(61,72,93,0.2)' : 'none' }}>
                             {dayEntries.map((entry, ei) => {
                               const project = projects.find(p => p.id === entry.project_id);
-                              const startuur = entry.starttijd ? parseInt(entry.starttijd.split(':')[0]) : 7;
-                              const einduur = entry.eindtijd ? parseInt(entry.eindtijd.split(':')[0]) : startuur + 8;
-                              const uren = einduur - startuur;
+                              const uren = berekenUren(entry.starttijd, entry.eindtijd);
                               return (
                                 <div key={entry.id} style={{
                                   display: 'flex',
@@ -550,11 +560,7 @@ export default function ManagerPlanning() {
                           <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Manrope', color: '#005d2c' }}>
                             {entries
                               .filter(e => e.medewerker_id === med.id && weekDateStrings.includes(e.datum))
-                              .reduce((sum, e) => {
-                                const s = e.starttijd ? parseInt(e.starttijd.split(':')[0]) : 7;
-                                const ei = e.eindtijd ? parseInt(e.eindtijd.split(':')[0]) : s + 8;
-                                return sum + (ei - s);
-                              }, 0)}u
+                              .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0)}u
                           </span>
                         </div>
                       </div>
@@ -567,23 +573,30 @@ export default function ManagerPlanning() {
           )}
 
           {/* CAPACITEIT CARD */}
-          {!loading && (
+          {!loading && (() => {
+            const totalGeplandUren = entries
+              .filter(e => weekDateStrings.includes(e.datum))
+              .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
+            const maxUren = medewerkers.length * 5 * 8;
+            const capaciteitPct = maxUren > 0 ? Math.round((totalGeplandUren / maxUren) * 100) : 0;
+            return (
             <div style={{ marginTop: 24, background: "#000000", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", border: "1px solid rgba(61,72,93,0.2)" }}>
               <div>
                 <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 4 }}>Capaciteit</p>
                 <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: "#3fff8b" }}>
-                  {medewerkers.length > 0 ? `${Math.round((entries.filter(e => weekDateStrings.includes(e.datum)).length / (medewerkers.length * 5)) * 100)}%` : "—"}
+                  {medewerkers.length > 0 ? `${capaciteitPct}%` : "—"}
                 </span>
               </div>
               <div style={{ height: 4, width: 80, background: "#152640", borderRadius: 9999, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, Math.round((entries.filter(e => weekDateStrings.includes(e.datum)).length / (medewerkers.length * 5)) * 100)) : 0}%`, background: "#3fff8b" }} />
+                <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, capaciteitPct) : 0}%`, background: "#3fff8b" }} />
               </div>
               <div style={{ textAlign: "right" }}>
                 <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 4 }}>Incidenten</p>
                 <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: overplanned.length > 0 ? "#ff716c" : "#3fff8b" }}>{overplanned.length}</span>
               </div>
             </div>
-          )}
+            );
+          })()}
           </>)}
 
           {planningView === 'klus' && (
@@ -593,11 +606,7 @@ export default function ManagerPlanning() {
               )).map((projectId) => {
                 const project = projects.find(p => p.id === projectId);
                 const projectEntries = entries.filter(e => e.project_id === projectId && weekDateStrings.includes(e.datum));
-                const totalUren = projectEntries.reduce((sum, e) => {
-                  const s = e.starttijd ? parseInt(e.starttijd.split(':')[0]) : 7;
-                  const ei = e.eindtijd ? parseInt(e.eindtijd.split(':')[0]) : s + 8;
-                  return sum + (ei - s);
-                }, 0);
+                const totalUren = projectEntries.reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
                 const DAGEN_LBL = ['Ma','Di','Wo','Do','Vr'];
                 return (
                   <div key={projectId} style={{
@@ -647,11 +656,7 @@ export default function ManagerPlanning() {
                       const dateStr = format(date, 'yyyy-MM-dd');
                       const dagEntries = projectEntries.filter(e => e.datum === dateStr);
                       if (dagEntries.length === 0) return null;
-                      const dagTotaal = dagEntries.reduce((sum, e) => {
-                        const s = e.starttijd ? parseInt(e.starttijd.split(':')[0]) : 7;
-                        const ei = e.eindtijd ? parseInt(e.eindtijd.split(':')[0]) : s + 8;
-                        return sum + (ei - s);
-                      }, 0);
+                      const dagTotaal = dagEntries.reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
                       return (
                         <div key={dateStr}>
                           <div style={{
@@ -673,9 +678,7 @@ export default function ManagerPlanning() {
                           </div>
                           {dagEntries.map((entry, ei) => {
                             const monteur = medewerkers.find(m => m.id === entry.medewerker_id);
-                            const s = entry.starttijd ? parseInt(entry.starttijd.split(':')[0]) : 7;
-                            const e2 = entry.eindtijd ? parseInt(entry.eindtijd.split(':')[0]) : s + 8;
-                            const uren = e2 - s;
+                            const uren = berekenUren(entry.starttijd, entry.eindtijd);
                             const initials = monteur?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('') || 'XX';
                             return (
                               <div key={entry.id} style={{
