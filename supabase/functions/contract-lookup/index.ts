@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
   try {
     const { token } = await req.json();
 
-    if (!token) {
+    if (!token || typeof token !== "string" || token.length < 10 || token.length > 200) {
       return new Response(JSON.stringify({ error: "Token is verplicht" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -25,19 +25,27 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Find contract by token - search in verstuurd, correctie_gevraagd, ondertekend_ot, ondertekend_beiden
-    const { data: contracten } = await supabase
+    // Look up token in dedicated table
+    const { data: tokenRow } = await supabase
+      .from("contract_tokens")
+      .select("contract_id, geldig_tot, gebruikt")
+      .eq("token", token)
+      .maybeSingle();
+
+    if (!tokenRow) {
+      return new Response(JSON.stringify({ error: "not_found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Load contract
+    const { data: contract } = await supabase
       .from("contracten")
       .select("*, kandidaten(email, profiel_id)")
-      .in("status", ["verstuurd", "correctie_gevraagd", "ondertekend_ot", "ondertekend_beiden"]);
+      .eq("id", tokenRow.contract_id)
+      .maybeSingle();
 
-    // Find by token in contract_data
-    let contract = contracten?.find((c: any) => {
-      const cd = c.contract_data as any;
-      return cd?._token === token;
-    });
-
-    // If not found (token cleared after signing), return not found
     if (!contract) {
       return new Response(JSON.stringify({ error: "not_found" }), {
         status: 404,
@@ -62,8 +70,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check token expiry
-    if (cd._token_geldig_tot && new Date(cd._token_geldig_tot) < new Date()) {
+    // Token expired or used
+    if (tokenRow.gebruikt || new Date(tokenRow.geldig_tot) < new Date()) {
       return new Response(JSON.stringify({ error: "expired" }), {
         status: 410,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -87,7 +95,7 @@ Deno.serve(async (req) => {
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (err) {
+  } catch (_err) {
     return new Response(JSON.stringify({ error: "Interne fout" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

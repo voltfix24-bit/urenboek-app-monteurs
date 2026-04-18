@@ -20,6 +20,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (typeof token !== "string") {
+      return new Response(JSON.stringify({ error: "Ongeldig token" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Validate wat_klopt_niet items
     const GELDIGE_OPTIES = ["naam_handelsnaam", "adres", "kvk_nummer", "btw_nummer", "uurtarief", "looptijd", "anders"];
     const ongeldige = wat_klopt_niet.filter((v: string) => !GELDIGE_OPTIES.includes(v));
@@ -44,32 +51,34 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Find contract by token in contract_data
-    const { data: contracten } = await supabase
-      .from("contracten")
-      .select("id, contract_data, kandidaat_id, status")
-      .in("status", ["verstuurd", "correctie_gevraagd"]);
+    // Look up token in dedicated table
+    const { data: tokenRow } = await supabase
+      .from("contract_tokens")
+      .select("contract_id, geldig_tot, gebruikt")
+      .eq("token", token)
+      .maybeSingle();
 
-    const contract = contracten?.find((c: any) => {
-      const cd = c.contract_data as any;
-      return cd?._token === token;
-    });
-
-    if (!contract) {
+    if (!tokenRow || tokenRow.gebruikt || new Date(tokenRow.geldig_tot) < new Date()) {
       return new Response(JSON.stringify({ error: "Ongeldige of verlopen link" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check token expiry
-    const cd = (contract as any).contract_data as any;
-    if (cd._token_geldig_tot && new Date(cd._token_geldig_tot) < new Date()) {
-      return new Response(JSON.stringify({ error: "Deze link is verlopen" }), {
-        status: 410,
+    const { data: contract } = await supabase
+      .from("contracten")
+      .select("id, contract_data, kandidaat_id, status")
+      .eq("id", tokenRow.contract_id)
+      .maybeSingle();
+
+    if (!contract || !["verstuurd", "correctie_gevraagd"].includes(contract.status)) {
+      return new Response(JSON.stringify({ error: "Ongeldige of verlopen link" }), {
+        status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const cd = (contract as any).contract_data as any;
 
     // Rate limit: max 5 corrections per contract
     const { count } = await supabase
@@ -118,7 +127,7 @@ Deno.serve(async (req) => {
 
       if (managerProfiles?.length) {
         const firstManager = managerProfiles[0].id;
-        const otNaam = cd.ot_naam || "Kandidaat";
+        const otNaam = cd?.ot_naam || "Kandidaat";
         const items = wat_klopt_niet.join(", ");
         await supabase.from("mededelingen").insert({
           titel: `${otNaam} meldt een onjuistheid in het contract`,
@@ -133,7 +142,7 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (err) {
+  } catch (_err) {
     return new Response(JSON.stringify({ error: "Interne fout" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

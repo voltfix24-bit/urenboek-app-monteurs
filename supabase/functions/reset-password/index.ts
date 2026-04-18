@@ -13,14 +13,47 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Database-backed rate limit by IP
-    const forwardedFor = req.headers.get("x-forwarded-for");
-    const clientIp = (forwardedFor ? forwardedFor.split(",")[0].trim() : null) || req.headers.get("cf-connecting-ip") || "unknown";
+    // Require an authenticated caller
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const jwt = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsErr } = await userClient.auth.getClaims(jwt);
+    if (claimsErr || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const callerUserId = claimsData.claims.sub;
+
+    // Caller must be a manager
+    const { data: isManager } = await adminClient.rpc("has_role", {
+      _user_id: callerUserId,
+      _role: "manager",
+    });
+    if (!isManager) {
+      return new Response(JSON.stringify({ error: "Alleen managers mogen wachtwoorden resetten" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Database-backed rate limit by caller user id (more meaningful than IP for an authenticated endpoint)
     const { data: allowed } = await adminClient.rpc("check_rate_limit", {
-      _key: clientIp, _endpoint: "reset-password", _limit: 5, _window_seconds: 60,
+      _key: callerUserId, _endpoint: "reset-password", _limit: 10, _window_seconds: 60,
     });
     if (!allowed) {
       return new Response(JSON.stringify({ error: "Te veel verzoeken. Probeer het later opnieuw." }), {
@@ -38,8 +71,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    const updateData: any = { password };
+    if (typeof password !== "string" || password.length < 8 || password.length > 200) {
+      return new Response(JSON.stringify({ error: "Wachtwoord moet 8-200 tekens zijn" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const updateData: { password: string; email?: string; email_confirm?: boolean } = { password };
     if (email) {
+      if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return new Response(JSON.stringify({ error: "Ongeldig e-mailadres" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       updateData.email = email;
       updateData.email_confirm = true;
     }
@@ -58,7 +104,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
