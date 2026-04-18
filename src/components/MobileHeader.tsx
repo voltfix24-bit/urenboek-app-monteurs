@@ -19,12 +19,14 @@ export function MobileHeader({ showBrand = true, title, actions, initials = "U" 
   const unread = badges.ongelezen;
 
   return (
-    <header style={{
-      position: "sticky", top: 0, zIndex: 50,
-      background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)",
-      borderBottom: "1px solid rgba(255,255,255,0.07)",
-      padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
-    }}>
+    <header
+      className="lg:hidden"
+      style={{
+        position: "sticky", top: 0, zIndex: 50,
+        background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(255,255,255,0.07)",
+        padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
       {showBrand ? (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span className="material-symbols-outlined" style={{ color: "#3fff8b", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
