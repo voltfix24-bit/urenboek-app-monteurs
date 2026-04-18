@@ -376,8 +376,8 @@ export default function Goedkeuring() {
                           const sc = statusConfig[entry.status] || statusConfig.concept;
                           const hasOveruren = overurenIds.has(`${entry.medewerker_id}_${entry.datum}`);
                           return (
-                            <>
-                              <tr key={entry.id} style={{ borderBottom: "1px solid rgba(106,118,140,0.1)" }}>
+                            <Fragment key={entry.id}>
+                              <tr style={{ borderBottom: "1px solid rgba(106,118,140,0.1)" }}>
                                 <td className="px-4 py-3 text-xs" style={{ color: "#a0abc3" }}>
                                   {format(new Date(entry.datum), "EEE d/M", { locale: nl })}
                                 </td>
