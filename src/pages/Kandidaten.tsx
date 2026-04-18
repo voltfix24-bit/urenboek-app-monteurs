@@ -476,18 +476,23 @@ export default function Kandidaten() {
                     {!wachtOpManager && !heeftCorrectie && k.status === "uitgenodigd" && contract && (
                       <div className="flex flex-col items-end gap-1">
                         <span className="text-[10px] font-medium" style={{ color: "#6e9bff" }}>📧 Uitgenodigd</span>
-                        {(contract.contract_data as any)?._token && (
-                          <button
-                            onClick={() => {
-                              const link = `${window.location.origin}/contract/ondertekenen/${(contract.contract_data as any)._token}`;
-                              navigator.clipboard.writeText(link);
-                              toast.success("Link gekopieerd ✓");
-                            }}
-                            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg font-medium"
-                            style={{ background: "#102038", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>
-                            <Copy className="w-3 h-3" /> Link kopiëren
-                          </button>
-                        )}
+                        <button
+                          onClick={async () => {
+                            const { data, error } = await supabase.functions.invoke("contract-token-create", {
+                              body: { contract_id: contract.id },
+                            });
+                            if (error || !data?.token) {
+                              toast.error("Kon link niet aanmaken");
+                              return;
+                            }
+                            const link = `${window.location.origin}/contract/ondertekenen/${data.token}`;
+                            await navigator.clipboard.writeText(link);
+                            toast.success("Nieuwe link gekopieerd ✓");
+                          }}
+                          className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg font-medium"
+                          style={{ background: "#102038", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>
+                          <Copy className="w-3 h-3" /> Nieuwe link
+                        </button>
                       </div>
                     )}
                     {!wachtOpManager && !heeftCorrectie && k.status === "gecontracteerd" && (
