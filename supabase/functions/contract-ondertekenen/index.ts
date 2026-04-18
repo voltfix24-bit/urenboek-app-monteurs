@@ -20,6 +20,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (typeof token !== "string" || typeof naam !== "string" || typeof handtekening !== "string") {
+      return new Response(JSON.stringify({ error: "Ongeldige invoer" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown";
     const userAgent = req.headers.get("user-agent") || "unknown";
 
@@ -28,29 +35,29 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Find contract by token in contract_data (same approach as contract-correctie)
-    const { data: contracten } = await supabase
-      .from("contracten")
-      .select("id, contract_data, kandidaat_id, status")
-      .in("status", ["verstuurd", "correctie_gevraagd"]);
+    // Look up token in dedicated table
+    const { data: tokenRow } = await supabase
+      .from("contract_tokens")
+      .select("contract_id, geldig_tot, gebruikt")
+      .eq("token", token)
+      .maybeSingle();
 
-    const contract = contracten?.find((c: any) => {
-      const cd = c.contract_data as any;
-      return cd?._token === token;
-    });
-
-    if (!contract) {
+    if (!tokenRow || tokenRow.gebruikt || new Date(tokenRow.geldig_tot) < new Date()) {
       return new Response(JSON.stringify({ error: "Ongeldige of verlopen link" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check token expiry
-    const cd = (contract as any).contract_data as any;
-    if (cd._token_geldig_tot && new Date(cd._token_geldig_tot) < new Date()) {
-      return new Response(JSON.stringify({ error: "Deze link is verlopen" }), {
-        status: 410,
+    const { data: contract } = await supabase
+      .from("contracten")
+      .select("id, kandidaat_id, status")
+      .eq("id", tokenRow.contract_id)
+      .maybeSingle();
+
+    if (!contract || !["verstuurd", "correctie_gevraagd"].includes(contract.status)) {
+      return new Response(JSON.stringify({ error: "Ongeldige of verlopen link" }), {
+        status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -77,11 +84,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Invalidate token by removing it from contract_data
-    const updatedData = { ...cd, _token: null, _token_geldig_tot: null };
-    await supabase.from("contracten").update({ contract_data: updatedData }).eq("id", contractId);
-
-    // Also mark any matching contract_tokens as used (if they exist)
+    // Mark all tokens for this contract as used
     await supabase
       .from("contract_tokens")
       .update({ gebruikt: true, gebruikt_op: new Date().toISOString() })
@@ -119,14 +122,14 @@ Deno.serve(async (req) => {
         .from("kandidaten")
         .select("email")
         .eq("id", contract.kandidaat_id)
-        .single();
+        .maybeSingle();
       if (kand) kandidaatEmail = kand.email;
     }
 
     return new Response(JSON.stringify({ success: true, email: kandidaatEmail, kandidaat_id: contract.kandidaat_id, contract_id: contractId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (err) {
+  } catch (_err) {
     return new Response(JSON.stringify({ error: "Interne fout" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
