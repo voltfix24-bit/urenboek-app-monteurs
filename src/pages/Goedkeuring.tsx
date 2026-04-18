@@ -425,7 +425,7 @@ export default function Goedkeuring() {
                                   </td>
                                 </tr>
                               )}
-                            </>
+                            </Fragment>
                           );
                         })}
                       </tbody>
