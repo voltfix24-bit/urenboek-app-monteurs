@@ -118,20 +118,14 @@ export default function ContractAanmaken() {
 
       if (error) throw error;
 
-      // Create token
-      const token = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, "");
-      const geldigTot = new Date();
-      geldigTot.setDate(geldigTot.getDate() + 7);
-
-      // Use service role via edge function is not needed - insert directly
-      // Token table has no client access, so we use an RPC or direct insert won't work
-      // Instead, let's create the token via the service role approach - store it in contract_data
-      const ondertekeningsLink = `${window.location.origin}/contract/ondertekenen/${token}`;
-
-      // We need to insert token - but RLS blocks it. Use a workaround: store in contract
-      await supabase.from("contracten").update({
-        contract_data: { ...finalData, _token: token, _token_geldig_tot: geldigTot.toISOString() } as any,
-      }).eq("id", contract!.id);
+      // Create signing token via edge function (uses service role to write to locked-down contract_tokens table)
+      const { data: tokenResp, error: tokenErr } = await supabase.functions.invoke("contract-token-create", {
+        body: { contract_id: contract!.id },
+      });
+      if (tokenErr || !tokenResp?.token) {
+        throw new Error(tokenErr?.message || "Kon ondertekentoken niet aanmaken");
+      }
+      const ondertekeningsLink = `${window.location.origin}/contract/ondertekenen/${tokenResp.token}`;
 
       // Update kandidaat status
       await supabase.from("kandidaten").update({ status: "uitgenodigd" }).eq("id", kandidaatId!);

@@ -142,18 +142,20 @@ export default function Kandidaten() {
       cd.uurtarief = parseFloat(editFields.uurtarief) || cd.uurtarief;
       // startdatum/einddatum are display strings, keep as-is if not changed
 
-      // Generate new token
-      const newToken = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, "");
-      const geldigTot = new Date();
-      geldigTot.setDate(geldigTot.getDate() + 7);
-      cd._token = newToken;
-      cd._token_geldig_tot = geldigTot.toISOString();
-
-      // Update contract
+      // Update contract data + status (token now lives in contract_tokens, not in JSONB)
       await supabase.from("contracten").update({
         contract_data: cd as any,
         status: "verstuurd",
       }).eq("id", correctieContract.id);
+
+      // Generate fresh signing token via edge function (revokes any prior token)
+      const { data: tokenResp, error: tokenErr } = await supabase.functions.invoke("contract-token-create", {
+        body: { contract_id: correctieContract.id },
+      });
+      if (tokenErr || !tokenResp?.token) {
+        throw new Error(tokenErr?.message || "Kon ondertekentoken niet aanmaken");
+      }
+      const newToken = tokenResp.token as string;
 
       // Update kandidaat tarief if changed
       const nieuwTarief = parseFloat(editFields.uurtarief);
