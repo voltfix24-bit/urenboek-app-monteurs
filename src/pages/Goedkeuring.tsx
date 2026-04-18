@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Fragment } from "react";
 import { ListSkeleton, GoedkeuringCardSkeleton } from "@/components/ui/Skeletons";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { HeaderLogo } from "@/components/HeaderLogo";
@@ -310,9 +310,9 @@ export default function Goedkeuring() {
           <div className="lg:hidden space-y-4">
             {renderGroupedCards(grouped)}
           </div>
-          {/* Desktop: 2-column layout */}
+          {/* Desktop: monteur sidebar + wide sticky table */}
           <div className="hidden lg:flex gap-4">
-            <div className="w-[40%] space-y-2">
+            <div className="w-[280px] shrink-0 space-y-2">
               {Object.entries(grouped).map(([name, userEntries]) => {
                 const totalHours = userEntries.reduce((s, e) => s + e.uren, 0);
                 const pendingCount = userEntries.filter((e) => e.status === "ingediend").length;
@@ -334,10 +334,11 @@ export default function Goedkeuring() {
                 );
               })}
             </div>
-            <div className="w-[60%]">
+            <div className="flex-1 min-w-0">
               {selectedMonteur && grouped[selectedMonteur] ? (
                 <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
-                  <div className="flex items-center justify-between px-4 py-3" style={{ background: "#102038" }}>
+                  {/* Sticky toolbar */}
+                  <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3" style={{ background: "#102038" }}>
                     <span className="font-semibold text-sm" style={{ color: "#dae6ff" }}>{selectedMonteur}</span>
                     <div className="flex gap-2">
                       {grouped[selectedMonteur].some(e => e.status === "concept") && (
@@ -357,8 +358,78 @@ export default function Goedkeuring() {
                       )}
                     </div>
                   </div>
-                  <div className="divide-y" style={{ borderColor: "#102038" }}>
-                    {grouped[selectedMonteur].map(renderEntryRow)}
+                  {/* Wide table with sticky header */}
+                  <div className="overflow-auto" style={{ maxHeight: "calc(100vh - 280px)" }}>
+                    <table className="w-full text-sm" style={{ borderCollapse: "separate", borderSpacing: 0 }}>
+                      <thead className="sticky top-0 z-10" style={{ background: "#0a1a30" }}>
+                        <tr style={{ color: "#a0abc3", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                          <th className="text-left font-semibold px-4 py-3" style={{ width: 110, borderBottom: "1px solid rgba(106,118,140,0.2)" }}>Datum</th>
+                          <th className="text-left font-semibold px-3 py-3" style={{ width: 100, borderBottom: "1px solid rgba(106,118,140,0.2)" }}>Project</th>
+                          <th className="text-left font-semibold px-3 py-3" style={{ borderBottom: "1px solid rgba(106,118,140,0.2)" }}>Omschrijving</th>
+                          <th className="text-right font-semibold px-3 py-3" style={{ width: 70, borderBottom: "1px solid rgba(106,118,140,0.2)" }}>Uren</th>
+                          <th className="text-left font-semibold px-3 py-3" style={{ width: 110, borderBottom: "1px solid rgba(106,118,140,0.2)" }}>Status</th>
+                          <th className="text-right font-semibold px-4 py-3" style={{ width: 180, borderBottom: "1px solid rgba(106,118,140,0.2)" }}>Acties</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {grouped[selectedMonteur].map((entry) => {
+                          const sc = statusConfig[entry.status] || statusConfig.concept;
+                          const hasOveruren = overurenIds.has(`${entry.medewerker_id}_${entry.datum}`);
+                          return (
+                            <Fragment key={entry.id}>
+                              <tr style={{ borderBottom: "1px solid rgba(106,118,140,0.1)" }}>
+                                <td className="px-4 py-3 text-xs" style={{ color: "#a0abc3" }}>
+                                  {format(new Date(entry.datum), "EEE d/M", { locale: nl })}
+                                </td>
+                                <td className="px-3 py-3">
+                                  <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md" style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b" }}>
+                                    {entry.project_nummer}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-3 text-xs truncate" style={{ color: "#dae6ff", maxWidth: 0 }}>
+                                  <div className="truncate">{entry.project_naam}{entry.beschrijving ? ` · ${entry.beschrijving}` : ""}</div>
+                                </td>
+                                <td className="px-3 py-3 text-right text-xs font-bold tabular-nums" style={{ color: "#dae6ff" }}>
+                                  {entry.uren}u
+                                  {hasOveruren && (
+                                    <span onClick={() => navigate("/overuren")} className="inline cursor-pointer"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "#feb300" }} /></span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-3">
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>
+                                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
+                                    {entry.status}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex justify-end">{renderEntryActions(entry)}</div>
+                                </td>
+                              </tr>
+                              {entry.status === "afgekeurd" && entry.afkeur_reden && (
+                                <tr>
+                                  <td colSpan={6} className="px-4 pb-2 text-[10px] italic" style={{ color: "#ff716c" }}>
+                                    Reden: {entry.afkeur_reden}
+                                  </td>
+                                </tr>
+                              )}
+                              {afkeurId === entry.id && (
+                                <tr>
+                                  <td colSpan={6} className="px-4 pb-3">
+                                    <div className="space-y-2">
+                                      <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={2} className="w-full px-3 py-2 rounded-xl text-sm resize-none" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                                      <div className="flex gap-2">
+                                        <button onClick={() => afkeurReden.trim() ? updateStatus(afkeurId, "afgekeurd", afkeurReden.trim()) : toast.error("Vul een reden in")} className="px-4 py-2 rounded-xl text-xs font-bold" style={{ background: "#ff716c", color: "#fff" }}>Afkeuren</button>
+                                        <button onClick={() => { setAfkeurId(null); setAfkeurReden(""); }} className="px-3 py-2 rounded-xl text-xs font-medium" style={{ background: "#102038", color: "#a0abc3" }}>Annuleren</button>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               ) : (
