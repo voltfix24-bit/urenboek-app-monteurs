@@ -327,3 +327,15 @@ function Step({ num, icon, text }: { num: number; icon: React.ReactNode; text: R
     </div>
   );
 }
+
+function Benefit({ icon, title, text }: { icon: string; title: string; text: string }) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <span style={{ fontSize: 16, lineHeight: "20px" }}>{icon}</span>
+      <div className="flex-1">
+        <p className="text-xs font-semibold" style={{ color: "#e6ebf5" }}>{title}</p>
+        <p className="text-[11px] leading-snug" style={{ color: "#a0abc3" }}>{text}</p>
+      </div>
+    </div>
+  );
+}
