@@ -102,7 +102,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 50,
+        zIndex: 120,
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: 'center',
