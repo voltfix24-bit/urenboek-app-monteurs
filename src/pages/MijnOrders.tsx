@@ -189,6 +189,13 @@ export default function MijnOrders() {
             </div>
           </div>
 
+          {/* ── PER WEEK DOWNLOAD ── */}
+          {orders.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <WeekDownloadList orders={orders} />
+            </div>
+          )}
+
           {/* ── SECTION LABEL ── */}
           <div style={{
             display: 'flex',
