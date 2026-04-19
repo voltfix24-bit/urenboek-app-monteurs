@@ -239,7 +239,7 @@ const Index = () => {
               }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: ingediendCount > 0 ? "#6e9bff" : goedgekeurdUren > 0 ? "#3fff8b" : "#feb300" }} />
                 <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", color: ingediendCount > 0 ? "#6e9bff" : goedgekeurdUren > 0 ? "#3fff8b" : "#feb300" }}>
-                  {ingediendCount > 0 ? "INGEDIEND" : goedgekeurdUren > 0 ? "GOEDGEKEURD" : "CONCEPT"}
+                  {ingediendCount > 0 ? "WACHT OP AKKOORD" : goedgekeurdUren > 0 ? "GOEDGEKEURD" : "NOG IN TE STUREN"}
                 </span>
               </div>
             </div>
@@ -266,7 +266,7 @@ const Index = () => {
             <div style={{ marginBottom: 12, padding: "12px 16px", borderRadius: 16, background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#feb300", flex: 1 }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>warning</span>
-                Je hebt nog {vorigeWeekConcept.reduce((s, e) => s + e.uren, 0)}u van vorige week niet ingediend.
+                Je hebt nog {vorigeWeekConcept.reduce((s, e) => s + e.uren, 0)}u van vorige week die je kunt insturen.
               </div>
               <button
                 onClick={async () => {
@@ -279,7 +279,7 @@ const Index = () => {
                 disabled={submittingVorigeWeek}
                 style={{ background: "#feb300", color: "#523700", border: "none", borderRadius: 12, padding: "6px 12px", fontSize: 11, fontWeight: 700, fontFamily: "Inter", cursor: "pointer", whiteSpace: "nowrap" as const }}
               >
-                Indienen
+                Insturen
               </button>
             </div>
           )}
@@ -289,7 +289,7 @@ const Index = () => {
             <div style={{ marginBottom: 12, padding: "12px 16px", borderRadius: 16, background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.2)", display: "flex", alignItems: "center", gap: 10 }}>
               <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#feb300" }}>wifi_off</span>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>
-                Geen verbinding — uren worden gesynchroniseerd als je online bent.
+                Geen internet — je uren worden automatisch verstuurd zodra je weer online bent.
                 {pendingOffline > 0 && ` (${pendingOffline} wachtend)`}
               </div>
             </div>
@@ -300,7 +300,7 @@ const Index = () => {
             <div style={{ marginBottom: 12, padding: "12px 16px", borderRadius: 16, background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#feb300", flex: 1 }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>warning</span>
-                Je hebt nog {conceptHours}u niet ingediend deze week.
+                Je hebt nog {conceptHours}u klaar om in te sturen.
               </div>
               <button onClick={submitAllConcepts} disabled={submittingAll} style={{ background: "#3fff8b", color: "#005d2c", border: "none", borderRadius: 12, padding: "6px 12px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
                 Alles indienen
@@ -468,7 +468,7 @@ const Index = () => {
             boxShadow: "0 8px 32px rgba(63,255,139,0.3)",
           }}>
             <span className="material-symbols-outlined" style={{ fontSize: 22 }}>add</span>
-            UREN TOEVOEGEN
+            UREN BOEKEN
           </button>
         </div>
       )}
@@ -553,9 +553,9 @@ const Index = () => {
             </div>
             <div className="space-y-2">
               {[
-                { step: "1", text: "Druk op + om uren te boeken" },
+                { step: "1", text: "Tik op + om je uren bij te houden" },
                 { step: "2", text: "Kies je project en vul je uren in" },
-                { step: "3", text: "Dien je uren in ter goedkeuring" },
+                { step: "3", text: "Stuur je uren in voor akkoord" },
               ].map(s => (
                 <div key={s.step} className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#3fff8b", color: "#fff" }}>{s.step}</div>

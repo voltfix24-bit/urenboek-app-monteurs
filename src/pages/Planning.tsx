@@ -191,16 +191,16 @@ export default function Planning() {
         return;
       }
     }
-    toast.success(submitDirect ? "Uren ingediend ✓" : "Concept opgeslagen ✓");
+    toast.success(submitDirect ? "Verstuurd voor akkoord ✓" : "Uren opgeslagen");
     setShowUrenModal(false);
     fetchPlanning();
   };
 
   const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-    concept: { bg: "#102038", text: "#a0abc3", label: "Concept" },
-    ingediend: { bg: "rgba(254,179,0,0.1)", text: "#feb300", label: "Ingediend" },
-    goedgekeurd: { bg: "rgba(63,255,139,0.1)", text: "#3fff8b", label: "Goedgekeurd" },
-    afgekeurd: { bg: "rgba(255,113,108,0.1)", text: "#ff716c", label: "Afgekeurd" },
+    concept: { bg: "#102038", text: "#a0abc3", label: "Nog niet ingediend" },
+    ingediend: { bg: "rgba(254,179,0,0.1)", text: "#feb300", label: "Wacht op akkoord" },
+    goedgekeurd: { bg: "rgba(63,255,139,0.1)", text: "#3fff8b", label: "Goedgekeurd ✓" },
+    afgekeurd: { bg: "rgba(255,113,108,0.1)", text: "#ff716c", label: "Niet goedgekeurd" },
   };
 
   const definitiefItems = items.filter(it => it.is_definitief);

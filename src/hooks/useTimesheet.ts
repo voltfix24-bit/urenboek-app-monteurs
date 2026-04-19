@@ -115,7 +115,7 @@ export function useTimesheet() {
         uren: entry.hours,
         status: "concept",
       }))) return;
-      toast.success("Uren opgeslagen als concept");
+      toast.success("Uren opgeslagen");
       fetchEntries();
       fetchAllEntries();
     },
@@ -136,8 +136,8 @@ export function useTimesheet() {
       const { data, error } = await supabase.functions.invoke("uren-indienen", {
         body: { urenIds: [id] },
       });
-      if (error || !data?.success) { toast.error("Er ging iets mis. Probeer opnieuw."); return; }
-      toast.success("Ingediend ter goedkeuring");
+      if (error || !data?.success) { toast.error("Dat ging niet goed. Probeer het nog een keer."); return; }
+      toast.success("Verstuurd voor akkoord ✓");
       fetchEntries();
       fetchAllEntries();
     },
@@ -147,13 +147,13 @@ export function useTimesheet() {
   const submitAll = useCallback(
     async () => {
       const conceptIds = entries.filter(e => e.status === "concept").map(e => e.id);
-      if (conceptIds.length === 0) { toast.info("Geen concept-uren om in te dienen"); return 0; }
+      if (conceptIds.length === 0) { toast.info("Je hebt geen uren klaar om in te sturen"); return 0; }
       const { data, error } = await supabase.functions.invoke("uren-indienen", {
         body: { urenIds: conceptIds },
       });
-      if (error || !data?.success) { toast.error("Er ging iets mis. Probeer opnieuw."); return 0; }
+      if (error || !data?.success) { toast.error("Dat ging niet goed. Probeer het nog een keer."); return 0; }
       const count = data.updated ?? conceptIds.length;
-      toast.success(`${count} uren ingediend ter goedkeuring`);
+      toast.success(`${count} uur verstuurd voor akkoord ✓`);
       fetchEntries();
       fetchAllEntries();
       return count;
@@ -164,7 +164,7 @@ export function useTimesheet() {
   const revertToConcept = useCallback(
     async (id: string) => {
       if (!await mutate(supabase.from("uren_boekingen").update({ status: "concept", approved_by: null, afkeur_reden: null }).eq("id", id))) return;
-      toast.success("Teruggezet als concept — pas aan en dien opnieuw in");
+      toast.success("Teruggezet — pas je uren aan en stuur ze opnieuw in");
       fetchEntries();
       fetchAllEntries();
     },

@@ -148,7 +148,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px 24px' }}>
             <span style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 28, color: '#dae6ff' }}>
-              Uren registreren
+              Uren boeken
             </span>
             <button
               onClick={onClose}
@@ -242,7 +242,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
                         fontWeight: 600,
                         lineHeight: 1.4,
                       }}>
-                        Vandaag kan je pas uren boeken na 16:00
+                        Je kunt pas uren boeken als je werkdag voorbij is (na 16:00)
                       </p>
                     </div>
                   );
@@ -270,7 +270,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
                   borderRadius: 16,
                   border: '1px dashed rgba(254,179,0,0.3)',
                 }}>
-                  Geen projecten ingepland voor deze dag. Neem contact op met de manager.
+                  Je bent vandaag niet ingepland. Neem contact op met je manager.
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -324,7 +324,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
             {/* SECTION 3 — AANTAL UREN */}
             <div style={{ marginBottom: 32 }}>
               <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 24, textAlign: 'center' }}>
-                Aantal uren
+                Hoeveel uur?
               </p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, marginBottom: 24 }}>
                 <button
@@ -403,7 +403,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
                 <textarea
                   value={form.werkzaamheden}
                   onChange={(e) => setForm(f => ({ ...f, werkzaamheden: e.target.value }))}
-                  placeholder="Beschrijf de werkzaamheden..."
+                  placeholder="Wat heb je gedaan? (optioneel)"
                   rows={3}
                   style={{
                     width: '100%', marginTop: 8, padding: '12px 16px', borderRadius: 16,
