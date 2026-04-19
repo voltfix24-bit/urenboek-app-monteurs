@@ -69,6 +69,20 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
   const proj = projects.find((p) => p.id === form.projectId);
   const today = dateKey(new Date());
 
+  const kanDagBoeken = (dag: Date): boolean => {
+    const nu = new Date();
+    const dagStr = format(dag, "yyyy-MM-dd");
+    const vandaag = format(nu, "yyyy-MM-dd");
+    // Past days: always allowed
+    if (dagStr < vandaag) return true;
+    // Today: only after 16:00
+    if (dagStr === vandaag) {
+      return nu.getHours() >= 16;
+    }
+    // Future days: never allowed
+    return false;
+  };
+
   function handleSubmit() {
     if (!selectedDate) return;
     const vResult = valideer(urenBoekingSchema, {
@@ -156,15 +170,21 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
                 const DAGEN_SHORT = ['Ma', 'Di', 'Wo', 'Do', 'Vr'];
                 const dateStr = day.toISOString().split('T')[0];
                 const isSelected = selectedDate?.toISOString().split('T')[0] === dateStr;
+                const isBlocked = !kanDagBoeken(day);
                 return (
                   <button
                     key={i}
-                    onClick={() => setSelectedDate(day)}
+                    onClick={() => {
+                      if (!isBlocked) setSelectedDate(day);
+                    }}
+                    disabled={isBlocked}
                     style={{
                       minWidth: 68, height: 56, borderRadius: 16,
                       border: isSelected ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
                       background: isSelected ? '#3fff8b' : '#102038',
-                      cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, flexShrink: 0,
+                      cursor: isBlocked ? 'not-allowed' : 'pointer',
+                      opacity: isBlocked ? 0.35 : 1,
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, flexShrink: 0,
                       boxShadow: isSelected ? '0 0 12px rgba(63,255,139,0.3)' : 'none',
                     }}
                   >
@@ -174,10 +194,60 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
                     <span style={{ fontSize: 10, fontWeight: 600, fontFamily: 'Inter', color: isSelected ? '#004820' : 'rgba(160,171,195,0.6)' }}>
                       {day.getDate()} {['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][day.getMonth()]}
                     </span>
+                    {isBlocked && (
+                      <span
+                        className="material-symbols-outlined"
+                        style={{
+                          fontSize: 10,
+                          color: '#feb300',
+                          display: 'block',
+                        }}>
+                        lock
+                      </span>
+                    )}
                   </button>
                 );
               })}
             </div>
+            {selectedDate === null && (() => {
+              const vandaag = new Date();
+              const vandaagStr = format(vandaag, "yyyy-MM-dd");
+              const isVandaagGeblokkeerd = vandaag.getHours() < 16;
+              if (isVandaagGeblokkeerd) {
+                return (
+                  <div style={{
+                    margin: '12px 0',
+                    padding: '12px 16px',
+                    borderRadius: 12,
+                    background: 'rgba(254,179,0,0.08)',
+                    border: '1px solid rgba(254,179,0,0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                  }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 18,
+                        color: '#feb300',
+                        flexShrink: 0,
+                      }}>
+                      schedule
+                    </span>
+                    <p style={{
+                      fontSize: 12,
+                      color: '#feb300',
+                      fontFamily: 'Inter',
+                      fontWeight: 600,
+                      lineHeight: 1.4,
+                    }}>
+                      Vandaag kan je pas uren boeken na 16:00
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
 
           {/* SECTION 2 — PROJECT SELECTEREN */}
