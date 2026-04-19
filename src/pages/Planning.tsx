@@ -416,27 +416,28 @@ export default function Planning() {
               style={{
                 width: '100%', maxWidth: 480, background: 'rgba(10,26,48,0.97)', backdropFilter: 'blur(24px)',
                 borderRadius: '40px 40px 0 0', borderTop: '1px solid rgba(255,255,255,0.1)',
-                maxHeight: '80vh', overflowY: 'auto', paddingBottom: 40,
+                maxHeight: '95vh', overflowY: 'auto',
+                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
-                <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 6px' }}>
+                <div style={{ width: 48, height: 5, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
               </div>
               <div style={{ padding: '0 24px' }}>
-                <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 24, color: '#dae6ff', marginBottom: 20 }}>Uren boeken</h2>
+                <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 22, color: '#dae6ff', marginBottom: 14 }}>Uren boeken</h2>
 
-                <div style={{ padding: 16, borderRadius: 16, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 24 }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter' }}>{modalItem.project_naam}</p>
-                  <p style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', marginTop: 4 }}>
+                <div style={{ padding: 12, borderRadius: 14, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 16 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter' }}>{modalItem.project_naam}</p>
+                  <p style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', marginTop: 2 }}>
                     {format(new Date(modalItem.datum + 'T12:00:00'), 'EEEE d MMMM', { locale: nl })} · {modalItem.starttijd} – {modalItem.eindtijd}
                   </p>
                 </div>
 
-                <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 12 }}>Werkzaamheden</p>
-                <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 8 }}>Werkzaamheden</p>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
                   {['schakelen', 'monteren'].map(w => (
                     <button key={w} onClick={() => setUrenForm(f => ({ ...f, werkzaamheden: w }))} style={{
-                      flex: 1, padding: '14px 0', borderRadius: 16,
+                      flex: 1, padding: '12px 0', borderRadius: 14,
                       border: urenForm.werkzaamheden === w ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
                       background: urenForm.werkzaamheden === w ? 'rgba(63,255,139,0.05)' : '#061327',
                       color: urenForm.werkzaamheden === w ? '#3fff8b' : '#a0abc3',
@@ -445,30 +446,30 @@ export default function Planning() {
                   ))}
                 </div>
 
-                <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 24, textAlign: 'center' }}>Aantal uren</p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, marginBottom: 24 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 12, textAlign: 'center' }}>Aantal uren</p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28, marginBottom: 14 }}>
                   <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.max(0.5, f.uren - 0.5) }))} style={{
-                    width: 56, height: 56, borderRadius: '50%', background: '#142640', border: '2px solid rgba(255,113,108,0.3)',
+                    width: 52, height: 52, borderRadius: '50%', background: '#142640', border: '2px solid rgba(255,113,108,0.3)',
                     color: '#dae6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                   }}>
                     <span className="material-symbols-outlined" style={{ fontSize: 24 }}>remove</span>
                   </button>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 72, color: '#dae6ff', lineHeight: 1 }}>{urenForm.uren}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: -4 }}>UUR</div>
+                    <div style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 56, color: '#dae6ff', lineHeight: 1 }}>{urenForm.uren}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 2 }}>UUR</div>
                   </div>
                   <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))} style={{
-                    width: 56, height: 56, borderRadius: '50%', background: 'rgba(63,255,139,0.2)', border: '2px solid rgba(63,255,139,0.3)',
+                    width: 52, height: 52, borderRadius: '50%', background: 'rgba(63,255,139,0.2)', border: '2px solid rgba(63,255,139,0.3)',
                     color: '#3fff8b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                     boxShadow: '0 0 20px rgba(63,255,139,0.15)',
                   }}>
                     <span className="material-symbols-outlined" style={{ fontSize: 24 }}>add</span>
                   </button>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 32 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
                   {[4, 6, 8, 9, 10].map(h => (
                     <button key={h} onClick={() => setUrenForm(f => ({ ...f, uren: h }))} style={{
-                      padding: '10px 18px', borderRadius: 9999,
+                      padding: '8px 16px', borderRadius: 9999,
                       border: urenForm.uren === h ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
                       background: urenForm.uren === h ? 'rgba(63,255,139,0.1)' : '#061327',
                       color: urenForm.uren === h ? '#3fff8b' : '#dae6ff',
