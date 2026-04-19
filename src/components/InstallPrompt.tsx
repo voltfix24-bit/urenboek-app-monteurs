@@ -177,6 +177,18 @@ export function InstallPrompt() {
           </button>
         </div>
 
+        <div
+          className="rounded-2xl p-3 mb-4 space-y-2"
+          style={{ background: "rgba(63,255,139,0.06)", border: "1px solid rgba(63,255,139,0.18)" }}
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#3fff8b" }}>
+            Wat krijg je?
+          </p>
+          <Benefit icon="🚀" title="Sneller opstarten" text="Direct vanaf je beginscherm, zonder eerst een browser te openen." />
+          <Benefit icon="📱" title="Voelt als een echte app" text="Geen adres‑ of menubalk meer — volledig schermgebruik." />
+          <Benefit icon="🔔" title="Altijd binnen handbereik" text="Eigen app‑icoon naast je andere apps, één tik en je bent in TerreVolt." />
+        </div>
+
         {platform === "ios" ? (
           <div className="space-y-3">
             <div
