@@ -160,16 +160,38 @@ export default function Planning() {
     const beschrijving = needsToelichting
       ? `${urenForm.werkzaamheden} — afwijking ${urenForm.uren - planned > 0 ? '+' : ''}${(urenForm.uren - planned).toFixed(1)}u: ${urenForm.toelichting.trim()}`
       : urenForm.werkzaamheden;
-    if (!await mutate(supabase.from("uren_boekingen").insert({
-      medewerker_id: profileId,
-      project_id: modalItem.project_id,
-      datum: modalItem.datum,
-      uren: urenForm.uren,
-      type: urenForm.werkzaamheden,
-      beschrijving,
-      status: submitDirect ? "ingediend" : "concept",
-    }))) return;
-    toast.success("Uren geboekt ✓");
+    // Stap 1: altijd eerst als concept inserten (RLS staat alleen 'concept' toe bij insert)
+    const { data: inserted, error: insertErr } = await supabase
+      .from("uren_boekingen")
+      .insert({
+        medewerker_id: profileId,
+        project_id: modalItem.project_id,
+        datum: modalItem.datum,
+        uren: urenForm.uren,
+        type: urenForm.werkzaamheden,
+        beschrijving,
+        status: "concept",
+      })
+      .select("id")
+      .single();
+    if (insertErr || !inserted) {
+      toast.error(insertErr?.message || "Kon uren niet opslaan");
+      return;
+    }
+    // Stap 2: bij direct indienen status updaten naar 'ingediend'
+    if (submitDirect) {
+      const { error: updErr } = await supabase
+        .from("uren_boekingen")
+        .update({ status: "ingediend" })
+        .eq("id", inserted.id);
+      if (updErr) {
+        toast.error("Opgeslagen als concept, indienen mislukt: " + updErr.message);
+        setShowUrenModal(false);
+        fetchPlanning();
+        return;
+      }
+    }
+    toast.success(submitDirect ? "Uren ingediend ✓" : "Concept opgeslagen ✓");
     setShowUrenModal(false);
     fetchPlanning();
   };
