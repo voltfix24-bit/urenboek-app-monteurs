@@ -73,9 +73,27 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  html, body {
+    /* Voorkom horizontale scroll op mobiel — overflow-x-auto containers binnenin blijven werken */
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Media en SVG nooit groter dan hun container */
+  img, video, svg, canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Lange woorden / URLs / e-mails breken in plaats van uit te steken */
+  p, span, a, h1, h2, h3, h4, h5, h6, div {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   h1, h2, h3, h4, h5, h6 {
