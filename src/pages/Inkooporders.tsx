@@ -262,7 +262,12 @@ export default function Inkooporders() {
             ))}
           </div>
 
-          {loading ? (
+          {/* Per week downloaden */}
+          {!loading && filteredOrders.length > 0 && (
+            <WeekDownloadList orders={filteredOrders} toonNaam />
+          )}
+
+
             <Spinner padding="py-8" />
           ) : filteredOrders.length === 0 ? (
             <div className="text-center py-12 rounded-2xl" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
