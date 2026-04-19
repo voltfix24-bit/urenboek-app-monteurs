@@ -222,7 +222,7 @@ function RealLoginForm() {
 
   if (showForgot) {
     return (
-      <div style={{ background: "#030e20", minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+      <div style={{ background: "#030e20", minHeight: "100dvh", display: "flex", flexDirection: "column", paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
         {/* HEADER */}
         <div style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={() => setShowForgot(false)} style={{ width: 40, height: 40, borderRadius: "50%", background: "none", border: "none", cursor: "pointer", color: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -276,7 +276,7 @@ function RealLoginForm() {
   }
 
   return (
-    <div style={{ background: "#030e20", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+    <div style={{ background: "#030e20", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       {/* Industrial grid background */}
       <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(63,255,139,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(63,255,139,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
 
