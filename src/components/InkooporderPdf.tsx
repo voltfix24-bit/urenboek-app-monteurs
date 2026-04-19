@@ -182,9 +182,9 @@ const styles = StyleSheet.create({
   tabelRijOneven: {
     backgroundColor: groenTint,
   },
-  kolDatum: { width: 38 },
-  kolProject: { width: 72 },
-  kolWerk: { flex: 1 },
+  kolDatum: { width: 50 },
+  kolProject: { width: 62 },
+  kolWerk: { flex: 1, paddingLeft: 4 },
   kolUren: { width: 20, textAlign: "center" },
   kolTarief: { width: 42, textAlign: "right" },
   kolBedrag: { width: 46, textAlign: "right" },
@@ -326,6 +326,14 @@ function fmtDatum(d: string, fmt: string = "d MMM yyyy"): string {
   }
 }
 
+function fmtDatumMetDag(d: string): string {
+  try {
+    return format(new Date(d + "T12:00:00"), "EEE d MMM", { locale: nl });
+  } catch {
+    return d;
+  }
+}
+
 function euro(n: number): string {
   return `€ ${n.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
@@ -412,7 +420,7 @@ export function InkooporderDocument({
         {/* SAMENVATTINGSBALK */}
         <View style={styles.samenvatBalk}>
           {[
-            { label: "PERIODE", waarde: periodeStr },
+            { label: "WEEK", waarde: periodeStr },
             { label: "TOTAAL UREN", waarde: `${order.totaal_uren} uur` },
             { label: "UURTARIEF", waarde: regels.length > 0 ? euro(Number(regels[0].uurtarief)) : "—" },
             { label: "BETAALTERMIJN", waarde: `${termijn} dagen` },
@@ -442,7 +450,7 @@ export function InkooporderDocument({
           const omschrijving = r.activiteit || r.beschrijving || "Elektrotechnische werkzaamheden";
           return (
             <View key={i} style={[styles.tabelRij, i % 2 === 0 ? styles.tabelRijEven : styles.tabelRijOneven]}>
-              <View style={styles.kolDatum}><Text style={styles.tabelMuted}>{fmtDatum(r.datum, "d MMM")}</Text></View>
+              <View style={styles.kolDatum}><Text style={styles.tabelMuted}>{fmtDatumMetDag(r.datum)}</Text></View>
               <View style={styles.kolProject}><Text style={styles.tabelProject}>{r.project_naam || ""}</Text></View>
               <View style={styles.kolWerk}><Text style={styles.tabelTekst}>{omschrijving}</Text></View>
               <View style={styles.kolUren}><Text style={[styles.tabelTekst, { textAlign: "center", fontFamily: "Helvetica-Bold" }]}>{r.uren}</Text></View>
@@ -528,7 +536,7 @@ export function InkooporderDocument({
 
         {/* DOC FOOTER */}
         <View style={styles.docFooter}>
-          <Text style={styles.docFooterTekst}>Doc: {order.order_nummer} · Periode {periodeStr}</Text>
+          <Text style={styles.docFooterTekst}>Doc: {order.order_nummer} · Week {periodeStr}</Text>
           <Text style={styles.docFooterTekst}>Definitief goedgekeurd voor facturatie · Pagina 1 van 1</Text>
         </View>
       </Page>
