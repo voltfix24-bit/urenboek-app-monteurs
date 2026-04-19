@@ -31,11 +31,15 @@ export function PageShell({ children, mobileConstrained = true }: PageShellProps
             // Mobile: max width 430 centered, padding for bottom nav
             // Desktop (lg+): shift right past sidebar, wider content area, no bottom-nav padding
             (mobileConstrained
-              ? "mx-auto max-w-[430px] pb-20 "
-              : "pb-20 ") +
+              ? "mx-auto max-w-[430px] "
+              : "") +
             "lg:max-w-none lg:mx-0 lg:ml-[240px] lg:pb-10 lg:px-10 lg:pt-8"
           }
-          style={{ minHeight: "100vh" }}
+          style={{
+            minHeight: "100vh",
+            // Bottom nav (72px) + iPhone home indicator safe area + extra ademruimte
+            paddingBottom: "calc(72px + env(safe-area-inset-bottom) + 16px)",
+          }}
         >
           {children}
         </div>
