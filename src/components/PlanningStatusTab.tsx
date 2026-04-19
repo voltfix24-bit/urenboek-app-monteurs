@@ -4,7 +4,13 @@ import { toast } from "sonner";
 import { CalendarDays, ArrowRight, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export function PlanningStatusTab({ projectId, profileId }: { projectId: string; profileId?: string }) {
+interface Props {
+  projectId: string;
+  profileId?: string;
+  onStatusChange?: () => void;
+}
+
+export function PlanningStatusTab({ projectId, profileId, onStatusChange }: Props) {
   const navigate = useNavigate();
   const [status, setStatus] = useState<{ is_definitief: boolean; definitief_op: string | null; definitief_door_naam: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +40,8 @@ export function PlanningStatusTab({ projectId, profileId }: { projectId: string;
     if (error || !data?.success) { toast.error("Fout bij wijzigen status"); return; }
     toast.success(val ? "Planning gepubliceerd" : "Terug naar concept");
     load();
+    onStatusChange?.();
+    window.dispatchEvent(new CustomEvent("project-status-changed"));
   }
 
   if (loading) return <p className="text-sm py-8 text-center" style={{ color: "#a0abc3" }}>Laden...</p>;
