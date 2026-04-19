@@ -10,6 +10,7 @@ import { NavBadgesProvider } from "@/hooks/useNavBadges";
 import { AppErrorBoundary, RouteErrorBoundary } from "@/components/AppErrorBoundary";
 import { Spinner } from "@/components/ui/Spinner";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { UpdatePrompt } from "@/components/UpdatePrompt";
 
 // Critical pages — loaded eagerly
 import Index from "./pages/Index";
@@ -115,6 +116,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <InstallPrompt />
+        <UpdatePrompt />
         <BrowserRouter>
           <AuthProvider>
             <ProfileProvider>

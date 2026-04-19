@@ -23,6 +23,9 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         navigateFallbackDenylist: [/^\/~oauth/],
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: /\/rest\/v1\/planning/,
