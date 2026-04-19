@@ -676,6 +676,18 @@ export default function Profiel() {
             <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3', opacity: 0.6 }}>chevron_right</span>
           </button>
 
+          {/* INSTALLEER APP */}
+          {canShowInstallPrompt() && (
+            <button onClick={triggerInstallPrompt} style={{
+              width: '100%', padding: '16px 20px', borderRadius: 16, background: 'rgba(63,255,139,0.08)',
+              border: '1px solid rgba(63,255,139,0.3)', color: '#3fff8b', fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>install_mobile</span>
+              Installeer app op beginscherm
+            </button>
+          )}
+
           {/* UITLOGGEN */}
           <button onClick={signOut} style={{
             width: '100%', padding: '16px 20px', borderRadius: 16, background: 'transparent',
