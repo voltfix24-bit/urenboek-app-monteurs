@@ -137,6 +137,22 @@ const Index = () => {
     setShowFridayBanner(isFridayAfternoon() && viewingCurrentWeek && conceptEntries.length > 0);
   }, [conceptEntries.length, currentWeekStart]);
 
+  // Load planning for current week to filter project selection in modal
+  useEffect(() => {
+    if (!profileId) return;
+    const startStr = format(currentWeekStart, "yyyy-MM-dd");
+    const endStr = format(addDays(currentWeekStart, 6), "yyyy-MM-dd");
+    (async () => {
+      const { data } = await supabase
+        .from("planning")
+        .select("datum, project_id")
+        .eq("medewerker_id", profileId)
+        .gte("datum", startStr)
+        .lte("datum", endStr);
+      setPlanningItems((data ?? []) as Array<{ datum: string; project_id: string }>);
+    })();
+  }, [profileId, currentWeekStart]);
+
   const handleSubmitEntry = useCallback(async (id: string) => {
     const entry = [...weekEntries, ...allEntries].find(e => e.id === id);
     await submitEntry(id);
