@@ -38,7 +38,7 @@ export default function Planning() {
   const [existingBoekingen, setExistingBoekingen] = useState<Map<string, ExistingBoeking>>(new Map());
   const [showUrenModal, setShowUrenModal] = useState(false);
   const [modalItem, setModalItem] = useState<PlanningItem | null>(null);
-  const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8 });
+  const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8, toelichting: "" });
   const weekNumber = getISOWeek(weekStart);
 
   const fetchPlanning = useCallback(async () => {
