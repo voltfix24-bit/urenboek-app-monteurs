@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
+import { WeekDownloadList } from "@/components/WeekDownloadList";
 
 export default function MijnOrders() {
   const { user } = useAuth();
