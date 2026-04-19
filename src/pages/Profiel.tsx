@@ -339,7 +339,7 @@ export default function Profiel() {
 
   return (
     <PageShell>
-      <div style={{ background: '#030e20', minHeight: '100dvh', paddingBottom: 120 }}>
+      <div style={{ background: '#030e20', minHeight: '100dvh', paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)" }}>
         {/* HEADER */}
         <header style={{
           position: 'sticky', top: 0, zIndex: 50,
@@ -696,7 +696,7 @@ export default function Profiel() {
           <div onClick={e => e.stopPropagation()} style={{
             width: '100%', maxWidth: 480, background: 'rgba(10,26,48,0.97)', backdropFilter: 'blur(24px)',
             borderRadius: '40px 40px 0 0', borderTop: '1px solid rgba(255,255,255,0.1)',
-            maxHeight: '85vh', overflowY: 'auto', paddingBottom: 40,
+            maxHeight: '85vh', overflowY: 'auto', paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 32px)",
           }}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
               <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />

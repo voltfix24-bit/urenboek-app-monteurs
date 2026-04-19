@@ -135,7 +135,7 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
           overflowY: 'auto',
           transform: `translateY(${dragY}px)`,
           transition: isDragging ? 'none' : 'transform 0.3s ease',
-          paddingBottom: 40,
+          paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 24px)",
         }}
       >
         {/* Handle */}

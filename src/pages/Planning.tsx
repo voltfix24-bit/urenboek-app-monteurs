@@ -235,7 +235,7 @@ export default function Planning() {
 
   return (
     <PageShell>
-      <div style={{ background: '#030e20', minHeight: '100dvh', paddingBottom: 160 }}>
+      <div style={{ background: '#030e20', minHeight: '100dvh', paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
         <MobileHeader initials={profileData?.full_name?.charAt(0)?.toUpperCase() || 'U'} />
 
         <PullToRefresh onRefresh={async () => { await fetchPlanning(); }}>
@@ -450,7 +450,7 @@ export default function Planning() {
                 width: '100%', maxWidth: 480, background: 'rgba(10,26,48,0.97)', backdropFilter: 'blur(24px)',
                 borderRadius: '40px 40px 0 0', borderTop: '1px solid rgba(255,255,255,0.1)',
                 maxHeight: '95vh', overflowY: 'auto',
-                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+                paddingBottom: 'calc(env(safe-area-inset-bottom, 34px) + 32px)',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 6px' }}>

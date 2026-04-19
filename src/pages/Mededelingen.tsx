@@ -367,7 +367,7 @@ export default function Mededelingen() {
             flex: 1,
             overflowY: 'auto',
             padding: '16px 20px',
-            paddingBottom: 160,
+            paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)",
             display: 'flex',
             flexDirection: 'column',
             gap: 4,
@@ -774,7 +774,7 @@ export default function Mededelingen() {
                 borderTop: '1px solid rgba(255,255,255,0.1)',
                 maxHeight: '85vh',
                 overflowY: 'auto',
-                paddingBottom: 40,
+                paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 24px)",
               }}
             >
               {/* Handle */}

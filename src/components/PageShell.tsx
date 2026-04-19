@@ -38,7 +38,7 @@ export function PageShell({ children, mobileConstrained = true }: PageShellProps
           style={{
             minHeight: "100vh",
             // Bottom nav (72px) + iPhone home indicator safe area + extra ademruimte
-            paddingBottom: "calc(72px + env(safe-area-inset-bottom) + 16px)",
+            paddingBottom: "calc(72px + env(safe-area-inset-bottom, 34px) + 32px)",
           }}
         >
           {children}
