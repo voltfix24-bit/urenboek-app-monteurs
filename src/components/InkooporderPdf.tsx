@@ -3,7 +3,7 @@ import {
   Image, StyleSheet,
 } from "@react-pdf/renderer";
 import { pdf } from "@react-pdf/renderer";
-import { format } from "date-fns";
+import { format, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 import terrevoltLogoPng from "@/assets/terrevolt-logo.png";
 
@@ -420,7 +420,7 @@ export function InkooporderDocument({
         {/* SAMENVATTINGSBALK */}
         <View style={styles.samenvatBalk}>
           {[
-            { label: "WEEK", waarde: periodeStr },
+            { label: "WEEK", waarde: `${getISOWeek(new Date(order.periode_van + "T12:00:00"))}` },
             { label: "TOTAAL UREN", waarde: `${order.totaal_uren} uur` },
             { label: "UURTARIEF", waarde: regels.length > 0 ? euro(Number(regels[0].uurtarief)) : "—" },
             { label: "BETAALTERMIJN", waarde: `${termijn} dagen` },
