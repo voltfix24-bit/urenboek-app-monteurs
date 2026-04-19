@@ -223,6 +223,7 @@ export default function Profiel() {
   const [editForm, setEditForm] = useState({ full_name: "", telefoon: "", adres: "", geboortedatum: "" });
   const [zzpEditForm, setZzpEditForm] = useState({ bedrijfsnaam: "", kvk_nummer: "", btw_nummer: "", iban: "", factuuradres: "", betalingstermijn: 30 });
   const [showVerlof, setShowVerlof] = useState(false);
+  const [showZiek, setShowZiek] = useState(false);
   const [verlofForm, setVerlofForm] = useState({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" });
   const [loading, setLoading] = useState(true);
   const [calMonth, setCalMonth] = useState(new Date());
