@@ -3,15 +3,24 @@ import { X, Share, Plus, Download } from "lucide-react";
 
 const STORAGE_KEY = "terrevolt_install_prompt_dismissed";
 const SHOW_DELAY_MS = 8000;
+export const TRIGGER_INSTALL_EVENT = "terrevolt:open-install-prompt";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
+// Module-level cache so the deferred event survives even if the component
+// hasn't re-rendered yet when the user opens the manual prompt.
+let cachedDeferred: BeforeInstallPromptEvent | null = null;
+
 function isIOS(): boolean {
   const ua = navigator.userAgent;
   return /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+}
+
+function isAndroid(): boolean {
+  return /Android/i.test(navigator.userAgent);
 }
 
 function isInStandaloneMode(): boolean {
@@ -31,17 +40,47 @@ function isPreviewOrIframe(): boolean {
   return h.includes("id-preview--") || h.includes("lovableproject.com");
 }
 
+/**
+ * Trigger the install prompt manually (e.g. from a button in the profile menu).
+ * Shows the prompt even if it was previously dismissed.
+ */
+export function triggerInstallPrompt() {
+  window.dispatchEvent(new CustomEvent(TRIGGER_INSTALL_EVENT));
+}
+
+/**
+ * Check if installation is possible / relevant in the current context.
+ * Returns false when already installed or running inside the Lovable preview iframe.
+ */
+export function canShowInstallPrompt(): boolean {
+  if (typeof window === "undefined") return false;
+  if (isInStandaloneMode()) return false;
+  if (isPreviewOrIframe()) return false;
+  return true;
+}
+
 export function InstallPrompt() {
   const [show, setShow] = useState(false);
-  const [platform, setPlatform] = useState<"ios" | "android" | null>(null);
+  const [platform, setPlatform] = useState<"ios" | "android" | "desktop" | null>(null);
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
 
+  // Capture the beforeinstallprompt event as early as possible (Android Chromium)
   useEffect(() => {
-    if (isInStandaloneMode() || isPreviewOrIframe()) return;
+    const handler = (e: Event) => {
+      e.preventDefault();
+      cachedDeferred = e as BeforeInstallPromptEvent;
+      setDeferred(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  // Auto-show after delay (only once per user)
+  useEffect(() => {
+    if (!canShowInstallPrompt()) return;
     if (localStorage.getItem(STORAGE_KEY)) return;
 
     const ios = isIOS();
-
     if (ios) {
       const t = setTimeout(() => {
         setPlatform("ios");
@@ -50,9 +89,8 @@ export function InstallPrompt() {
       return () => clearTimeout(t);
     }
 
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
+    // Android: wait for beforeinstallprompt before auto-showing
+    const handler = () => {
       setTimeout(() => {
         setPlatform("android");
         setShow(true);
@@ -62,15 +100,31 @@ export function InstallPrompt() {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
+  // Manual trigger via event (from profile button)
+  useEffect(() => {
+    const open = () => {
+      if (isInStandaloneMode()) return;
+      let p: "ios" | "android" | "desktop" = "desktop";
+      if (isIOS()) p = "ios";
+      else if (isAndroid() || cachedDeferred) p = "android";
+      setPlatform(p);
+      setShow(true);
+    };
+    window.addEventListener(TRIGGER_INSTALL_EVENT, open);
+    return () => window.removeEventListener(TRIGGER_INSTALL_EVENT, open);
+  }, []);
+
   const dismiss = (permanent = true) => {
     if (permanent) localStorage.setItem(STORAGE_KEY, "1");
     setShow(false);
   };
 
   const installAndroid = async () => {
-    if (!deferred) return;
-    await deferred.prompt();
-    await deferred.userChoice;
+    const evt = deferred || cachedDeferred;
+    if (!evt) return;
+    await evt.prompt();
+    await evt.userChoice;
+    cachedDeferred = null;
     setDeferred(null);
     dismiss(true);
   };
@@ -161,22 +215,82 @@ export function InstallPrompt() {
               Niet meer tonen
             </button>
           </div>
-        ) : (
-          <div className="space-y-2">
-            <button
-              onClick={installAndroid}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm"
-              style={{ background: "#22c55e", color: "#03200f" }}
-            >
-              <Download size={18} />
-              Installeer app
-            </button>
+        ) : platform === "android" ? (
+          <div className="space-y-3">
+            {(deferred || cachedDeferred) ? (
+              <button
+                onClick={installAndroid}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm"
+                style={{ background: "#22c55e", color: "#03200f" }}
+              >
+                <Download size={18} />
+                Installeer app
+              </button>
+            ) : (
+              <div
+                className="rounded-2xl p-4 space-y-3"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(106,118,140,0.15)" }}
+              >
+                <Step
+                  num={1}
+                  icon={<span style={{ fontSize: 18, color: "#3fff8b" }}>⋮</span>}
+                  text={
+                    <>
+                      Tik op het <span style={{ color: "#3fff8b", fontWeight: 600 }}>menu (⋮)</span> rechtsboven in Chrome
+                    </>
+                  }
+                />
+                <Step
+                  num={2}
+                  icon={<Plus size={18} style={{ color: "#3fff8b" }} />}
+                  text={
+                    <>
+                      Kies <span style={{ color: "#3fff8b", fontWeight: 600 }}>App installeren</span> of <span style={{ color: "#3fff8b", fontWeight: 600 }}>Toevoegen aan startscherm</span>
+                    </>
+                  }
+                />
+                <Step
+                  num={3}
+                  icon={<span style={{ fontSize: 18 }}>✓</span>}
+                  text="Bevestig met Installeren — klaar!"
+                />
+              </div>
+            )}
             <button
               onClick={() => dismiss(true)}
               className="w-full text-xs font-medium py-2"
               style={{ color: "#a0abc3" }}
             >
               Niet meer tonen
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div
+              className="rounded-2xl p-4 space-y-3"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(106,118,140,0.15)" }}
+            >
+              <Step
+                num={1}
+                icon={<Download size={18} style={{ color: "#3fff8b" }} />}
+                text={
+                  <>
+                    Klik in Chrome of Edge op het <span style={{ color: "#3fff8b", fontWeight: 600 }}>installeer‑icoon</span> in de adresbalk
+                  </>
+                }
+              />
+              <Step
+                num={2}
+                icon={<span style={{ fontSize: 18 }}>✓</span>}
+                text="Bevestig met Installeren"
+              />
+            </div>
+            <button
+              onClick={() => dismiss(true)}
+              className="w-full text-xs font-medium py-2"
+              style={{ color: "#a0abc3" }}
+            >
+              Sluiten
             </button>
           </div>
         )}
