@@ -63,7 +63,9 @@ export function WeekDownloadList({ orders, toonNaam = false }: Props) {
             className="shrink-0 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
             style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}
           >
-            {busyKey === g.key ? <Spinner size="sm" /> : <Download className="h-3.5 w-3.5" />}
+            {busyKey === g.key ? (
+              <span className="inline-block rounded-full animate-spin" style={{ width: 14, height: 14, border: "2px solid #3fff8b", borderTopColor: "transparent" }} />
+            ) : <Download className="h-3.5 w-3.5" />}
             PDF{g.orders.length > 1 ? "'s" : ""}
           </button>
         </div>
