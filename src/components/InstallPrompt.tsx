@@ -177,6 +177,18 @@ export function InstallPrompt() {
           </button>
         </div>
 
+        <div
+          className="rounded-2xl p-3 mb-4 space-y-2"
+          style={{ background: "rgba(63,255,139,0.06)", border: "1px solid rgba(63,255,139,0.18)" }}
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#3fff8b" }}>
+            Wat krijg je?
+          </p>
+          <Benefit icon="🚀" title="Sneller opstarten" text="Direct vanaf je beginscherm, zonder eerst een browser te openen." />
+          <Benefit icon="📱" title="Voelt als een echte app" text="Geen adres‑ of menubalk meer — volledig schermgebruik." />
+          <Benefit icon="🔔" title="Altijd binnen handbereik" text="Eigen app‑icoon naast je andere apps, één tik en je bent in TerreVolt." />
+        </div>
+
         {platform === "ios" ? (
           <div className="space-y-3">
             <div
@@ -311,6 +323,18 @@ function Step({ num, icon, text }: { num: number; icon: React.ReactNode; text: R
       <div className="shrink-0">{icon}</div>
       <div className="text-sm" style={{ color: "#e6ebf5" }}>
         {text}
+      </div>
+    </div>
+  );
+}
+
+function Benefit({ icon, title, text }: { icon: string; title: string; text: string }) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <span style={{ fontSize: 16, lineHeight: "20px" }}>{icon}</span>
+      <div className="flex-1">
+        <p className="text-xs font-semibold" style={{ color: "#e6ebf5" }}>{title}</p>
+        <p className="text-[11px] leading-snug" style={{ color: "#a0abc3" }}>{text}</p>
       </div>
     </div>
   );
