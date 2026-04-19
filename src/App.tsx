@@ -9,6 +9,7 @@ import { ProfileProvider } from "@/hooks/useProfile";
 import { NavBadgesProvider } from "@/hooks/useNavBadges";
 import { AppErrorBoundary, RouteErrorBoundary } from "@/components/AppErrorBoundary";
 import { Spinner } from "@/components/ui/Spinner";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 // Critical pages — loaded eagerly
 import Index from "./pages/Index";
@@ -112,6 +113,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <InstallPrompt />
         <BrowserRouter>
           <AuthProvider>
             <ProfileProvider>
