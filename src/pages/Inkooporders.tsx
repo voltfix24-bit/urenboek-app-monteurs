@@ -267,7 +267,7 @@ export default function Inkooporders() {
             <WeekDownloadList orders={filteredOrders} toonNaam />
           )}
 
-
+          {loading ? (
             <Spinner padding="py-8" />
           ) : filteredOrders.length === 0 ? (
             <div className="text-center py-12 rounded-2xl" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
