@@ -5,7 +5,7 @@ import { groepeerOrdersPerWeek, downloadWeekPdfs } from "@/lib/inkooporderWeekDo
 import { euroDecimals as euro } from "@/lib/formatting";
 import { format, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Spinner } from "@/components/ui/Spinner";
+
 
 interface Props {
   orders: any[];
