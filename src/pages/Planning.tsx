@@ -137,7 +137,8 @@ export default function Planning() {
   function calcDefaultUren(starttijd: string, eindtijd: string): number {
     const [sh, sm] = starttijd.split(":").map(Number);
     const [eh, em] = eindtijd.split(":").map(Number);
-    const diff = (eh * 60 + em - sh * 60 - sm) / 60;
+    // 1 uur onbetaalde pauze aftrekken
+    const diff = (eh * 60 + em - sh * 60 - sm) / 60 - 1;
     return Math.max(0.5, Math.round(diff * 2) / 2);
   }
 
