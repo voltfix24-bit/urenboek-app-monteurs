@@ -43,7 +43,11 @@ export function MobileHeader({ showBrand = true, title, actions, initials }: Mob
         position: "sticky", top: 0, zIndex: 50,
         background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)",
         borderBottom: "1px solid rgba(255,255,255,0.07)",
-        padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
+        paddingTop: "calc(12px + env(safe-area-inset-top))",
+        paddingBottom: 12,
+        paddingLeft: "calc(20px + env(safe-area-inset-left))",
+        paddingRight: "calc(20px + env(safe-area-inset-right))",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
       {showBrand ? (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
