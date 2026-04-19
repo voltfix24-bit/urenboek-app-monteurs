@@ -143,7 +143,7 @@ export default function Planning() {
 
   function openUrenModal(item: PlanningItem) {
     setModalItem(item);
-    setUrenForm({ werkzaamheden: "monteren", uren: calcDefaultUren(item.starttijd, item.eindtijd) });
+    setUrenForm({ werkzaamheden: "monteren", uren: 8 });
     setShowUrenModal(true);
   }
 
