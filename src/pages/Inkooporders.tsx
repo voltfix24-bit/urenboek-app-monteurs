@@ -17,6 +17,7 @@ import { nl } from "date-fns/locale";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { downloadInkooporderPdf } from "@/components/InkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
+import { WeekDownloadList } from "@/components/WeekDownloadList";
 
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 
