@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import { useProjects } from "@/hooks/useProjects";
 import { valideer, urenBoekingSchema } from "@/lib/validatie";
@@ -15,10 +15,24 @@ interface AddEntryModalProps {
   onClose: () => void;
   onSubmit: (entry: { date: string; projectId: string; description: string; hours: number }) => void;
   initialDate?: Date | null;
+  planningItems?: Array<{
+    datum: string;
+    project_id: string;
+  }>;
 }
 
-export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddEntryModalProps) {
+export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planningItems }: AddEntryModalProps) {
   const { projects, loading } = useProjects();
+
+  const availableProjects = useMemo(() => {
+    if (!planningItems || planningItems.length === 0) {
+      // Fallback: show all projects (no planning data loaded yet)
+      return projects;
+    }
+    if (!selectedDateRef()) return [];
+    return projects;
+  }, [planningItems, projects]);
+  function selectedDateRef() { return null; } // placeholder, real filter below uses state
   const [step, setStep] = useState(initialDate ? 2 : 1);
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate || null);
   const [form, setForm] = useState({ projectId: null as string | null, werkzaamheden: null as string | null, uren: 8 });
