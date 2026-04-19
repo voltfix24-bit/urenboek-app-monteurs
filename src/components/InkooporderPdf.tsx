@@ -20,10 +20,10 @@ const faint = "#42493c";
 const styles = StyleSheet.create({
   page: {
     backgroundColor: groenLicht,
-    paddingTop: 45,
-    paddingBottom: 45,
-    paddingLeft: 45,
-    paddingRight: 45,
+    paddingTop: 28,
+    paddingBottom: 28,
+    paddingLeft: 36,
+    paddingRight: 36,
     fontFamily: "Helvetica",
     fontSize: 9,
     color: "#072100",
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 16,
+    marginBottom: 10,
   },
   logo: {
     width: 100,
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   titel: {
-    fontSize: 32,
+    fontSize: 24,
     fontFamily: "Helvetica-Bold",
     color: groen,
     letterSpacing: -0.5,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   partijen: {
     flexDirection: "row",
     gap: 8,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   partijBox: {
     flex: 1,
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: rand,
     borderRadius: 6,
-    padding: 12,
+    padding: 8,
   },
   partijLabel: {
     fontSize: 6.5,
@@ -130,9 +130,9 @@ const styles = StyleSheet.create({
     borderWidth: 0.3,
     borderColor: rand,
     borderRadius: 4,
-    marginBottom: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    marginBottom: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
   },
   samenvatItem: {
     flex: 1,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   tabelHeader: {
     flexDirection: "row",
     backgroundColor: groen,
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 4,
   },
   tabelHeaderTekst: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderBottomWidth: 0.3,
     borderBottomColor: rand,
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 4,
   },
   tabelRijEven: {
@@ -212,8 +212,8 @@ const styles = StyleSheet.create({
   },
   financieelWrap: {
     alignItems: "flex-end",
-    marginTop: 12,
-    marginBottom: 16,
+    marginTop: 8,
+    marginBottom: 10,
   },
   finBlok: { width: 180 },
   finRij: {
@@ -237,9 +237,9 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: groenMid,
     borderRadius: 4,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginTop: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    marginTop: 4,
   },
   totaalLabel: {
     fontSize: 7,
@@ -249,15 +249,15 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   totaalBedrag: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: "Helvetica-Bold",
     color: groen,
   },
   footerLijn: {
     borderTopWidth: 0.5,
     borderTopColor: rand,
-    marginTop: 16,
-    paddingTop: 14,
+    marginTop: 10,
+    paddingTop: 10,
     flexDirection: "row",
     gap: 20,
   },
