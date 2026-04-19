@@ -190,7 +190,7 @@ export default function Medewerkers() {
     return (
       <>
       <PageShell>
-        <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 120 }}>
+        <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)" }}>
           <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
             <button onClick={() => setSelectedEmployee(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3fff8b", display: "flex" }}>
               <ArrowLeft size={24} />
@@ -258,7 +258,7 @@ export default function Medewerkers() {
   return (
     <>
     <PageShell>
-      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 140 }}>
+      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
         {/* HEADER */}
         <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

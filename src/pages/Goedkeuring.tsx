@@ -464,7 +464,7 @@ export default function Goedkeuring() {
   return (
     <PageShell>
       <PullToRefresh onRefresh={fetchEntries}>
-      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 160 }}>
+      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
         <MobileHeader showBrand={false} title="Weekstaten keuren" actions={
           <button onClick={() => setShowBookModal(true)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex" }}>
             <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#3fff8b" }}>add_circle</span>

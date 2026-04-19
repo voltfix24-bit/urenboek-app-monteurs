@@ -82,7 +82,7 @@ export default function MijnOrders() {
       <div style={{
         background: '#030e20',
         minHeight: '100dvh',
-        paddingBottom: 120,
+        paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)",
       }}>
         {/* ── HEADER ── */}
         <header style={{

@@ -327,7 +327,7 @@ export default function ManagerPlanning() {
   return (
     <PageShell>
       <PullToRefresh onRefresh={fetchAll}>
-      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 160 }}>
+      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
         {/* HEADER */}
         <MobileHeader initials={profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'} />
 
@@ -785,7 +785,7 @@ export default function ManagerPlanning() {
 
         {/* FAB */}
         <button onClick={() => setShowModal(true)} style={{
-          position: "fixed", bottom: 96, left: "50%", transform: "translateX(-50%)", zIndex: 40,
+          position: "fixed", bottom: "calc(96px + env(safe-area-inset-bottom, 34px))", left: "50%", transform: "translateX(-50%)", zIndex: 40,
           background: "#3fff8b", color: "#005d2c", border: "none", borderRadius: 9999,
           height: 56, padding: "0 32px", display: "flex", alignItems: "center", gap: 8,
           fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase",
