@@ -187,9 +187,23 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
             </p>
             {loading ? (
               <div style={{ padding: 20, textAlign: 'center', color: '#a0abc3', fontSize: 13 }}>Projecten laden...</div>
+            ) : availableProjects.length === 0 && selectedDate ? (
+              <div style={{
+                padding: '24px',
+                textAlign: 'center',
+                color: '#a0abc3',
+                fontFamily: 'Inter',
+                fontSize: 13,
+                fontStyle: 'italic',
+                background: '#061327',
+                borderRadius: 16,
+                border: '1px dashed rgba(254,179,0,0.3)',
+              }}>
+                Geen projecten ingepland voor deze dag. Neem contact op met de manager.
+              </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {projects.map((project) => {
+                {availableProjects.map((project) => {
                   const isActive = form.projectId === project.id;
                   return (
                     <button
