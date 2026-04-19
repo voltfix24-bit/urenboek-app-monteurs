@@ -70,6 +70,7 @@ const Index = () => {
   const [pendingOffline, setPendingOffline] = useState(0);
   const [vorigeWeekConcept, setVorigeWeekConcept] = useState<{ id: string; datum: string; uren: number }[]>([]);
   const [submittingVorigeWeek, setSubmittingVorigeWeek] = useState(false);
+  const [planningItems, setPlanningItems] = useState<Array<{ datum: string; project_id: string }>>([]);
 
   // Track online/offline status
   useEffect(() => {
@@ -135,6 +136,22 @@ const Index = () => {
     const viewingCurrentWeek = format(currentWeekStart, "yyyy-MM-dd") === format(thisWeekStart, "yyyy-MM-dd");
     setShowFridayBanner(isFridayAfternoon() && viewingCurrentWeek && conceptEntries.length > 0);
   }, [conceptEntries.length, currentWeekStart]);
+
+  // Load planning for current week to filter project selection in modal
+  useEffect(() => {
+    if (!profileId) return;
+    const startStr = format(currentWeekStart, "yyyy-MM-dd");
+    const endStr = format(addDays(currentWeekStart, 6), "yyyy-MM-dd");
+    (async () => {
+      const { data } = await supabase
+        .from("planning")
+        .select("datum, project_id")
+        .eq("medewerker_id", profileId)
+        .gte("datum", startStr)
+        .lte("datum", endStr);
+      setPlanningItems((data ?? []) as Array<{ datum: string; project_id: string }>);
+    })();
+  }, [profileId, currentWeekStart]);
 
   const handleSubmitEntry = useCallback(async (id: string) => {
     const entry = [...weekEntries, ...allEntries].find(e => e.id === id);
@@ -419,7 +436,7 @@ const Index = () => {
 
       {/* ── MODAL ── */}
       {showModal && (
-        <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} onSubmit={async (entry) => {
+        <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} planningItems={planningItems} onSubmit={async (entry) => {
           if (!navigator.onLine && profileId) {
             await queueOfflineEntry({
               id: crypto.randomUUID(),

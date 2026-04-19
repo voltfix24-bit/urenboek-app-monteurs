@@ -349,8 +349,8 @@ export async function generateInkooporderPdf(
   let finY = finStartY;
 
   const finRegels = [
-    { label: "Subtotaal excl. BTW", waarde: euro(order.totaal_excl_btw) },
-    { label: "BTW 21%", waarde: euro(order.btw_bedrag) },
+    { label: "Subtotaal", waarde: euro(order.totaal_excl_btw) },
+    { label: "BTW", waarde: "Verlegd (art. 12 Wet OB)" },
   ];
 
   finRegels.forEach((r) => {
@@ -381,12 +381,12 @@ export async function generateInkooporderPdf(
   doc.setFontSize(7.5);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...groen);
-  doc.text("TOTAAL INCL. BTW", finX + 6, finY + 5.5);
+  doc.text("TE FACTUREREN", finX + 6, finY + 5.5);
 
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...groen);
-  doc.text(euro(order.totaal_incl_btw), finX + finW - 4, finY + 10, { align: "right" });
+  doc.text(euro(order.totaal_excl_btw), finX + finW - 4, finY + 10, { align: "right" });
 
   // ── FOOTER ───────────────────────
   const footerY = finY + totH + 16;
@@ -412,6 +412,8 @@ export async function generateInkooporderPdf(
     `Betaling binnen ${termijn} dagen na ontvangst van een correcte factuur.`,
     `Vermeld verplicht ordernummer ${order.order_nummer} op uw factuur.`,
     `Stuur uw factuur naar: ${email}`,
+    `BTW verlegd conform artikel 12 Wet OB 1968 — vermeld op uw factuur:`,
+    `"BTW verlegd" en uw BTW-nummer.`,
   ];
 
   let iY = footerY + 13;

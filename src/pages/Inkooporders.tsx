@@ -154,8 +154,9 @@ export default function Inkooporders() {
 
   const wizTotaalUren = useMemo(() => wizBoekingen.filter(b => wizSelected.has(b.id)).reduce((s, b) => s + Number(b.uren), 0), [wizBoekingen, wizSelected]);
   const wizSubtotaal = wizTotaalUren * wizTarief;
-  const wizBtw = wizSubtotaal * 0.21;
-  const wizTotaalIncl = wizSubtotaal + wizBtw;
+  // BTW verlegd — ZZP monteurs do not charge BTW to TerreVolt BV (art. 12 Wet OB)
+  const wizBtw = 0;
+  const wizTotaalIncl = wizSubtotaal;
 
   const createOrder = async () => {
     const orderNummer = await generateOrderNummer();
@@ -168,8 +169,8 @@ export default function Inkooporders() {
       status: "concept",
       totaal_uren: wizTotaalUren,
       totaal_excl_btw: wizSubtotaal,
-      btw_bedrag: wizBtw,
-      totaal_incl_btw: wizTotaalIncl,
+      btw_bedrag: 0,
+      totaal_incl_btw: wizSubtotaal,
       aangemaakt_door: profileId,
       notitie: wizNotitie || null,
     } as any).select("id").single();
@@ -210,7 +211,7 @@ export default function Inkooporders() {
     if (newStatus === "verzonden" && selectedOrder) {
       await supabase.from("mededelingen").insert({
         titel: `Inkooporder ${selectedOrder.order_nummer} klaar`,
-        inhoud: `Je inkooporder voor de periode ${selectedOrder.periode_van} t/m ${selectedOrder.periode_tot} is klaar. Totaal: ${euro(selectedOrder.totaal_incl_btw)} incl BTW.`,
+        inhoud: `Je inkooporder voor de periode ${selectedOrder.periode_van} t/m ${selectedOrder.periode_tot} is klaar. Te factureren: ${euro(selectedOrder.totaal_excl_btw)} (BTW verlegd).`,
         verzonden_door: profileId,
         ontvanger_type: "persoon",
         ontvanger_id: selectedOrder.medewerker_id,
@@ -279,7 +280,7 @@ export default function Inkooporders() {
                     <OrderStatusBadge status={o.status} />
                   </div>
                   <p className="text-[11px] mt-1" style={{ color: "#a0abc3" }}>{o.periode_van} → {o.periode_tot}</p>
-                  <p className="text-lg font-bold mt-1" style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(Number(o.totaal_incl_btw) || 0)}</p>
+                  <p className="text-lg font-bold mt-1" style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(Number(o.totaal_excl_btw) || 0)}</p>
                 </button>
               ))}
             </div>
@@ -343,18 +344,18 @@ export default function Inkooporders() {
                     <tr style={{ borderTop: "2px solid rgba(63,255,139,0.3)" }}>
                       <td colSpan={3} />
                       <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace" }}>{selectedOrder.totaal_uren}u</td>
-                      <td className="py-2 px-2 text-right font-semibold" style={{ color: "#a0abc3" }}>excl BTW:</td>
+                      <td className="py-2 px-2 text-right font-semibold" style={{ color: "#a0abc3" }}>Subtotaal:</td>
                       <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace" }}>{euro(Number(selectedOrder.totaal_excl_btw))}</td>
                     </tr>
                     <tr>
                       <td colSpan={4} />
-                      <td className="py-1 px-2 text-right" style={{ color: "#a0abc3" }}>BTW 21%:</td>
-                      <td className="py-1 px-2" style={{ fontFamily: "DM Mono, monospace" }}>{euro(Number(selectedOrder.btw_bedrag))}</td>
+                      <td className="py-1 px-2 text-right" style={{ color: "#a0abc3" }}>BTW:</td>
+                      <td className="py-1 px-2" style={{ fontFamily: "DM Mono, monospace", color: "#feb300" }}>Verlegd (art. 12 Wet OB)</td>
                     </tr>
                     <tr>
                       <td colSpan={4} />
-                      <td className="py-1 px-2 text-right font-bold" style={{ color: "#3fff8b" }}>Totaal:</td>
-                      <td className="py-1 px-2 font-bold text-base" style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(Number(selectedOrder.totaal_incl_btw))}</td>
+                      <td className="py-1 px-2 text-right font-bold" style={{ color: "#3fff8b" }}>Te factureren:</td>
+                      <td className="py-1 px-2 font-bold text-base" style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(Number(selectedOrder.totaal_excl_btw))}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -499,9 +500,8 @@ export default function Inkooporders() {
                   </div>
                   <div className="rounded-xl p-3 space-y-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
                     <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>Uren</span><span style={{ fontFamily: "DM Mono, monospace" }}>{wizTotaalUren}u × €{wizTarief}</span></div>
-                    <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>Subtotaal excl BTW</span><span style={{ fontFamily: "DM Mono, monospace" }}>{euro(wizSubtotaal)}</span></div>
-                    <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>BTW 21%</span><span style={{ fontFamily: "DM Mono, monospace" }}>{euro(wizBtw)}</span></div>
-                    <div className="flex justify-between text-sm font-bold pt-1" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}><span style={{ color: "#dae6ff" }}>Totaal incl BTW</span><span style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(wizTotaalIncl)}</span></div>
+                    <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>BTW</span><span style={{ fontFamily: "DM Mono, monospace", color: "#feb300" }}>Verlegd (artikel 12)</span></div>
+                    <div className="flex justify-between text-sm font-bold pt-2" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}><span style={{ color: "#dae6ff" }}>Te factureren</span><span style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(wizSubtotaal)}</span></div>
                   </div>
                   <textarea value={wizNotitie} onChange={e => setWizNotitie(e.target.value)} placeholder="Notitie (optioneel)" className="w-full px-3 py-2 rounded-xl text-sm" rows={2} style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   <div className="flex gap-2">

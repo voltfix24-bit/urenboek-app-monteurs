@@ -165,7 +165,7 @@ export default function MijnOrders() {
               color: '#3fff8b',
               marginBottom: 16,
             }}>
-              {euro(orders.reduce((sum, o) => sum + (Number(o.totaal_incl_btw) || 0), 0))}
+              {euro(orders.reduce((sum, o) => sum + (Number(o.totaal_excl_btw) || 0), 0))}
             </div>
             <div style={{
               display: 'flex',
@@ -348,7 +348,7 @@ export default function MijnOrders() {
                         color: isBetaald ? '#3fff8b' : '#dae6ff',
                         lineHeight: 1,
                       }}>
-                        {euro(Number(order.totaal_incl_btw) || 0)}
+                        {euro(Number(order.totaal_excl_btw) || 0)}
                       </p>
                     </div>
                     <div style={{
@@ -516,7 +516,18 @@ export default function MijnOrders() {
                       <tr style={{ borderTop: '2px solid rgba(63,255,139,0.3)' }}>
                         <td colSpan={3} />
                         <td style={{ padding: '12px 14px', fontWeight: 700, fontFamily: 'DM Mono, monospace', color: '#dae6ff' }}>{selectedOrder.totaal_uren}u</td>
-                        <td style={{ padding: '12px 14px', fontWeight: 800, fontSize: 16, fontFamily: 'DM Mono, monospace', color: '#3fff8b' }}>{euro(Number(selectedOrder.totaal_incl_btw))}</td>
+                        <td style={{ padding: '12px 14px', fontWeight: 800, fontSize: 16, fontFamily: 'DM Mono, monospace', color: '#3fff8b' }}>{euro(Number(selectedOrder.totaal_excl_btw))}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan={5} style={{
+                          padding: '8px 14px',
+                          fontSize: 11,
+                          color: '#feb300',
+                          fontStyle: 'italic',
+                          borderTop: '1px solid rgba(106,118,140,0.15)',
+                        }}>
+                          ⚠ BTW verlegd op basis van artikel 12 Wet OB — vermeld dit op uw factuur aan TerreVolt BV.
+                        </td>
                       </tr>
                     </tfoot>
                   </table>

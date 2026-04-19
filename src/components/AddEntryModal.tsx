@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import { useProjects } from "@/hooks/useProjects";
 import { valideer, urenBoekingSchema } from "@/lib/validatie";
@@ -15,9 +15,13 @@ interface AddEntryModalProps {
   onClose: () => void;
   onSubmit: (entry: { date: string; projectId: string; description: string; hours: number }) => void;
   initialDate?: Date | null;
+  planningItems?: Array<{
+    datum: string;
+    project_id: string;
+  }>;
 }
 
-export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddEntryModalProps) {
+export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planningItems }: AddEntryModalProps) {
   const { projects, loading } = useProjects();
   const [step, setStep] = useState(initialDate ? 2 : 1);
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate || null);
@@ -27,6 +31,20 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
   const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
   const sheetRef = useRef<HTMLDivElement>(null);
+
+  const availableProjects = useMemo(() => {
+    if (!planningItems || planningItems.length === 0) {
+      // Fallback: no planning data — show all projects
+      return projects;
+    }
+    if (!selectedDate) return [];
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const plannedProjectIds = new Set(
+      planningItems.filter(p => p.datum === dateStr).map(p => p.project_id)
+    );
+    if (plannedProjectIds.size === 0) return [];
+    return projects.filter(p => plannedProjectIds.has(p.id));
+  }, [planningItems, selectedDate, projects]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     dragStartY.current = e.touches[0].clientY;
@@ -169,9 +187,23 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate }: AddE
             </p>
             {loading ? (
               <div style={{ padding: 20, textAlign: 'center', color: '#a0abc3', fontSize: 13 }}>Projecten laden...</div>
+            ) : availableProjects.length === 0 && selectedDate ? (
+              <div style={{
+                padding: '24px',
+                textAlign: 'center',
+                color: '#a0abc3',
+                fontFamily: 'Inter',
+                fontSize: 13,
+                fontStyle: 'italic',
+                background: '#061327',
+                borderRadius: 16,
+                border: '1px dashed rgba(254,179,0,0.3)',
+              }}>
+                Geen projecten ingepland voor deze dag. Neem contact op met de manager.
+              </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {projects.map((project) => {
+                {availableProjects.map((project) => {
                   const isActive = form.projectId === project.id;
                   return (
                     <button
