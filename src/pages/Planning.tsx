@@ -38,7 +38,7 @@ export default function Planning() {
   const [existingBoekingen, setExistingBoekingen] = useState<Map<string, ExistingBoeking>>(new Map());
   const [showUrenModal, setShowUrenModal] = useState(false);
   const [modalItem, setModalItem] = useState<PlanningItem | null>(null);
-  const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8 });
+  const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8, toelichting: "" });
   const weekNumber = getISOWeek(weekStart);
 
   const fetchPlanning = useCallback(async () => {
@@ -143,19 +143,29 @@ export default function Planning() {
 
   function openUrenModal(item: PlanningItem) {
     setModalItem(item);
-    setUrenForm({ werkzaamheden: "monteren", uren: 8 });
+    setUrenForm({ werkzaamheden: "monteren", uren: 8, toelichting: "" });
     setShowUrenModal(true);
   }
 
   const saveUren = async (submitDirect: boolean) => {
     if (!profileId || !modalItem) return;
+    const planned = calcDefaultUren(modalItem.starttijd, modalItem.eindtijd);
+    const diff = Math.abs(urenForm.uren - planned);
+    const needsToelichting = diff > 0.5;
+    if (needsToelichting && urenForm.toelichting.trim().length < 3) {
+      toast.error("Geef een korte toelichting op de afwijking");
+      return;
+    }
+    const beschrijving = needsToelichting
+      ? `${urenForm.werkzaamheden} — afwijking ${urenForm.uren - planned > 0 ? '+' : ''}${(urenForm.uren - planned).toFixed(1)}u: ${urenForm.toelichting.trim()}`
+      : urenForm.werkzaamheden;
     if (!await mutate(supabase.from("uren_boekingen").insert({
       medewerker_id: profileId,
       project_id: modalItem.project_id,
       datum: modalItem.datum,
       uren: urenForm.uren,
       type: urenForm.werkzaamheden,
-      beschrijving: urenForm.werkzaamheden,
+      beschrijving,
       status: submitDirect ? "ingediend" : "concept",
     }))) return;
     toast.success("Uren geboekt ✓");
@@ -477,6 +487,44 @@ export default function Planning() {
                     }}>{h}u</button>
                   ))}
                 </div>
+
+                {(() => {
+                  const planned = calcDefaultUren(modalItem.starttijd, modalItem.eindtijd);
+                  const delta = urenForm.uren - planned;
+                  if (Math.abs(delta) <= 0.5) return null;
+                  const isMore = delta > 0;
+                  return (
+                    <div style={{
+                      marginBottom: 16, padding: 14, borderRadius: 14,
+                      background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.3)',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#feb300' }}>warning</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: '#feb300' }}>
+                          Afwijking van planning ({isMore ? '+' : ''}{delta.toFixed(1)}u — gepland {planned}u)
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', marginBottom: 8, lineHeight: 1.4 }}>
+                        Geef een korte toelichting waarom je {isMore ? 'meer' : 'minder'} uren boekt dan ingepland.
+                      </p>
+                      <textarea
+                        value={urenForm.toelichting}
+                        onChange={e => setUrenForm(f => ({ ...f, toelichting: e.target.value.slice(0, 300) }))}
+                        placeholder={isMore ? 'Bijv. extra werk uitgevoerd, uitloop wegens...' : 'Bijv. eerder klaar, kortere pauze...'}
+                        rows={2}
+                        maxLength={300}
+                        style={{
+                          width: '100%', padding: 10, borderRadius: 10, background: '#061327',
+                          border: '1px solid rgba(254,179,0,0.3)', color: '#dae6ff',
+                          fontFamily: 'Inter', fontSize: 13, resize: 'none', outline: 'none',
+                        }}
+                      />
+                      <div style={{ fontSize: 10, color: '#a0abc3', fontFamily: 'Inter', marginTop: 4, textAlign: 'right' }}>
+                        {urenForm.toelichting.length}/300
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button onClick={() => saveUren(false)} style={{
