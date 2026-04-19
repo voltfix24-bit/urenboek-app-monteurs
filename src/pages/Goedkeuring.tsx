@@ -187,22 +187,22 @@ export default function Goedkeuring() {
     const sc = statusConfig[entry.status] || statusConfig.concept;
     const hasOveruren = overurenIds.has(`${entry.medewerker_id}_${entry.datum}`);
     return (
-      <div key={entry.id} className="px-4 py-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] font-medium min-w-[60px]" style={{ color: "#a0abc3" }}>
+      <div key={entry.id} className="px-4 py-3 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap min-w-0">
+          <span className="text-[11px] font-medium shrink-0" style={{ color: "#a0abc3", minWidth: 60 }}>
             {format(new Date(entry.datum), "EEE d/M", { locale: nl })}
           </span>
-          <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md" style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b" }}>
+          <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md shrink-0" style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b" }}>
             {entry.project_nummer}
           </span>
-          <span className="text-xs flex-1 truncate min-w-0" style={{ color: "#dae6ff" }}>{entry.project_naam} {entry.beschrijving ? `· ${entry.beschrijving}` : ""}</span>
-          <span className="text-xs font-bold tabular-nums" style={{ color: "#dae6ff" }}>
+          <span className="text-xs flex-1 truncate min-w-0 basis-full sm:basis-auto" style={{ color: "#dae6ff" }}>{entry.project_naam} {entry.beschrijving ? `· ${entry.beschrijving}` : ""}</span>
+          <span className="text-xs font-bold tabular-nums shrink-0" style={{ color: "#dae6ff" }}>
             {entry.uren}u
             {hasOveruren && (
               <span onClick={() => navigate("/overuren")} className="inline cursor-pointer"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "#feb300" }} /></span>
             )}
           </span>
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: sc.bg, color: sc.text }}>
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ background: sc.bg, color: sc.text }}>
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
             {entry.status}
           </span>
