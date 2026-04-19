@@ -8,7 +8,8 @@ import { mutate } from "@/lib/supabaseHelpers";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import { useProjectenQuery } from "@/hooks/queries/useProjectenQuery";
-import { ArrowLeft, Plus, Building2, X, FolderOpen } from "lucide-react";
+import { ArrowLeft, Plus, Building2, X, FolderOpen, Pencil, Trash2, ToggleLeft, ToggleRight, MapPin, Phone, Mail } from "lucide-react";
+import { PlanningStatusTab } from "@/components/PlanningStatusTab";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
@@ -370,6 +371,103 @@ export default function Projecten() {
               </div>
             </div>
           )}
+
+          {/* PROJECT DETAIL BOTTOM SHEET (mobile) */}
+          {selectedId && !showAdd && !editId && (() => {
+            const p = projects.find(pr => pr.id === selectedId);
+            if (!p) return null;
+            const ogNaam = getOgNaam(p.opdrachtgever_id);
+            return (
+              <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+                <div onClick={() => setSelectedId(null)} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
+                <div style={{ position: "relative", background: "#030e20", borderRadius: "32px 32px 0 0", padding: "16px 20px 48px", borderTop: "1px solid rgba(255,255,255,0.1)", maxHeight: "92vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+                  <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 16px" }} />
+
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 11, fontFamily: "DM Mono, monospace", color: "#3fff8b", marginBottom: 4 }}>{p.nummer}</p>
+                      <h2 style={{ fontFamily: "DM Sans", fontWeight: 700, fontSize: 20, color: "#dae6ff", lineHeight: 1.25, letterSpacing: "-0.025em" }}>{p.naam}</h2>
+                      {ogNaam && <p className="text-xs mt-1 flex items-center gap-1" style={{ color: "#a0abc3" }}><Building2 className="h-3 w-3" /> {ogNaam}</p>}
+                    </div>
+                    <button onClick={() => setSelectedId(null)} style={{ width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "none", color: "#a0abc3", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  {(p.straat || p.stad) && (
+                    <div className="rounded-xl p-3 mb-3 space-y-1" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+                      {p.straat && <p className="text-xs" style={{ color: "#dae6ff" }}>{p.straat}</p>}
+                      {(p.postcode || p.stad) && <p className="text-xs" style={{ color: "#dae6ff" }}>{p.postcode} {p.stad}</p>}
+                      {(p.straat && p.stad) && (
+                        <a href={`https://maps.google.com/?q=${encodeURIComponent(`${p.straat}, ${p.postcode || ""} ${p.stad}`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs mt-1" style={{ color: "#3fff8b" }}>
+                          <MapPin className="h-3 w-3" /> Bekijk op kaart ↗
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {isManager && (p.contactpersoon_naam || p.contactpersoon_tel || p.contactpersoon_email) && (
+                    <div className="rounded-xl p-3 mb-3 space-y-1.5" style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)" }}>
+                      <p className="text-[11px] font-semibold" style={{ color: "#feb300" }}>Contactpersoon opdrachtgever</p>
+                      {p.contactpersoon_naam && <p className="text-sm font-medium" style={{ color: "#dae6ff" }}>{p.contactpersoon_naam}</p>}
+                      {p.contactpersoon_tel && <a href={`tel:${p.contactpersoon_tel}`} className="text-xs flex items-center gap-1.5" style={{ color: "#3fff8b" }}><Phone className="h-3 w-3" /> {p.contactpersoon_tel}</a>}
+                      {p.contactpersoon_email && <a href={`mailto:${p.contactpersoon_email}`} className="text-xs flex items-center gap-1.5" style={{ color: "#3fff8b" }}><Mail className="h-3 w-3" /> {p.contactpersoon_email}</a>}
+                    </div>
+                  )}
+
+                  {/* Planning status — concept ↔ definitief toggle */}
+                  {isManager && (
+                    <div className="mb-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "#a0abc3" }}>Planning</p>
+                      <PlanningStatusTab projectId={p.id} profileId={undefined} />
+                    </div>
+                  )}
+
+                  {isManager && (
+                    <div className="flex gap-2 mt-3">
+                      <button onClick={() => { startEdit(p as any); setSelectedId(null); }} className="flex-1 py-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5" style={{ background: "#102038", color: "#dae6ff" }}>
+                        <Pencil className="h-3.5 w-3.5" /> Bewerken
+                      </button>
+                      <button onClick={() => toggleActive(p as any)} className="flex-1 py-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5" style={{ background: p.active ? "rgba(63,255,139,0.1)" : "#102038", color: p.active ? "#3fff8b" : "#a0abc3" }}>
+                        {p.active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />} {p.active ? "Actief" : "Inactief"}
+                      </button>
+                      <button onClick={() => { if (confirm(`"${p.naam}" verwijderen?`)) handleDelete(p as any); }} className="px-4 py-3 rounded-xl text-xs font-semibold flex items-center justify-center" style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c" }}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* EDIT PROJECT BOTTOM SHEET (mobile) */}
+          {editId && (() => {
+            const p = projects.find(pr => pr.id === editId);
+            if (!p) return null;
+            return (
+              <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+                <div onClick={() => { setEditId(null); setForm(emptyForm); }} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
+                <div style={{ position: "relative", background: "#030e20", borderRadius: "32px 32px 0 0", padding: 24, paddingBottom: 48, borderTop: "1px solid rgba(255,255,255,0.1)", maxHeight: "92vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+                  <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 16px" }} />
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                    <h2 style={{ fontFamily: "DM Sans", fontWeight: 700, fontSize: 22, color: "#dae6ff", letterSpacing: "-0.025em" }}>Project bewerken</h2>
+                    <button onClick={() => { setEditId(null); setForm(emptyForm); }} style={{ width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "none", color: "#a0abc3", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} />
+                  <button onClick={() => handleSubmit(false, editId)} style={{
+                    width: "100%", height: 56, borderRadius: 16, background: "#3fff8b", border: "none", color: "#005d2c",
+                    fontFamily: "DM Sans", fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.1em",
+                    cursor: "pointer", marginTop: 24,
+                  }}>
+                    Opslaan
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
 
           <BottomNav badges={badges} />
         </div>
