@@ -449,10 +449,12 @@ export default function Planning() {
               style={{
                 width: '100%', maxWidth: 480, background: 'rgba(10,26,48,0.97)', backdropFilter: 'blur(24px)',
                 borderRadius: '40px 40px 0 0', borderTop: '1px solid rgba(255,255,255,0.1)',
-                maxHeight: '95vh', overflowY: 'auto',
-                paddingBottom: 'calc(env(safe-area-inset-bottom, 34px) + 32px)',
+                maxHeight: '92dvh',
+                display: 'flex', flexDirection: 'column',
               }}
             >
+              {/* SCROLLABLE CONTENT */}
+              <div style={{ overflowY: 'auto', flex: 1, overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
               <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 6px' }}>
                 <div style={{ width: 48, height: 5, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
               </div>
