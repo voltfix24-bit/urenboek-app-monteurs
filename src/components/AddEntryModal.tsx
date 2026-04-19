@@ -23,16 +23,6 @@ interface AddEntryModalProps {
 
 export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planningItems }: AddEntryModalProps) {
   const { projects, loading } = useProjects();
-
-  const availableProjects = useMemo(() => {
-    if (!planningItems || planningItems.length === 0) {
-      // Fallback: show all projects (no planning data loaded yet)
-      return projects;
-    }
-    if (!selectedDateRef()) return [];
-    return projects;
-  }, [planningItems, projects]);
-  function selectedDateRef() { return null; } // placeholder, real filter below uses state
   const [step, setStep] = useState(initialDate ? 2 : 1);
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate || null);
   const [form, setForm] = useState({ projectId: null as string | null, werkzaamheden: null as string | null, uren: 8 });
@@ -41,6 +31,20 @@ export function AddEntryModal({ weekDays, onClose, onSubmit, initialDate, planni
   const [isDragging, setIsDragging] = useState(false);
   const dragStartY = useRef(0);
   const sheetRef = useRef<HTMLDivElement>(null);
+
+  const availableProjects = useMemo(() => {
+    if (!planningItems || planningItems.length === 0) {
+      // Fallback: no planning data — show all projects
+      return projects;
+    }
+    if (!selectedDate) return [];
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const plannedProjectIds = new Set(
+      planningItems.filter(p => p.datum === dateStr).map(p => p.project_id)
+    );
+    if (plannedProjectIds.size === 0) return [];
+    return projects.filter(p => plannedProjectIds.has(p.id));
+  }, [planningItems, selectedDate, projects]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     dragStartY.current = e.touches[0].clientY;
