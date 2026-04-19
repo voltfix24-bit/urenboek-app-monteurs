@@ -328,7 +328,18 @@ const Index = () => {
               const isToday = dateStr === today;
               const hasEntries = dayEntries.length > 0;
               const isUnder = hasEntries && dayHours < 8;
+              const isOver = dayHours > 8;
               const hasAfgekeurd = dayEntries.some(e => e.status === "afgekeurd");
+              // Aggregate hours per project for over-8u warning
+              const perProject = isOver
+                ? Object.entries(
+                    dayEntries.reduce<Record<string, number>>((acc, e) => {
+                      const key = e.projectNumber || "Onbekend";
+                      acc[key] = (acc[key] || 0) + e.hours;
+                      return acc;
+                    }, {})
+                  ).sort((a, b) => b[1] - a[1])
+                : [];
 
               // Friday empty — dashed style
               if (i === 4 && !hasEntries) {
