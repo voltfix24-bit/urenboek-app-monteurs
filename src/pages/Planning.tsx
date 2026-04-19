@@ -357,7 +357,7 @@ export default function Planning() {
                                       </div>
                                     )}
                                     {/* Navigate button */}
-                                    {item.is_definitief && adres && (
+                                    {adres && (
                                       <button onClick={(e) => { e.stopPropagation(); openNavigatie(adres); }} style={{
                                         marginTop: 8, padding: '8px 12px', borderRadius: 10,
                                         background: 'rgba(63,255,139,0.08)', border: '1px solid rgba(63,255,139,0.2)',
