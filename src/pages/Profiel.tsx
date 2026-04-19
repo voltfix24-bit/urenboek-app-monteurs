@@ -18,6 +18,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths,
 import { nl } from "date-fns/locale";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
+import { triggerInstallPrompt, canShowInstallPrompt } from "@/components/InstallPrompt";
 
 interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; geboortedatum?: string | null; account_status?: string; }
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; }
@@ -675,6 +676,18 @@ export default function Profiel() {
             </div>
             <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3', opacity: 0.6 }}>chevron_right</span>
           </button>
+
+          {/* INSTALLEER APP */}
+          {canShowInstallPrompt() && (
+            <button onClick={triggerInstallPrompt} style={{
+              width: '100%', padding: '16px 20px', borderRadius: 16, background: 'rgba(63,255,139,0.08)',
+              border: '1px solid rgba(63,255,139,0.3)', color: '#3fff8b', fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>install_mobile</span>
+              Installeer app op beginscherm
+            </button>
+          )}
 
           {/* UITLOGGEN */}
           <button onClick={signOut} style={{
