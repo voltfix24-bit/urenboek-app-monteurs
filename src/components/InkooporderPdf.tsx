@@ -371,17 +371,17 @@ export function InkooporderDocument({
             <Text style={styles.logoSub}>Elektrotechniek &amp; Installatie</Text>
           </View>
           <View style={styles.headerRechts}>
-            <Text style={styles.titel}>Inkooporder</Text>
+            <Text style={styles.titel}>Werkbevestiging</Text>
             <Text style={styles.ordernummer}>{order.order_nummer}</Text>
             <View style={styles.statusBadge}>
-              <Text style={styles.statusBadgeTekst}>DEFINITIEF GOEDGEKEURD VOOR FACTURATIE</Text>
+              <Text style={styles.statusBadgeTekst}>GOEDGEKEURD VOOR FACTUUR</Text>
             </View>
             <View style={styles.datumInfo}>
               <Text style={styles.datumLabel}>Datum:</Text>
               <Text style={styles.datumWaarde}>{datumStr}</Text>
-              <Text style={styles.datumLabel}>Geaccordeerd:</Text>
+              <Text style={styles.datumLabel}>Goedgekeurd door:</Text>
               <Text style={styles.datumWaarde}>{goedkeurderNaam || bNaam}</Text>
-              <Text style={styles.datumLabel}>Datum akkoord:</Text>
+              <Text style={styles.datumLabel}>Goedgekeurd op:</Text>
               <Text style={styles.datumWaarde}>{datumStr}</Text>
             </View>
           </View>
