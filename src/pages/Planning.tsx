@@ -441,7 +441,7 @@ export default function Planning() {
         {/* UREN MODAL */}
         {showUrenModal && modalItem && (
           <div
-            style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}
+            style={{ position: 'fixed', inset: 0, zIndex: 120, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}
             onClick={() => setShowUrenModal(false)}
           >
             <div
