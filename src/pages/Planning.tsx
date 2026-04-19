@@ -143,19 +143,29 @@ export default function Planning() {
 
   function openUrenModal(item: PlanningItem) {
     setModalItem(item);
-    setUrenForm({ werkzaamheden: "monteren", uren: 8 });
+    setUrenForm({ werkzaamheden: "monteren", uren: 8, toelichting: "" });
     setShowUrenModal(true);
   }
 
   const saveUren = async (submitDirect: boolean) => {
     if (!profileId || !modalItem) return;
+    const planned = calcDefaultUren(modalItem.starttijd, modalItem.eindtijd);
+    const diff = Math.abs(urenForm.uren - planned);
+    const needsToelichting = diff > 0.5;
+    if (needsToelichting && urenForm.toelichting.trim().length < 3) {
+      toast.error("Geef een korte toelichting op de afwijking");
+      return;
+    }
+    const beschrijving = needsToelichting
+      ? `${urenForm.werkzaamheden} — afwijking ${urenForm.uren - planned > 0 ? '+' : ''}${(urenForm.uren - planned).toFixed(1)}u: ${urenForm.toelichting.trim()}`
+      : urenForm.werkzaamheden;
     if (!await mutate(supabase.from("uren_boekingen").insert({
       medewerker_id: profileId,
       project_id: modalItem.project_id,
       datum: modalItem.datum,
       uren: urenForm.uren,
       type: urenForm.werkzaamheden,
-      beschrijving: urenForm.werkzaamheden,
+      beschrijving,
       status: submitDirect ? "ingediend" : "concept",
     }))) return;
     toast.success("Uren geboekt ✓");
