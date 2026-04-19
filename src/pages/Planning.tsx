@@ -551,6 +551,16 @@ export default function Planning() {
                   );
                 })()}
 
+              </div>
+              </div>
+              {/* STICKY FOOTER */}
+              <div style={{
+                flexShrink: 0,
+                padding: '12px 24px',
+                paddingBottom: 'calc(env(safe-area-inset-bottom, 34px) + 12px)',
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                background: 'rgba(10,26,48,0.97)',
+              }}>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button onClick={() => saveUren(false)} style={{
                     flex: 1, height: 56, borderRadius: 16, background: '#3fff8b', color: '#005d2c',
