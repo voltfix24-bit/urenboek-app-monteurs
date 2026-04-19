@@ -2,6 +2,7 @@ import { Pencil, ToggleLeft, ToggleRight, X, ChevronDown, ChevronUp, Building2, 
 import { volledigAdres } from "@/lib/utils";
 import { CaseTypeBadge } from "./CaseTypeBadge";
 import { generateProjectPdf } from "./projectPdf";
+import { PlanningStatusTab } from "@/components/PlanningStatusTab";
 
 function DetailLine({ label, value }: { label: string; value: string }) {
   return (
@@ -96,6 +97,12 @@ export function ProjectCard({ project, ogNaam, isManager, isEditing, isExpanded,
                   <Mail className="h-3 w-3" /> {project.contactpersoon_email}
                 </a>
               )}
+            </div>
+          )}
+          {isManager && (
+            <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
+              <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "#a0abc3" }}>Planning</p>
+              <PlanningStatusTab projectId={project.id} profileId={undefined} />
             </div>
           )}
           <button onClick={() => generateProjectPdf(project, ogNaam, isManager)} className="w-full mt-2 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
