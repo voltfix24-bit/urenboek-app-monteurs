@@ -627,7 +627,7 @@ export default function Profiel() {
                 <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#74fbbb' }}>event_repeat</span>
                 <span style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 13, color: '#dae6ff' }}>Verlof aanvragen</span>
               </button>
-              <button onClick={() => setShowZiek(true)} style={{
+              <button onClick={() => navigate("/ziek-melden")} style={{
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 padding: '24px 16px', borderRadius: 20, background: '#172129',
                 border: '1px solid rgba(66,73,80,0.3)', cursor: 'pointer', gap: 8,
