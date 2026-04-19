@@ -199,13 +199,13 @@ const Index = () => {
   };
 
   return (
-    <div {...swipeHandlers} style={{ position: "relative", minHeight: "100vh", background: "#060d18", fontFamily: "Inter, sans-serif" }}>
+    <div {...swipeHandlers} style={{ position: "relative", minHeight: "100dvh", background: "#060d18", fontFamily: "Inter, sans-serif", overflowX: "hidden", maxWidth: "100vw" }}>
 
       <MobileHeader initials={profile?.full_name?.charAt(0)?.toUpperCase() || "U"} />
 
       {/* ── MAIN CONTENT ── */}
       <PullToRefresh onRefresh={handleRefresh}>
-        <div style={{ padding: "20px 20px 180px 20px" }}>
+        <div style={{ padding: "20px 20px calc(140px + env(safe-area-inset-bottom, 0px)) 20px" }}>
 
           {/* WEEK HEADER */}
           <div style={{ marginBottom: 20 }}>
