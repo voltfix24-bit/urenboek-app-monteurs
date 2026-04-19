@@ -13,7 +13,7 @@ function DetailLine({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function ProjectCard({ project, ogNaam, isManager, isEditing, isExpanded, isConfirmingDelete, renderFormFields, onEdit, onCancel, onSave, onToggle, onDelete, onCancelDelete, onToggleExpand }: any) {
+export function ProjectCard({ project, ogNaam, isManager, isEditing, isExpanded, isConfirmingDelete, isDefinitief, renderFormFields, onEdit, onCancel, onSave, onToggle, onDelete, onCancelDelete, onToggleExpand }: any) {
   if (isEditing) {
     return (
       <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(110,155,255,0.3)" }}>
@@ -47,6 +47,15 @@ export function ProjectCard({ project, ogNaam, isManager, isEditing, isExpanded,
               {(!project.straat || !project.stad) && <span title="Adres onvolledig — monteurs kunnen niet navigeren"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "#feb300" }} /></span>}
             </p>
             <CaseTypeBadge type={project.case_type} />
+            {isManager && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ 
+                background: isDefinitief ? "rgba(63,255,139,0.1)" : "rgba(254,179,0,0.1)", 
+                border: `1px solid ${isDefinitief ? "rgba(63,255,139,0.3)" : "rgba(254,179,0,0.3)"}`,
+                color: isDefinitief ? "#3fff8b" : "#feb300" 
+              }}>
+                {isDefinitief ? "DEFINITIEF" : "CONCEPT"}
+              </span>
+            )}
           </div>
           <p className="text-xs mt-0.5 font-mono" style={{ color: "#3fff8b" }}>{project.nummer}</p>
           {project.stationsnaam && <p className="text-[11px] mt-0.5" style={{ color: "#a0abc3" }}>{project.stationsnaam}</p>}
