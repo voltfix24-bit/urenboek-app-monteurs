@@ -6,10 +6,10 @@ import { toast } from "sonner";
 import { X, Pencil, AlertTriangle, CheckCircle } from "lucide-react";
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; dot: string; label: string }> = {
-  concept: { bg: "#102038", text: "#a0abc3", dot: "#a0abc3", label: "Concept" },
-  ingediend: { bg: "rgba(254,179,0,0.1)", text: "#feb300", dot: "#feb300", label: "Ingediend" },
-  goedgekeurd: { bg: "rgba(63,255,139,0.1)", text: "#3fff8b", dot: "#3fff8b", label: "Goedgekeurd" },
-  afgekeurd: { bg: "rgba(255,113,108,0.1)", text: "#ff716c", dot: "#ff716c", label: "Afgekeurd" },
+  concept: { bg: "#102038", text: "#a0abc3", dot: "#a0abc3", label: "Nog niet ingediend" },
+  ingediend: { bg: "rgba(254,179,0,0.1)", text: "#feb300", dot: "#feb300", label: "Wacht op akkoord" },
+  goedgekeurd: { bg: "rgba(63,255,139,0.1)", text: "#3fff8b", dot: "#3fff8b", label: "Goedgekeurd ✓" },
+  afgekeurd: { bg: "rgba(255,113,108,0.1)", text: "#ff716c", dot: "#ff716c", label: "Niet goedgekeurd" },
 };
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
@@ -123,7 +123,7 @@ export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDa
           <textarea
             value={toelichting}
             onChange={e => setToelichting(e.target.value)}
-            placeholder="Geef een verklaring voor de extra uren..."
+            placeholder="Leg uit waarom je meer uren hebt gemaakt..."
             style={{
               background: "#030e20", border: "1px solid rgba(254,179,0,0.3)", borderRadius: 8,
               padding: "8px 10px", fontSize: 12, width: "100%", minHeight: 60, resize: "none", marginTop: 6,
@@ -135,7 +135,7 @@ export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDa
             fontSize: 12, fontWeight: 600, marginTop: 6, width: "100%", border: "none", cursor: "pointer",
             opacity: toelichting.trim() ? 1 : 0.5,
           }}>
-            Versturen
+            Stuur toelichting
           </button>
         </div>
       )}
@@ -159,14 +159,14 @@ export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDa
 
       {entry.status === "concept" && onSubmit && (
         <button onClick={() => onSubmit(entry.id)} className="mt-3 w-full py-2 rounded-xl text-xs font-semibold transition-colors" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
-          Indienen ter goedkeuring →
+          Stuur in voor akkoord →
         </button>
       )}
       {entry.status === "ingediend" && onRevertToConcept && (
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <p style={{ fontSize: 11, color: '#feb300', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 4 }}>
             <span className="material-symbols-outlined" style={{ fontSize: 13 }}>schedule</span>
-            Wacht op goedkeuring manager
+            Wacht op akkoord van de manager
           </p>
           <button
             onClick={() => onRevertToConcept(entry.id)}
@@ -188,16 +188,16 @@ export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDa
             }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: 14 }}>undo</span>
-            Terugtrekken en aanpassen
+            Pas aan en stuur opnieuw in
           </button>
         </div>
       )}
       {entry.status === "afgekeurd" && (
         <div className="mt-3 space-y-2">
-          <p className="text-[11px] italic flex items-center gap-1" style={{ color: "#ff716c" }}><X className="h-3 w-3" /> Afgekeurd — pas aan en dien opnieuw in.</p>
+          <p className="text-[11px] italic flex items-center gap-1" style={{ color: "#ff716c" }}><X className="h-3 w-3" /> Niet goedgekeurd — pas je uren aan en stuur ze opnieuw in.</p>
           {onRevertToConcept && (
             <button onClick={() => onRevertToConcept(entry.id)} className="w-full py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)", color: "#feb300" }}>
-              <Pencil className="h-3 w-3" /> Aanpassen en opnieuw indienen
+              <Pencil className="h-3 w-3" /> Pas aan en stuur opnieuw in
             </button>
           )}
           {onRemove && (

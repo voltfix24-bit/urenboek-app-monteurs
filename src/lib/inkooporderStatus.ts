@@ -6,13 +6,13 @@ export const INKOOPORDER_STATUS_CONFIG: Record<string, {
   hint?: string;
 }> = {
   concept: {
-    label: "Concept",
+    label: "In aanmaak",
     color: "#a0abc3",
     bg: "rgba(10,26,48,0.7)",
     border: "rgba(106,118,140,0.15)",
   },
   verzonden: {
-    label: "Klaar — maak je factuur",
+    label: "Je kunt nu factureren",
     color: "#3fff8b",
     bg: "rgba(63,255,139,0.1)",
     border: "rgba(63,255,139,0.3)",
