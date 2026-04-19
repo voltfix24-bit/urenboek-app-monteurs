@@ -196,14 +196,19 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
         )}
 
         <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#3fff8b", color: "#fff" }}>
+          <button
+            onClick={() => navigate("/profiel")}
+            className="w-full flex items-center gap-2.5 px-1 py-1 rounded-lg transition-colors hover:bg-white/5 text-left"
+            title="Naar profiel"
+          >
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#3fff8b", color: "#fff" }}>
               {displayName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium truncate" style={{ color: "#dae6ff" }}>{displayName}</p>
+              <p className="text-[10px] truncate" style={{ color: "#a0abc3" }}>Mijn profiel</p>
             </div>
-          </div>
+          </button>
           <button onClick={signOut} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium" style={{ border: "1px solid rgba(255,113,108,0.3)", color: "#ff716c", background: "rgba(255,113,108,0.1)" }}>
             <LogOut className="h-3.5 w-3.5" /> Uitloggen
           </button>
