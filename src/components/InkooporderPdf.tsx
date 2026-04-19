@@ -414,7 +414,7 @@ export function InkooporderDocument({
           {[
             { label: "PERIODE", waarde: periodeStr },
             { label: "TOTAAL UREN", waarde: `${order.totaal_uren} uur` },
-            { label: "UURTARIEF EXCL. BTW", waarde: regels.length > 0 ? euro(Number(regels[0].uurtarief)) : "—" },
+            { label: "UURTARIEF", waarde: regels.length > 0 ? euro(Number(regels[0].uurtarief)) : "—" },
             { label: "BETAALTERMIJN", waarde: `${termijn} dagen` },
           ].map((item, i) => (
             <View key={i} style={{ flexDirection: "row" as const, flex: 1 }}>
@@ -456,16 +456,16 @@ export function InkooporderDocument({
         <View style={styles.financieelWrap}>
           <View style={styles.finBlok}>
             <View style={styles.finRij}>
-              <Text style={styles.finLabel}>Subtotaal excl. BTW</Text>
+              <Text style={styles.finLabel}>Subtotaal</Text>
               <Text style={styles.finWaarde}>{euro(Number(order.totaal_excl_btw))}</Text>
             </View>
             <View style={styles.finRij}>
-              <Text style={styles.finLabel}>BTW 21%</Text>
-              <Text style={styles.finWaarde}>{euro(Number(order.btw_bedrag))}</Text>
+              <Text style={[styles.finLabel, { color: "#feb300" }]}>BTW</Text>
+              <Text style={[styles.finWaarde, { color: "#feb300" }]}>Verlegd (art. 12 Wet OB)</Text>
             </View>
             <View style={styles.totaalBox}>
-              <Text style={styles.totaalLabel}>{"Totaal\nincl. BTW"}</Text>
-              <Text style={styles.totaalBedrag}>{euro(Number(order.totaal_incl_btw))}</Text>
+              <Text style={styles.totaalLabel}>{"Te\nfactureren"}</Text>
+              <Text style={styles.totaalBedrag}>{euro(Number(order.totaal_excl_btw))}</Text>
             </View>
           </View>
         </View>
@@ -477,6 +477,10 @@ export function InkooporderDocument({
             <Text style={styles.footerTekst}>
               Betaling binnen <Text style={styles.footerStrong}>{termijn} dagen</Text> na ontvangst van een correcte factuur.{"\n"}
               Stuur uw factuur naar <Text style={styles.footerStrong}>{email}</Text>
+            </Text>
+            <Text style={styles.footerTekst}>
+              {"\n"}Op deze factuur is BTW verlegd van toepassing conform artikel 12 van de Wet op de Omzetbelasting 1968. Vermeld op uw factuur:{" "}
+              <Text style={styles.footerStrong}>"BTW verlegd"</Text>{" "}en uw BTW-nummer.
             </Text>
             <View style={styles.ordernrChip}>
               <Text style={styles.ordernrChipTekst}>{order.order_nummer}</Text>
