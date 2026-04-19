@@ -487,8 +487,7 @@ export function InkooporderDocument({
               Stuur uw factuur naar <Text style={styles.footerStrong}>{email}</Text>
             </Text>
             <Text style={styles.footerTekst}>
-              {"\n"}Op deze factuur is BTW verlegd van toepassing conform artikel 12 van de Wet op de Omzetbelasting 1968. Vermeld op uw factuur:{" "}
-              <Text style={styles.footerStrong}>"BTW verlegd"</Text>{" "}en uw BTW-nummer.
+              Stuur uw factuur naar <Text style={styles.footerStrong}>{email}</Text>
             </Text>
             <View style={styles.ordernrChip}>
               <Text style={styles.ordernrChipTekst}>{order.order_nummer}</Text>
@@ -496,6 +495,23 @@ export function InkooporderDocument({
             <Text style={styles.geenFactuur}>
               Dit document is geen factuur — gebruik het als basis voor uw eigen facturatie aan {bNaam}.
             </Text>
+            <View style={{
+              backgroundColor: "#fffbeb",
+              borderWidth: 0.5,
+              borderColor: "#fcd34d",
+              borderRadius: 3,
+              paddingHorizontal: 8,
+              paddingVertical: 6,
+              marginTop: 8,
+            }}>
+              <Text style={{ fontSize: 7, color: "#92400e", lineHeight: 1.6, fontFamily: "Helvetica" }}>
+                {"Op deze inkooporder is BTW verlegd van toepassing conform "}
+                <Text style={{ fontFamily: "Helvetica-Bold" }}>artikel 12 Wet op de Omzetbelasting 1968</Text>
+                {". Vermeld op uw factuur: "}
+                <Text style={{ fontFamily: "Helvetica-Bold" }}>"BTW verlegd"</Text>
+                {" en uw BTW-nummer."}
+              </Text>
+            </View>
           </View>
           <View style={styles.footerBlok}>
             <Text style={styles.footerLabel}>Factuuradministratie</Text>
