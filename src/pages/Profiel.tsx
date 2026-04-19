@@ -807,43 +807,120 @@ export default function Profiel() {
       {showVerlof && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }} onClick={() => setShowVerlof(false)}>
           <div onClick={e => e.stopPropagation()} style={{
-            width: '100%', maxWidth: 480, background: 'rgba(10,26,48,0.97)', backdropFilter: 'blur(24px)',
-            borderRadius: '40px 40px 0 0', borderTop: '1px solid rgba(255,255,255,0.1)',
-            maxHeight: '85vh', overflowY: 'auto', paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 32px)",
+            width: '100%', maxWidth: 480, background: 'rgba(12,20,27,0.95)', backdropFilter: 'blur(20px)',
+            borderRadius: '32px 32px 0 0', borderTop: '1px solid rgba(66,73,80,0.1)',
+            maxHeight: '85vh', display: 'flex', flexDirection: 'column',
+            boxShadow: '0 -20px 50px rgba(0,0,0,0.5)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 34px) + 16px)',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
-              <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
+            {/* Handle */}
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
+              <div style={{ width: 48, height: 4, borderRadius: 9999, background: 'rgba(66,73,80,0.3)' }} />
             </div>
-            <div style={{ padding: '0 24px' }}>
-              <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 24, color: '#dae6ff', marginBottom: 20 }}>Verlof aanvragen</h2>
-              <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-                {(['vakantie', 'verlof', 'anders'] as const).map(t => (
-                  <button key={t} onClick={() => setVerlofForm({ ...verlofForm, type: t })} style={{
-                    flex: 1, padding: '12px 0', borderRadius: 16, textTransform: 'capitalize',
-                    border: verlofForm.type === t ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
-                    background: verlofForm.type === t ? 'rgba(63,255,139,0.05)' : '#061327',
-                    color: verlofForm.type === t ? '#3fff8b' : '#a0abc3',
-                    fontFamily: 'Inter', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-                  }}>{t}</button>
+
+            {/* Scrollable content */}
+            <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', padding: '20px 24px 0' }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+                <div>
+                  <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 24, color: '#dae6ff', marginBottom: 4 }}>
+                    Verlof aanvragen
+                  </h2>
+                  <p style={{ fontSize: 13, color: '#a0abc3', fontFamily: 'Inter' }}>
+                    Vul de details in voor je nieuwe aanvraag.
+                  </p>
+                </div>
+                <button onClick={() => setShowVerlof(false)} style={{
+                  width: 40, height: 40, borderRadius: '50%', background: '#1d2730',
+                  border: 'none', color: '#a0abc3',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', flexShrink: 0,
+                }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+                </button>
+              </div>
+
+              {/* Type verlof toggle */}
+              <div style={{ marginBottom: 24 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#424950', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 10 }}>
+                  Type verlof
+                </p>
+                <div style={{ display: 'flex', padding: 4, background: '#1d2730', borderRadius: 14, gap: 4 }}>
+                  {(['vakantie', 'verlof', 'anders'] as const).map(t => (
+                    <button key={t} onClick={() => setVerlofForm({ ...verlofForm, type: t })} style={{
+                      flex: 1, padding: '12px 8px', borderRadius: 10, border: 'none',
+                      background: verlofForm.type === t ? 'linear-gradient(135deg, #3fff8b, #13ea79)' : 'transparent',
+                      color: verlofForm.type === t ? '#080f15' : '#a0abc3',
+                      fontFamily: 'Inter', fontWeight: 700, fontSize: 13, cursor: 'pointer', textTransform: 'capitalize',
+                      boxShadow: verlofForm.type === t ? '0 4px 12px rgba(63,255,139,0.2)' : 'none',
+                      transition: 'all 0.15s',
+                    }}>{t}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Datum van/tot */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+                {[
+                  { label: 'VAN', field: 'datum_van' as const },
+                  { label: 'TOT', field: 'datum_tot' as const },
+                ].map(({ label, field }) => (
+                  <div key={field}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: '#424950', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>
+                      {label}
+                    </p>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="date"
+                        value={verlofForm[field]}
+                        onChange={e => setVerlofForm({ ...verlofForm, [field]: e.target.value })}
+                        style={{
+                          width: '100%', background: '#172129', border: 'none', borderRadius: 12,
+                          padding: '14px 40px 14px 14px',
+                          color: verlofForm[field] ? '#3fff8b' : '#a0abc3',
+                          fontFamily: 'Inter', fontSize: 13,
+                          fontWeight: verlofForm[field] ? 700 : 400,
+                          outline: 'none', colorScheme: 'dark', boxSizing: 'border-box',
+                          WebkitAppearance: 'none',
+                        }} />
+                      <span className="material-symbols-outlined" style={{
+                        position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                        fontSize: 18, color: '#3fff8b', pointerEvents: 'none',
+                      }}>calendar_month</span>
+                    </div>
+                  </div>
                 ))}
               </div>
-              <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 10, color: '#a0abc3', fontFamily: 'Inter', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Van</label>
-                  <input type="date" value={verlofForm.datum_van} onChange={e => setVerlofForm({ ...verlofForm, datum_van: e.target.value })} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 10, color: '#a0abc3', fontFamily: 'Inter', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tot</label>
-                  <input type="date" value={verlofForm.datum_tot} onChange={e => setVerlofForm({ ...verlofForm, datum_tot: e.target.value })} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
-                </div>
+
+              {/* Reden */}
+              <div style={{ marginBottom: 24 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#424950', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>
+                  Reden (optioneel)
+                </p>
+                <textarea
+                  value={verlofForm.reden}
+                  onChange={e => setVerlofForm({ ...verlofForm, reden: e.target.value })}
+                  placeholder="Bijv. familiebezoek of renovatie..."
+                  rows={3}
+                  style={{
+                    width: '100%', background: '#172129', border: 'none', borderRadius: 12,
+                    padding: '14px', color: '#dae6ff', fontFamily: 'Inter', fontSize: 13,
+                    resize: 'none', outline: 'none', boxSizing: 'border-box',
+                  }} />
               </div>
-              <input value={verlofForm.reden} onChange={e => setVerlofForm({ ...verlofForm, reden: e.target.value })} placeholder="Reden (optioneel)" style={{ width: '100%', padding: '12px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 20 }} />
+            </div>
+
+            {/* Sticky submit button */}
+            <div style={{ padding: '12px 24px', borderTop: '1px solid rgba(66,73,80,0.15)', flexShrink: 0 }}>
               <button onClick={requestVerlof} disabled={!verlofForm.datum_van || !verlofForm.datum_tot} style={{
-                width: '100%', height: 56, borderRadius: 16, background: '#3fff8b', color: '#005d2c',
-                fontFamily: 'Manrope', fontWeight: 800, fontSize: 16, textTransform: 'uppercase', letterSpacing: '0.05em',
-                border: 'none', cursor: 'pointer', opacity: (!verlofForm.datum_van || !verlofForm.datum_tot) ? 0.4 : 1,
-                boxShadow: '0 8px 32px rgba(63,255,139,0.2)',
-              }}>Aanvragen</button>
+                width: '100%', padding: '18px 0', borderRadius: 14,
+                background: 'linear-gradient(135deg, #3fff8b, #13ea79)',
+                border: 'none', color: '#080f15',
+                fontFamily: 'Manrope', fontWeight: 800, fontSize: 16,
+                textTransform: 'uppercase', letterSpacing: '0.1em', cursor: 'pointer',
+                opacity: (!verlofForm.datum_van || !verlofForm.datum_tot) ? 0.4 : 1,
+                boxShadow: '0 12px 40px rgba(63,255,139,0.2)',
+              }}>AANVRAAG VERSTUREN</button>
             </div>
           </div>
         </div>
