@@ -460,8 +460,16 @@ export function InkooporderDocument({
               <Text style={styles.finWaarde}>{euro(Number(order.totaal_excl_btw))}</Text>
             </View>
             <View style={styles.finRij}>
-              <Text style={[styles.finLabel, { color: "#feb300" }]}>BTW</Text>
-              <Text style={[styles.finWaarde, { color: "#feb300" }]}>Verlegd (art. 12 Wet OB)</Text>
+              <Text style={styles.finLabel}>BTW</Text>
+              <Text style={{
+                fontSize: 7,
+                fontFamily: "Helvetica-Bold",
+                color: "#92400e",
+                backgroundColor: "#fffbeb",
+                paddingHorizontal: 5,
+                paddingVertical: 2,
+                borderRadius: 2,
+              }}>Verlegd (art. 12 Wet OB)</Text>
             </View>
             <View style={styles.totaalBox}>
               <Text style={styles.totaalLabel}>{"Te\nfactureren"}</Text>
