@@ -403,28 +403,6 @@ export default function Planning() {
           </main>
         </PullToRefresh>
 
-        {/* AMBER STICKY BANNER */}
-        {!loading && items.some(item => item.is_definitief && !existingBoekingen.get(`${item.datum}|${item.project_id}`)) && (
-          <div style={{ position: 'fixed', bottom: 88, left: 20, right: 20, zIndex: 40 }}>
-            <div style={{
-              background: '#feb300', borderRadius: 16, padding: '14px 16px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              boxShadow: '0 8px 24px rgba(254,179,0,0.35)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(82,55,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#523700', fontVariationSettings: "'FILL' 1" }}>bolt</span>
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'Inter', color: '#523700' }}>Dagen nog niet volledig geboekt</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#523700', fontWeight: 700, fontSize: 12, fontFamily: 'Inter' }}>
-                Bekijk
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
-              </div>
-            </div>
-          </div>
-        )}
-
         <BottomNav badges={badges} />
 
         {/* UREN MODAL */}
