@@ -70,6 +70,7 @@ const Index = () => {
   const [pendingOffline, setPendingOffline] = useState(0);
   const [vorigeWeekConcept, setVorigeWeekConcept] = useState<{ id: string; datum: string; uren: number }[]>([]);
   const [submittingVorigeWeek, setSubmittingVorigeWeek] = useState(false);
+  const [planningItems, setPlanningItems] = useState<Array<{ datum: string; project_id: string }>>([]);
 
   // Track online/offline status
   useEffect(() => {
