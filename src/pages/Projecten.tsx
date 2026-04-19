@@ -34,7 +34,7 @@ interface Project {
 
 export default function Projecten() {
   const { isManager, permissies } = useAuth(); const navigate = useNavigate();
-  const { profile } = useProfile();
+  const { profile, profileId } = useProfile();
   const { badges } = useNavBadges();
   const queryClient = useQueryClient();
   const { data: projects = [], isLoading: projectsLoading, refetch: refetchProjects } = useProjectenQuery();
@@ -419,7 +419,7 @@ export default function Projecten() {
                   {isManager && (
                     <div className="mb-3">
                       <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "#a0abc3" }}>Planning</p>
-                      <PlanningStatusTab projectId={p.id} profileId={undefined} />
+                      <PlanningStatusTab projectId={p.id} profileId={profileId ?? undefined} onStatusChange={fetchData} />
                     </div>
                   )}
 
