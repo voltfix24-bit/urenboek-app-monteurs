@@ -162,6 +162,36 @@ export function EntryCard({ entry, onSubmit, onRemove, onRevertToConcept, showDa
           Indienen ter goedkeuring →
         </button>
       )}
+      {entry.status === "ingediend" && onRevertToConcept && (
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <p style={{ fontSize: 11, color: '#feb300', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 13 }}>schedule</span>
+            Wacht op goedkeuring manager
+          </p>
+          <button
+            onClick={() => onRevertToConcept(entry.id)}
+            style={{
+              width: '100%',
+              padding: '8px 0',
+              borderRadius: 12,
+              background: 'rgba(254,179,0,0.08)',
+              border: '1px solid rgba(254,179,0,0.25)',
+              color: '#feb300',
+              fontSize: 12,
+              fontWeight: 600,
+              fontFamily: 'Inter',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>undo</span>
+            Terugtrekken en aanpassen
+          </button>
+        </div>
+      )}
       {entry.status === "afgekeurd" && (
         <div className="mt-3 space-y-2">
           <p className="text-[11px] italic flex items-center gap-1" style={{ color: "#ff716c" }}><X className="h-3 w-3" /> Afgekeurd — pas aan en dien opnieuw in.</p>
