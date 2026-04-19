@@ -358,66 +358,96 @@ const Index = () => {
               }
 
               return (
-                <div key={i} onClick={() => openModal(date)} style={{
-                  background: isToday ? "rgba(63,255,139,0.04)" : "linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))",
-                  backdropFilter: "blur(12px)",
-                  borderRadius: 16,
-                  padding: "16px 20px",
-                  border: isToday ? "1px solid #3fff8b" : hasAfgekeurd ? "1px solid rgba(255,113,108,0.4)" : "1px solid rgba(106,118,140,0.15)",
-                  borderLeft: isToday ? "4px solid #3fff8b" : hasAfgekeurd ? "4px solid #ff716c" : "1px solid rgba(106,118,140,0.15)",
-                  display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
-                  transition: "transform 0.1s", minHeight: 72,
-                }}>
-                  {/* LEFT — day + date */}
-                  <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", width: 36, marginRight: 14 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: isToday ? "#3fff8b" : "rgba(255,255,255,0.35)", letterSpacing: "0.05em" }}>{DAGEN_KORT[i]}</span>
-                    <span style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope", color: isToday ? "#3fff8b" : "white" }}>{date.getDate()}</span>
-                  </div>
+                <div key={i}>
+                  <div onClick={() => openModal(date)} style={{
+                    background: isToday ? "rgba(63,255,139,0.04)" : "linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))",
+                    backdropFilter: "blur(12px)",
+                    borderRadius: isOver ? "16px 16px 0 0" : 16,
+                    padding: "16px 20px",
+                    border: isToday ? "1px solid #3fff8b" : isOver ? "1px solid rgba(255,113,108,0.4)" : hasAfgekeurd ? "1px solid rgba(255,113,108,0.4)" : "1px solid rgba(106,118,140,0.15)",
+                    borderLeft: isToday ? "4px solid #3fff8b" : isOver ? "4px solid #ff716c" : hasAfgekeurd ? "4px solid #ff716c" : "1px solid rgba(106,118,140,0.15)",
+                    borderBottom: isOver ? "none" : undefined,
+                    display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
+                    transition: "transform 0.1s", minHeight: 72,
+                  }}>
+                    {/* LEFT — day + date */}
+                    <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", width: 36, marginRight: 14 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: isToday ? "#3fff8b" : "rgba(255,255,255,0.35)", letterSpacing: "0.05em" }}>{DAGEN_KORT[i]}</span>
+                      <span style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope", color: isToday ? "#3fff8b" : "white" }}>{date.getDate()}</span>
+                    </div>
 
-                  {/* CENTER — project info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    {hasEntries ? (
-                      <>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: "white", whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {dayEntries[0].projectNumber}
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>location_on</span>
-                          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
-                            {dayEntries.length > 1 ? "Meerdere locaties" : "Zie planning"}
-                          </span>
-                          {dayEntries.length > 1 && (
-                            <span style={{ fontSize: 10, color: "#3fff8b", fontWeight: 600, marginLeft: 4 }}>+{dayEntries.length - 1} meer</span>
+                    {/* CENTER — project info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {hasEntries ? (
+                        <>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: "white", whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {dayEntries[0].projectNumber}
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>location_on</span>
+                            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+                              {dayEntries.length > 1 ? "Meerdere locaties" : "Zie planning"}
+                            </span>
+                            {dayEntries.length > 1 && (
+                              <span style={{ fontSize: 10, color: "#3fff8b", fontWeight: 600, marginLeft: 4 }}>+{dayEntries.length - 1} meer</span>
+                            )}
+                          </div>
+                          {isUnder && (
+                            <div style={{ marginTop: 4, display: "inline-block", padding: "2px 6px", borderRadius: 4, background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.2)", fontSize: 9, fontWeight: 700, color: "#feb300", letterSpacing: "0.05em" }}>
+                              ONDER TARGET
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div>
+                          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>Niets geboekt</span>
+                          {isToday && (
+                            <span style={{ marginLeft: 8, fontSize: 9, fontWeight: 700, color: "#3fff8b", letterSpacing: "0.05em", background: "rgba(63,255,139,0.1)", padding: "2px 6px", borderRadius: 4 }}>VANDAAG</span>
                           )}
                         </div>
-                        {isUnder && (
-                          <div style={{ marginTop: 4, display: "inline-block", padding: "2px 6px", borderRadius: 4, background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.2)", fontSize: 9, fontWeight: 700, color: "#feb300", letterSpacing: "0.05em" }}>
-                            ONDER TARGET
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div>
-                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }}>Niets geboekt</span>
-                        {isToday && (
-                          <span style={{ marginLeft: 8, fontSize: 9, fontWeight: 700, color: "#3fff8b", letterSpacing: "0.05em", background: "rgba(63,255,139,0.1)", padding: "2px 6px", borderRadius: 4 }}>VANDAAG</span>
-                        )}
+                      )}
+                    </div>
+
+                    {/* RIGHT — hours or + button */}
+                    {hasEntries ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 12 }}>
+                        <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: isOver ? "#ff716c" : "#3fff8b" }}>{dayHours}u</span>
+                        <span className="material-symbols-outlined" style={{ fontSize: 16, color: "rgba(255,255,255,0.2)" }}>chevron_right</span>
                       </div>
+                    ) : isToday ? (
+                      <button onClick={(e) => { e.stopPropagation(); openModal(date); }} style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(63,255,139,0.1)", border: "none", color: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 22 }}>add</span>
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: 14, color: "rgba(255,255,255,0.15)", marginLeft: 12 }}>—</span>
                     )}
                   </div>
 
-                  {/* RIGHT — hours or + button */}
-                  {hasEntries ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 12 }}>
-                      <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b" }}>{dayHours}u</span>
-                      <span className="material-symbols-outlined" style={{ fontSize: 16, color: "rgba(255,255,255,0.2)" }}>chevron_right</span>
+                  {/* Over-8u waarschuwing */}
+                  {isOver && (
+                    <div style={{
+                      borderRadius: "0 0 16px 16px",
+                      border: "1px solid rgba(255,113,108,0.4)",
+                      borderTop: "none",
+                      borderLeft: "4px solid #ff716c",
+                      background: "rgba(255,113,108,0.08)",
+                      padding: "10px 16px 12px 20px",
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#ff716c" }}>warning</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#ff716c", letterSpacing: "0.03em" }}>
+                          {dayHours}u geboekt — boven dagtotaal van 8u
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column" as const, gap: 3, paddingLeft: 22 }}>
+                        {perProject.map(([proj, hrs]) => (
+                          <div key={proj} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,0.7)" }}>
+                            <span style={{ fontFamily: "DM Mono, monospace" }}>{proj}</span>
+                            <span style={{ fontWeight: 700, color: "#ff716c", fontFamily: "DM Mono, monospace" }}>{hrs}u</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ) : isToday ? (
-                    <button onClick={(e) => { e.stopPropagation(); openModal(date); }} style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(63,255,139,0.1)", border: "none", color: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 22 }}>add</span>
-                    </button>
-                  ) : (
-                    <span style={{ fontSize: 14, color: "rgba(255,255,255,0.15)", marginLeft: 12 }}>—</span>
                   )}
                 </div>
               );
