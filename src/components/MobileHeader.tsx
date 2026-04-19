@@ -43,10 +43,10 @@ export function MobileHeader({ showBrand = true, title, actions, initials }: Mob
         position: "sticky", top: 0, zIndex: 50,
         background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)",
         borderBottom: "1px solid rgba(255,255,255,0.07)",
-        paddingTop: "calc(12px + env(safe-area-inset-top))",
+        paddingTop: "calc(12px + env(safe-area-inset-top, 44px))",
         paddingBottom: 12,
-        paddingLeft: "calc(20px + env(safe-area-inset-left))",
-        paddingRight: "calc(20px + env(safe-area-inset-right))",
+        paddingLeft: "calc(20px + env(safe-area-inset-left, 0px))",
+        paddingRight: "calc(20px + env(safe-area-inset-right, 0px))",
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
       {showBrand ? (
