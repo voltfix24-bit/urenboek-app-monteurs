@@ -390,7 +390,7 @@ export function InkooporderDocument({
         {/* PARTIJEN */}
         <View style={styles.partijen}>
           <View style={styles.partijBox}>
-            <Text style={styles.partijLabel}>Opdrachtnemer</Text>
+            <Text style={styles.partijLabel}>Uitgevoerd door</Text>
             <Text style={styles.partijNaam}>{monteurNaam}</Text>
             {(prof?.factuuradres || prof?.adres) && (
               <Text style={styles.partijDetail}>
