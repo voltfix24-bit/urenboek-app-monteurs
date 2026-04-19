@@ -73,10 +73,19 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  html, body {
+  html, body, #root {
     /* Voorkom horizontale scroll op mobiel — overflow-x-auto containers binnenin blijven werken */
     overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+  }
+
+  /* Alle <main> elementen mogen nooit horizontaal scrollen op mobiel.
+     Specifieke widgets die scrollbare tabellen nodig hebben gebruiken
+     hun eigen overflow-x-auto wrapper en blijven werken. */
+  main {
     max-width: 100%;
+    overflow-x: hidden;
   }
 
   body {
