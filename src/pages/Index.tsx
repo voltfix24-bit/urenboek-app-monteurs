@@ -436,7 +436,7 @@ const Index = () => {
 
       {/* ── MODAL ── */}
       {showModal && (
-        <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} onSubmit={async (entry) => {
+        <AddEntryModal weekDays={weekDates} onClose={() => setShowModal(false)} planningItems={planningItems} onSubmit={async (entry) => {
           if (!navigator.onLine && profileId) {
             await queueOfflineEntry({
               id: crypto.randomUUID(),
