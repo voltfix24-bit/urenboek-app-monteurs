@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNavBadges } from "@/hooks/useNavBadges";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 
 interface MobileHeaderProps {
   /** Show brand logo instead of custom title */
@@ -9,14 +11,30 @@ interface MobileHeaderProps {
   title?: string;
   /** Extra action buttons to render before the notification bell */
   actions?: ReactNode;
-  /** User initials to display in avatar */
+  /** Override user initials. If omitted, derived from logged-in profile/email. */
   initials?: string;
 }
 
-export function MobileHeader({ showBrand = true, title, actions, initials = "U" }: MobileHeaderProps) {
+function deriveInitials(fullName?: string | null, email?: string | null): string {
+  const name = (fullName || "").trim();
+  if (name) {
+    const parts = name.split(/\s+/).filter(Boolean);
+    const init = parts.slice(0, 2).map((p) => p[0]).join("");
+    if (init) return init.toUpperCase();
+  }
+  if (email) return email.charAt(0).toUpperCase();
+  return "U";
+}
+
+export function MobileHeader({ showBrand = true, title, actions, initials }: MobileHeaderProps) {
   const navigate = useNavigate();
   const { badges } = useNavBadges();
+  const { profile } = useProfile();
+  const { user } = useAuth();
   const unread = badges.ongelezen;
+
+  const computedInitials = initials ?? deriveInitials(profile?.full_name, user?.email);
+  const profileLabel = profile?.full_name || user?.email || "Profiel";
 
   return (
     <header
@@ -40,7 +58,9 @@ export function MobileHeader({ showBrand = true, title, actions, initials = "U" 
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {actions}
         <button
+          type="button"
           onClick={() => navigate("/mededelingen")}
+          aria-label="Mededelingen"
           style={{ background: "none", border: "none", cursor: "pointer", color: "#a0abc3", display: "flex", position: "relative" }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 24 }}>notifications</span>
@@ -59,13 +79,20 @@ export function MobileHeader({ showBrand = true, title, actions, initials = "U" 
             </span>
           )}
         </button>
-        <div style={{
-          width: 36, height: 36, borderRadius: "50%", background: "#142640",
-          border: "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center",
-          fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#3fff8b",
-        }}>
-          {initials}
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate("/profiel")}
+          aria-label={`Profiel openen — ${profileLabel}`}
+          title={profileLabel}
+          style={{
+            width: 36, height: 36, borderRadius: "50%", background: "#142640",
+            border: "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#3fff8b",
+            cursor: "pointer", padding: 0,
+          }}
+        >
+          {computedInitials}
+        </button>
       </div>
     </header>
   );
