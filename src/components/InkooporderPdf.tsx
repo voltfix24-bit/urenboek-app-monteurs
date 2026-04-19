@@ -403,7 +403,7 @@ export function InkooporderDocument({
             {prof?.telefoon && <Text style={styles.partijDetail}>Tel: {prof.telefoon}</Text>}
           </View>
           <View style={styles.partijBox}>
-            <Text style={styles.partijLabel}>Opdrachtgever</Text>
+            <Text style={styles.partijLabel}>Opdracht van</Text>
             <Text style={styles.partijNaam}>{bNaam}</Text>
             {bedrijf?.straat && <Text style={styles.partijDetail}>{bedrijf.straat}</Text>}
             {(bedrijf?.postcode || bedrijf?.stad) && (
@@ -440,7 +440,7 @@ export function InkooporderDocument({
           <View style={styles.kolDatum}><Text style={styles.tabelHeaderTekst}>Datum</Text></View>
           <View style={styles.kolProject}><Text style={styles.tabelHeaderTekst}>Project</Text></View>
           <View style={styles.kolWerk}><Text style={styles.tabelHeaderTekst}>Werkzaamheden</Text></View>
-          <View style={styles.kolUren}><Text style={[styles.tabelHeaderTekst, { textAlign: "center" }]}>u</Text></View>
+          <View style={styles.kolUren}><Text style={[styles.tabelHeaderTekst, { textAlign: "center" }]}>Uren</Text></View>
           <View style={styles.kolTarief}><Text style={[styles.tabelHeaderTekst, { textAlign: "right" }]}>Tarief</Text></View>
           <View style={styles.kolBedrag}><Text style={[styles.tabelHeaderTekst, { textAlign: "right" }]}>Bedrag</Text></View>
         </View>
@@ -480,7 +480,7 @@ export function InkooporderDocument({
               }}>Verlegd (art. 12 Wet OB)</Text>
             </View>
             <View style={styles.totaalBox}>
-              <Text style={styles.totaalLabel}>{"Te\nfactureren"}</Text>
+              <Text style={styles.totaalLabel}>{"Totaal te\nfactureren"}</Text>
               <Text style={styles.totaalBedrag}>{euro(Number(order.totaal_excl_btw))}</Text>
             </View>
           </View>
@@ -492,13 +492,13 @@ export function InkooporderDocument({
           <View style={styles.footerBlok}>
             <Text style={styles.footerLabel}>Facturatie-instructies</Text>
             <Text style={styles.footerTekst}>
-              {"Maak een factuur op basis van dit document en stuur deze naar "}
+              {"Stuur je factuur naar "}
               <Text style={styles.footerStrong}>{email}</Text>
-              {" onder vermelding van ordernummer "}
+              {". Zet op je factuur het ordernummer "}
               <Text style={styles.footerStrong}>{order.order_nummer}</Text>
-              {". Betaling volgt binnen "}
+              {". Wij betalen binnen "}
               <Text style={styles.footerStrong}>{termijn} dagen</Text>
-              {" na ontvangst van uw factuur."}
+              {" nadat wij je factuur hebben ontvangen."}
             </Text>
 
             {/* BTW verlegd wettelijke tekst */}
@@ -512,16 +512,16 @@ export function InkooporderDocument({
               marginTop: 8,
             }}>
               <Text style={{ fontSize: 7, color: "#92400e", lineHeight: 1.6, fontFamily: "Helvetica" }}>
-                {"⚠ BTW verlegd — "}
-                <Text style={{ fontFamily: "Helvetica-Bold" }}>artikel 12 Wet OB 1968</Text>
-                {". Vermeld op uw factuur: "}
+                {"Voor deze opdracht is btw verlegd van toepassing. Zet op je factuur: "}
                 <Text style={{ fontFamily: "Helvetica-Bold" }}>"BTW verlegd"</Text>
-                {" + uw BTW-nummer."}
+                {" en vermeld ook je btw-nummer."}
               </Text>
             </View>
 
             <Text style={styles.geenFactuur}>
-              Dit document is geen factuur — gebruik het als basis voor uw eigen facturatie aan {bNaam}.
+              {"Dit document is geen factuur. Gebruik het als basis voor je factuur aan "}
+              <Text style={styles.footerStrong}>{bNaam}</Text>
+              {"."}
             </Text>
           </View>
 
@@ -529,6 +529,13 @@ export function InkooporderDocument({
           <View style={styles.footerBlok}>
             <Text style={styles.footerLabel}>Betaling naar</Text>
             <Text style={styles.footerTekst}>
+              {"Zet dit op je factuur:\n"}
+              <Text style={styles.footerStrong}>
+                {"— Ordernummer: "}
+                {order.order_nummer}
+                {"\n— BTW verlegd\n— Je btw-nummer"}
+              </Text>
+              {"\n\n"}
               <Text style={styles.footerStrong}>{bNaam}</Text>
               {bedrijf?.iban ? `\nIBAN: ${formatIban(bedrijf.iban)}` : null}
               {bedrijf?.iban_naam ? `\nT.n.v. ${bedrijf.iban_naam}` : null}
@@ -539,7 +546,7 @@ export function InkooporderDocument({
         {/* DOC FOOTER */}
         <View style={styles.docFooter}>
           <Text style={styles.docFooterTekst}>Doc: {order.order_nummer} · Week {periodeStr}</Text>
-          <Text style={styles.docFooterTekst}>Definitief goedgekeurd voor facturatie · Pagina 1 van 1</Text>
+          <Text style={styles.docFooterTekst}>Goedgekeurd voor factuur · Pagina 1 van 1</Text>
         </View>
       </Page>
     </Document>
