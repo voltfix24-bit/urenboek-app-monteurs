@@ -433,8 +433,8 @@ export function InkooporderDocument({
           <View style={styles.kolProject}><Text style={styles.tabelHeaderTekst}>Project</Text></View>
           <View style={styles.kolWerk}><Text style={styles.tabelHeaderTekst}>Werkzaamheden</Text></View>
           <View style={styles.kolUren}><Text style={[styles.tabelHeaderTekst, { textAlign: "center" }]}>u</Text></View>
-          <View style={styles.kolTarief}><Text style={[styles.tabelHeaderTekst, { textAlign: "right" }]}>Tarief excl. btw</Text></View>
-          <View style={styles.kolBedrag}><Text style={[styles.tabelHeaderTekst, { textAlign: "right" }]}>Bedrag excl. btw</Text></View>
+          <View style={styles.kolTarief}><Text style={[styles.tabelHeaderTekst, { textAlign: "right" }]}>Tarief</Text></View>
+          <View style={styles.kolBedrag}><Text style={[styles.tabelHeaderTekst, { textAlign: "right" }]}>Bedrag</Text></View>
         </View>
 
         {/* TABEL RIJEN */}
