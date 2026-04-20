@@ -11,6 +11,7 @@ import { AppErrorBoundary, RouteErrorBoundary } from "@/components/AppErrorBound
 import { Spinner } from "@/components/ui/Spinner";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { UpdatePrompt } from "@/components/UpdatePrompt";
+import { VersionFooter } from "@/components/VersionFooter";
 
 // Critical pages — loaded eagerly
 import Index from "./pages/Index";
@@ -117,6 +118,7 @@ const App = () => (
         <Sonner />
         <InstallPrompt />
         <UpdatePrompt />
+        <VersionFooter />
         <BrowserRouter>
           <AuthProvider>
             <ProfileProvider>
