@@ -542,8 +542,6 @@ export default function Dashboard() {
             </>
           )}
         </main>
-
-        <BottomNav badges={badges} />
       </div>
     </PageShell>
   );
