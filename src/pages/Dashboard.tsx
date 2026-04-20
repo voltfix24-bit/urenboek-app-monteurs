@@ -12,7 +12,6 @@ import { Check, X, ChevronRight, AlertTriangle, Shield, Clock, FolderOpen, Hourg
 import { volledigAdres } from "@/lib/utils";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { MobileHeader } from "@/components/MobileHeader";
-import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { euro } from "@/lib/formatting";
 import { DashboardSkeleton } from "@/components/ui/Skeletons";
@@ -542,8 +541,6 @@ export default function Dashboard() {
             </>
           )}
         </main>
-
-        <BottomNav badges={badges} />
       </div>
     </PageShell>
   );
