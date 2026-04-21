@@ -249,9 +249,9 @@ export default function ManagerPlanning() {
           <div className="flex gap-1">
             <div className="w-16 lg:w-40 shrink-0" />
             {weekDates.map((d, i) => (
-              <div key={i} className="flex-1 text-center">
-                <p className="text-[10px] font-semibold" style={{ color: "#a0abc3" }}>{DAGEN[i]}</p>
-                <p className="text-[10px] font-bold tabular-nums" style={{ color: "#dae6ff" }}>{format(d, "dd-MM")}</p>
+              <div key={i} className="flex-1 text-center min-w-0">
+                <p className="text-[10px] font-semibold whitespace-nowrap" style={{ color: "#a0abc3" }}>{DAGEN[i]}</p>
+                <p className="text-[10px] font-bold tabular-nums whitespace-nowrap" style={{ color: "#dae6ff" }}>{format(d, "d/M")}</p>
               </div>
             ))}
           </div>
