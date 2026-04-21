@@ -8,8 +8,21 @@ import { readFileSync } from "fs";
 const pkg = JSON.parse(
   readFileSync(path.resolve(__dirname, "package.json"), "utf-8")
 );
-const APP_VERSION = pkg.version || "0.0.0";
-const BUILD_DATE = new Date().toISOString().slice(0, 10);
+
+// Auto-bump: gebruik basisversie uit package.json (major.minor) en hang
+// een datum-gebaseerd build-nummer eraan vast. Zo hoef je package.json
+// nooit handmatig bij te werken — elke build krijgt automatisch een
+// uniek, oplopend versienummer.
+const baseVersion = (pkg.version || "1.0.0").split(".").slice(0, 2).join(".");
+const now = new Date();
+const yy = String(now.getFullYear()).slice(2);
+const mm = String(now.getMonth() + 1).padStart(2, "0");
+const dd = String(now.getDate()).padStart(2, "0");
+const hh = String(now.getHours()).padStart(2, "0");
+const mi = String(now.getMinutes()).padStart(2, "0");
+const buildNumber = `${yy}${mm}${dd}.${hh}${mi}`;
+const APP_VERSION = `${baseVersion}.${buildNumber}`;
+const BUILD_DATE = `${now.getFullYear()}-${mm}-${dd}`;
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
