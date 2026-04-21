@@ -408,8 +408,11 @@ export default function ManagerPlanning() {
           {/* DAY HEADERS */}
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8, paddingRight: 4 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, width: 168 }}>
-              {["Ma", "Di", "Wo", "Do", "Vr"].map(d => (
-                <span key={d} style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", textAlign: "center" }}>{d}</span>
+              {weekDates.map((d, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <span style={{ display: "block", fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3" }}>{DAGEN[i]}</span>
+                  <span style={{ display: "block", fontSize: 10, fontWeight: 700, fontFamily: "Inter", color: "#dae6ff", fontVariantNumeric: "tabular-nums" }}>{format(d, "dd-MM")}</span>
+                </div>
               ))}
             </div>
           </div>
