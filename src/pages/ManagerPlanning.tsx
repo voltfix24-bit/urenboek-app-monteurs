@@ -251,7 +251,7 @@ export default function ManagerPlanning() {
             {weekDates.map((d, i) => (
               <div key={i} className="flex-1 text-center">
                 <p className="text-[10px] font-semibold" style={{ color: "#a0abc3" }}>{DAGEN[i]}</p>
-                <p className="text-xs font-bold" style={{ color: "#dae6ff" }}>{d.getDate()}</p>
+                <p className="text-[10px] font-bold tabular-nums" style={{ color: "#dae6ff" }}>{format(d, "dd-MM")}</p>
               </div>
             ))}
           </div>
