@@ -746,27 +746,276 @@ export default function Profiel() {
             </div>
           </div>
 
-          {/* ZZP GEGEVENS */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, marginBottom: 12, overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(61,72,93,0.3)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3' }}>business_center</span>
-                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Inter', color: '#dae6ff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ZZP Gegevens</span>
+          {/* CERTIFICATEN */}
+          <CertificatenOverzicht
+            certificaten={certs}
+            toonToevoegen={true}
+            medewerker_id={profile?.id}
+            onRefresh={fetchCerts}
+          />
+
+          {/* RIJBEWIJS */}
+          <div style={{
+            background: '#111a2c',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: 16,
+            marginBottom: 12,
+            padding: '16px 20px',
+          }}>
+            <h3 style={{
+              fontSize: 11,
+              fontWeight: 700,
+              fontFamily: 'Inter',
+              color: 'rgba(218,230,255,0.5)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.15em',
+              marginBottom: 14,
+            }}>
+              Rijbewijs
+            </h3>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+              }}>
+                <div style={{
+                  width: 40, height: 40,
+                  borderRadius: 12,
+                  background: '#060e20',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{
+                      fontSize: 20,
+                      color: '#a0abc3',
+                      fontVariationSettings: "'wght' 300",
+                    }}>
+                    directions_car
+                  </span>
+                </div>
+                <div>
+                  <p style={{
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: '#dae6ff',
+                    fontFamily: 'Inter',
+                    marginBottom: 2,
+                  }}>
+                    Rijbewijs B
+                  </p>
+                  <p style={{
+                    fontSize: 11,
+                    color: '#a0abc3',
+                    fontFamily: 'Inter',
+                  }}>
+                    {profile?.rijbewijs ? 'Bewijs aanwezig' : 'Niet opgegeven'}
+                  </p>
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {!editingZzp && (profile?.kvk_nummer && profile?.iban ? (
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 9999, background: 'rgba(63,255,139,0.1)', color: '#3fff8b', fontFamily: 'Inter' }}>✓ COMPLEET</span>
-                ) : (
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 9999, background: 'rgba(254,179,0,0.1)', color: '#feb300', fontFamily: 'Inter' }}>⚠ INCOMPLEET</span>
-                ))}
-                <button onClick={() => editingZzp ? saveZzp() : setEditingZzp(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: '#3fff8b', fontSize: 12, fontWeight: 700, fontFamily: 'Inter' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{editingZzp ? 'save' : 'edit'}</span>
+              {profile?.rijbewijs && (
+                <span style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: '#3fff8b',
+                  fontFamily: 'Inter',
+                }}>
+                  Bewijs aanwezig
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* NOODCONTACT */}
+          <div style={{
+            background: '#111a2c',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: 16,
+            marginBottom: 12,
+            padding: '16px 20px',
+          }}>
+            <h3 style={{
+              fontSize: 11,
+              fontWeight: 700,
+              fontFamily: 'Inter',
+              color: 'rgba(218,230,255,0.5)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.15em',
+              marginBottom: 14,
+            }}>
+              Noodcontact
+            </h3>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}>
+              {[
+                { icon: 'person_alert', label: 'Naam contactpersoon', value: (profile as any)?.noodcontact_naam },
+                { icon: 'call', label: 'Noodnummer', value: (profile as any)?.noodcontact_tel },
+              ].map((row, i) => (
+                <div key={i} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 14,
+                }}>
+                  <div style={{
+                    width: 40, height: 40,
+                    borderRadius: 12,
+                    background: '#060e20',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 20,
+                        color: '#a0abc3',
+                        fontVariationSettings: "'wght' 300",
+                      }}>
+                      {row.icon}
+                    </span>
+                  </div>
+                  <div>
+                    <p style={{
+                      fontSize: 11,
+                      color: '#a0abc3',
+                      fontFamily: 'Inter',
+                      marginBottom: 2,
+                    }}>
+                      {row.label}
+                    </p>
+                    <p style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: row.value ? '#dae6ff' : '#54617A',
+                      fontFamily: 'Inter',
+                    }}>
+                      {row.value || '—'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ZZP GEGEVENS */}
+          <div style={{
+            background: '#111a2c',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: 16,
+            marginBottom: 12,
+            overflow: 'hidden',
+          }}>
+            {/* Warning banner */}
+            {(!profile?.kvk_nummer || !profile?.iban) && (
+              <div style={{
+                padding: '10px 16px',
+                background: 'rgba(255,113,108,0.08)',
+                borderBottom: '1px solid rgba(255,113,108,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: 16,
+                    color: '#ff716c',
+                    fontVariationSettings: "'wght' 300",
+                    flexShrink: 0,
+                  }}>
+                  warning
+                </span>
+                <p style={{
+                  fontSize: 12,
+                  color: '#ff716c',
+                  fontFamily: 'Inter',
+                  lineHeight: 1.4,
+                }}>
+                  Vul je ZZP gegevens aan om inkooporders te kunnen ontvangen
+                </p>
+              </div>
+            )}
+            <div style={{
+              padding: '16px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 4,
+            }}>
+              <h3 style={{
+                fontSize: 11,
+                fontWeight: 700,
+                fontFamily: 'Inter',
+                color: 'rgba(218,230,255,0.5)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.15em',
+              }}>
+                ZZP Gegevens
+              </h3>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                {!editingZzp && (
+                  <span style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    fontFamily: 'Inter',
+                    padding: '3px 8px',
+                    borderRadius: 4,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    background: profile?.kvk_nummer && profile?.iban
+                      ? 'rgba(63,255,139,0.1)'
+                      : 'rgba(255,113,108,0.1)',
+                    color: profile?.kvk_nummer && profile?.iban
+                      ? '#3fff8b'
+                      : '#ff716c',
+                  }}>
+                    {profile?.kvk_nummer && profile?.iban ? 'Compleet' : 'Incompleet'}
+                  </span>
+                )}
+                <button
+                  onClick={() => editingZzp ? saveZzp() : setEditingZzp(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#3fff8b',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    fontFamily: 'Inter',
+                  }}>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{
+                      fontSize: 18,
+                      fontVariationSettings: "'wght' 300",
+                    }}>
+                    {editingZzp ? 'save' : 'edit'}
+                  </span>
                 </button>
               </div>
             </div>
-            <div style={{ padding: '16px 20px' }}>
+            <div style={{ padding: '0 20px 16px' }}>
               {editingZzp ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12,
+                }}>
                   {[
                     { label: 'Bedrijfsnaam', key: 'bedrijfsnaam' as const },
                     { label: 'KvK-nummer', key: 'kvk_nummer' as const },
@@ -775,52 +1024,131 @@ export default function Profiel() {
                     { label: 'Factuuradres', key: 'factuuradres' as const },
                   ].map(f => (
                     <div key={f.key}>
-                      <label style={{ fontSize: 10, fontWeight: 600, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{f.label}</label>
-                      <input value={zzpEditForm[f.key]} onChange={e => setZzpEditForm({ ...zzpEditForm, [f.key]: e.target.value })} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                      <label style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: '#a0abc3',
+                        fontFamily: 'Inter',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}>
+                        {f.label}
+                      </label>
+                      <input
+                        value={zzpEditForm[f.key]}
+                        onChange={e => setZzpEditForm({ ...zzpEditForm, [f.key]: e.target.value })}
+                        style={{
+                          width: '100%',
+                          marginTop: 4,
+                          padding: '10px 14px',
+                          borderRadius: 12,
+                          background: '#060e20',
+                          border: '1px solid rgba(255,255,255,0.07)',
+                          color: '#dae6ff',
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                        }} />
                     </div>
                   ))}
                   <div>
-                    <label style={{ fontSize: 10, fontWeight: 600, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Betalingstermijn (dagen)</label>
-                    <input type="number" value={zzpEditForm.betalingstermijn} onChange={e => setZzpEditForm({ ...zzpEditForm, betalingstermijn: Number(e.target.value) || 30 })} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                    <label style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: '#a0abc3',
+                      fontFamily: 'Inter',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      Betalingstermijn (dagen)
+                    </label>
+                    <input
+                      type="number"
+                      value={zzpEditForm.betalingstermijn}
+                      onChange={e => setZzpEditForm({ ...zzpEditForm, betalingstermijn: Number(e.target.value) || 30 })}
+                      style={{
+                        width: '100%',
+                        marginTop: 4,
+                        padding: '10px 14px',
+                        borderRadius: 12,
+                        background: '#060e20',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        color: '#dae6ff',
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }} />
                   </div>
-                  <button onClick={() => { setEditingZzp(false); setZzpEditForm({ bedrijfsnaam: profile?.bedrijfsnaam || '', kvk_nummer: profile?.kvk_nummer || '', btw_nummer: profile?.btw_nummer || '', iban: profile?.iban || '', factuuradres: profile?.factuuradres || '', betalingstermijn: profile?.betalingstermijn || 30 }); }} style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', background: 'none', border: 'none', cursor: 'pointer' }}>Annuleren</button>
+                  <button
+                    onClick={() => {
+                      setEditingZzp(false);
+                      setZzpEditForm({
+                        bedrijfsnaam: profile?.bedrijfsnaam || '',
+                        kvk_nummer: profile?.kvk_nummer || '',
+                        btw_nummer: profile?.btw_nummer || '',
+                        iban: profile?.iban || '',
+                        factuuradres: profile?.factuuradres || '',
+                        betalingstermijn: profile?.betalingstermijn || 30,
+                      });
+                    }}
+                    style={{
+                      fontSize: 12,
+                      color: '#a0abc3',
+                      fontFamily: 'Inter',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}>
+                    Annuleren
+                  </button>
                 </div>
               ) : (
-                <>
-                  {(!profile?.kvk_nummer || !profile?.iban) && (
-                    <div style={{ padding: '10px 14px', borderRadius: 12, background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.2)', marginBottom: 12 }}>
-                      <span style={{ fontSize: 12, color: '#feb300' }}>⚠ Vul je ZZP gegevens aan om inkooporders te kunnen ontvangen</span>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px 16px',
+                }}>
+                  {[
+                    { label: 'Bedrijfsnaam', value: profile?.bedrijfsnaam },
+                    { label: 'KVK-nummer', value: profile?.kvk_nummer },
+                    { label: 'BTW-nummer', value: profile?.btw_nummer },
+                    { label: 'IBAN', value: profile?.iban, warn: !profile?.iban },
+                  ].map((row, i) => (
+                    <div key={i}>
+                      <p style={{
+                        fontSize: 11,
+                        color: '#a0abc3',
+                        fontFamily: 'Inter',
+                        marginBottom: 3,
+                      }}>
+                        {row.label}
+                      </p>
+                      <p style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: row.warn
+                          ? '#ff716c'
+                          : row.value
+                          ? '#dae6ff'
+                          : '#54617A',
+                        fontFamily: 'Inter',
+                      }}>
+                        {row.value || (row.warn ? 'Niet ingevuld' : '—')}
+                      </p>
                     </div>
-                  )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                    {[
-                      { label: 'Bedrijfsnaam', value: profile?.bedrijfsnaam },
-                      { label: 'KvK-nummer', value: profile?.kvk_nummer, warn: !profile?.kvk_nummer },
-                      { label: 'BTW-nummer', value: profile?.btw_nummer },
-                      { label: 'IBAN', value: profile?.iban, warn: !profile?.iban },
-                      { label: 'Factuuradres', value: profile?.factuuradres },
-                      { label: 'Betalingstermijn', value: `${profile?.betalingstermijn || 30} dagen` },
-                    ].map((row, i) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < 5 ? '1px solid rgba(61,72,93,0.3)' : 'none' }}>
-                        <span style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{row.label}</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: row.warn ? '#feb300' : '#dae6ff', fontFamily: 'Inter' }}>{row.value || (row.warn ? 'Niet ingevuld' : '—')}</span>
-                      </div>
-                    ))}
-                    {permissies.zietProjectFinancien && profile?.uurtarief != null && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
-                        <span style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Uurtarief</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#3fff8b', fontFamily: 'Inter' }}>€ {Number(profile.uurtarief).toFixed(2)}</span>
-                      </div>
-                    )}
-                  </div>
-                </>
+                  ))}
+                </div>
               )}
             </div>
           </div>
 
-          {/* Manager handtekening / Monteur contract */}
-          {permissies.zietDashboard && <ManagerHandtekeningSection profileId={profile?.id || null} />}
-          {!permissies.zietDashboard && <MonteurContractSection profileId={profile?.id || null} />}
+          {/* CONTRACT */}
+          {permissies.zietDashboard
+            ? <ManagerHandtekeningSection profileId={profile?.id || null} />
+            : <MonteurContractSection profileId={profile?.id || null} />
+          }
 
           {/* BESCHIKBAARHEID */}
           <div style={{ marginBottom: 0 }}>
