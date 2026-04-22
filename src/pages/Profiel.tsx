@@ -8,7 +8,7 @@ import CertificatenOverzicht from "@/components/CertificatenOverzicht";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
 import { valideer, profielSchema } from "@/lib/validatie";
-import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight, Download } from "lucide-react";
+
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/Spinner";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
@@ -173,7 +173,7 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
           <div className="flex items-center gap-3 mt-1">
             {contract.pdf_path && (
               <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "#3fff8b" }}>
-                <Download className="h-3.5 w-3.5" /> Download PDF
+                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>download</span> Download PDF
               </button>
             )}
             <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium" style={{ color: "#a0abc3" }}>
