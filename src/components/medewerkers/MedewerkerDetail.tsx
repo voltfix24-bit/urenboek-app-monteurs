@@ -208,8 +208,14 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
 
   async function downloadPdf() {
     if (!contract?.pdf_path) return;
-    const { data } = await supabase.storage.from("contracten").createSignedUrl(contract.pdf_path, 3600);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+    const newWin = window.open("", "_blank");
+    const { data, error } = await supabase.storage.from("contracten").createSignedUrl(contract.pdf_path, 3600);
+    if (error || !data?.signedUrl) {
+      if (newWin) newWin.close();
+      return;
+    }
+    if (newWin) newWin.location.href = data.signedUrl;
+    else window.location.href = data.signedUrl;
   }
 
   const handleActivate = async () => {
