@@ -397,15 +397,15 @@ export default function Profiel() {
             <div style={{
               width: 32, height: 32,
               borderRadius: '50%',
-              background: '#1d2730',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: '#3fff8b',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontFamily: 'Manrope',
-              fontWeight: 700,
-              fontSize: 11,
-              color: '#3fff8b',
+              fontWeight: 800,
+              fontSize: 13,
+              color: '#005d2c',
+              boxShadow: '0 0 12px rgba(63,255,139,0.25)',
             }}>
               {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
@@ -1413,35 +1413,6 @@ export default function Profiel() {
             </button>
           )}
 
-          {/* UITLOGGEN */}
-          <button
-            onClick={signOut}
-            style={{
-              width: '100%',
-              padding: '16px 20px',
-              borderRadius: 16,
-              background: 'transparent',
-              border: '1px solid rgba(255,113,108,0.3)',
-              color: '#ff716c',
-              fontFamily: 'Inter',
-              fontWeight: 600,
-              fontSize: 14,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-            }}>
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 20,
-                fontVariationSettings: "'wght' 300",
-              }}>
-              logout
-            </span>
-            Uitloggen
-          </button>
         </main>
         <BottomNav badges={badges} />
       </div>
