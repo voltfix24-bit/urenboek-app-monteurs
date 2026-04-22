@@ -14,7 +14,7 @@ import { UpdatePrompt } from "@/components/UpdatePrompt";
 import { VersionFooter } from "@/components/VersionFooter";
 
 // Critical pages — loaded eagerly
-import Index from "./pages/Index";
+// Index removed: monteur landing now redirects to /planning
 import Auth from "./pages/Auth";
 import Setup from "./pages/Setup";
 import ResetPassword from "./pages/ResetPassword";
