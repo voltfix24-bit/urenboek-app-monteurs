@@ -948,7 +948,7 @@ export default function Planning() {
           <div
             style={{
               position: 'fixed', inset: 0,
-              zIndex: 50,
+              zIndex: 100,
               display: 'flex',
               alignItems: 'flex-end',
               justifyContent: 'center',
