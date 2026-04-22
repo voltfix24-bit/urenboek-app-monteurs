@@ -94,17 +94,25 @@ export default function Planning() {
         ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
         : 0;
 
-      // > 60px → vrijwel zeker keyboard (ook split/floating Android keyboards).
-      // Een dynamische URL-bar transitie is doorgaans 40-56px, dus die negeren we.
+      // > 60px → vrijwel zeker keyboard. URL-bar transities (40-56px) negeren.
       const keyboardLikely = overlap > 60;
-      setKeyboardOffset(keyboardLikely ? overlap : 0);
-
+      const nextKeyboard = keyboardLikely ? Math.round(overlap) : 0;
       // Footer-padding: altijd safe-area, minimaal 12px lucht.
-      setFooterOffset(Math.max(safeInset, 12));
-
+      const nextFooter = Math.round(Math.max(safeInset, 12));
       // Modal-hoogte op zichtbare viewport (keyboard al uitgesloten via vv.height).
       const usable = vv ? vv.height : window.innerHeight;
-      setMaxModalHeight(`${Math.round(usable * 0.92)}px`);
+      const nextMaxPx = Math.round(usable * 0.92);
+
+      // Functional setters + drempelvergelijking → geen re-render bij sub-pixel
+      // jitter (iOS rubber-band, Android URL-bar oscillatie). Threshold 2px voor
+      // hoogtes (merkbare jump-grens), 1px voor footer (kleinere component).
+      setKeyboardOffset(prev => (Math.abs(prev - nextKeyboard) >= 2 ? nextKeyboard : prev));
+      setFooterOffset(prev => (Math.abs(prev - nextFooter) >= 1 ? nextFooter : prev));
+      setMaxModalHeight(prev => {
+        const prevPx = parseInt(prev, 10);
+        if (Number.isNaN(prevPx)) return `${nextMaxPx}px`;
+        return Math.abs(prevPx - nextMaxPx) >= 2 ? `${nextMaxPx}px` : prev;
+      });
     };
 
     // Fallback voor Android Chrome `resizes-content` mode of WebViews:
