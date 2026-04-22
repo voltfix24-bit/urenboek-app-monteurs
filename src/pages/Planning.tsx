@@ -1373,7 +1373,7 @@ export default function Planning() {
               {/* Sticky footer */}
               <div style={{
                 flexShrink: 0,
-                padding: '14px 24px calc(env(safe-area-inset-bottom, 0px) + 18px)',
+                padding: `14px 24px ${Math.round(footerOffset + 18)}px`,
                 borderTop: '1px solid rgba(255,255,255,0.06)',
                 background: 'rgba(10,26,48,0.97)',
                 position: 'relative',
