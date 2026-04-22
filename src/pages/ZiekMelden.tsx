@@ -45,8 +45,8 @@ export default function ZiekMelden() {
   if (success) {
     return (
       <div style={{
-        minHeight: "100vh",
-        background: "#080f15",
+        minHeight: "100dvh",
+        background: "#030e20",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
