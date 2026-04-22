@@ -380,78 +380,139 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                   {" "}{items.filter(i => i.bestand_url).length} met bewijs
                 </p>
 
-                {sortedItems.map((item, idx) => {
-                  const status = vervaldatumStatus(item.vervaldatum);
-                  const gebiedLabels = item.ggi_gebieden?.map(g =>
-                    cfg.gebieden?.find(gb => gb.code === g)?.label || g
-                  );
-                  return (
-                    <div
-                      key={item.id}
-                      className="p-3 rounded-xl"
-                      style={{
-                        background: "rgba(10,26,48,0.7)",
-                        border: `1px solid ${idx === 0 && item.vervaldatum ? `${status.color}55` : "rgba(106,118,140,0.15)"}`,
-                      }}
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>
-                            {item.subtype || item.naam || (cfg.kortLabel || cfg.label)}
-                          </p>
-                          {gebiedLabels && gebiedLabels.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {gebiedLabels.map((g, i) => (
-                                <span key={i} className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
-                                  style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>
-                                  {g}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <span
-                          className="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap"
-                          style={{
-                            background: `${status.color}1f`,
-                            color: status.color,
-                            border: `1px solid ${status.color}55`,
-                          }}
-                        >
-                          {status.label}
-                        </span>
-                      </div>
+                {(() => {
+                  const itemsMetBewijs = sortedItems.filter(i => i.bestand_url);
+                  const meerdere = itemsMetBewijs.length > 1;
+                  // Meest recent geldige upload = laagste index in sortedItems (oplopend op vervaldatum)
+                  // die NIET verlopen is en wél een bestand heeft.
+                  // sortedItems is oplopend op vervaldatum (eerst-vervallend bovenaan), dus voor
+                  // "meest recent geldig" pakken we het item met de hoogste vervaldatum dat geldig is.
+                  const geldigeMetBewijs = itemsMetBewijs.filter(i => {
+                    if (!i.vervaldatum) return false;
+                    return differenceInDays(parseISO(i.vervaldatum), new Date()) >= 0;
+                  });
+                  const meestRecentGeldigId = geldigeMetBewijs.length > 0
+                    ? geldigeMetBewijs.reduce((max, c) =>
+                        parseISO(c.vervaldatum!).getTime() > parseISO(max.vervaldatum!).getTime() ? c : max
+                      ).id
+                    : null;
 
-                      {item.vervaldatum && (
-                        <p className="text-[11px]" style={{ color: "#a0abc3" }}>
-                          Geldig tot: <span style={{ color: "#dae6ff", fontWeight: 600 }}>
-                            {format(parseISO(item.vervaldatum), "d MMMM yyyy", { locale: nl })}
-                          </span>
-                        </p>
-                      )}
+                  return sortedItems.map((item, idx) => {
+                    const status = vervaldatumStatus(item.vervaldatum);
+                    const gebiedLabels = item.ggi_gebieden?.map(g =>
+                      cfg.gebieden?.find(gb => gb.code === g)?.label || g
+                    );
+                    const isVerlopen = item.vervaldatum
+                      ? differenceInDays(parseISO(item.vervaldatum), new Date()) < 0
+                      : false;
+                    const isActueel = meerdere && item.id === meestRecentGeldigId;
 
-                      <div className="mt-2">
-                        {item.bestand_url ? (
-                          <button
-                            onClick={() => openFile(item.bestand_url!)}
-                            className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg"
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-3 rounded-xl"
+                        style={{
+                          background: isVerlopen ? "rgba(255,113,108,0.06)" : "rgba(10,26,48,0.7)",
+                          border: `1px solid ${
+                            isVerlopen
+                              ? "rgba(255,113,108,0.45)"
+                              : isActueel
+                                ? "rgba(63,255,139,0.45)"
+                                : idx === 0 && item.vervaldatum
+                                  ? `${status.color}55`
+                                  : "rgba(106,118,140,0.15)"
+                          }`,
+                        }}
+                      >
+                        {/* Markering-badges voor meerdere uploads */}
+                        {meerdere && item.bestand_url && (isVerlopen || isActueel) && (
+                          <div className="mb-2">
+                            {isVerlopen && (
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider"
+                                style={{
+                                  background: "#ff716c",
+                                  color: "#3a0805",
+                                  letterSpacing: "0.08em",
+                                }}
+                              >
+                                ⛔ Verlopen bewijs
+                              </span>
+                            )}
+                            {isActueel && (
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider"
+                                style={{
+                                  background: "#3fff8b",
+                                  color: "#003d1f",
+                                  letterSpacing: "0.08em",
+                                }}
+                              >
+                                ✓ Actueel bewijs
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>
+                              {item.subtype || item.naam || (cfg.kortLabel || cfg.label)}
+                            </p>
+                            {gebiedLabels && gebiedLabels.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {gebiedLabels.map((g, i) => (
+                                  <span key={i} className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+                                    style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>
+                                    {g}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap"
                             style={{
-                              background: "rgba(63,255,139,0.1)",
-                              color: "#3fff8b",
-                              border: "1px solid rgba(63,255,139,0.3)",
+                              background: `${status.color}1f`,
+                              color: status.color,
+                              border: `1px solid ${status.color}55`,
                             }}
                           >
-                            <ExternalLink className="h-3 w-3" /> Bewijs openen
-                          </button>
-                        ) : (
-                          <span className="flex items-center gap-1 text-[11px]" style={{ color: "#feb300" }}>
-                            <Paperclip className="h-3 w-3" /> Geen bewijs geüpload
+                            {status.label}
                           </span>
+                        </div>
+
+                        {item.vervaldatum && (
+                          <p className="text-[11px]" style={{ color: "#a0abc3" }}>
+                            Geldig tot: <span style={{ color: "#dae6ff", fontWeight: 600 }}>
+                              {format(parseISO(item.vervaldatum), "d MMMM yyyy", { locale: nl })}
+                            </span>
+                          </p>
                         )}
+
+                        <div className="mt-2">
+                          {item.bestand_url ? (
+                            <button
+                              onClick={() => openFile(item.bestand_url!)}
+                              className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg"
+                              style={{
+                                background: isVerlopen ? "rgba(255,113,108,0.1)" : "rgba(63,255,139,0.1)",
+                                color: isVerlopen ? "#ff716c" : "#3fff8b",
+                                border: `1px solid ${isVerlopen ? "rgba(255,113,108,0.3)" : "rgba(63,255,139,0.3)"}`,
+                              }}
+                            >
+                              <ExternalLink className="h-3 w-3" /> Bewijs openen
+                            </button>
+                          ) : (
+                            <span className="flex items-center gap-1 text-[11px]" style={{ color: "#feb300" }}>
+                              <Paperclip className="h-3 w-3" /> Geen bewijs geüpload
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
 
                 {toonToevoegen && medewerker_id && (
                   <button
