@@ -913,7 +913,7 @@ export default function Profiel() {
             <div style={{
               padding: '12px 24px calc(env(safe-area-inset-bottom, 0px) + 16px)',
               borderTop: '1px solid rgba(66,73,80,0.15)',
-              background: 'rgba(12,20,27,0.95)',
+              background: '#030e20',
               flexShrink: 0,
             }}>
               <button onClick={requestVerlof} disabled={!verlofForm.datum_van || !verlofForm.datum_tot} style={{
