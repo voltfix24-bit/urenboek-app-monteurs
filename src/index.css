@@ -9,12 +9,14 @@ html, body {
   min-height: 100dvh;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  background-color: var(--app-navy);
 }
 
 #root {
   height: 100%;
   min-height: 100dvh;
   overflow-x: hidden;
+  background-color: var(--app-navy);
 }
 
 * {
