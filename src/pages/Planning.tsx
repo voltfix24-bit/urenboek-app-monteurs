@@ -1025,6 +1025,9 @@ export default function Planning() {
                 maxHeight: maxModalHeight,
                 display: 'flex',
                 flexDirection: 'column',
+                transform: keyboardOffset ? `translateY(-${keyboardOffset}px)` : undefined,
+                transition: 'transform 0.2s ease-out',
+                willChange: 'transform',
               }}>
               {/* Handle */}
               <div style={{
