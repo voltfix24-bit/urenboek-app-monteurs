@@ -215,10 +215,67 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel, ini
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const renderStatusBar = (status: "niet_gestart" | "in_behandeling" | "geupload") => {
+    const steps: Array<{ key: typeof status; label: string }> = [
+      { key: "niet_gestart", label: "Niet gestart" },
+      { key: "in_behandeling", label: "In behandeling" },
+      { key: "geupload", label: "Geüpload" },
+    ];
+    const activeIdx = steps.findIndex(s => s.key === status);
+
+    return (
+      <div className="mt-2 mb-2" aria-label={`Upload status: ${steps[activeIdx].label}`}>
+        <div className="flex items-center gap-1.5">
+          {steps.map((step, i) => {
+            const isActive = i === activeIdx;
+            const isDone = i < activeIdx;
+            const color = isDone || isActive ? "#3fff8b" : "rgba(106,118,140,0.35)";
+            return (
+              <div key={step.key} className="flex-1 flex items-center gap-1.5">
+                <div
+                  className="h-1.5 flex-1 rounded-full transition-all"
+                  style={{
+                    background: color,
+                    boxShadow: isActive ? "0 0 8px rgba(63,255,139,0.5)" : "none",
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex items-center justify-between mt-1.5">
+          {steps.map((step, i) => {
+            const isActive = i === activeIdx;
+            const isDone = i < activeIdx;
+            const reached = isActive || isDone;
+            return (
+              <span
+                key={step.key}
+                className="text-[10px] flex items-center gap-1"
+                style={{
+                  color: reached ? "#3fff8b" : "#a0abc3",
+                  fontWeight: isActive ? 700 : 500,
+                }}
+              >
+                {isDone && <Check className="h-2.5 w-2.5" />}
+                {isActive && step.key === "in_behandeling" && (
+                  <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                )}
+                {step.label}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const renderUploadZone = (cfg: CertConfig, s: CertState) => {
     const file = uploads[cfg.type];
     const isUploading = uploading[cfg.type];
     const hasExisting = !!s.existingFileUrl && !file;
+    const status: "niet_gestart" | "in_behandeling" | "geupload" =
+      isUploading ? "in_behandeling" : (file || hasExisting) ? "geupload" : "niet_gestart";
 
     const uploadHint = cfg.type === "POORT"
       ? "Screenshot van behaalde instructie"
