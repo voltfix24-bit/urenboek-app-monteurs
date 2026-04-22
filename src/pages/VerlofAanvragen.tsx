@@ -11,7 +11,7 @@ import { mutate } from "@/lib/supabaseHelpers";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 
-const NAVY = "#030e20";
+const NAVY = "var(--app-navy)";
 const SURFACE = "#172129";
 const SURFACE_2 = "#0c141b";
 const GREEN = "#3fff8b";

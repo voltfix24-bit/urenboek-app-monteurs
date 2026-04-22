@@ -230,7 +230,7 @@ export default function Inkooporders() {
 
   const generatePdf = downloadInkooporderPdf;
 
-  if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers.</p></div>;
+  if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "#a0abc3" }}>Alleen managers.</p></div>;
 
   return (
     <>
@@ -376,8 +376,8 @@ export default function Inkooporders() {
                 )}
                 {selectedOrder.status === "verzonden" && (
                   <div className="flex items-center gap-2">
-                    <input value={factuurNummer} onChange={e => setFactuurNummer(e.target.value)} placeholder="Factuurnummer" className="px-3 py-2 rounded-xl text-xs" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-                    <input type="date" value={factuurDatum} onChange={e => setFactuurDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                    <input value={factuurNummer} onChange={e => setFactuurNummer(e.target.value)} placeholder="Factuurnummer" className="px-3 py-2 rounded-xl text-xs" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                    <input type="date" value={factuurDatum} onChange={e => setFactuurDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                     <button onClick={() => { if (!factuurNummer) { toast.error("Vul factuurnummer in"); return; } updateOrderStatus(selectedOrder.id, "factuur_ontvangen", { factuur_nummer: factuurNummer, factuur_datum: factuurDatum || new Date().toISOString() }); }} className="px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)", color: "#6e9bff" }}>
                       Factuur registreren
                     </button>
@@ -385,7 +385,7 @@ export default function Inkooporders() {
                 )}
                 {selectedOrder.status === "factuur_ontvangen" && (
                   <div className="flex items-center gap-2">
-                    <input type="date" value={betaaldDatum} onChange={e => setBetaaldDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                    <input type="date" value={betaaldDatum} onChange={e => setBetaaldDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                     <button onClick={() => updateOrderStatus(selectedOrder.id, "betaald", { betaald_op: betaaldDatum || new Date().toISOString() })} className="px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
                       Betaling registreren
                     </button>
@@ -421,7 +421,7 @@ export default function Inkooporders() {
               {wizStep === 1 && (
                 <div className="space-y-3">
                   <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Stap 1 — Selecteer monteur</p>
-                  <select value={wizMedewerker} onChange={e => setWizMedewerker(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
+                  <select value={wizMedewerker} onChange={e => setWizMedewerker(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
                     <option value="">Kies medewerker...</option>
                     {medewerkers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
                   </select>
@@ -437,15 +437,15 @@ export default function Inkooporders() {
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Van</label>
-                      <input type="date" value={wizVan} onChange={e => setWizVan(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                      <input type="date" value={wizVan} onChange={e => setWizVan(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                     </div>
                     <div>
                       <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Tot</label>
-                      <input type="date" value={wizTot} onChange={e => setWizTot(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                      <input type="date" value={wizTot} onChange={e => setWizTot(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => setWizStep(1)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
+                    <button onClick={() => setWizStep(1)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
                     <button disabled={!wizVan || !wizTot} onClick={loadBoekingen} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
                       {wizLoading ? "Laden..." : "Boekingen ophalen →"}
                     </button>
@@ -461,7 +461,7 @@ export default function Inkooporders() {
                   ) : (
                     <div className="space-y-1 max-h-48 overflow-y-auto">
                       {wizBoekingen.map(b => (
-                        <label key={b.id} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer" style={{ background: wizSelected.has(b.id) ? "rgba(63,255,139,0.1)" : "#030e20", border: `1px solid ${wizSelected.has(b.id) ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}` }}>
+                        <label key={b.id} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer" style={{ background: wizSelected.has(b.id) ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1px solid ${wizSelected.has(b.id) ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}` }}>
                           <input type="checkbox" checked={wizSelected.has(b.id)} onChange={() => {
                             const next = new Set(wizSelected);
                             next.has(b.id) ? next.delete(b.id) : next.add(b.id);
@@ -477,7 +477,7 @@ export default function Inkooporders() {
                     </div>
                   )}
                   <div className="flex gap-2">
-                    <button onClick={() => setWizStep(2)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
+                    <button onClick={() => setWizStep(2)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
                     <button disabled={wizSelected.size === 0} onClick={() => setWizStep(4)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
                       Controleren → ({wizTotaalUren}u)
                     </button>
@@ -497,21 +497,21 @@ export default function Inkooporders() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Uurtarief</label>
-                      <input type="number" value={wizTarief} onChange={e => setWizTarief(Number(e.target.value))} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: "DM Mono, monospace" }} />
+                      <input type="number" value={wizTarief} onChange={e => setWizTarief(Number(e.target.value))} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: "DM Mono, monospace" }} />
                     </div>
                     <div>
                       <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Betalingstermijn</label>
                       <span className="block px-3 py-2 text-sm" style={{ color: "#dae6ff" }}>{wizMedProfile?.betalingstermijn || 30} dagen</span>
                     </div>
                   </div>
-                  <div className="rounded-xl p-3 space-y-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+                  <div className="rounded-xl p-3 space-y-1" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
                     <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>Uren</span><span style={{ fontFamily: "DM Mono, monospace" }}>{wizTotaalUren}u × €{wizTarief}</span></div>
                     <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>BTW</span><span style={{ fontFamily: "DM Mono, monospace", color: "#feb300" }}>Verlegd (artikel 12)</span></div>
                     <div className="flex justify-between text-sm font-bold pt-2" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}><span style={{ color: "#dae6ff" }}>Te factureren</span><span style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(wizSubtotaal)}</span></div>
                   </div>
-                  <textarea value={wizNotitie} onChange={e => setWizNotitie(e.target.value)} placeholder="Notitie (optioneel)" className="w-full px-3 py-2 rounded-xl text-sm" rows={2} style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                  <textarea value={wizNotitie} onChange={e => setWizNotitie(e.target.value)} placeholder="Notitie (optioneel)" className="w-full px-3 py-2 rounded-xl text-sm" rows={2} style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   <div className="flex gap-2">
-                    <button onClick={() => setWizStep(3)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
+                    <button onClick={() => setWizStep(3)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
                     <button onClick={createOrder} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
                       Order aanmaken
                     </button>

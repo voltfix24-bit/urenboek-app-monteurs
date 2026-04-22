@@ -39,7 +39,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "#030e20" }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "var(--app-navy)" }}>
       <div className="w-full relative" style={{ maxWidth: 440 }}>
         <div className="text-center mb-8">
           <img src={terrevoltLogo} alt="TerreVolt BV" className="h-12 mx-auto mb-3" />
@@ -57,11 +57,11 @@ export default function ResetPassword() {
             <>
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Nieuw wachtwoord</label>
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 tekens" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 tekens" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
               </div>
               <div className="space-y-1">
                 <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Wachtwoord herhalen</label>
-                <input type="password" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} placeholder="Herhaal wachtwoord" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                <input type="password" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} placeholder="Herhaal wachtwoord" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
               </div>
               {error && <p className="text-xs font-medium" style={{ color: "#ff716c" }}>{error}</p>}
               <button onClick={handleReset} disabled={loading || !password || !passwordConfirm} className="w-full py-3 rounded-xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", color: "#fff" }}>

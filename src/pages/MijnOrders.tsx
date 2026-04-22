@@ -30,12 +30,12 @@ export default function MijnOrders() {
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
-  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#030e20' }}><Spinner /></div>;
+  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--app-navy)' }}><Spinner /></div>;
 
   return (
     <PageShell>
       <div style={{
-        background: '#030e20',
+        background: 'var(--app-navy)',
         minHeight: '100dvh',
         paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)",
       }}>

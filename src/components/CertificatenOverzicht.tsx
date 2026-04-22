@@ -102,7 +102,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
             const hasFile = items.some(c => c.bestand_url);
 
             return (
-              <div key={cfg.type} className="p-3 rounded-xl" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+              <div key={cfg.type} className="p-3 rounded-xl" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
                 <p className="text-sm font-semibold mb-1" style={{ color: "#dae6ff" }}>
                   {cfg.kortLabel || cfg.label}
                 </p>

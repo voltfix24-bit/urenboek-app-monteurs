@@ -200,7 +200,7 @@ export default function ManagerPlanning() {
   };
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   const gridContent = (
@@ -290,7 +290,7 @@ export default function ManagerPlanning() {
 
                 return (
                   <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] lg:min-h-[64px] flex flex-col items-center justify-center text-center transition-colors active:scale-95 relative" style={{
-                    background: hasConflict && !entry ? "rgba(255,113,108,0.1)" : entry ? (entry.activiteit_kleur ? `${entry.activiteit_kleur}18` : "rgba(63,255,139,0.1)") : "#030e20",
+                    background: hasConflict && !entry ? "rgba(255,113,108,0.1)" : entry ? (entry.activiteit_kleur ? `${entry.activiteit_kleur}18` : "rgba(63,255,139,0.1)") : "var(--app-navy)",
                     border: hasConflict ? "1px solid rgba(255,113,108,0.3)" : entry ? `1px solid ${entry.activiteit_kleur || "#3fff8b"}44` : "1px solid #102038",
                   }}>
                     {entry ? (
@@ -327,7 +327,7 @@ export default function ManagerPlanning() {
   return (
     <PageShell>
       <PullToRefresh onRefresh={fetchAll}>
-      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
+      <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
         {/* HEADER */}
         <MobileHeader initials={profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'} />
 
@@ -500,7 +500,7 @@ export default function ManagerPlanning() {
 
                   {isExpanded && (
                     <div style={{
-                      background: '#030e20',
+                      background: 'var(--app-navy)',
                       borderRadius: '0 0 16px 16px',
                       marginTop: -8,
                       paddingTop: 8,
@@ -827,7 +827,7 @@ export default function ManagerPlanning() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
                 <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", display: "block", marginBottom: 6 }}>Project</label>
-                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "#030e20", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }}>
+                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }}>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
                 </select>
                 {(() => {
@@ -845,14 +845,14 @@ export default function ManagerPlanning() {
               <div style={{ display: "flex", gap: 12 }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", display: "block", marginBottom: 6 }}>Start</label>
-                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "#030e20", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
+                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", display: "block", marginBottom: 6 }}>Eind</label>
-                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "#030e20", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
+                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
                 </div>
               </div>
-              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "#030e20", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
+              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
               <button onClick={savePlanning} style={{ width: "100%", height: 52, borderRadius: 14, background: "#3fff8b", border: "none", color: "#005d2c", fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 4px 16px rgba(63,255,139,0.2)" }}>
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>

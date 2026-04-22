@@ -74,7 +74,7 @@ export function MobileHeader({ showBrand = true, title, actions, initials }: Mob
               minWidth: 16, height: 16,
               borderRadius: 9999,
               background: "#ff716c",
-              border: "2px solid #030e20",
+              border: "2px solid var(--app-navy)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 9, fontWeight: 800, color: "#fff",
               padding: "0 3px",

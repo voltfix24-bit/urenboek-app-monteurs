@@ -88,7 +88,7 @@ export default function TarievenBeheer() {
   return (
     <>
       <DesktopSidebar badges={badges} />
-      <div className="lg:ml-[240px] min-h-screen" style={{ background: "#030e20" }}>
+      <div className="lg:ml-[240px] min-h-screen" style={{ background: "var(--app-navy)" }}>
         <header className="flex items-center gap-3 px-6 lg:px-10 pt-6 pb-4">
           <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-lg flex items-center justify-center lg:hidden" style={{ background: "#102038" }}>
             <ArrowLeft className="h-4 w-4" style={{ color: "#a0abc3" }} />
@@ -150,7 +150,7 @@ export default function TarievenBeheer() {
                                 onChange={e => setEditValue(e.target.value)}
                                 onKeyDown={e => e.key === "Enter" && saveTarief(t)}
                                 className="w-20 px-2 py-1 rounded text-xs font-mono text-right"
-                                style={{ background: "#030e20", border: "1px solid #3fff8b", color: "#dae6ff" }}
+                                style={{ background: "var(--app-navy)", border: "1px solid #3fff8b", color: "#dae6ff" }}
                               />
                               <button onClick={() => saveTarief(t)} className="w-5 h-5 rounded flex items-center justify-center" style={{ color: "#3fff8b" }}><Check className="h-3 w-3" /></button>
                               <button onClick={() => setEditCode(null)} className="w-5 h-5 rounded flex items-center justify-center" style={{ color: "#a0abc3" }}><X className="h-3 w-3" /></button>

@@ -267,7 +267,7 @@ export default function ContractOndertekenen() {
   );
 
   if (klaar) return (
-    <div className="min-h-screen" style={{ background: "#030e20" }}>
+    <div className="min-h-screen" style={{ background: "var(--app-navy)" }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         <img src={terrevoltLogo} alt="TerreVolt" className="h-8 mb-6" />
 
@@ -291,7 +291,7 @@ export default function ContractOndertekenen() {
             <div>
               <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>E-mailadres</label>
               <div className="w-full mt-1 rounded-lg p-2.5 text-sm"
-                style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+                style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
                 {kandidaatEmail}
               </div>
             </div>
@@ -301,7 +301,7 @@ export default function ContractOndertekenen() {
               <input type="password" value={wachtwoord} onChange={e => setWachtwoord(e.target.value)}
                 placeholder="Minimaal 6 tekens"
                 className="w-full mt-1 rounded-lg p-2.5 text-sm"
-                style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
             </div>
 
             <div>
@@ -309,7 +309,7 @@ export default function ContractOndertekenen() {
               <input type="password" value={wachtwoord2} onChange={e => setWachtwoord2(e.target.value)}
                 placeholder="Herhaal je wachtwoord"
                 className="w-full mt-1 rounded-lg p-2.5 text-sm"
-                style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
             </div>
 
             <button onClick={maakAccountAan} disabled={registreren || !wachtwoord || wachtwoord.length < 6 || wachtwoord !== wachtwoord2}
@@ -351,7 +351,7 @@ export default function ContractOndertekenen() {
   if (!contractData) return null;
 
   return (
-    <div className="min-h-screen" style={{ background: "#030e20" }}>
+    <div className="min-h-screen" style={{ background: "var(--app-navy)" }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         <img src={terrevoltLogo} alt="TerreVolt" className="h-8 mb-6" />
 
@@ -551,7 +551,7 @@ export default function ContractOndertekenen() {
 
 function CenterLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: "#030e20" }}>
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: "var(--app-navy)" }}>
       <div className="text-center max-w-sm">{children}</div>
     </div>
   );

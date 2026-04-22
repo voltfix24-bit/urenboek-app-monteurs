@@ -33,7 +33,7 @@ function DevLoginPicker() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: "#030e20" }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: "var(--app-navy)" }}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "#3fff8b" }} />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "#3fff8b" }} />
@@ -57,14 +57,14 @@ function DevLoginPicker() {
                 key={devUser.id}
                 onClick={() => selectUser(devUser)}
                 className="w-full flex items-center gap-4 p-4 rounded-xl transition-all active:scale-[0.97]"
-                style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}
+                style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = ROLE_COLORS[devUser.role] || "#3fff8b";
                   e.currentTarget.style.background = "#102038";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = "rgba(106,118,140,0.15)";
-                  e.currentTarget.style.background = "#030e20";
+                  e.currentTarget.style.background = "var(--app-navy)";
                 }}
               >
                 <div
@@ -152,7 +152,7 @@ function RealLoginForm() {
   // ── VIEW 3: E-MAIL VERSTUURD ──
   if (resetSent) {
     return (
-      <div style={{ background: "#030e20", minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+      <div style={{ background: "var(--app-navy)", minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
         {/* HEADER */}
         <div style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={() => { setResetSent(false); setShowForgot(false); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#3fff8b", display: "flex", alignItems: "center" }}>
@@ -222,7 +222,7 @@ function RealLoginForm() {
 
   if (showForgot) {
     return (
-      <div style={{ background: "#030e20", minHeight: "100dvh", display: "flex", flexDirection: "column", paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      <div style={{ background: "var(--app-navy)", minHeight: "100dvh", display: "flex", flexDirection: "column", paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
         {/* HEADER */}
         <div style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={() => setShowForgot(false)} style={{ width: 40, height: 40, borderRadius: "50%", background: "none", border: "none", cursor: "pointer", color: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -276,7 +276,7 @@ function RealLoginForm() {
   }
 
   return (
-    <div style={{ background: "#030e20", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+    <div style={{ background: "var(--app-navy)", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       {/* Industrial grid background */}
       <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(63,255,139,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(63,255,139,0.03) 1px, transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
 

@@ -48,7 +48,7 @@ function ContractAttentionSection({ navigate }: { navigate: (p: string) => void 
         <FileSignature className="h-3.5 w-3.5" /> Contracten die aandacht vragen
       </p>
       {correcties.map(c => (
-        <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "#030e20", border: "1px solid rgba(255,113,108,0.3)" }}>
+        <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--app-navy)", border: "1px solid rgba(255,113,108,0.3)" }}>
           <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c" }}>⚠️</div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate" style={{ color: "#dae6ff" }}>{c.ot_naam || "Opdrachtnemer"}</p>
@@ -59,7 +59,7 @@ function ContractAttentionSection({ navigate }: { navigate: (p: string) => void 
         </div>
       ))}
       {wachtend.map(c => (
-        <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: "rgba(254,179,0,0.1)", color: "#feb300" }}>⏳</div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate" style={{ color: "#dae6ff" }}>{c.ot_naam || "Opdrachtnemer"}</p>
@@ -72,7 +72,7 @@ function ContractAttentionSection({ navigate }: { navigate: (p: string) => void 
       {verlopen.map(c => {
         const days = c.einddatum ? Math.ceil((new Date(c.einddatum).getTime() - Date.now()) / 86400000) : 0;
         return (
-          <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <div key={c.id} className="flex items-center gap-2.5 p-2.5 rounded-xl" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{ background: days < 0 ? "rgba(255,113,108,0.1)" : "rgba(254,179,0,0.1)", color: days < 0 ? "#ff716c" : "#feb300" }}>⏰</div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate" style={{ color: "#dae6ff" }}>{c.contract_nummer}</p>
@@ -201,7 +201,7 @@ export default function Dashboard() {
   const margeBg = (m: number) => m >= 30 ? "rgba(63,255,139,0.1)" : m >= 15 ? "rgba(254,179,0,0.1)" : "rgba(255,113,108,0.1)";
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   const greeting = (() => {
@@ -219,7 +219,7 @@ export default function Dashboard() {
 
   return (
     <PageShell>
-      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: 120 }}>
+      <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: 120 }}>
         <MobileHeader initials={profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'} />
 
         <main style={{ padding: "24px 20px" }}>

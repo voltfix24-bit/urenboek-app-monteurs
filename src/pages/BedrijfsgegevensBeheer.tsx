@@ -26,7 +26,7 @@ function Field({ label, hint, value, onChange, placeholder, mono }: {
       <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>{label}</label>
       <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
         className="w-full px-3 py-2.5 rounded-xl text-sm"
-        style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: mono ? "DM Mono, monospace" : "inherit" }} />
+        style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: mono ? "DM Mono, monospace" : "inherit" }} />
       {hint && <p className="text-[10px]" style={{ color: "#a0abc3" }}>{hint}</p>}
     </div>
   );
@@ -40,7 +40,7 @@ function NumberField({ label, hint, value, onChange }: {
       <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>{label}</label>
       <input type="number" value={value} onChange={e => onChange(Number(e.target.value))}
         className="w-full px-3 py-2.5 rounded-xl text-sm"
-        style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: "DM Mono, monospace" }} />
+        style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: "DM Mono, monospace" }} />
       {hint && <p className="text-[10px]" style={{ color: "#a0abc3" }}>{hint}</p>}
     </div>
   );
@@ -137,7 +137,7 @@ export default function BedrijfsgegevensBeheer() {
     setSaving(false);
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><Spinner center={false} /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><Spinner center={false} /></div>;
 
   return (
     <>
@@ -215,7 +215,7 @@ export default function BedrijfsgegevensBeheer() {
             {/* Preview */}
             <div>
               <SectionTitle>Voorbeeld op inkooporder</SectionTitle>
-              <div className="rounded-xl p-4" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+              <div className="rounded-xl p-4" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <Zap className="h-4 w-4" style={{ color: "#3fff8b" }} />
                   <span className="text-[15px] font-bold" style={{ color: "#dae6ff" }}>{form.bedrijfsnaam || "—"}</span>

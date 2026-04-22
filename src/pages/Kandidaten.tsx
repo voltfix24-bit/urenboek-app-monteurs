@@ -562,7 +562,7 @@ export default function Kandidaten() {
             <textarea placeholder="Aantekeningen van het gesprek..." value={nieuwForm.notities}
               onChange={e => setNieuwForm(p => ({ ...p, notities: e.target.value }))}
               className="w-full rounded-lg p-3 text-sm resize-none"
-              style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", minHeight: 80 }} />
+              style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", minHeight: 80 }} />
             <div className="flex gap-2 pt-2">
               <button onClick={() => setShowNieuw(false)} className="flex-1 py-2.5 rounded-xl text-sm"
                 style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>

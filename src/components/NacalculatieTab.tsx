@@ -206,7 +206,7 @@ export function NacalculatieTab({ projectId }: Props) {
         </div>
 
         {!heeftBoekingen && heeftForecast && (
-          <div className="mt-4 rounded-xl p-3 flex items-start gap-2" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <div className="mt-4 rounded-xl p-3 flex items-start gap-2" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" style={{ color: "#a0abc3" }} />
             <p className="text-[11px]" style={{ color: "#a0abc3" }}>Er zijn nog geen goedgekeurde uren voor dit project.</p>
           </div>
@@ -215,7 +215,7 @@ export function NacalculatieTab({ projectId }: Props) {
 
       {/* Onzekere uren info */}
       {heeftOnzekereUren && (
-        <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" style={{ color: "#a0abc3" }} />
           <p className="text-[11px]" style={{ color: "#a0abc3" }}>
             ℹ Inclusief {ingediende.uren > 0 ? `${ingediende.uren}u ingediend` : ""}
@@ -316,7 +316,7 @@ export function NacalculatieTab({ projectId }: Props) {
       )}
 
       {methode === "uren" && (
-        <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" style={{ color: "#a0abc3" }} />
           <p className="text-[11px]" style={{ color: "#a0abc3" }}>
             Dit project wordt vergoed op basis van uren. Verwachte omzet vastgelegd in de forecast: <strong style={{ color: "#dae6ff" }}>{euro(verwachteOmzet)}</strong>
@@ -325,7 +325,7 @@ export function NacalculatieTab({ projectId }: Props) {
       )}
 
       {!heeftForecast && (
-        <div className="rounded-xl p-4 text-center space-y-2" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <div className="rounded-xl p-4 text-center space-y-2" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <p className="text-xs" style={{ color: "#a0abc3" }}>Nog geen forecast ingevuld. Voeg een forecast toe om de omzet te berekenen.</p>
           <button className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: "#3fff8b" }}>
             Naar Forecast tab <ArrowRight className="h-3 w-3" />
@@ -335,7 +335,7 @@ export function NacalculatieTab({ projectId }: Props) {
 
       {/* ━━━ SECTIE 4: VERGELIJKING FORECAST VS WERKELIJK ━━━ */}
       {heeftForecast && (heeftBoekingen || forecastOmzet > 0) && (
-        <div className="rounded-2xl p-4 space-y-3" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>
             Forecast vs werkelijk
           </p>

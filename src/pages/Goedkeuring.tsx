@@ -132,7 +132,7 @@ export default function Goedkeuring() {
   };
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   function renderEntryActions(entry: EntryWithProfile) {
@@ -213,7 +213,7 @@ export default function Goedkeuring() {
         )}
         {afkeurId === entry.id && (
           <div className="mt-2 space-y-2">
-            <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={2} className="w-full px-3 py-2 rounded-xl text-sm resize-none" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+            <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={2} className="w-full px-3 py-2 rounded-xl text-sm resize-none" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
             <div className="flex gap-2">
               <button onClick={() => afkeurReden.trim() ? updateStatus(afkeurId, "afgekeurd", afkeurReden.trim()) : toast.error("Vul een reden in")} className="flex-1 py-2 rounded-xl text-xs font-bold" style={{ background: "#ff716c", color: "#fff" }}>Afkeuren</button>
               <button onClick={() => { setAfkeurId(null); setAfkeurReden(""); }} className="px-3 py-2 rounded-xl text-xs font-medium" style={{ background: "#102038", color: "#a0abc3" }}>Annuleren</button>
@@ -416,7 +416,7 @@ export default function Goedkeuring() {
                                 <tr>
                                   <td colSpan={6} className="px-4 pb-3">
                                     <div className="space-y-2">
-                                      <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={2} className="w-full px-3 py-2 rounded-xl text-sm resize-none" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                                      <textarea value={afkeurReden} onChange={e => setAfkeurReden(e.target.value)} placeholder="Reden voor afkeuring (verplicht)" rows={2} className="w-full px-3 py-2 rounded-xl text-sm resize-none" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                                       <div className="flex gap-2">
                                         <button onClick={() => afkeurReden.trim() ? updateStatus(afkeurId, "afgekeurd", afkeurReden.trim()) : toast.error("Vul een reden in")} className="px-4 py-2 rounded-xl text-xs font-bold" style={{ background: "#ff716c", color: "#fff" }}>Afkeuren</button>
                                         <button onClick={() => { setAfkeurId(null); setAfkeurReden(""); }} className="px-3 py-2 rounded-xl text-xs font-medium" style={{ background: "#102038", color: "#a0abc3" }}>Annuleren</button>
@@ -464,7 +464,7 @@ export default function Goedkeuring() {
   return (
     <PageShell>
       <PullToRefresh onRefresh={fetchEntries}>
-      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
+      <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
         <MobileHeader showBrand={false} title="Weekstaten keuren" actions={
           <button onClick={() => setShowBookModal(true)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex" }}>
             <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#3fff8b" }}>add_circle</span>
@@ -645,7 +645,7 @@ export default function Goedkeuring() {
                 onChange={(e) => setAfkeurReden(e.target.value)}
                 placeholder="Toelichting (optioneel)..."
                 rows={3}
-                style={{ width: "100%", marginTop: 8, marginBottom: 16, padding: "12px 16px", borderRadius: 16, border: "1px solid rgba(61,72,93,0.4)", background: "#030e20", color: "#dae6ff", fontFamily: "Inter", fontSize: 14, resize: "none", outline: "none", boxSizing: "border-box" }}
+                style={{ width: "100%", marginTop: 8, marginBottom: 16, padding: "12px 16px", borderRadius: 16, border: "1px solid rgba(61,72,93,0.4)", background: "var(--app-navy)", color: "#dae6ff", fontFamily: "Inter", fontSize: 14, resize: "none", outline: "none", boxSizing: "border-box" }}
               />
               <button onClick={() => { updateStatus(afkeurId, "afgekeurd", afkeurReden); setAfkeurId(null); }} style={{
                 width: "100%", height: 56, borderRadius: 16, background: "#feb300", border: "none",
@@ -726,7 +726,7 @@ function ManagerBookModal({ weekStart, onClose, onSaved }: { weekStart: Date; on
         <div className="space-y-3">
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Medewerker</label>
-            <select value={medId} onChange={e => setMedId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
+            <select value={medId} onChange={e => setMedId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
               <option value="">Kies medewerker...</option>
               {medewerkers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
             </select>
@@ -734,14 +734,14 @@ function ManagerBookModal({ weekStart, onClose, onSaved }: { weekStart: Date; on
 
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Dag</label>
-            <select value={datum} onChange={e => setDatum(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
+            <select value={datum} onChange={e => setDatum(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
               {weekDays.map(d => <option key={format(d, "yyyy-MM-dd")} value={format(d, "yyyy-MM-dd")}>{format(d, "EEEE d MMM", { locale: nl })}</option>)}
             </select>
           </div>
 
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Project</label>
-            <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
+            <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
               <option value="">Kies project...</option>
               {projects.map(p => <option key={p.id} value={p.id}>{p.naam} ({p.nummer})</option>)}
             </select>
@@ -751,7 +751,7 @@ function ManagerBookModal({ weekStart, onClose, onSaved }: { weekStart: Date; on
             <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Werkzaamheden</label>
             <div className="flex gap-2 mt-1">
               {["monteren", "schakelen"].map(w => (
-                <button key={w} type="button" onClick={() => setType(w)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize" style={{ background: type === w ? "rgba(63,255,139,0.1)" : "#030e20", border: type === w ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: type === w ? "#3fff8b" : "#a0abc3" }}>
+                <button key={w} type="button" onClick={() => setType(w)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize" style={{ background: type === w ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: type === w ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: type === w ? "#3fff8b" : "#a0abc3" }}>
                   {w}
                 </button>
               ))}
@@ -767,7 +767,7 @@ function ManagerBookModal({ weekStart, onClose, onSaved }: { weekStart: Date; on
             </div>
             <div className="flex justify-center gap-2 mt-2">
               {[4, 6, 8, 9, 10].map(h => (
-                <button key={h} type="button" onClick={() => setUren(h)} className="px-3 py-1 rounded-lg text-xs font-medium" style={{ background: uren === h ? "rgba(63,255,139,0.1)" : "#030e20", border: uren === h ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: uren === h ? "#3fff8b" : "#a0abc3" }}>
+                <button key={h} type="button" onClick={() => setUren(h)} className="px-3 py-1 rounded-lg text-xs font-medium" style={{ background: uren === h ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: uren === h ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: uren === h ? "#3fff8b" : "#a0abc3" }}>
                   {h}u
                 </button>
               ))}
@@ -816,12 +816,12 @@ function EditEntryModal({ entry, onClose, onSaved }: { entry: EntryWithProfile; 
         <div className="space-y-3">
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Datum</label>
-            <input type="date" value={datum} onChange={e => setDatum(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+            <input type="date" value={datum} onChange={e => setDatum(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
           </div>
 
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Project</label>
-            <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
+            <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
               {projects.map(p => <option key={p.id} value={p.id}>{p.naam} ({p.nummer})</option>)}
             </select>
           </div>
@@ -830,7 +830,7 @@ function EditEntryModal({ entry, onClose, onSaved }: { entry: EntryWithProfile; 
             <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Werkzaamheden</label>
             <div className="flex gap-2 mt-1">
               {["monteren", "schakelen"].map(w => (
-                <button key={w} type="button" onClick={() => setType(w)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize" style={{ background: type === w ? "rgba(63,255,139,0.1)" : "#030e20", border: type === w ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: type === w ? "#3fff8b" : "#a0abc3" }}>
+                <button key={w} type="button" onClick={() => setType(w)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize" style={{ background: type === w ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: type === w ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: type === w ? "#3fff8b" : "#a0abc3" }}>
                   {w}
                 </button>
               ))}
@@ -846,7 +846,7 @@ function EditEntryModal({ entry, onClose, onSaved }: { entry: EntryWithProfile; 
             </div>
             <div className="flex justify-center gap-2 mt-2">
               {[4, 6, 8, 9, 10].map(h => (
-                <button key={h} type="button" onClick={() => setUren(h)} className="px-3 py-1 rounded-lg text-xs font-medium" style={{ background: uren === h ? "rgba(63,255,139,0.1)" : "#030e20", border: uren === h ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: uren === h ? "#3fff8b" : "#a0abc3" }}>
+                <button key={h} type="button" onClick={() => setUren(h)} className="px-3 py-1 rounded-lg text-xs font-medium" style={{ background: uren === h ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: uren === h ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", color: uren === h ? "#3fff8b" : "#a0abc3" }}>
                   {h}u
                 </button>
               ))}

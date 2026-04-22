@@ -36,7 +36,7 @@ export function ValidatedInput({ error, style, ...props }: ValidatedInputProps) 
       {...props}
       className={`w-full px-3 py-2.5 rounded-xl text-sm ${props.className || ""}`}
       style={{
-        background: "#030e20",
+        background: "var(--app-navy)",
         border: error ? "1.5px solid #ff716c" : "1px solid rgba(106,118,140,0.15)",
         color: "#dae6ff",
         ...style,

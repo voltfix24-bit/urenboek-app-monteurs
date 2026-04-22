@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { roleLabels } from "./MedewerkerKaart";
 import { FormField, ValidatedInput } from "@/components/ui/FormField";
 
-const inputStyle = { background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
+const inputStyle = { background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
 
 function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -58,7 +58,7 @@ export function NieuweGebruikerForm(props: any) {
             <div className="flex gap-1.5 flex-wrap">
               {Object.entries(roleLabels).map(([value, label]) => (
                 <button key={value} type="button" onClick={() => { setRole(value); ce("role"); }} className="px-3 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
-                  background: role === value ? "rgba(63,255,139,0.1)" : "#030e20",
+                  background: role === value ? "rgba(63,255,139,0.1)" : "var(--app-navy)",
                   border: role === value ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
                   color: role === value ? "#3fff8b" : "#a0abc3",
                 }}>{label}</button>
@@ -102,7 +102,7 @@ export function NieuweGebruikerForm(props: any) {
         <FormSection title="5. Account aanmaken">
           <div className="flex gap-2">
             <button type="button" onClick={() => setInviteMode("invite")} className="flex-1 p-3 rounded-xl text-left space-y-1" style={{
-              background: inviteMode === "invite" ? "rgba(63,255,139,0.1)" : "#030e20",
+              background: inviteMode === "invite" ? "rgba(63,255,139,0.1)" : "var(--app-navy)",
               border: inviteMode === "invite" ? "2px solid #3fff8b" : "1px solid rgba(106,118,140,0.15)",
             }}>
               <p className="text-xs font-bold flex items-center gap-1" style={{ color: inviteMode === "invite" ? "#3fff8b" : "#dae6ff" }}>
@@ -111,7 +111,7 @@ export function NieuweGebruikerForm(props: any) {
               <p className="text-[10px]" style={{ color: "#a0abc3" }}>Aanbevolen — monteur stelt zelf wachtwoord in</p>
             </button>
             <button type="button" onClick={() => setInviteMode("password")} className="flex-1 p-3 rounded-xl text-left space-y-1" style={{
-              background: inviteMode === "password" ? "rgba(63,255,139,0.1)" : "#030e20",
+              background: inviteMode === "password" ? "rgba(63,255,139,0.1)" : "var(--app-navy)",
               border: inviteMode === "password" ? "2px solid #3fff8b" : "1px solid rgba(106,118,140,0.15)",
             }}>
               <p className="text-xs font-bold flex items-center gap-1" style={{ color: inviteMode === "password" ? "#3fff8b" : "#dae6ff" }}>
@@ -122,7 +122,7 @@ export function NieuweGebruikerForm(props: any) {
           </div>
 
           {inviteMode === "invite" ? (
-            <p className="text-[11px] p-2 rounded-lg" style={{ background: "#030e20", color: "#a0abc3" }}>
+            <p className="text-[11px] p-2 rounded-lg" style={{ background: "var(--app-navy)", color: "#a0abc3" }}>
               De monteur ontvangt een e-mail met een persoonlijke activatielink.
             </p>
           ) : (
@@ -135,9 +135,9 @@ export function NieuweGebruikerForm(props: any) {
                     {showPw ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   </button>
                 </div>
-                <button type="button" onClick={generatePassword} className="px-3 py-2.5 rounded-xl text-sm shrink-0" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>🎲</button>
+                <button type="button" onClick={generatePassword} className="px-3 py-2.5 rounded-xl text-sm shrink-0" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>🎲</button>
                 {password && (
-                  <button type="button" onClick={() => { navigator.clipboard.writeText(password); toast.success("Gekopieerd!"); }} className="px-3 py-2.5 rounded-xl text-sm shrink-0" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+                  <button type="button" onClick={() => { navigator.clipboard.writeText(password); toast.success("Gekopieerd!"); }} className="px-3 py-2.5 rounded-xl text-sm shrink-0" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
                     <Copy className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} />
                   </button>
                 )}

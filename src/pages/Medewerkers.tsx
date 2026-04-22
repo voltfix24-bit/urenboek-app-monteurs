@@ -169,7 +169,7 @@ export default function Medewerkers() {
     toast.success("Inloggegevens gekopieerd!");
   };
 
-  if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
+  if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
 
   const monteurs = employees.filter(e => e.role !== "manager" && e.role !== "–");
   const managers = employees.filter(e => e.role === "manager");
@@ -190,7 +190,7 @@ export default function Medewerkers() {
     return (
       <>
       <PageShell>
-        <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)" }}>
+        <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)" }}>
           <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
             <button onClick={() => setSelectedEmployee(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3fff8b", display: "flex" }}>
               <ArrowLeft size={24} />
@@ -258,7 +258,7 @@ export default function Medewerkers() {
   return (
     <>
     <PageShell>
-      <div style={{ background: "#030e20", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
+      <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
         {/* HEADER */}
         <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -329,7 +329,7 @@ export default function Medewerkers() {
               </div>
               <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
                 {createdUsers.map((u, i) => (
-                  <div key={i} style={{ padding: 12, borderRadius: 12, background: "#030e20", border: "1px solid rgba(61,72,93,0.3)" }}>
+                  <div key={i} style={{ padding: 12, borderRadius: 12, background: "var(--app-navy)", border: "1px solid rgba(61,72,93,0.3)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                       <div>
                         <p style={{ fontSize: 14, fontWeight: 700, color: "#dae6ff", fontFamily: "Inter" }}>{u.fullName}</p>

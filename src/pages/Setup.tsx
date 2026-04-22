@@ -87,7 +87,7 @@ export default function Setup() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}>
       <Spinner center={false} />
     </div>
   );
@@ -95,7 +95,7 @@ export default function Setup() {
   const strength = passwordStrength();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "#030e20" }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "var(--app-navy)" }}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "#3fff8b" }} />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "#3fff8b" }} />
@@ -133,20 +133,20 @@ export default function Setup() {
                 <div className="flex gap-3">
                   <div className="flex-1 space-y-1">
                     <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Voornaam</label>
-                    <input value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} placeholder="Jan" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                    <input value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} placeholder="Jan" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   </div>
                   <div className="flex-1 space-y-1">
                     <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Achternaam</label>
-                    <input value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} placeholder="Jansen" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                    <input value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} placeholder="Jansen" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>E-mailadres</label>
-                  <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="jan@terrevolt.nl" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                  <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="jan@terrevolt.nl" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Wachtwoord</label>
-                  <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="Min. 8 tekens" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                  <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="Min. 8 tekens" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   {form.password && (
                     <div className="flex items-center gap-2 mt-1">
                       <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "#102038" }}>
@@ -161,7 +161,7 @@ export default function Setup() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Wachtwoord herhalen</label>
-                  <input type="password" value={form.passwordConfirm} onChange={e => setForm({ ...form, passwordConfirm: e.target.value })} placeholder="Herhaal wachtwoord" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                  <input type="password" value={form.passwordConfirm} onChange={e => setForm({ ...form, passwordConfirm: e.target.value })} placeholder="Herhaal wachtwoord" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   {form.passwordConfirm && form.password !== form.passwordConfirm && (
                     <p className="text-[10px] font-medium" style={{ color: "#ff716c" }}>Wachtwoorden komen niet overeen</p>
                   )}
@@ -188,7 +188,7 @@ export default function Setup() {
                 </label>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+                <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
                   ← Terug
                 </button>
                 <button onClick={handleSubmit} disabled={!confirmed || submitting} className="flex-1 py-3 rounded-xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", color: "#fff" }}>

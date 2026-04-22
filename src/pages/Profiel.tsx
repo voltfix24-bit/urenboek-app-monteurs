@@ -54,8 +54,8 @@ function PasswordChange() {
   return (
     <div className="pt-2 space-y-2">
       <p className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Wachtwoord wijzigen</p>
-      <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-      <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Herhaal nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+      <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+      <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Herhaal nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
       <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} className="w-full py-2.5 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
         {saving ? "Bezig..." : "Wachtwoord wijzigen"}
       </button>
@@ -203,7 +203,7 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
 
       {/* Contract details panel */}
       {showDetails && contract && detailRows.length > 0 && (
-        <div className="rounded-xl p-3 space-y-1.5" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <div className="rounded-xl p-3 space-y-1.5" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
           <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "#a0abc3" }}>Contractgegevens</p>
           {detailRows.map((row, i) => (
             <div key={i} className="flex justify-between items-center py-1" style={{ borderBottom: i < detailRows.length - 1 ? "1px solid rgba(106,118,140,0.15)" : "none" }}>
@@ -341,11 +341,11 @@ export default function Profiel() {
     return null;
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><Spinner center={false} /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><Spinner center={false} /></div>;
 
   return (
     <PageShell>
-      <div style={{ background: '#030e20', minHeight: '100dvh', paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)" }}>
+      <div style={{ background: 'var(--app-navy)', minHeight: '100dvh', paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)" }}>
         {/* HEADER */}
         <header style={{
           position: 'sticky', top: 0, zIndex: 50,
