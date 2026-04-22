@@ -8,7 +8,7 @@ import CertificatenOverzicht from "@/components/CertificatenOverzicht";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
 import { valideer, profielSchema } from "@/lib/validatie";
-import { LogOut, Plus, Shield, Edit2, Save, ThermometerSun, ChevronLeft, ChevronRight, Download } from "lucide-react";
+
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/Spinner";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
@@ -173,7 +173,7 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
           <div className="flex items-center gap-3 mt-1">
             {contract.pdf_path && (
               <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "#3fff8b" }}>
-                <Download className="h-3.5 w-3.5" /> Download PDF
+                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>download</span> Download PDF
               </button>
             )}
             <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium" style={{ color: "#a0abc3" }}>
@@ -345,98 +345,400 @@ export default function Profiel() {
 
   return (
     <PageShell>
-      <div style={{ background: 'var(--app-navy)', minHeight: '100dvh', paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)" }}>
+      <div style={{
+        background: '#030e20',
+        minHeight: '100dvh',
+        paddingBottom: 'calc(env(safe-area-inset-bottom,34px) + 100px)',
+      }}>
         {/* HEADER */}
         <header style={{
-          position: 'sticky', top: 0, zIndex: 50,
-          background: 'rgba(3,14,32,0.9)', backdropFilter: 'blur(20px)',
+          position: 'sticky', top: 0,
+          zIndex: 50,
+          background: 'rgba(3,14,32,0.9)',
+          backdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
-          padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '12px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
         }}>
-          <span style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 20, color: '#dae6ff' }}>Mijn Profiel</span>
-          <button onClick={signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#ff716c', fontSize: 13, fontFamily: 'Inter', fontWeight: 600 }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>logout</span>
-          </button>
-        </header>
-
-        <main style={{ padding: '24px 20px' }}>
-          {/* HERO CARD */}
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
-            backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)',
-            borderRadius: 16, padding: '32px 24px', marginBottom: 12,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden',
+          <span style={{
+            fontFamily: 'Manrope',
+            fontWeight: 800,
+            fontSize: 20,
+            color: '#3fff8b',
           }}>
-            <div style={{ position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(63,255,139,0.15), transparent)', pointerEvents: 'none' }} />
+            Mijn Profiel
+          </span>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}>
+            <button
+              onClick={signOut}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#a0abc3',
+                display: 'flex',
+                alignItems: 'center',
+              }}>
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 22,
+                  fontVariationSettings: "'wght' 300",
+                }}>
+                logout
+              </span>
+            </button>
             <div style={{
-              width: 80, height: 80, borderRadius: '50%', background: '#3fff8b',
-              border: '3px solid rgba(63,255,139,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Manrope', fontWeight: 800, fontSize: 28, color: '#005d2c', marginBottom: 16,
-              boxShadow: '0 0 30px rgba(63,255,139,0.2)', position: 'relative', zIndex: 1,
+              width: 32, height: 32,
+              borderRadius: '50%',
+              background: '#1d2730',
+              border: '1px solid rgba(255,255,255,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'Manrope',
+              fontWeight: 700,
+              fontSize: 11,
+              color: '#3fff8b',
             }}>
               {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
-            <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 24, color: '#dae6ff', marginBottom: 8, position: 'relative', zIndex: 1 }}>
+          </div>
+        </header>
+
+        <main style={{ padding: '20px 20px' }}>
+          {/* HERO */}
+          <section style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            paddingBottom: 24,
+            paddingTop: 8,
+          }}>
+            <div style={{ position: 'relative', marginBottom: 16 }}>
+              <div style={{
+                width: 96, height: 96,
+                borderRadius: '50%',
+                background: '#0d1f38',
+                border: '2px solid rgba(63,255,139,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 0 20px rgba(63,255,139,0.15)',
+              }}>
+                <span style={{
+                  fontFamily: 'Manrope',
+                  fontWeight: 800,
+                  fontSize: 32,
+                  color: '#3fff8b',
+                }}>
+                  {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              </div>
+              {/* Green check badge */}
+              <div style={{
+                position: 'absolute',
+                bottom: 0, right: 0,
+                width: 24, height: 24,
+                borderRadius: '50%',
+                background: '#3fff8b',
+                border: '3px solid #030e20',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: 13,
+                    color: '#005d2c',
+                    fontVariationSettings: "'FILL' 1",
+                  }}>
+                  check
+                </span>
+              </div>
+            </div>
+            <h2 style={{
+              fontFamily: 'Manrope',
+              fontWeight: 700,
+              fontSize: 22,
+              color: '#dae6ff',
+              marginBottom: 8,
+            }}>
               {profile?.full_name || 'Naam'}
             </h2>
-            <div style={{ padding: '4px 14px', borderRadius: 9999, background: 'rgba(63,255,139,0.15)', border: '1px solid rgba(63,255,139,0.3)', marginBottom: 6, position: 'relative', zIndex: 1 }}>
-              <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{rolLabel}</span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}>
+              <span style={{
+                background: 'rgba(63,255,139,0.1)',
+                color: '#3fff8b',
+                fontSize: 10,
+                fontWeight: 700,
+                fontFamily: 'Inter',
+                padding: '3px 8px',
+                borderRadius: 4,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+              }}>
+                {rolLabel}
+              </span>
+              <span style={{
+                fontSize: 13,
+                color: '#a0abc3',
+                fontFamily: 'Inter',
+              }}>
+                TerreVolt BV
+              </span>
             </div>
-            <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', position: 'relative', zIndex: 1 }}>TerreVolt BV</span>
-          </div>
+          </section>
 
-          {/* Onboarding banner */}
+          {/* ONBOARDING BANNER */}
           {profile?.account_status === 'onboarding' && (
-            <div style={{ padding: '14px 16px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(254,179,0,0.25)', borderLeft: '3px solid #feb300', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{
+              padding: '14px 16px',
+              borderRadius: 16,
+              background: 'rgba(254,179,0,0.06)',
+              border: '1px solid rgba(254,179,0,0.2)',
+              borderLeft: '3px solid #feb300',
+              marginBottom: 12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}>
               <div>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#feb300', fontFamily: 'Inter' }}>⚠ Account nog niet actief</p>
-                <p style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', marginTop: 2 }}>Vul je gegevens aan en rond je onboarding af.</p>
+                <p style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: '#feb300',
+                  fontFamily: 'Inter',
+                }}>
+                  ⚠ Account nog niet actief
+                </p>
+                <p style={{
+                  fontSize: 12,
+                  color: '#a0abc3',
+                  fontFamily: 'Inter',
+                  marginTop: 2,
+                }}>
+                  Vul je gegevens aan en rond je onboarding af.
+                </p>
               </div>
-              <button onClick={() => window.location.href = '/onboarding-welkom'} style={{ padding: '6px 12px', borderRadius: 12, background: '#3fff8b', color: '#005d2c', fontFamily: 'Inter', fontWeight: 700, fontSize: 11, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>Naar onboarding →</button>
+              <button
+                onClick={() => window.location.href = '/onboarding-welkom'}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 12,
+                  background: '#3fff8b',
+                  color: '#005d2c',
+                  fontFamily: 'Inter',
+                  fontWeight: 700,
+                  fontSize: 11,
+                  border: 'none',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}>
+                Naar onboarding →
+              </button>
             </div>
           )}
 
           {/* MIJN GEGEVENS */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, marginBottom: 12, overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(61,72,93,0.3)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3' }}>person</span>
-                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Inter', color: '#dae6ff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mijn gegevens</span>
-              </div>
-              <button onClick={() => editing ? saveProfile() : setEditing(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: '#3fff8b', fontSize: 12, fontWeight: 700, fontFamily: 'Inter' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{editing ? 'save' : 'edit'}</span>
+          <div style={{
+            background: '#111a2c',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: 16,
+            marginBottom: 12,
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              padding: '16px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <h3 style={{
+                fontSize: 11,
+                fontWeight: 700,
+                fontFamily: 'Inter',
+                color: 'rgba(218,230,255,0.5)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.15em',
+              }}>
+                Mijn gegevens
+              </h3>
+              <button
+                onClick={() => editing ? saveProfile() : setEditing(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#3fff8b',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  fontFamily: 'Inter',
+                }}>
                 {editing ? 'Opslaan' : 'Bewerken'}
               </button>
             </div>
-            <div style={{ padding: '16px 20px' }}>
+            <div style={{ padding: '0 20px 16px' }}>
               {editing ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[{ label: 'Naam', key: 'full_name' as const }, { label: 'Telefoon', key: 'telefoon' as const }, { label: 'Adres', key: 'adres' as const }].map(f => (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12,
+                }}>
+                  {[
+                    { label: 'Naam', key: 'full_name' as const },
+                    { label: 'Telefoon', key: 'telefoon' as const },
+                    { label: 'Adres', key: 'adres' as const },
+                  ].map(f => (
                     <div key={f.key}>
-                      <label style={{ fontSize: 10, fontWeight: 600, color: profileErrors[f.key] ? '#ff716c' : '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{f.label}</label>
-                      <input value={editForm[f.key]} onChange={e => { setEditForm({ ...editForm, [f.key]: e.target.value }); if (profileErrors[f.key]) setProfileErrors(prev => { const n = { ...prev }; delete n[f.key]; return n; }); }} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: profileErrors[f.key] ? '1.5px solid #ff716c' : '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
-                      {profileErrors[f.key] && <p style={{ fontSize: 10, color: '#ff716c', marginTop: 2, fontFamily: 'Inter' }}>⚠ {profileErrors[f.key]}</p>}
+                      <label style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: profileErrors[f.key] ? '#ff716c' : '#a0abc3',
+                        fontFamily: 'Inter',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}>
+                        {f.label}
+                      </label>
+                      <input
+                        value={editForm[f.key]}
+                        onChange={e => {
+                          setEditForm({ ...editForm, [f.key]: e.target.value });
+                          if (profileErrors[f.key])
+                            setProfileErrors(prev => {
+                              const n = { ...prev };
+                              delete n[f.key];
+                              return n;
+                            });
+                        }}
+                        style={{
+                          width: '100%',
+                          marginTop: 4,
+                          padding: '10px 14px',
+                          borderRadius: 12,
+                          background: '#060e20',
+                          border: profileErrors[f.key]
+                            ? '1.5px solid #ff716c'
+                            : '1px solid rgba(255,255,255,0.07)',
+                          color: '#dae6ff',
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                        }} />
+                      {profileErrors[f.key] && (
+                        <p style={{
+                          fontSize: 10,
+                          color: '#ff716c',
+                          marginTop: 2,
+                          fontFamily: 'Inter',
+                        }}>
+                          ⚠ {profileErrors[f.key]}
+                        </p>
+                      )}
                     </div>
                   ))}
                   <div>
-                    <label style={{ fontSize: 10, fontWeight: 600, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Geboortedatum</label>
-                    <input type="date" value={editForm.geboortedatum} onChange={e => setEditForm({ ...editForm, geboortedatum: e.target.value })} style={{ width: '100%', marginTop: 4, padding: '10px 14px', borderRadius: 12, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff', fontFamily: 'Inter', fontSize: 14, outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
+                    <label style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: '#a0abc3',
+                      fontFamily: 'Inter',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      Geboortedatum
+                    </label>
+                    <input
+                      type="date"
+                      value={editForm.geboortedatum}
+                      onChange={e => setEditForm({ ...editForm, geboortedatum: e.target.value })}
+                      style={{
+                        width: '100%',
+                        marginTop: 4,
+                        padding: '10px 14px',
+                        borderRadius: 12,
+                        background: '#060e20',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        color: '#dae6ff',
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        colorScheme: 'dark',
+                      }} />
                   </div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <div>
                   {[
                     { icon: 'mail', label: 'Email', value: user?.email },
-                    { icon: 'phone', label: 'Telefoon', value: profile?.telefoon },
-                    { icon: 'home', label: 'Adres', value: profile?.adres },
-                    { icon: 'cake', label: 'Geboortedatum', value: profile?.geboortedatum ? formatDatum(profile.geboortedatum) : null },
+                    { icon: 'call', label: 'Telefoonnummer', value: profile?.telefoon },
+                    { icon: 'location_on', label: 'Adres', value: profile?.adres },
+                    { icon: 'event', label: 'Geboortedatum', value: profile?.geboortedatum ? formatDatum(profile.geboortedatum) : null },
                   ].map((row, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: i < 3 ? '1px solid rgba(61,72,93,0.3)' : 'none' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#a0abc3' }}>{row.icon}</span>
-                        <span style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{row.label}</span>
+                    <div key={i} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 14,
+                      padding: '14px 0',
+                      borderBottom: i < 3
+                        ? '1px solid rgba(255,255,255,0.05)'
+                        : 'none',
+                    }}>
+                      <div style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 12,
+                        background: '#060e20',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        <span
+                          className="material-symbols-outlined"
+                          style={{
+                            fontSize: 20,
+                            color: '#a0abc3',
+                            fontVariationSettings: "'wght' 300",
+                          }}>
+                          {row.icon}
+                        </span>
                       </div>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#dae6ff', fontFamily: 'Inter' }}>{row.value || '—'}</span>
+                      <div>
+                        <p style={{
+                          fontSize: 11,
+                          color: '#a0abc3',
+                          fontFamily: 'Inter',
+                          marginBottom: 2,
+                        }}>
+                          {row.label}
+                        </p>
+                        <p style={{
+                          fontSize: 14,
+                          fontWeight: 500,
+                          color: row.value ? '#dae6ff' : '#54617A',
+                          fontFamily: 'Inter',
+                        }}>
+                          {row.value || '—'}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
