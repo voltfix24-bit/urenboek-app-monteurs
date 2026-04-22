@@ -528,7 +528,7 @@ export default function Profiel() {
             </p>
 
             {/* Vaste vrije dagen */}
-            <div style={{ background: '#0c141b', borderRadius: 16, padding: '16px 20px', marginBottom: 10 }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
               <p style={{ fontSize: 10, fontWeight: 700, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>
                 Vaste vrije dagen
               </p>
@@ -550,7 +550,7 @@ export default function Profiel() {
             </div>
 
             {/* Calendar */}
-            <div style={{ background: '#0c141b', borderRadius: 16, padding: 20, marginBottom: 10 }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: 20, marginBottom: 12 }}>
               {/* Month navigation */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                 <h4 style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 18, color: '#dae6ff', textTransform: 'capitalize' }}>
@@ -622,19 +622,23 @@ export default function Profiel() {
             </div>
 
             {/* Action buttons — 2 large cards */}
-            <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
               <button onClick={() => navigate("/verlof-aanvragen")} style={{
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                padding: '24px 16px', borderRadius: 20, background: '#172129',
-                border: '1px solid rgba(66,73,80,0.3)', cursor: 'pointer', gap: 8,
+                padding: '24px 16px', borderRadius: 16,
+                background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(106,118,140,0.15)', cursor: 'pointer', gap: 8,
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#74fbbb' }}>event_repeat</span>
                 <span style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 13, color: '#dae6ff' }}>Verlof aanvragen</span>
               </button>
               <button onClick={() => navigate("/ziek-melden")} style={{
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                padding: '24px 16px', borderRadius: 20, background: '#172129',
-                border: '1px solid rgba(66,73,80,0.3)', cursor: 'pointer', gap: 8,
+                padding: '24px 16px', borderRadius: 16,
+                background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(106,118,140,0.15)', cursor: 'pointer', gap: 8,
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#ff716c' }}>medical_services</span>
                 <span style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 13, color: '#dae6ff' }}>Ziek melden</span>
@@ -684,7 +688,10 @@ export default function Profiel() {
                     };
                     return (
                       <div key={b.id} style={{
-                        background: '#0c141b', borderRadius: 16, padding: '14px 16px',
+                        background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                        backdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(106,118,140,0.15)',
+                        borderRadius: 16, padding: '14px 16px',
                         display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'space-between',
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -733,7 +740,7 @@ export default function Profiel() {
           <CertificatenOverzicht certificaten={certs} toonToevoegen={true} medewerker_id={profile?.id} onRefresh={fetchCerts} />
 
           {/* NOODCONTACT */}
-          <div style={{ background: 'rgba(254,179,0,0.06)', border: '1px solid rgba(254,179,0,0.2)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
+          <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(254,179,0,0.25)', borderLeft: '3px solid #feb300', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: '#feb300', fontFamily: 'Inter', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span className="material-symbols-outlined" style={{ fontSize: 18 }}>emergency</span> Noodcontact
             </p>
