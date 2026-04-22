@@ -41,6 +41,10 @@ export default function Planning() {
   const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8, toelichting: "" });
   const modalScrollRef = useRef<HTMLDivElement | null>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
+  // Dynamische spacing voor sticky footer: safe-area-inset-bottom + eventuele
+  // viewport-offset (iOS URL-bar, Android keyboard) zodat Indienen niet wordt afgedekt.
+  const [footerOffset, setFooterOffset] = useState(0);
+  const [maxModalHeight, setMaxModalHeight] = useState<string>('92vh');
 
   const updateScrollHint = useCallback(() => {
     const el = modalScrollRef.current;
@@ -55,6 +59,49 @@ export default function Planning() {
     const id = requestAnimationFrame(updateScrollHint);
     return () => cancelAnimationFrame(id);
   }, [showUrenModal, urenForm, updateScrollHint]);
+
+  // Track safe-area + visualViewport (keyboard / iOS URL bar) → footer offset.
+  useEffect(() => {
+    if (!showUrenModal) return;
+
+    const readSafeAreaInset = () => {
+      // Lees env(safe-area-inset-bottom) via een tijdelijk element.
+      const probe = document.createElement('div');
+      probe.style.cssText =
+        'position:fixed;left:0;bottom:0;width:0;height:0;' +
+        'padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden;';
+      document.body.appendChild(probe);
+      const inset = parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+      document.body.removeChild(probe);
+      return inset;
+    };
+
+    const compute = () => {
+      const safeInset = readSafeAreaInset();
+      const vv = window.visualViewport;
+      // Hoeveel browserchrome / keyboard onderaan dekt het layout-viewport af.
+      const chromeOffset = vv
+        ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+        : 0;
+      // Minimaal de safe-area, plus eventuele keyboard/URL-bar overlap.
+      setFooterOffset(Math.max(safeInset, chromeOffset + safeInset * 0.5));
+      // Beperk modal tot zichtbare viewport, niet de layout viewport.
+      const usable = vv ? vv.height : window.innerHeight;
+      setMaxModalHeight(`${Math.round(usable * 0.92)}px`);
+    };
+
+    compute();
+    window.addEventListener('resize', compute);
+    window.addEventListener('orientationchange', compute);
+    window.visualViewport?.addEventListener('resize', compute);
+    window.visualViewport?.addEventListener('scroll', compute);
+    return () => {
+      window.removeEventListener('resize', compute);
+      window.removeEventListener('orientationchange', compute);
+      window.visualViewport?.removeEventListener('resize', compute);
+      window.visualViewport?.removeEventListener('scroll', compute);
+    };
+  }, [showUrenModal]);
   const weekNumber = getISOWeek(weekStart);
 
   const fetchPlanning = useCallback(async () => {
