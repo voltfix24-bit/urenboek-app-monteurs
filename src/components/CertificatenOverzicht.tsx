@@ -35,6 +35,7 @@ function vervaldatumStatus(verval: string | null) {
 export default function CertificatenOverzicht({ certificaten, toonToevoegen, medewerker_id, onRefresh }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [initialType, setInitialType] = useState<string | undefined>(undefined);
+  const [detailType, setDetailType] = useState<string | null>(null);
 
   const openForm = (type?: string) => {
     setInitialType(type);
