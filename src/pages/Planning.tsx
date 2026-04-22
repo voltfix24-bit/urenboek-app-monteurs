@@ -930,78 +930,300 @@ export default function Planning() {
         {/* UREN MODAL */}
         {showUrenModal && modalItem && (
           <div
-            style={{ position: 'fixed', inset: 0, zIndex: 120, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}
-            onClick={() => setShowUrenModal(false)}
-          >
+            style={{
+              position: 'fixed', inset: 0,
+              zIndex: 50,
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'center',
+              background: 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(6px)',
+            }}
+            onClick={() => setShowUrenModal(false)}>
             <div
               onClick={e => e.stopPropagation()}
               style={{
-                width: '100%', maxWidth: 480, background: 'rgba(10,26,48,0.97)', backdropFilter: 'blur(24px)',
-                borderRadius: '40px 40px 0 0', borderTop: '1px solid rgba(255,255,255,0.1)',
-                maxHeight: '92dvh',
-                display: 'flex', flexDirection: 'column',
-              }}
-            >
-              {/* SCROLLABLE CONTENT */}
-              <div style={{ overflowY: 'auto', flex: 1, overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 6px' }}>
-                <div style={{ width: 48, height: 5, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
+                width: '100%',
+                maxWidth: 480,
+                background: 'rgba(10,26,48,0.97)',
+                backdropFilter: 'blur(24px)',
+                borderRadius: '32px 32px 0 0',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                maxHeight: '92vh',
+                display: 'flex',
+                flexDirection: 'column',
+                paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)',
+              }}>
+              {/* Handle */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '10px 0 6px',
+              }}>
+                <div style={{
+                  width: 48, height: 4,
+                  borderRadius: 9999,
+                  background: 'rgba(255,255,255,0.15)',
+                }} />
               </div>
-              <div style={{ padding: '0 24px' }}>
-                <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 22, color: '#dae6ff', marginBottom: 14 }}>Uren boeken</h2>
 
-                <div style={{ padding: 12, borderRadius: 14, background: '#061327', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 16 }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter' }}>{modalItem.project_naam}</p>
-                  <p style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', marginTop: 2 }}>
-                    {format(new Date(modalItem.datum + 'T12:00:00'), 'EEEE d MMMM', { locale: nl })} · {modalItem.starttijd} – {modalItem.eindtijd}
+              {/* Scrollable */}
+              <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                overscrollBehavior: 'contain',
+                padding: '4px 24px 0',
+              }}>
+                {/* Header */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 16,
+                }}>
+                  <h2 style={{
+                    fontFamily: 'Manrope',
+                    fontWeight: 800,
+                    fontSize: 22,
+                    color: '#dae6ff',
+                  }}>
+                    Uren boeken
+                  </h2>
+                  <button
+                    onClick={() => setShowUrenModal(false)}
+                    style={{
+                      width: 36, height: 36,
+                      borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.06)',
+                      border: 'none',
+                      color: '#a0abc3',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                    }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 18,
+                        fontVariationSettings: "'wght' 300",
+                      }}>
+                      close
+                    </span>
+                  </button>
+                </div>
+
+                {/* Project info */}
+                <div style={{
+                  padding: '12px 14px',
+                  borderRadius: 14,
+                  background: '#061327',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  marginBottom: 20,
+                }}>
+                  <p style={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    fontFamily: 'Manrope',
+                    color: '#dae6ff',
+                    marginBottom: 4,
+                  }}>
+                    {modalItem.project_naam}
                   </p>
-                </div>
-
-                <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 8 }}>Werkzaamheden</p>
-                <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-                  {['schakelen', 'monteren'].map(w => (
-                    <button key={w} onClick={() => setUrenForm(f => ({ ...f, werkzaamheden: w }))} style={{
-                      flex: 1, padding: '12px 0', borderRadius: 14,
-                      border: urenForm.werkzaamheden === w ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
-                      background: urenForm.werkzaamheden === w ? 'rgba(63,255,139,0.05)' : '#061327',
-                      color: urenForm.werkzaamheden === w ? '#3fff8b' : '#a0abc3',
-                      fontFamily: 'Inter', fontWeight: 700, fontSize: 14, textTransform: 'capitalize', cursor: 'pointer',
-                    }}>{w}</button>
-                  ))}
-                </div>
-
-                <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 12, textAlign: 'center' }}>Aantal uren</p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28, marginBottom: 14 }}>
-                  <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.max(0.5, f.uren - 0.5) }))} style={{
-                    width: 52, height: 52, borderRadius: '50%', background: '#142640', border: '2px solid rgba(255,113,108,0.3)',
-                    color: '#dae6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
                   }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>remove</span>
-                  </button>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 56, color: '#dae6ff', lineHeight: 1 }}>{urenForm.uren}</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: 2 }}>UUR</div>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 13,
+                        color: '#54617A',
+                        fontVariationSettings: "'wght' 300",
+                      }}>
+                      schedule
+                    </span>
+                    <p style={{
+                      fontSize: 12,
+                      color: '#a0abc3',
+                      fontFamily: 'Inter',
+                    }}>
+                      {format(
+                        new Date(modalItem.datum + 'T12:00:00'),
+                        'EEEE d MMMM',
+                        { locale: nl }
+                      )}
+                      {' · '}
+                      {modalItem.starttijd}
+                      {' – '}
+                      {modalItem.eindtijd}
+                    </p>
                   </div>
-                  <button onClick={() => setUrenForm(f => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))} style={{
-                    width: 52, height: 52, borderRadius: '50%', background: 'rgba(63,255,139,0.2)', border: '2px solid rgba(63,255,139,0.3)',
-                    color: '#3fff8b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                    boxShadow: '0 0 20px rgba(63,255,139,0.15)',
-                  }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>add</span>
-                  </button>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-                  {[4, 6, 8, 9, 10].map(h => (
-                    <button key={h} onClick={() => setUrenForm(f => ({ ...f, uren: h }))} style={{
-                      padding: '8px 16px', borderRadius: 9999,
-                      border: urenForm.uren === h ? '2px solid #3fff8b' : '1px solid rgba(255,255,255,0.07)',
-                      background: urenForm.uren === h ? 'rgba(63,255,139,0.1)' : '#061327',
-                      color: urenForm.uren === h ? '#3fff8b' : '#dae6ff',
-                      fontFamily: 'Manrope', fontWeight: 700, fontSize: 14, cursor: 'pointer',
-                    }}>{h}u</button>
+
+                {/* Werkzaamheden */}
+                <p style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  fontFamily: 'Inter',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.15em',
+                  color: '#54617A',
+                  marginBottom: 10,
+                }}>
+                  Werkzaamheden
+                </p>
+                <div style={{
+                  display: 'flex',
+                  gap: 8,
+                  marginBottom: 24,
+                  padding: 4,
+                  background: '#061327',
+                  borderRadius: 14,
+                }}>
+                  {['schakelen', 'monteren'].map(w => (
+                    <button key={w}
+                      onClick={() => setUrenForm(f => ({ ...f, werkzaamheden: w }))}
+                      style={{
+                        flex: 1,
+                        padding: '11px 0',
+                        borderRadius: 10,
+                        border: 'none',
+                        background: urenForm.werkzaamheden === w
+                          ? 'linear-gradient(135deg,#3fff8b,#13ea79)'
+                          : 'transparent',
+                        color: urenForm.werkzaamheden === w ? '#005d2c' : '#a0abc3',
+                        fontFamily: 'Inter',
+                        fontWeight: 700,
+                        fontSize: 13,
+                        textTransform: 'capitalize',
+                        cursor: 'pointer',
+                        letterSpacing: '0.02em',
+                      }}>
+                      {w}
+                    </button>
                   ))}
                 </div>
 
+                {/* Aantal uren */}
+                <p style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  fontFamily: 'Inter',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.15em',
+                  color: '#54617A',
+                  marginBottom: 12,
+                  textAlign: 'center',
+                }}>
+                  Aantal uren
+                </p>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 28,
+                  marginBottom: 14,
+                }}>
+                  <button
+                    onClick={() => setUrenForm(f => ({ ...f, uren: Math.max(0.5, f.uren - 0.5) }))}
+                    style={{
+                      width: 48, height: 48,
+                      borderRadius: '50%',
+                      background: '#142640',
+                      border: '1px solid rgba(255,113,108,0.25)',
+                      color: '#dae6ff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                    }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: 22, fontVariationSettings: "'wght' 300" }}>
+                      remove
+                    </span>
+                  </button>
+                  <div style={{ textAlign: 'center', minWidth: 88 }}>
+                    <div style={{
+                      fontFamily: 'Manrope',
+                      fontWeight: 800,
+                      fontSize: 52,
+                      color: '#dae6ff',
+                      lineHeight: 1,
+                      letterSpacing: '-1px',
+                    }}>
+                      {urenForm.uren}
+                    </div>
+                    <div style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      fontFamily: 'Inter',
+                      color: '#3fff8b',
+                      letterSpacing: '0.25em',
+                      textTransform: 'uppercase',
+                      marginTop: 4,
+                    }}>
+                      UUR
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setUrenForm(f => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))}
+                    style={{
+                      width: 48, height: 48,
+                      borderRadius: '50%',
+                      background: 'rgba(63,255,139,0.15)',
+                      border: '1px solid rgba(63,255,139,0.3)',
+                      color: '#3fff8b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                    }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: 22, fontVariationSettings: "'wght' 300" }}>
+                      add
+                    </span>
+                  </button>
+                </div>
+
+                {/* Presets */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 6,
+                  marginBottom: 20,
+                  flexWrap: 'wrap',
+                }}>
+                  {[4, 6, 8, 9, 10].map(h => {
+                    const active = urenForm.uren === h;
+                    return (
+                      <button key={h}
+                        onClick={() => setUrenForm(f => ({ ...f, uren: h }))}
+                        style={{
+                          padding: '7px 14px',
+                          borderRadius: 9999,
+                          border: active
+                            ? '1px solid rgba(63,255,139,0.4)'
+                            : '1px solid rgba(255,255,255,0.07)',
+                          background: active
+                            ? 'rgba(63,255,139,0.1)'
+                            : '#061327',
+                          color: active ? '#3fff8b' : '#a0abc3',
+                          fontFamily: 'Manrope',
+                          fontWeight: 700,
+                          fontSize: 13,
+                          cursor: 'pointer',
+                        }}>
+                        {h}u
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Afwijking */}
                 {(() => {
                   const planned = calcDefaultUren(modalItem.starttijd, modalItem.eindtijd);
                   const delta = urenForm.uren - planned;
@@ -1009,65 +1231,142 @@ export default function Planning() {
                   const isMore = delta > 0;
                   return (
                     <div style={{
-                      marginBottom: 16, padding: 14, borderRadius: 14,
-                      background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.3)',
+                      marginBottom: 16,
+                      padding: 14,
+                      borderRadius: 14,
+                      background: 'rgba(254,179,0,0.08)',
+                      border: '1px solid rgba(254,179,0,0.25)',
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#feb300' }}>warning</span>
-                        <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: '#feb300' }}>
-                          Afwijking van planning ({isMore ? '+' : ''}{delta.toFixed(1)}u — gepland {planned}u)
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginBottom: 8,
+                      }}>
+                        <span
+                          className="material-symbols-outlined"
+                          style={{
+                            fontSize: 18,
+                            color: '#feb300',
+                            fontVariationSettings: "'wght' 300",
+                          }}>
+                          warning
+                        </span>
+                        <span style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          fontFamily: 'Inter',
+                          color: '#feb300',
+                        }}>
+                          Afwijking ({isMore ? '+' : ''}{delta.toFixed(1)}u — gepland {planned}u)
                         </span>
                       </div>
-                      <p style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', marginBottom: 8, lineHeight: 1.4 }}>
+                      <p style={{
+                        fontSize: 11,
+                        color: '#a0abc3',
+                        fontFamily: 'Inter',
+                        marginBottom: 8,
+                        lineHeight: 1.4,
+                      }}>
                         Geef een korte toelichting waarom je {isMore ? 'meer' : 'minder'} uren boekt dan ingepland.
                       </p>
                       <textarea
                         value={urenForm.toelichting}
                         onChange={e => setUrenForm(f => ({ ...f, toelichting: e.target.value.slice(0, 300) }))}
-                        placeholder={isMore ? 'Bijv. extra werk uitgevoerd, uitloop wegens...' : 'Bijv. eerder klaar, kortere pauze...'}
+                        placeholder={isMore
+                          ? 'Bijv. extra werk uitgevoerd, uitloop wegens...'
+                          : 'Bijv. eerder klaar, kortere pauze...'}
                         rows={2}
                         maxLength={300}
                         style={{
-                          width: '100%', padding: 10, borderRadius: 10, background: '#061327',
-                          border: '1px solid rgba(254,179,0,0.3)', color: '#dae6ff',
-                          fontFamily: 'Inter', fontSize: 13, resize: 'none', outline: 'none',
+                          width: '100%',
+                          padding: 10,
+                          borderRadius: 10,
+                          background: '#061327',
+                          border: '1px solid rgba(254,179,0,0.25)',
+                          color: '#dae6ff',
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          resize: 'none',
+                          outline: 'none',
                         }}
                       />
-                      <div style={{ fontSize: 10, color: '#a0abc3', fontFamily: 'Inter', marginTop: 4, textAlign: 'right' }}>
+                      <div style={{
+                        fontSize: 10,
+                        color: '#54617A',
+                        fontFamily: 'Inter',
+                        marginTop: 4,
+                        textAlign: 'right',
+                      }}>
                         {urenForm.toelichting.length}/300
                       </div>
                     </div>
                   );
                 })()}
+              </div>
 
-              </div>
-              </div>
-              {/* STICKY FOOTER */}
+              {/* Sticky footer */}
               <div style={{
                 flexShrink: 0,
-                padding: '12px 24px',
-                paddingBottom: 'calc(env(safe-area-inset-bottom, 34px) + 12px)',
+                padding: '12px 24px 0',
                 borderTop: '1px solid rgba(255,255,255,0.06)',
                 background: 'rgba(10,26,48,0.97)',
               }}>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={() => saveUren(false)} style={{
-                    flex: 1, height: 56, borderRadius: 16, background: '#3fff8b', color: '#005d2c',
-                    fontFamily: 'Manrope', fontWeight: 800, fontSize: 15, textTransform: 'uppercase', letterSpacing: '0.05em',
-                    border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    boxShadow: '0 8px 32px rgba(63,255,139,0.2)',
-                  }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 20, fontVariationSettings: "'FILL' 1" }}>save</span>
-                    CONCEPT
+                  <button
+                    onClick={() => saveUren(false)}
+                    style={{
+                      flex: 1,
+                      height: 52,
+                      borderRadius: 14,
+                      background: 'transparent',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      color: '#dae6ff',
+                      fontFamily: 'Manrope',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                    }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: 18, fontVariationSettings: "'wght' 300" }}>
+                      save
+                    </span>
+                    Concept
                   </button>
-                  <button onClick={() => saveUren(true)} style={{
-                    flex: 1, height: 56, borderRadius: 16, background: 'transparent',
-                    border: '2px solid #3fff8b', color: '#3fff8b',
-                    fontFamily: 'Manrope', fontWeight: 800, fontSize: 15, textTransform: 'uppercase', letterSpacing: '0.05em',
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 20, fontVariationSettings: "'FILL' 1" }}>send</span>
-                    INDIENEN
+                  <button
+                    onClick={() => saveUren(true)}
+                    style={{
+                      flex: 1,
+                      height: 52,
+                      borderRadius: 14,
+                      background: 'linear-gradient(135deg,#3fff8b,#13ea79)',
+                      border: 'none',
+                      color: '#005d2c',
+                      fontFamily: 'Manrope',
+                      fontWeight: 800,
+                      fontSize: 13,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      boxShadow: '0 8px 32px rgba(63,255,139,0.2)',
+                    }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: 18, fontVariationSettings: "'FILL' 1" }}>
+                      send
+                    </span>
+                    Indienen
                   </button>
                 </div>
               </div>
