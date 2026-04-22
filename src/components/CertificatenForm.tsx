@@ -297,16 +297,19 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel, ini
 
     if (file) {
       return (
-        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }}>
-          <Check className="h-4 w-4 shrink-0" style={{ color: "#3fff8b" }} />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: "#dae6ff" }}>{file.name}</p>
-            <p className="text-[10px]" style={{ color: "#a0abc3" }}>{formatFileSize(file.size)}</p>
+        <>
+          {renderStatusBar(status)}
+          <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }}>
+            <Check className="h-4 w-4 shrink-0" style={{ color: "#3fff8b" }} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate" style={{ color: "#dae6ff" }}>{file.name}</p>
+              <p className="text-[10px]" style={{ color: "#a0abc3" }}>{formatFileSize(file.size)}</p>
+            </div>
+            <button type="button" onClick={(e) => { e.stopPropagation(); removeUpload(cfg.type); }} className="shrink-0">
+              <X className="h-4 w-4" style={{ color: "#a0abc3" }} />
+            </button>
           </div>
-          <button type="button" onClick={(e) => { e.stopPropagation(); removeUpload(cfg.type); }} className="shrink-0">
-            <X className="h-4 w-4" style={{ color: "#a0abc3" }} />
-          </button>
-        </div>
+        </>
       );
     }
 
