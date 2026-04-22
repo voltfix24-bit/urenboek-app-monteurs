@@ -35,8 +35,19 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
   const [showForm, setShowForm] = useState(false);
 
   const openFile = async (path: string) => {
-    const { data } = await supabase.storage.from("certificaten").createSignedUrl(path, 3600);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+    // Open een tab synchroon zodat iOS Safari de popup-blocker niet triggert
+    const newWin = window.open("", "_blank");
+    const { data, error } = await supabase.storage.from("certificaten").createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) {
+      if (newWin) newWin.close();
+      return;
+    }
+    if (newWin) {
+      newWin.location.href = data.signedUrl;
+    } else {
+      // Fallback (popup-blocker actief): navigeer in dezelfde tab
+      window.location.href = data.signedUrl;
+    }
   };
 
   if (showForm && medewerker_id) {
