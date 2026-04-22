@@ -22,6 +22,9 @@ const SUBTLE = "#424950";
 
 type VerlofType = "vakantie" | "verlof" | "anders";
 
+const MAX_DAGEN = 90;            // Max aantal dagen per aanvraag
+const MAX_MAANDEN_VOORUIT = 12;  // Max ver in de toekomst
+
 export default function VerlofAanvragen() {
   const navigate = useNavigate();
   const { profile, profileId } = useProfile();
@@ -37,6 +40,12 @@ export default function VerlofAanvragen() {
     d.setHours(0, 0, 0, 0);
     return d;
   }, []);
+
+  const maxDate = useMemo(() => {
+    const d = new Date(today);
+    d.setMonth(d.getMonth() + MAX_MAANDEN_VOORUIT);
+    return d;
+  }, [today]);
 
   const aantalDagen = useMemo(() => {
     if (!range?.from || !range?.to) return 0;
@@ -54,10 +63,27 @@ export default function VerlofAanvragen() {
     return count;
   }, [range]);
 
-  const isValid = !!(range?.from && range?.to);
+  // ── HARDE VALIDATIE ──
+  const validatieFout = useMemo<string | null>(() => {
+    if (!range?.from) return null;
+    if (range.from < today) return "Startdatum mag niet in het verleden liggen.";
+    if (range.from > maxDate) return `Startdatum mag niet meer dan ${MAX_MAANDEN_VOORUIT} maanden in de toekomst liggen.`;
+    if (range.to) {
+      if (range.to < range.from) return "Einddatum kan niet vóór de startdatum liggen.";
+      if (range.to > maxDate) return `Einddatum mag niet meer dan ${MAX_MAANDEN_VOORUIT} maanden in de toekomst liggen.`;
+      if (aantalDagen > MAX_DAGEN) return `Maximaal ${MAX_DAGEN} dagen per aanvraag (nu ${aantalDagen}).`;
+    }
+    return null;
+  }, [range, today, maxDate, aantalDagen]);
+
+  const isValid = !!(range?.from && range?.to) && !validatieFout;
 
   const handleVerstuur = async () => {
     if (!profileId || !range?.from || !range?.to) return;
+    if (validatieFout) {
+      toast.error(validatieFout);
+      return;
+    }
     setSending(true);
     const ok = await mutate(
       supabase.from("beschikbaarheid").insert({
@@ -329,17 +355,46 @@ export default function VerlofAanvragen() {
           <DayPicker
             mode="range"
             selected={range}
-            onSelect={setRange}
-            disabled={{ before: today }}
+            onSelect={(r) => {
+              if (!r?.from || !r?.to) { setRange(r); return; }
+              // Hard guard: einddatum altijd >= startdatum (DayPicker doet dit normaal,
+              // maar deze guard maakt het expliciet en vangt edge cases af)
+              if (r.to < r.from) {
+                toast.error("Einddatum kan niet vóór de startdatum liggen.");
+                setRange({ from: r.from, to: undefined });
+                return;
+              }
+              const dagen = differenceInCalendarDays(r.to, r.from) + 1;
+              if (dagen > MAX_DAGEN) {
+                toast.error(`Maximaal ${MAX_DAGEN} dagen per aanvraag.`);
+                return;
+              }
+              setRange(r);
+            }}
+            disabled={[{ before: today }, { after: maxDate }]}
             locale={nl}
             weekStartsOn={1}
             showOutsideDays
-            className="verlof-cal"
+            className="verlof-cal pointer-events-auto"
             components={{
               IconLeft: () => <ChevronLeft className="h-4 w-4" />,
               IconRight: () => <ChevronRight className="h-4 w-4" />,
             }}
           />
+
+          {/* Validatiefout */}
+          {validatieFout && (
+            <div style={{
+              marginTop: 12, padding: "12px 14px", borderRadius: 12,
+              background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.35)",
+              display: "flex", alignItems: "flex-start", gap: 10,
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#ff716c", flexShrink: 0, marginTop: 1 }}>error</span>
+              <p style={{ fontFamily: "Inter", fontSize: 12, color: "#ff716c", fontWeight: 600, lineHeight: 1.4 }}>
+                {validatieFout}
+              </p>
+            </div>
+          )}
 
           {/* Summary */}
           {isValid && range?.from && range?.to && (
