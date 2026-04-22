@@ -39,6 +39,22 @@ export default function Planning() {
   const [showUrenModal, setShowUrenModal] = useState(false);
   const [modalItem, setModalItem] = useState<PlanningItem | null>(null);
   const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8, toelichting: "" });
+  const modalScrollRef = useRef<HTMLDivElement | null>(null);
+  const [showScrollHint, setShowScrollHint] = useState(false);
+
+  const updateScrollHint = useCallback(() => {
+    const el = modalScrollRef.current;
+    if (!el) { setShowScrollHint(false); return; }
+    const remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setShowScrollHint(remaining > 16);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!showUrenModal) return;
+    // wait one frame so layout is settled
+    const id = requestAnimationFrame(updateScrollHint);
+    return () => cancelAnimationFrame(id);
+  }, [showUrenModal, urenForm, updateScrollHint]);
   const weekNumber = getISOWeek(weekStart);
 
   const fetchPlanning = useCallback(async () => {
