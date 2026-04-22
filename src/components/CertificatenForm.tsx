@@ -64,8 +64,19 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel, ini
         }
       }
     }
+    // Pre-select the requested type (e.g., from clicking a missing card)
+    const t = initialTypeRef.current;
+    if (t && initial[t] && !initial[t].checked) {
+      initial[t].checked = true;
+    }
     setState(initial);
     setLoading(false);
+    if (t) {
+      // Scroll the matching card into view after render
+      setTimeout(() => {
+        document.getElementById(`cert-card-${t}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
   };
 
   const toggle = (type: string) => {
