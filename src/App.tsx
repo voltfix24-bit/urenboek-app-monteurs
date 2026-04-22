@@ -132,8 +132,8 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><RB><Onboarding /></RB></ProtectedRoute>} />
               <Route path="/onboarding-welkom" element={<ProtectedRoute><L><OnboardingWelkom /></L></ProtectedRoute>} />
 
-              {/* Index — eager (monteur start page) */}
-              <Route path="/" element={<ProtectedRoute><RB><Index /></RB></ProtectedRoute>} />
+              {/* Index — monteur start page redirects to planning */}
+              <Route path="/" element={<ProtectedRoute><Navigate to="/planning" replace /></ProtectedRoute>} />
 
               {/* Lazy routes */}
               <Route path="/planning" element={<RoleRoute check={p => p.zietPlanning}><L><Planning /></L></RoleRoute>} />
