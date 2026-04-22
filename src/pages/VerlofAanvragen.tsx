@@ -203,77 +203,117 @@ export default function VerlofAanvragen() {
       background: NAVY,
       paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 180px)",
     }}>
-      {/* Calendar styling override — green range like hotel booking */}
+      {/* Calendar styling override — duidelijke range, grotere cellen, betere hiërarchie */}
       <style>{`
         .verlof-cal {
-          --rdp-cell-size: 40px;
+          --rdp-cell-size: 44px;
           --rdp-accent-color: ${GREEN};
-          --rdp-background-color: rgba(63,255,139,0.12);
+          --rdp-background-color: rgba(63,255,139,0.14);
           margin: 0;
         }
         .verlof-cal .rdp-months { justify-content: center; }
         .verlof-cal .rdp-month { width: 100%; }
-        .verlof-cal .rdp-table { width: 100%; max-width: 100%; }
+        .verlof-cal .rdp-table { width: 100%; max-width: 100%; border-collapse: separate; border-spacing: 0; }
+        .verlof-cal .rdp-caption {
+          padding: 4px 6px 14px;
+        }
         .verlof-cal .rdp-caption_label {
-          font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 16px;
-          color: ${TEXT}; text-transform: capitalize;
+          font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 17px;
+          color: ${TEXT}; text-transform: capitalize; letter-spacing: 0.01em;
         }
         .verlof-cal .rdp-nav_button {
           color: ${GREEN}; background: ${SURFACE_2}; border: none;
-          width: 36px; height: 36px; border-radius: 12px;
+          width: 38px; height: 38px; border-radius: 12px;
+          transition: background 0.15s, transform 0.1s;
         }
-        .verlof-cal .rdp-nav_button:hover { background: rgba(63,255,139,0.15); }
+        .verlof-cal .rdp-nav_button:hover { background: rgba(63,255,139,0.18); }
+        .verlof-cal .rdp-nav_button:active { transform: scale(0.94); }
         .verlof-cal .rdp-head_cell {
-          color: ${SUBTLE}; font-family: 'Inter', sans-serif;
+          color: ${MUTED}; font-family: 'Inter', sans-serif;
           font-weight: 700; font-size: 11px; text-transform: uppercase;
-          letter-spacing: 0.1em; padding-bottom: 8px;
+          letter-spacing: 0.12em; padding: 4px 0 10px;
+        }
+        .verlof-cal .rdp-cell {
+          padding: 2px 0;
+          position: relative;
         }
         .verlof-cal .rdp-day {
-          color: ${TEXT}; font-family: 'Inter', sans-serif; font-weight: 500;
-          font-size: 14px; border-radius: 0; transition: background 0.15s;
+          color: ${TEXT}; font-family: 'Inter', sans-serif; font-weight: 600;
+          font-size: 14px; border-radius: 12px;
+          width: 40px; height: 40px;
+          transition: background 0.15s, color 0.15s;
         }
         .verlof-cal .rdp-day:hover:not([disabled]):not(.rdp-day_selected) {
-          background: rgba(255,255,255,0.06);
+          background: rgba(255,255,255,0.07);
         }
+        /* Vandaag — duidelijke groene ring */
         .verlof-cal .rdp-day_today:not(.rdp-day_selected) {
           color: ${GREEN}; font-weight: 800;
-          box-shadow: inset 0 0 0 1.5px ${GREEN};
-          border-radius: 50%;
+          box-shadow: inset 0 0 0 2px ${GREEN};
         }
+        /* Disabled (verleden / te ver vooruit) — visueel gedempt, niet doorgestreept */
         .verlof-cal .rdp-day_disabled {
-          color: ${SUBTLE}; opacity: 0.35; text-decoration: line-through;
+          color: ${SUBTLE} !important; opacity: 0.5;
+          font-weight: 500;
         }
-        /* Range middle — green tinted background */
+        .verlof-cal .rdp-day_outside {
+          color: ${SUBTLE}; opacity: 0.45; font-weight: 500;
+        }
+
+        /* ── RANGE: doorlopende balk over de hele cel ── */
+        /* Middle days: volle balk, geen ronde hoeken, sterk contrast */
         .verlof-cal .rdp-day_range_middle {
-          background: rgba(63,255,139,0.18) !important;
+          background: rgba(63,255,139,0.22) !important;
           color: ${TEXT} !important;
           border-radius: 0 !important;
+          font-weight: 700 !important;
+          width: 100% !important;
+          box-shadow: none !important;
         }
-        /* Range start/end — solid green pill */
+        .verlof-cal .rdp-cell:has(.rdp-day_range_middle) {
+          background: rgba(63,255,139,0.22);
+        }
+        /* Start: pill links, balk vult de cel rechts */
+        .verlof-cal .rdp-cell:has(.rdp-day_range_start):not(:has(.rdp-day_range_end)) {
+          background: linear-gradient(to right, transparent 50%, rgba(63,255,139,0.22) 50%);
+        }
+        /* End: balk vult de cel links, pill rechts */
+        .verlof-cal .rdp-cell:has(.rdp-day_range_end):not(:has(.rdp-day_range_start)) {
+          background: linear-gradient(to right, rgba(63,255,139,0.22) 50%, transparent 50%);
+        }
+        /* Start & end pills — sterke groene knop met schaduw */
         .verlof-cal .rdp-day_range_start,
         .verlof-cal .rdp-day_range_end {
           background: ${GREEN} !important;
           color: #003d1f !important;
           font-weight: 800 !important;
+          border-radius: 50% !important;
+          width: 40px !important;
+          height: 40px !important;
+          box-shadow: 0 6px 18px rgba(63,255,139,0.35), inset 0 0 0 2px rgba(255,255,255,0.15) !important;
+          z-index: 1;
+          position: relative;
         }
-        .verlof-cal .rdp-day_range_start {
-          border-radius: 50% 0 0 50% !important;
-        }
-        .verlof-cal .rdp-day_range_end {
-          border-radius: 0 50% 50% 0 !important;
-        }
-        /* When start === end (single day picked) */
+        /* Single day (start === end) */
         .verlof-cal .rdp-day_range_start.rdp-day_range_end {
           border-radius: 50% !important;
         }
-        /* Single selected (no range yet) */
+        .verlof-cal .rdp-cell:has(.rdp-day_range_start.rdp-day_range_end) {
+          background: transparent !important;
+        }
+        /* Eerste klik (alleen 'from' gekozen, nog geen 'to') */
         .verlof-cal .rdp-day_selected:not(.rdp-day_range_middle):not(.rdp-day_range_start):not(.rdp-day_range_end) {
           background: ${GREEN} !important;
           color: #003d1f !important;
           border-radius: 50% !important;
           font-weight: 800 !important;
+          box-shadow: 0 6px 18px rgba(63,255,139,0.35), inset 0 0 0 2px rgba(255,255,255,0.15) !important;
         }
-        .verlof-cal .rdp-cell { padding: 1px 0; }
+        /* Weekenden subtiel afgewisseld zodat ma-vr werkdagen visueel pop'en */
+        .verlof-cal .rdp-head_cell:nth-child(6),
+        .verlof-cal .rdp-head_cell:nth-child(7) {
+          color: ${SUBTLE};
+        }
       `}</style>
 
       {/* Header */}
