@@ -339,15 +339,19 @@ export default function VerlofAanvragen() {
                 Tik op je eerste dag, daarna op je laatste dag.
               </p>
             </div>
-            {isValid && (
+            {(range?.from || range?.to) && (
               <button
-                onClick={() => setRange(undefined)}
+                onClick={() => { setRange(undefined); toast.success("Selectie gewist"); }}
                 style={{
-                  padding: "8px 12px", borderRadius: 10, background: SURFACE_2,
-                  border: "none", color: MUTED, fontFamily: "Inter",
-                  fontWeight: 600, fontSize: 11, cursor: "pointer", whiteSpace: "nowrap",
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "8px 14px", borderRadius: 12,
+                  background: "rgba(255,113,108,0.1)",
+                  border: "1px solid rgba(255,113,108,0.35)",
+                  color: "#ff716c", fontFamily: "Inter",
+                  fontWeight: 700, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap",
                 }}>
-                Wissen
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restart_alt</span>
+                Reset selectie
               </button>
             )}
           </div>
