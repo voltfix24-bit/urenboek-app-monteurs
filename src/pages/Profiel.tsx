@@ -21,7 +21,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 import { triggerInstallPrompt, canShowInstallPrompt } from "@/components/InstallPrompt";
 
 interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; geboortedatum?: string | null; account_status?: string; }
-interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; }
+interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; bestand_url?: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; reden: string | null; status: string; }
 
 const CERT_COLORS: Record<string, string> = { VCA: "#3fff8b", NEN3140: "#6e9bff", rijbewijs_BE: "#feb300", overig: "#a78bfa" };
@@ -125,8 +125,19 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
 
   async function downloadPdf() {
     if (!contract?.pdf_path) return;
-    const { data } = await supabase.storage.from("contracten").createSignedUrl(contract.pdf_path, 3600);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+    // Open synchroon zodat iOS Safari de popup-blocker niet triggert
+    const newWin = window.open("", "_blank");
+    const { data, error } = await supabase.storage.from("contracten").createSignedUrl(contract.pdf_path, 3600);
+    if (error || !data?.signedUrl) {
+      if (newWin) newWin.close();
+      toast.error("Kon contract niet openen");
+      return;
+    }
+    if (newWin) {
+      newWin.location.href = data.signedUrl;
+    } else {
+      window.location.href = data.signedUrl;
+    }
   }
 
   const contractDays = contract?.einddatum ? differenceInDays(parseISO(contract.einddatum), new Date()) : null;
@@ -240,7 +251,7 @@ export default function Profiel() {
     setLoading(false);
   }, [user]);
 
-  const fetchCerts = useCallback(async () => { if (!profile) return; const { data } = await supabase.from("certificaten").select("id, type, naam, vervaldatum, subtype, ggi_gebieden").eq("medewerker_id", profile.id).order("type"); if (data) setCerts(data as any); }, [profile]);
+  const fetchCerts = useCallback(async () => { if (!profile) return; const { data } = await supabase.from("certificaten").select("id, type, naam, vervaldatum, subtype, ggi_gebieden, bestand_url").eq("medewerker_id", profile.id).order("type"); if (data) setCerts(data as any); }, [profile]);
   const fetchBeschikbaarheid = useCallback(async () => { if (!profile) return; const { data } = await supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, reden, status").eq("medewerker_id", profile.id).order("datum_van", { ascending: false }).limit(50); if (data) setBeschikbaarheid(data as any); }, [profile]);
 
   useEffect(() => { fetchProfile(); }, [fetchProfile]);
