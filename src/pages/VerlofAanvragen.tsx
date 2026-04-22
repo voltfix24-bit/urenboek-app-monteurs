@@ -355,17 +355,46 @@ export default function VerlofAanvragen() {
           <DayPicker
             mode="range"
             selected={range}
-            onSelect={setRange}
-            disabled={{ before: today }}
+            onSelect={(r) => {
+              if (!r?.from || !r?.to) { setRange(r); return; }
+              // Hard guard: einddatum altijd >= startdatum (DayPicker doet dit normaal,
+              // maar deze guard maakt het expliciet en vangt edge cases af)
+              if (r.to < r.from) {
+                toast.error("Einddatum kan niet vóór de startdatum liggen.");
+                setRange({ from: r.from, to: undefined });
+                return;
+              }
+              const dagen = differenceInCalendarDays(r.to, r.from) + 1;
+              if (dagen > MAX_DAGEN) {
+                toast.error(`Maximaal ${MAX_DAGEN} dagen per aanvraag.`);
+                return;
+              }
+              setRange(r);
+            }}
+            disabled={[{ before: today }, { after: maxDate }]}
             locale={nl}
             weekStartsOn={1}
             showOutsideDays
-            className="verlof-cal"
+            className="verlof-cal pointer-events-auto"
             components={{
               IconLeft: () => <ChevronLeft className="h-4 w-4" />,
               IconRight: () => <ChevronRight className="h-4 w-4" />,
             }}
           />
+
+          {/* Validatiefout */}
+          {validatieFout && (
+            <div style={{
+              marginTop: 12, padding: "12px 14px", borderRadius: 12,
+              background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.35)",
+              display: "flex", alignItems: "flex-start", gap: 10,
+            }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#ff716c", flexShrink: 0, marginTop: 1 }}>error</span>
+              <p style={{ fontFamily: "Inter", fontSize: 12, color: "#ff716c", fontWeight: 600, lineHeight: 1.4 }}>
+                {validatieFout}
+              </p>
+            </div>
+          )}
 
           {/* Summary */}
           {isValid && range?.from && range?.to && (
