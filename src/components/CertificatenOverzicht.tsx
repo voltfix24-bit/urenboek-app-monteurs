@@ -174,25 +174,35 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
           const meerdereVervaldata = items.filter(c => c.vervaldatum).length > 1;
 
           return (
-            <div key={cfg.type} className="p-3 rounded-xl" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
+            <button
+              key={cfg.type}
+              type="button"
+              onClick={() => setDetailType(cfg.type)}
+              className="w-full text-left p-3 rounded-xl transition-colors hover:brightness-110 active:scale-[0.99]"
+              style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}
+              aria-label={`${cfg.kortLabel || cfg.label} — details bekijken`}
+            >
               <div className="flex items-center justify-between gap-2 mb-1">
                 <p className="text-sm font-semibold flex items-center gap-1.5" style={{ color: "#dae6ff" }}>
                   <span style={{ color: "#3fff8b", fontSize: 14, lineHeight: 1 }}>●</span>
                   {cfg.kortLabel || cfg.label}
                 </p>
-                {items.length > 1 && (
-                  <span
-                    className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap"
-                    style={{
-                      background: "rgba(63,255,139,0.1)",
-                      color: "#3fff8b",
-                      border: "1px solid rgba(63,255,139,0.3)",
-                    }}
-                    title={`${items.length} registraties`}
-                  >
-                    {items.length}×
-                  </span>
-                )}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {items.length > 1 && (
+                    <span
+                      className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap"
+                      style={{
+                        background: "rgba(63,255,139,0.1)",
+                        color: "#3fff8b",
+                        border: "1px solid rgba(63,255,139,0.3)",
+                      }}
+                      title={`${items.length} registraties`}
+                    >
+                      {items.length}×
+                    </span>
+                  )}
+                  <ChevronRight className="h-4 w-4" style={{ color: "#a0abc3" }} />
+                </div>
               </div>
 
               {cfg.heeftNiveau && (
@@ -240,24 +250,136 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
               {/* File indicator */}
               <div className="mt-1.5">
                 {hasFile ? (
-                  <button onClick={() => {
-                    const fileItem = sortedItems.find(c => c.bestand_url) ?? items.find(c => c.bestand_url);
-                    if (fileItem?.bestand_url) openFile(fileItem.bestand_url);
-                  }}
-                    className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "#3fff8b" }}>
+                  <span className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "#3fff8b" }}>
                     <Paperclip className="h-3 w-3" />
-                    {meerdereUploads ? "Meest recente bewijs openen" : "Bewijs aanwezig"}
-                  </button>
+                    {meerdereUploads ? `${items.filter(c => c.bestand_url).length} bewijzen` : "Bewijs aanwezig"}
+                  </span>
                 ) : (
                   <span className="flex items-center gap-1 text-[11px]" style={{ color: "#feb300" }}>
                     <Paperclip className="h-3 w-3" /> Geen bewijs geüpload
                   </span>
                 )}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
+
+      {/* Detail sheet */}
+      {(() => {
+        const cfg = detailType ? CERT_CONFIG.find(c => c.type === detailType) : null;
+        const items = cfg ? (grouped[cfg.type] ?? []) : [];
+        const sortedItems = [...items].sort((a, b) => {
+          if (!a.vervaldatum && !b.vervaldatum) return 0;
+          if (!a.vervaldatum) return 1;
+          if (!b.vervaldatum) return -1;
+          return parseISO(a.vervaldatum).getTime() - parseISO(b.vervaldatum).getTime();
+        });
+        return (
+          <BottomSheet
+            open={!!cfg}
+            onClose={() => setDetailType(null)}
+            title={cfg ? (cfg.kortLabel || cfg.label) : ""}
+            ariaLabel="Certificaat details"
+          >
+            {cfg && (
+              <div className="space-y-3 pb-2">
+                <p className="text-xs" style={{ color: "#a0abc3" }}>
+                  {items.length} {items.length === 1 ? "registratie" : "registraties"} —
+                  {" "}{items.filter(i => i.bestand_url).length} met bewijs
+                </p>
+
+                {sortedItems.map((item, idx) => {
+                  const status = vervaldatumStatus(item.vervaldatum);
+                  const gebiedLabels = item.ggi_gebieden?.map(g =>
+                    cfg.gebieden?.find(gb => gb.code === g)?.label || g
+                  );
+                  return (
+                    <div
+                      key={item.id}
+                      className="p-3 rounded-xl"
+                      style={{
+                        background: "rgba(10,26,48,0.7)",
+                        border: `1px solid ${idx === 0 && item.vervaldatum ? `${status.color}55` : "rgba(106,118,140,0.15)"}`,
+                      }}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>
+                            {item.subtype || item.naam || (cfg.kortLabel || cfg.label)}
+                          </p>
+                          {gebiedLabels && gebiedLabels.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {gebiedLabels.map((g, i) => (
+                                <span key={i} className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+                                  style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>
+                                  {g}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <span
+                          className="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap"
+                          style={{
+                            background: `${status.color}1f`,
+                            color: status.color,
+                            border: `1px solid ${status.color}55`,
+                          }}
+                        >
+                          {status.label}
+                        </span>
+                      </div>
+
+                      {item.vervaldatum && (
+                        <p className="text-[11px]" style={{ color: "#a0abc3" }}>
+                          Geldig tot: <span style={{ color: "#dae6ff", fontWeight: 600 }}>
+                            {format(parseISO(item.vervaldatum), "d MMMM yyyy", { locale: nl })}
+                          </span>
+                        </p>
+                      )}
+
+                      <div className="mt-2">
+                        {item.bestand_url ? (
+                          <button
+                            onClick={() => openFile(item.bestand_url!)}
+                            className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg"
+                            style={{
+                              background: "rgba(63,255,139,0.1)",
+                              color: "#3fff8b",
+                              border: "1px solid rgba(63,255,139,0.3)",
+                            }}
+                          >
+                            <ExternalLink className="h-3 w-3" /> Bewijs openen
+                          </button>
+                        ) : (
+                          <span className="flex items-center gap-1 text-[11px]" style={{ color: "#feb300" }}>
+                            <Paperclip className="h-3 w-3" /> Geen bewijs geüpload
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {toonToevoegen && medewerker_id && (
+                  <button
+                    onClick={() => { setDetailType(null); openForm(cfg.type); }}
+                    className="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold"
+                    style={{
+                      background: "rgba(63,255,139,0.1)",
+                      color: "#3fff8b",
+                      border: "1px solid rgba(63,255,139,0.3)",
+                    }}
+                  >
+                    Bewerken / nieuwe upload toevoegen
+                  </button>
+                )}
+              </div>
+            )}
+          </BottomSheet>
+        );
+      })()}
     </div>
   );
 }
