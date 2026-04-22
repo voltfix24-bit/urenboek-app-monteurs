@@ -49,7 +49,7 @@ export default function OnboardingWelkom() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}><Spinner center={false} /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><Spinner center={false} /></div>;
   if (!profile) return null;
 
   const voornaam = profile.full_name.split(" ")[0];
@@ -115,7 +115,7 @@ export default function OnboardingWelkom() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ background: "#030e20" }}>
+    <div className="min-h-screen" style={{ background: "var(--app-navy)" }}>
       <div className="mx-auto px-5 py-8 space-y-6" style={{ maxWidth: 480 }}>
         {/* Header */}
         <div className="text-center space-y-3">

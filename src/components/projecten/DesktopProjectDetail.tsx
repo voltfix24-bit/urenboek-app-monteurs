@@ -199,7 +199,7 @@ export function DesktopProjectDetail({ project, ogNaam, isManager, confirmDelete
             </button>
             {confirmDeleteId === project.id ? (
               <div className="flex gap-2">
-                <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
+                <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
                 <button onClick={onDelete} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "#ff716c" }}>Definitief verwijderen</button>
               </div>
             ) : (

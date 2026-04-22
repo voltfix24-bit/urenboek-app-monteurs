@@ -20,7 +20,7 @@ export function ProjectCard({ project, ogNaam, isManager, isEditing, isExpanded,
         <h3 className="text-sm font-semibold" style={{ color: "#dae6ff" }}>Project bewerken</h3>
         {renderFormFields()}
         <div className="flex gap-2 pt-1">
-          <button onClick={onCancel} className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1" style={{ background: "#030e20", color: "#a0abc3" }}><X className="h-3.5 w-3.5" /> Annuleren</button>
+          <button onClick={onCancel} className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1" style={{ background: "var(--app-navy)", color: "#a0abc3" }}><X className="h-3.5 w-3.5" /> Annuleren</button>
           <button onClick={onSave} className="flex-1 py-2 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>✓ Opslaan</button>
         </div>
       </div>
@@ -31,7 +31,7 @@ export function ProjectCard({ project, ogNaam, isManager, isEditing, isExpanded,
       <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.3)" }}>
         <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>"{project.naam}" verwijderen?</p>
         <div className="flex gap-2">
-          <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
+          <button onClick={onCancelDelete} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
           <button onClick={onDelete} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "#ff716c" }}>Verwijderen</button>
         </div>
       </div>
@@ -114,7 +114,7 @@ export function ProjectCard({ project, ogNaam, isManager, isEditing, isExpanded,
               <PlanningStatusTab projectId={project.id} profileId={undefined} />
             </div>
           )}
-          <button onClick={() => generateProjectPdf(project, ogNaam, isManager)} className="w-full mt-2 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+          <button onClick={() => generateProjectPdf(project, ogNaam, isManager)} className="w-full mt-2 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
             <Download className="h-3.5 w-3.5" /> PDF downloaden
           </button>
         </div>

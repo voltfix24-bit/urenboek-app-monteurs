@@ -24,7 +24,7 @@ export function PageShell({ children, mobileConstrained = true }: PageShellProps
       <DesktopSidebar badges={badges} />
       <div
         className="min-h-screen overflow-x-hidden"
-        style={{ background: "#030e20" }}
+        style={{ background: "var(--app-navy)" }}
       >
         <div
           className={

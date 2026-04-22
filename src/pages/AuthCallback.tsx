@@ -89,7 +89,7 @@ export default function AuthCallback() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "#030e20" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "var(--app-navy)" }}>
         <div className="w-full text-center" style={{ maxWidth: 440 }}>
           <img src={terrevoltLogo} alt="TerreVolt BV" className="h-12 mx-auto mb-4" />
           <div className="rounded-2xl p-6 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
@@ -105,7 +105,7 @@ export default function AuthCallback() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: "#030e20" }}>
+    <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: "var(--app-navy)" }}>
       <Spinner />
       <p className="text-sm mt-4" style={{ color: "#a0abc3" }}>Account activeren...</p>
     </div>

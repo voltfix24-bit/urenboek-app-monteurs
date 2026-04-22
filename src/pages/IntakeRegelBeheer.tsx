@@ -270,7 +270,7 @@ export default function IntakeRegelBeheer() {
     return regelConditieTekst(fakeRegel);
   }
 
-  const inputStyle = { background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
+  const inputStyle = { background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
 
   const handleSituatieChange = (idx: number) => {
     const opt = SITUATIE_OPTIES[idx];
@@ -423,7 +423,7 @@ export default function IntakeRegelBeheer() {
   return (
     <>
       <DesktopSidebar badges={badges} />
-      <div className="lg:ml-[240px] min-h-screen" style={{ background: "#030e20" }}>
+      <div className="lg:ml-[240px] min-h-screen" style={{ background: "var(--app-navy)" }}>
         <header className="flex items-center gap-3 px-6 lg:px-10 pt-6 pb-4">
           <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-lg flex items-center justify-center lg:hidden" style={{ background: "#102038" }}><ArrowLeft className="h-4 w-4" style={{ color: "#a0abc3" }} /></button>
           <div className="flex-1">
@@ -460,7 +460,7 @@ export default function IntakeRegelBeheer() {
                 <div className="flex gap-2 flex-wrap">
                   {["NSA-case", "Compactstation", "Provisorium", "Overig"].map(ct => (
                     <button key={ct} onClick={() => setSimCaseType(ct === "Overig" ? "" : ct)} className="px-3 py-2 rounded-xl text-xs font-medium" style={{
-                      background: (ct === "Overig" ? !simCaseType : simCaseType === ct) ? "rgba(63,255,139,0.1)" : "#030e20",
+                      background: (ct === "Overig" ? !simCaseType : simCaseType === ct) ? "rgba(63,255,139,0.1)" : "var(--app-navy)",
                       border: `1.5px solid ${(ct === "Overig" ? !simCaseType : simCaseType === ct) ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`,
                       color: "#dae6ff",
                     }}>{ct}</button>
@@ -470,13 +470,13 @@ export default function IntakeRegelBeheer() {
               <div>
                 <p className="text-xs font-medium mb-1.5" style={{ color: "#a0abc3" }}>RMU vervangen?</p>
                 <div className="flex gap-2">
-                  <button onClick={() => setSimRmu(true)} className="px-4 py-2 rounded-xl text-xs font-medium" style={{ background: simRmu ? "rgba(63,255,139,0.1)" : "#030e20", border: `1.5px solid ${simRmu ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>Ja</button>
-                  <button onClick={() => setSimRmu(false)} className="px-4 py-2 rounded-xl text-xs font-medium" style={{ background: !simRmu ? "rgba(63,255,139,0.1)" : "#030e20", border: `1.5px solid ${!simRmu ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>Nee</button>
+                  <button onClick={() => setSimRmu(true)} className="px-4 py-2 rounded-xl text-xs font-medium" style={{ background: simRmu ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1.5px solid ${simRmu ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>Ja</button>
+                  <button onClick={() => setSimRmu(false)} className="px-4 py-2 rounded-xl text-xs font-medium" style={{ background: !simRmu ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1.5px solid ${!simRmu ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>Nee</button>
                   {simRmu && (
                     <div className="flex items-center gap-2 ml-2">
                       <span className="text-xs" style={{ color: "#a0abc3" }}>Velden:</span>
                       {[3, 4, 5, 6].map(v => (
-                        <button key={v} onClick={() => setSimVelden(v)} className="w-8 h-8 rounded-lg text-xs font-bold" style={{ background: simVelden === v ? "rgba(63,255,139,0.1)" : "#030e20", border: `1.5px solid ${simVelden === v ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>{v}</button>
+                        <button key={v} onClick={() => setSimVelden(v)} className="w-8 h-8 rounded-lg text-xs font-bold" style={{ background: simVelden === v ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1.5px solid ${simVelden === v ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>{v}</button>
                       ))}
                     </div>
                   )}
@@ -487,7 +487,7 @@ export default function IntakeRegelBeheer() {
                   <p className="text-xs font-medium mb-1.5" style={{ color: "#a0abc3" }}>Trafo?</p>
                   <div className="flex gap-1.5 flex-wrap">
                     {([["Nieuw", "nieuw"], ["Draaien", "draaien"], ["Vrijschakelen", "vrijschakelen"], ["Geen", "geen"]] as const).map(([l, v]) => (
-                      <button key={v} onClick={() => setSimTrafo(v)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium" style={{ background: simTrafo === v ? "rgba(63,255,139,0.1)" : "#030e20", border: `1px solid ${simTrafo === v ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>{l}</button>
+                      <button key={v} onClick={() => setSimTrafo(v)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium" style={{ background: simTrafo === v ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1px solid ${simTrafo === v ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>{l}</button>
                     ))}
                   </div>
                 </div>
@@ -495,7 +495,7 @@ export default function IntakeRegelBeheer() {
                   <p className="text-xs font-medium mb-1.5" style={{ color: "#a0abc3" }}>LS-rek?</p>
                   <div className="flex gap-1.5 flex-wrap">
                     {([["≤630kVA", "klein"], [">630kVA", "groot"], ["Uitbreiden", "uitbreiden"], ["Geen", "geen"]] as const).map(([l, v]) => (
-                      <button key={v} onClick={() => setSimLsRek(v)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium" style={{ background: simLsRek === v ? "rgba(63,255,139,0.1)" : "#030e20", border: `1px solid ${simLsRek === v ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>{l}</button>
+                      <button key={v} onClick={() => setSimLsRek(v)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium" style={{ background: simLsRek === v ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1px solid ${simLsRek === v ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>{l}</button>
                     ))}
                   </div>
                 </div>
@@ -555,7 +555,7 @@ export default function IntakeRegelBeheer() {
                     </div>
                   </button>
                   {isOpen && catRegels.map(r => (
-                    <div key={r.id} className="flex items-start gap-3 px-4 py-3" style={{ borderTop: "1px solid rgba(106,118,140,0.15)", opacity: r.actief ? 1 : 0.5, background: r.actief ? undefined : "#030e20" }}>
+                    <div key={r.id} className="flex items-start gap-3 px-4 py-3" style={{ borderTop: "1px solid rgba(106,118,140,0.15)", opacity: r.actief ? 1 : 0.5, background: r.actief ? undefined : "var(--app-navy)" }}>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs" style={{ color: "#a0abc3" }}>{regelConditieTekst(r)}</p>
                         <p className="text-sm font-medium mt-0.5" style={{ color: "#dae6ff" }}>
@@ -572,7 +572,7 @@ export default function IntakeRegelBeheer() {
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0 pt-1">
-                        <button onClick={() => startEdit(r)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+                        <button onClick={() => startEdit(r)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
                           <Pencil className="h-3 w-3" style={{ color: "#a0abc3" }} />
                         </button>
                         <button onClick={() => toggleActief(r)} className="w-10 h-5 rounded-full relative" style={{ background: r.actief ? "#3fff8b" : "#102038" }}>
@@ -636,10 +636,10 @@ export default function IntakeRegelBeheer() {
                     </button>
                   </span>
                   <div className="col-span-2 flex items-center justify-end gap-1">
-                    <button onClick={() => startEdit(r)} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}><Pencil className="h-3 w-3" style={{ color: "#a0abc3" }} /></button>
+                    <button onClick={() => startEdit(r)} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}><Pencil className="h-3 w-3" style={{ color: "#a0abc3" }} /></button>
                     {confirmDeleteId === r.id ? (
                       <div className="flex gap-1">
-                        <button onClick={() => setConfirmDeleteId(null)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}><X className="h-3 w-3" style={{ color: "#a0abc3" }} /></button>
+                        <button onClick={() => setConfirmDeleteId(null)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}><X className="h-3 w-3" style={{ color: "#a0abc3" }} /></button>
                         <button onClick={() => deleteRegel(r.id)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#ff716c", color: "#fff" }}><Check className="h-3 w-3" /></button>
                       </div>
                     ) : (

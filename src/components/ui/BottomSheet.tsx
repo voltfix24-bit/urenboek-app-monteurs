@@ -145,7 +145,7 @@ export function BottomSheet({
         onTouchEnd={handleTouchEnd}
         style={{
           position: "relative",
-          background: "#030e20",
+          background: "var(--app-navy)",
           borderTopLeftRadius: topRadius,
           borderTopRightRadius: topRadius,
           borderTop: "1px solid rgba(255,255,255,0.1)",

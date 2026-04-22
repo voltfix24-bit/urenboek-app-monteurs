@@ -118,7 +118,7 @@ function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
               Geef een reden op voor het afwijzen van <strong>{emp.full_name}</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <textarea value={afwijsReden} onChange={e => setAfwijsReden(e.target.value)} placeholder="Reden..." rows={3} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+          <textarea value={afwijsReden} onChange={e => setAfwijsReden(e.target.value)} placeholder="Reden..." rows={3} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
           <AlertDialogFooter>
             <AlertDialogCancel style={{ background: "#142640", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>Annuleren</AlertDialogCancel>
             <AlertDialogAction onClick={() => { onAfwijzen(afwijsReden); setShowAfwijzen(false); }} disabled={!afwijsReden.trim()} style={{ background: "#ff716c", color: "#fff" }}>Afwijzen</AlertDialogAction>
@@ -293,7 +293,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
             ].map(f => (
               <div key={f.key}>
                 <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>{f.label}</label>
-                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
               </div>
             ))}
           </div>
@@ -314,11 +314,11 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
           <div className="space-y-2">
             <div>
               <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Naam</label>
-              <input value={editForm.noodcontact_naam} onChange={e => setEditForm({ ...editForm, noodcontact_naam: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+              <input value={editForm.noodcontact_naam} onChange={e => setEditForm({ ...editForm, noodcontact_naam: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
             </div>
             <div>
               <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Telefoon</label>
-              <input value={editForm.noodcontact_tel} onChange={e => setEditForm({ ...editForm, noodcontact_tel: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+              <input value={editForm.noodcontact_tel} onChange={e => setEditForm({ ...editForm, noodcontact_tel: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
             </div>
           </div>
         ) : emp.noodcontact_naam ? (
@@ -400,7 +400,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
             ].map(f => (
               <div key={f.key}>
                 <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>{f.label}</label>
-                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} type={f.key === "uurtarief" ? "number" : "text"} step={f.key === "uurtarief" ? "0.01" : undefined} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                <input value={editForm[f.key]} onChange={e => setEditForm({ ...editForm, [f.key]: e.target.value })} type={f.key === "uurtarief" ? "number" : "text"} step={f.key === "uurtarief" ? "0.01" : undefined} className="w-full px-3 py-2 rounded-xl text-sm mt-1" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
               </div>
             ))}
           </div>

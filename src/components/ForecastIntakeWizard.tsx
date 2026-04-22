@@ -19,7 +19,7 @@ const STAPPEN = ["RMU", "MS extra", "Trafo", "LS-rek", "Bouwkundig", "MS kabels"
 
 import { euroDecimals as euro, euro as euroShort } from "@/lib/formatting";
 
-const inputStyle = { background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
+const inputStyle = { background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
 
 function NumberStepper({ value, onChange, min = 0, max = 999, step = 1, label, hint, tarief, eenheid }: {
   value: number; onChange: (v: number) => void; min?: number; max?: number; step?: number;
@@ -36,13 +36,13 @@ function NumberStepper({ value, onChange, min = 0, max = 999, step = 1, label, h
           {hint && <p className="text-[11px] mt-0.5" style={{ color: "#a0abc3" }}>{hint}</p>}
         </div>
         <div className="flex items-center gap-0 shrink-0 ml-3">
-          <button onClick={() => onChange(Math.max(min, value - step))} className="w-8 h-8 rounded-l-lg flex items-center justify-center" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <button onClick={() => onChange(Math.max(min, value - step))} className="w-8 h-8 rounded-l-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <Minus className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} />
           </button>
-          <div className="w-12 h-8 flex items-center justify-center text-sm font-bold" style={{ background: "#030e20", borderTop: "1px solid rgba(106,118,140,0.15)", borderBottom: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: "DM Mono, monospace" }}>
+          <div className="w-12 h-8 flex items-center justify-center text-sm font-bold" style={{ background: "var(--app-navy)", borderTop: "1px solid rgba(106,118,140,0.15)", borderBottom: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: "DM Mono, monospace" }}>
             {value}
           </div>
-          <button onClick={() => onChange(Math.min(max, value + step))} className="w-8 h-8 rounded-r-lg flex items-center justify-center" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <button onClick={() => onChange(Math.min(max, value + step))} className="w-8 h-8 rounded-r-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <Plus className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} />
           </button>
         </div>
@@ -554,11 +554,11 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
                           <span className="text-[10px] font-bold shrink-0 w-16" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>{r.spec_code}</span>
                           <span className="text-xs flex-1 min-w-0 truncate" style={{ color: "#dae6ff" }}>{r.label}</span>
                           <div className="flex items-center gap-0 shrink-0">
-                            <button onClick={() => { const nv = Math.max(r.min_aantal, r.aantal - 1); setAnswers(a => { const key = getAnswerKey(r.spec_code, a); if (key) return { ...a, [key]: nv }; return a; }); }} className="w-6 h-6 rounded-l flex items-center justify-center" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+                            <button onClick={() => { const nv = Math.max(r.min_aantal, r.aantal - 1); setAnswers(a => { const key = getAnswerKey(r.spec_code, a); if (key) return { ...a, [key]: nv }; return a; }); }} className="w-6 h-6 rounded-l flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
                               <Minus className="h-3 w-3" style={{ color: "#a0abc3" }} />
                             </button>
-                            <div className="w-8 h-6 flex items-center justify-center text-[11px] font-bold" style={{ background: "#030e20", borderTop: "1px solid rgba(106,118,140,0.15)", borderBottom: "1px solid rgba(106,118,140,0.15)", fontFamily: "DM Mono, monospace", color: "#dae6ff" }}>{r.aantal}</div>
-                            <button onClick={() => { const nv = Math.min(r.max_aantal, r.aantal + 1); setAnswers(a => { const key = getAnswerKey(r.spec_code, a); if (key) return { ...a, [key]: nv }; return a; }); }} className="w-6 h-6 rounded-r flex items-center justify-center" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+                            <div className="w-8 h-6 flex items-center justify-center text-[11px] font-bold" style={{ background: "var(--app-navy)", borderTop: "1px solid rgba(106,118,140,0.15)", borderBottom: "1px solid rgba(106,118,140,0.15)", fontFamily: "DM Mono, monospace", color: "#dae6ff" }}>{r.aantal}</div>
+                            <button onClick={() => { const nv = Math.min(r.max_aantal, r.aantal + 1); setAnswers(a => { const key = getAnswerKey(r.spec_code, a); if (key) return { ...a, [key]: nv }; return a; }); }} className="w-6 h-6 rounded-r flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
                               <Plus className="h-3 w-3" style={{ color: "#a0abc3" }} />
                             </button>
                           </div>
@@ -586,7 +586,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
   if (confirmRedo) {
     return (
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-        <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" style={{ background: "#030e20", border: "1px solid rgba(254,179,0,0.3)" }}>
+        <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" style={{ background: "var(--app-navy)", border: "1px solid rgba(254,179,0,0.3)" }}>
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(254,179,0,0.1)" }}>
               <AlertTriangle className="h-5 w-5" style={{ color: "#feb300" }} />
@@ -613,7 +613,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-      <div className="w-full sm:max-w-lg max-h-[92vh] flex flex-col rounded-t-2xl sm:rounded-2xl" style={{ background: "#030e20" }}>
+      <div className="w-full sm:max-w-lg max-h-[92vh] flex flex-col rounded-t-2xl sm:rounded-2xl" style={{ background: "var(--app-navy)" }}>
         {/* Header */}
         <div className="shrink-0 px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
           <div>

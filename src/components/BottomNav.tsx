@@ -118,7 +118,7 @@ export function BottomNav({ badges }: BottomNavProps) {
                     height: 16,
                     borderRadius: 9999,
                     background: "#ff716c",
-                    border: "2px solid #030e20",
+                    border: "2px solid var(--app-navy)",
                     fontSize: 9,
                     fontWeight: 700,
                     color: "white",
@@ -141,7 +141,7 @@ export function BottomNav({ badges }: BottomNavProps) {
                     height: 8,
                     borderRadius: 9999,
                     background: "#ff716c",
-                    border: "2px solid #030e20",
+                    border: "2px solid var(--app-navy)",
                   }}
                 />
               )}

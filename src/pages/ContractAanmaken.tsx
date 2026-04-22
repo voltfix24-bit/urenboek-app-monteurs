@@ -177,7 +177,7 @@ export default function ContractAanmaken() {
             <div>
               <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Vertegenwoordigd door</label>
               <select value={ogVertegenwoordiger} onChange={e => setOgVertegenwoordiger(e.target.value)}
-                className="w-full mt-1 rounded-lg p-2.5 text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
+                className="w-full mt-1 rounded-lg p-2.5 text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
                 {managers.map(m => (
                   <option key={m.id} value={m.full_name}>
                     {m.full_name} {m.heeft_handtekening ? "✓" : ""}

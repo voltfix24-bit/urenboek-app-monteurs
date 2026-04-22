@@ -119,7 +119,7 @@ export default function Onboarding() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}>
       <Spinner center={false} />
     </div>
   );
@@ -127,7 +127,7 @@ export default function Onboarding() {
   const progress = (step / TOTAL_STEPS) * 100;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#030e20" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--app-navy)" }}>
       {/* Progress bar */}
       <div className="w-full h-1" style={{ background: "#102038" }}>
         <div className="h-full rounded-r-full transition-all duration-300 ease-out" style={{ width: `${progress}%`, background: "#3fff8b" }} />

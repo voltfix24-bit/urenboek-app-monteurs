@@ -137,7 +137,7 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
         </div>
 
         {/* Search button */}
-        <button onClick={() => setShowSearch(true)} className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+        <button onClick={() => setShowSearch(true)} className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
           <Search className="h-4 w-4" />
           <span className="text-xs">Zoeken...</span>
           <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "#102038", color: "#a0abc3" }}>⌘K</span>

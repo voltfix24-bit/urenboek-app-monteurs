@@ -282,7 +282,7 @@ export default function Mededelingen() {
     return (
       <PageShell>
         <div style={{
-          background: '#030e20',
+          background: 'var(--app-navy)',
           minHeight: '100dvh',
           display: 'flex',
           flexDirection: 'column',
@@ -335,7 +335,7 @@ export default function Mededelingen() {
                 width: 10, height: 10,
                 borderRadius: '50%',
                 background: '#3fff8b',
-                border: '2px solid #030e20',
+                border: '2px solid var(--app-navy)',
               }} />
             </div>
             <div>
@@ -554,7 +554,7 @@ export default function Mededelingen() {
   return (
     <PageShell>
       <div style={{
-        background: '#030e20',
+        background: 'var(--app-navy)',
         minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',

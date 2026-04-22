@@ -15,7 +15,7 @@ export const emptyForm: FormState = {
   vergoed_methode: "",
 };
 
-const selectStyle = { background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
+const selectStyle = { background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
 
 interface Props {
   form: FormState;

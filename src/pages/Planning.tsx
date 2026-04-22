@@ -341,7 +341,7 @@ export default function Planning() {
 
   return (
     <PageShell>
-      <div style={{ background: '#030e20', minHeight: '100dvh', paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
+      <div style={{ background: 'var(--app-navy)', minHeight: '100dvh', paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
         <MobileHeader initials={profileData?.full_name?.charAt(0)?.toUpperCase() || 'U'} />
 
         <PullToRefresh onRefresh={async () => { await fetchPlanning(); }}>

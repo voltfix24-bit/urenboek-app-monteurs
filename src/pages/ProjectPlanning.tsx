@@ -490,7 +490,7 @@ export default function ProjectPlanning() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}>
         <Spinner />
       </div>
     );
@@ -498,7 +498,7 @@ export default function ProjectPlanning() {
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#030e20" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}>
         <p style={{ color: "#a0abc3" }}>Project niet gevonden</p>
       </div>
     );
@@ -545,7 +545,7 @@ export default function ProjectPlanning() {
               {monteurs.map(m => (
                 <button key={m.id} onClick={() => setCell(selectedCell, { medewerker_id: cell?.medewerker_id === m.id ? null : m.id })}
                   className="w-full text-left px-3 py-2 rounded-lg text-xs flex items-center gap-2 transition-all"
-                  style={{ background: cell?.medewerker_id === m.id ? "rgba(63,255,139,0.1)" : "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+                  style={{ background: cell?.medewerker_id === m.id ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
                   <span className="w-2 h-2 rounded-full" style={{ background: cell?.medewerker_id === m.id ? "#3fff8b" : "rgba(106,118,140,0.15)" }} />
                   <span style={{ color: "#dae6ff" }}>{m.full_name}</span>
                   {m.uurtarief && <span className="ml-auto font-mono text-[10px]" style={{ color: "#a0abc3" }}>€{m.uurtarief}/u</span>}
@@ -559,7 +559,7 @@ export default function ProjectPlanning() {
             <p className="text-[10px] uppercase font-semibold tracking-wider mb-2" style={{ color: "#a0abc3" }}>Notitie</p>
             <textarea rows={2} value={cell?.note || ""} onChange={e => setCell(selectedCell, { note: e.target.value })}
               placeholder="Optionele opmerking..." className="w-full rounded-lg px-3 py-2 text-xs resize-none"
-              style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+              style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
           </div>
         </div>
 
@@ -582,7 +582,7 @@ export default function ProjectPlanning() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#030e20" }}>
+    <div className="min-h-screen" style={{ background: "var(--app-navy)" }}>
       {/* Header */}
       <header className="sticky top-0 z-40 px-4 py-3 flex items-center gap-3 flex-wrap" style={{ background: "color-mix(in srgb, rgba(10,26,48,0.7) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
         <button onClick={() => navigate("/projecten")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#102038", color: "#a0abc3" }}>
@@ -635,7 +635,7 @@ export default function ProjectPlanning() {
             <div>
               <label className="text-[10px] uppercase font-semibold tracking-wider block mb-1" style={{ color: "#a0abc3" }}>Te plaatsen trafo</label>
               <select value={state.trafo} onChange={e => updateState(s => ({ ...s, trafo: e.target.value }))}
-                className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
+                className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
                 {TRAFO_OPTIONS.map(o => <option key={o}>{o}</option>)}
               </select>
             </div>
@@ -932,7 +932,7 @@ export default function ProjectPlanning() {
 
       {/* Context menu */}
       {contextMenu && (
-        <div className="fixed z-50 rounded-xl p-3 space-y-3 shadow-lg" style={{ left: contextMenu.x, top: contextMenu.y, background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", width: 200 }}
+        <div className="fixed z-50 rounded-xl p-3 space-y-3 shadow-lg" style={{ left: contextMenu.x, top: contextMenu.y, background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", width: 200 }}
           onMouseDown={e => e.stopPropagation()}>
           <p className="text-[10px] font-bold" style={{ color: "#dae6ff" }}>
             {state.activities[Number(contextMenu.key.split("-")[0])] || "Activiteit"} — {DAY_LABELS[Number(contextMenu.key.split("-")[2])]}
@@ -985,7 +985,7 @@ function InfoField({ label, value, onChange, readonly }: { label: string; value:
     <div>
       <label className="text-[10px] uppercase font-semibold tracking-wider block mb-1" style={{ color: "#a0abc3" }}>{label}</label>
       <input value={value} readOnly={readonly} onChange={e => onChange?.(e.target.value)}
-        className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: readonly ? "#102038" : "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+        className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: readonly ? "#102038" : "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
     </div>
   );
 }
@@ -1084,9 +1084,9 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
   const renderEditCard = (isNew: boolean) => (
     <div className="p-4 rounded-2xl space-y-3" style={{ background: "rgba(63,255,139,0.1)", border: "1.5px solid rgba(63,255,139,0.3)" }}>
       <input ref={isNew ? nameRef : undefined} value={editNaam} onChange={e => setEditNaam(e.target.value)} placeholder="Template naam"
-        className="w-full text-sm font-bold rounded-lg px-3 py-2" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+        className="w-full text-sm font-bold rounded-lg px-3 py-2" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
       <input value={editOmschrijving} onChange={e => setEditOmschrijving(e.target.value)} placeholder="Korte omschrijving"
-        className="w-full text-xs rounded-lg px-3 py-1.5" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }} />
+        className="w-full text-xs rounded-lg px-3 py-1.5" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }} />
       <div>
         <p className="text-[11px] font-semibold mb-1.5" style={{ color: "#a0abc3" }}>Activiteiten</p>
         {editActiviteiten.map((a, i) => (
@@ -1096,7 +1096,7 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
             onDragEnd={() => setDragIdx(null)}>
             <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab" style={{ color: "#a0abc3" }} />
             <input value={a} onChange={e => { const arr = [...editActiviteiten]; arr[i] = e.target.value; setEditActiviteiten(arr); }}
-              className="flex-1 text-[13px] rounded-lg px-2.5 py-1.5" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} placeholder="Activiteit naam" />
+              className="flex-1 text-[13px] rounded-lg px-2.5 py-1.5" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} placeholder="Activiteit naam" />
             <button onClick={() => setEditActiviteiten(editActiviteiten.filter((_, j) => j !== i))}
               className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c" }}>
               <X className="h-3.5 w-3.5" />
@@ -1127,7 +1127,7 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-      <div className="rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+      <div className="rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Planning templates</h3>
           <div className="flex items-center gap-2">
@@ -1172,7 +1172,7 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
                       {t.omschrijving && <p className="text-[11px] mt-0.5" style={{ color: "#a0abc3" }}>{t.omschrijving}</p>}
                       <div className="flex flex-wrap gap-1 mt-2">
                         {t.activiteiten.map((a, j) => (
-                          <span key={j} className="px-2 py-0.5 rounded-full text-[9px]" style={{ background: "#030e20", color: "#a0abc3" }}>{a}</span>
+                          <span key={j} className="px-2 py-0.5 rounded-full text-[9px]" style={{ background: "var(--app-navy)", color: "#a0abc3" }}>{a}</span>
                         ))}
                       </div>
                     </div>
@@ -1181,7 +1181,7 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
                 {isManager && !manageMode && !editingId && (
                   <button onClick={() => startEdit(t)}
                     className="absolute top-3 right-3 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+                    style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
                     <Pencil className="h-3 w-3" style={{ color: "#a0abc3" }} />
                   </button>
                 )}
@@ -1226,7 +1226,7 @@ function ConfirmDialog({ title, text, confirmLabel, confirmColor, onCancel, onCo
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
         <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>{title}</h3>
         <p className="text-sm" style={{ color: "#a0abc3" }}>{text}</p>
         <div className="flex gap-2">

@@ -39,10 +39,10 @@ export default function Opdrachtgevers() {
           <div className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "rgba(10,26,48,0.7)", border: `1px solid ${editId ? "rgba(110,155,255,0.3)" : "rgba(63,255,139,0.3)"}` }}>
             <h3 className="text-sm font-semibold" style={{ color: "#dae6ff" }}>{editId ? "Bewerken" : "Nieuwe opdrachtgever"}</h3>
             {["naam", "contactpersoon", "telefoon", "email"].map(k => (
-              <input key={k} value={(form as any)[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} placeholder={k === "naam" ? "Bedrijfsnaam *" : k === "contactpersoon" ? "Naam contactpersoon" : k === "telefoon" ? "Telefoonnummer" : "E-mailadres"} type={k === "email" ? "email" : k === "telefoon" ? "tel" : "text"} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+              <input key={k} value={(form as any)[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))} placeholder={k === "naam" ? "Bedrijfsnaam *" : k === "contactpersoon" ? "Naam contactpersoon" : k === "telefoon" ? "Telefoonnummer" : "E-mailadres"} type={k === "email" ? "email" : k === "telefoon" ? "tel" : "text"} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
             ))}
             <div className="flex gap-2">
-              <button onClick={() => { setShowAdd(false); setEditId(null); setForm(emptyForm); }} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
+              <button onClick={() => { setShowAdd(false); setEditId(null); setForm(emptyForm); }} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
               <button onClick={() => editId ? handleUpdate(editId) : handleAdd()} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>{editId ? "Opslaan" : "Toevoegen"}</button>
             </div>
           </div>
@@ -55,7 +55,7 @@ export default function Opdrachtgevers() {
               <div key={item.id} className="rounded-2xl p-4 space-y-3 animate-fade-in" style={{ background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.3)" }}>
                 <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>"{item.naam}" verwijderen?</p>
                 <div className="flex gap-2">
-                  <button onClick={() => setConfirmDeleteId(null)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
+                  <button onClick={() => setConfirmDeleteId(null)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
                   <button onClick={() => handleDelete(item)} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "#ff716c" }}>Verwijderen</button>
                 </div>
               </div>

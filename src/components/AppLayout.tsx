@@ -19,7 +19,7 @@ export function AppLayout({ children, title, subtitle, headerActions, rawDesktop
       <DesktopSidebar badges={badges} />
 
       {/* Desktop content area */}
-      <div className="hidden lg:block" style={{ marginLeft: 240, minHeight: "100vh", background: "#030e20" }}>
+      <div className="hidden lg:block" style={{ marginLeft: 240, minHeight: "100vh", background: "var(--app-navy)" }}>
         {title && (
           <header className="flex items-center justify-between px-10 pt-8 pb-4">
             <div>

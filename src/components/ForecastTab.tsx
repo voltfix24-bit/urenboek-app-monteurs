@@ -299,7 +299,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, saved }: { regels: Fo
           </div>
 
           {/* Totals */}
-          <div className="rounded-xl p-3.5 space-y-1.5" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <div className="rounded-xl p-3.5 space-y-1.5" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <div className="flex justify-between text-[12px]">
               <span style={{ color: "#a0abc3" }}>Totaal omzet (Van Gelder)</span>
               <span className={mono} style={{ color: "#3fff8b" }}>{fmt(totaalOmzet)}</span>
@@ -407,7 +407,7 @@ function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, verwachteOmzet,
             })}
           </div>
 
-          <div className="rounded-xl p-3.5 space-y-2" style={{ background: "#030e20", border: "1px solid rgba(106,118,140,0.15)" }}>
+          <div className="rounded-xl p-3.5 space-y-2" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <div className="flex justify-between text-[12px]">
               <span style={{ color: "#a0abc3" }}>Totaal geplande uren</span>
               <span className={mono} style={{ color: "#dae6ff" }}>{totaalUren} u</span>
