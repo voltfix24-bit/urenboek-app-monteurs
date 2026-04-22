@@ -222,9 +222,7 @@ export default function Profiel() {
   const [editingZzp, setEditingZzp] = useState(false);
   const [editForm, setEditForm] = useState({ full_name: "", telefoon: "", adres: "", geboortedatum: "" });
   const [zzpEditForm, setZzpEditForm] = useState({ bedrijfsnaam: "", kvk_nummer: "", btw_nummer: "", iban: "", factuuradres: "", betalingstermijn: 30 });
-  const [showVerlof, setShowVerlof] = useState(false);
   const [showZiek, setShowZiek] = useState(false);
-  const [verlofForm, setVerlofForm] = useState({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" });
   const [loading, setLoading] = useState(true);
   const [calMonth, setCalMonth] = useState(new Date());
   const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
@@ -285,11 +283,6 @@ export default function Profiel() {
   };
 
 
-  const requestVerlof = async () => {
-    if (!profile || !verlofForm.datum_van || !verlofForm.datum_tot) return;
-    if (!await mutate(supabase.from("beschikbaarheid").insert({ medewerker_id: profile.id, type: verlofForm.type, datum_van: verlofForm.datum_van, datum_tot: verlofForm.datum_tot, reden: verlofForm.reden || null, status: "aangevraagd" } as any))) return;
-    toast.success("Verlof aangevraagd"); setShowVerlof(false); setVerlofForm({ type: "vakantie", datum_van: "", datum_tot: "", reden: "" }); fetchBeschikbaarheid();
-  };
 
   const meldZiek = async () => {
     if (!profile) return;
@@ -802,133 +795,6 @@ export default function Profiel() {
 
         <BottomNav badges={badges} />
       </div>
-
-      {/* Verlof modal */}
-      {showVerlof && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }} onClick={() => setShowVerlof(false)}>
-          <div onClick={e => e.stopPropagation()} style={{
-            width: '100%', maxWidth: 480, background: 'rgba(12,20,27,0.95)', backdropFilter: 'blur(20px)',
-            borderRadius: '32px 32px 0 0', borderTop: '1px solid rgba(66,73,80,0.1)',
-            maxHeight: '92dvh', display: 'flex', flexDirection: 'column',
-            boxShadow: '0 -20px 50px rgba(0,0,0,0.5)',
-          }}>
-            {/* Handle */}
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
-              <div style={{ width: 48, height: 4, borderRadius: 9999, background: 'rgba(66,73,80,0.3)' }} />
-            </div>
-
-            {/* Scrollable content */}
-            <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', padding: '20px 24px 0' }}>
-              {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-                <div>
-                  <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 24, color: '#dae6ff', marginBottom: 4 }}>
-                    Verlof aanvragen
-                  </h2>
-                  <p style={{ fontSize: 13, color: '#a0abc3', fontFamily: 'Inter' }}>
-                    Vul de details in voor je nieuwe aanvraag.
-                  </p>
-                </div>
-                <button onClick={() => setShowVerlof(false)} style={{
-                  width: 40, height: 40, borderRadius: '50%', background: '#1d2730',
-                  border: 'none', color: '#a0abc3',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', flexShrink: 0,
-                }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
-                </button>
-              </div>
-
-              {/* Type verlof toggle */}
-              <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: '#424950', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 10 }}>
-                  Type verlof
-                </p>
-                <div style={{ display: 'flex', padding: 4, background: '#1d2730', borderRadius: 14, gap: 4 }}>
-                  {(['vakantie', 'verlof', 'anders'] as const).map(t => (
-                    <button key={t} onClick={() => setVerlofForm({ ...verlofForm, type: t })} style={{
-                      flex: 1, padding: '12px 8px', borderRadius: 10, border: 'none',
-                      background: verlofForm.type === t ? 'linear-gradient(135deg, #3fff8b, #13ea79)' : 'transparent',
-                      color: verlofForm.type === t ? '#080f15' : '#a0abc3',
-                      fontFamily: 'Inter', fontWeight: 700, fontSize: 13, cursor: 'pointer', textTransform: 'capitalize',
-                      boxShadow: verlofForm.type === t ? '0 4px 12px rgba(63,255,139,0.2)' : 'none',
-                      transition: 'all 0.15s',
-                    }}>{t}</button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Datum van/tot */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-                {[
-                  { label: 'VAN', field: 'datum_van' as const },
-                  { label: 'TOT', field: 'datum_tot' as const },
-                ].map(({ label, field }) => (
-                  <div key={field}>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: '#424950', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>
-                      {label}
-                    </p>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type="date"
-                        value={verlofForm[field]}
-                        onChange={e => setVerlofForm({ ...verlofForm, [field]: e.target.value })}
-                        style={{
-                          width: '100%', background: '#172129', border: 'none', borderRadius: 12,
-                          padding: '14px 40px 14px 14px',
-                          color: verlofForm[field] ? '#3fff8b' : '#a0abc3',
-                          fontFamily: 'Inter', fontSize: 13,
-                          fontWeight: verlofForm[field] ? 700 : 400,
-                          outline: 'none', colorScheme: 'dark', boxSizing: 'border-box',
-                          WebkitAppearance: 'none',
-                        }} />
-                      <span className="material-symbols-outlined" style={{
-                        position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                        fontSize: 18, color: '#3fff8b', pointerEvents: 'none',
-                      }}>calendar_month</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Reden */}
-              <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: '#424950', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>
-                  Reden (optioneel)
-                </p>
-                <textarea
-                  value={verlofForm.reden}
-                  onChange={e => setVerlofForm({ ...verlofForm, reden: e.target.value })}
-                  placeholder="Bijv. familiebezoek of renovatie..."
-                  rows={3}
-                  style={{
-                    width: '100%', background: '#172129', border: 'none', borderRadius: 12,
-                    padding: '14px', color: '#dae6ff', fontFamily: 'Inter', fontSize: 13,
-                    resize: 'none', outline: 'none', boxSizing: 'border-box',
-                  }} />
-              </div>
-            </div>
-
-            {/* Sticky submit button */}
-            <div style={{
-              padding: '12px 24px calc(env(safe-area-inset-bottom, 0px) + 16px)',
-              borderTop: '1px solid rgba(66,73,80,0.15)',
-              background: 'rgba(12,20,27,0.95)',
-              flexShrink: 0,
-            }}>
-              <button onClick={requestVerlof} disabled={!verlofForm.datum_van || !verlofForm.datum_tot} style={{
-                width: '100%', padding: '18px 0', borderRadius: 14,
-                background: 'linear-gradient(135deg, #3fff8b, #13ea79)',
-                border: 'none', color: '#080f15',
-                fontFamily: 'Manrope', fontWeight: 800, fontSize: 16,
-                textTransform: 'uppercase', letterSpacing: '0.1em', cursor: 'pointer',
-                opacity: (!verlofForm.datum_van || !verlofForm.datum_tot) ? 0.4 : 1,
-                boxShadow: '0 12px 40px rgba(63,255,139,0.2)',
-              }}>AANVRAAG VERSTUREN</button>
-            </div>
-          </div>
-        </div>
-      )}
     </PageShell>
   );
 }
