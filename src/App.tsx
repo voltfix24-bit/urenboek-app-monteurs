@@ -96,7 +96,7 @@ function RoleRoute({ children, check }: { children: React.ReactNode; check: (p: 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { session, loading, permissies } = useAuth();
   if (loading) return null;
-  if (session) return <Navigate to={permissies.zietDashboard ? "/dashboard" : "/"} replace />;
+  if (session) return <Navigate to={permissies.zietDashboard ? "/dashboard" : "/planning"} replace />;
   return <>{children}</>;
 }
 
