@@ -324,7 +324,7 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel, ini
         const isChecked = s.checked;
 
         return (
-          <div key={cfg.type} className="rounded-[14px] transition-all" style={{
+          <div key={cfg.type} id={`cert-card-${cfg.type}`} className="rounded-[14px] transition-all" style={{
             background: isChecked ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
             border: isChecked ? "1.5px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
             padding: "14px 16px",
