@@ -791,9 +791,10 @@ export default function Profiel() {
           {/* INSTALLEER APP */}
           {canShowInstallPrompt() && (
             <button onClick={triggerInstallPrompt} style={{
-              width: '100%', padding: '16px 20px', borderRadius: 16, background: 'rgba(63,255,139,0.08)',
-              border: '1px solid rgba(63,255,139,0.3)', color: '#3fff8b', fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              width: '100%', padding: '16px 20px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(63,255,139,0.3)', borderLeft: '3px solid #3fff8b', color: '#3fff8b', fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12,
             }}>
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>install_mobile</span>
               Installeer app op beginscherm
