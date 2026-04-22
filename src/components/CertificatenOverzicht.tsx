@@ -159,12 +159,39 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
           }
 
           // ── AANWEZIG CERTIFICAAT ──
+          // Sorteer op vervaldatum oplopend (verlopen/eerst-vervallend bovenaan)
+          // zodat we de meest urgente status tonen.
+          const sortedItems = [...items].sort((a, b) => {
+            if (!a.vervaldatum && !b.vervaldatum) return 0;
+            if (!a.vervaldatum) return 1;
+            if (!b.vervaldatum) return -1;
+            return parseISO(a.vervaldatum).getTime() - parseISO(b.vervaldatum).getTime();
+          });
+          const primaryItem = sortedItems[0];
+          const meerdereUploads = items.filter(c => c.bestand_url).length > 1;
+          const meerdereVervaldata = items.filter(c => c.vervaldatum).length > 1;
+
           return (
             <div key={cfg.type} className="p-3 rounded-xl" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
-              <p className="text-sm font-semibold mb-1 flex items-center gap-1.5" style={{ color: "#dae6ff" }}>
-                <span style={{ color: "#3fff8b", fontSize: 14, lineHeight: 1 }}>●</span>
-                {cfg.kortLabel || cfg.label}
-              </p>
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <p className="text-sm font-semibold flex items-center gap-1.5" style={{ color: "#dae6ff" }}>
+                  <span style={{ color: "#3fff8b", fontSize: 14, lineHeight: 1 }}>●</span>
+                  {cfg.kortLabel || cfg.label}
+                </p>
+                {items.length > 1 && (
+                  <span
+                    className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap"
+                    style={{
+                      background: "rgba(63,255,139,0.1)",
+                      color: "#3fff8b",
+                      border: "1px solid rgba(63,255,139,0.3)",
+                    }}
+                    title={`${items.length} registraties`}
+                  >
+                    {items.length}×
+                  </span>
+                )}
+              </div>
 
               {cfg.heeftNiveau && (
                 <div className="flex flex-wrap gap-1 mb-1">
@@ -177,9 +204,9 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                 </div>
               )}
 
-              {cfg.heeftGebieden && items[0]?.ggi_gebieden && (
+              {cfg.heeftGebieden && primaryItem?.ggi_gebieden && (
                 <div className="flex flex-wrap gap-1 mb-1">
-                  {items[0].ggi_gebieden.map(g => (
+                  {primaryItem.ggi_gebieden.map(g => (
                     <span key={g} className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
                       style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>
                       {cfg.gebieden?.find(gb => gb.code === g)?.label || g}
@@ -195,12 +222,13 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                 </span>
               )}
 
-              {cfg.heeftVervaldatum && items[0]?.vervaldatum && (() => {
-                const status = vervaldatumStatus(items[0].vervaldatum);
+              {cfg.heeftVervaldatum && primaryItem?.vervaldatum && (() => {
+                const status = vervaldatumStatus(primaryItem.vervaldatum);
                 return (
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <span className="text-[11px]" style={{ color: "#a0abc3" }}>
-                      Geldig tot: {format(parseISO(items[0].vervaldatum!), "d MMM yyyy", { locale: nl })}
+                      {meerdereVervaldata ? "Eerst verlopen: " : "Geldig tot: "}
+                      {format(parseISO(primaryItem.vervaldatum!), "d MMM yyyy", { locale: nl })}
                     </span>
                     <span className="text-[10px] font-bold" style={{ color: status.color }}>{status.label}</span>
                   </div>
@@ -211,11 +239,12 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
               <div className="mt-1.5">
                 {hasFile ? (
                   <button onClick={() => {
-                    const fileItem = items.find(c => c.bestand_url);
+                    const fileItem = sortedItems.find(c => c.bestand_url) ?? items.find(c => c.bestand_url);
                     if (fileItem?.bestand_url) openFile(fileItem.bestand_url);
                   }}
                     className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "#3fff8b" }}>
-                    <Paperclip className="h-3 w-3" /> Bewijs aanwezig
+                    <Paperclip className="h-3 w-3" />
+                    {meerdereUploads ? "Meest recente bewijs openen" : "Bewijs aanwezig"}
                   </button>
                 ) : (
                   <span className="flex items-center gap-1 text-[11px]" style={{ color: "#feb300" }}>
