@@ -23,7 +23,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"];
 const IS_TOUCH = typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
 
-export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: Props) {
+export default function CertificatenForm({ medewerker_id, onSaved, onCancel, initialType }: Props) {
   const [state, setState] = useState<Record<string, CertState>>({});
   const [uploads, setUploads] = useState<Record<string, File | null>>({});
   const [saving, setSaving] = useState(false);
@@ -33,6 +33,7 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const cameraInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const initialTypeRef = useRef<string | undefined>(initialType);
 
   useEffect(() => {
     loadExisting();
