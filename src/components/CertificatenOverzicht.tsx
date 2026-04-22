@@ -66,8 +66,9 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
         <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Certificaten beheren</p>
         <CertificatenForm
           medewerker_id={medewerker_id}
-          onSaved={() => { setShowForm(false); onRefresh?.(); }}
-          onCancel={() => setShowForm(false)}
+          initialType={initialType}
+          onSaved={() => { closeForm(); onRefresh?.(); }}
+          onCancel={closeForm}
         />
       </div>
     );
