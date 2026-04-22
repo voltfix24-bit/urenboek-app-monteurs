@@ -474,32 +474,42 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                           }`,
                         }}
                       >
-                        {/* Markering-badges voor meerdere uploads */}
+                        {/* Markering-badges voor meerdere uploads — klikbaar om bewijs te openen */}
                         {meerdere && item.bestand_url && (isVerlopen || isActueel) && (
                           <div className="mb-2">
                             {isVerlopen && (
-                              <span
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider"
+                              <button
+                                type="button"
+                                onClick={() => openFile(item.bestand_url!)}
+                                aria-label="Verlopen bewijs openen"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider hover:brightness-110 active:scale-[0.97] transition cursor-pointer"
                                 style={{
                                   background: "#ff716c",
                                   color: "#3a0805",
                                   letterSpacing: "0.08em",
+                                  border: "none",
                                 }}
                               >
                                 ⛔ Verlopen bewijs
-                              </span>
+                                <ExternalLink className="h-2.5 w-2.5" />
+                              </button>
                             )}
                             {isActueel && (
-                              <span
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider"
+                              <button
+                                type="button"
+                                onClick={() => openFile(item.bestand_url!)}
+                                aria-label="Actueel bewijs openen"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider hover:brightness-110 active:scale-[0.97] transition cursor-pointer"
                                 style={{
                                   background: "#3fff8b",
                                   color: "#003d1f",
                                   letterSpacing: "0.08em",
+                                  border: "none",
                                 }}
                               >
                                 ✓ Actueel bewijs
-                              </span>
+                                <ExternalLink className="h-2.5 w-2.5" />
+                              </button>
                             )}
                           </div>
                         )}
