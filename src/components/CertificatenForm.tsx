@@ -8,6 +8,7 @@ interface Props {
   medewerker_id: string;
   onSaved: () => void;
   onCancel?: () => void;
+  initialType?: string;
 }
 
 interface CertState {
