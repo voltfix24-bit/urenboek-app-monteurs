@@ -77,7 +77,7 @@ function ManagerHandtekeningSection({ profileId }: { profileId: string | null })
   if (loading) return null;
 
   return (
-    <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+    <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }} className="space-y-3">
       <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Jouw handtekening</p>
       <p className="text-[10px]" style={{ color: "#a0abc3" }}>Voor digitale ondertekening van contracten</p>
 
@@ -157,7 +157,7 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
   }
 
   return (
-    <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+    <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }} className="space-y-3">
       <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Mijn contract</p>
 
       {contract?.status === "ondertekend_beiden" && (
