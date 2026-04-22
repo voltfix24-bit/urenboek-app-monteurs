@@ -50,7 +50,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
 @layer base {
   :root {
     /* ─── Centrale TerreVolt navy (gebruikt door loading, modals, success, footer, etc.) ─── */
-    --app-navy:        var(--app-navy);
+    --app-navy:        #030e20;
     --bg-base:         #F5F7F0;
     --bg-surface:      #EBF0E4;
     --bg-surface-2:    #DFE8D6;
