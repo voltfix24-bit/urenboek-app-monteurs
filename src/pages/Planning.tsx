@@ -1012,7 +1012,7 @@ export default function Planning() {
                 backdropFilter: 'blur(24px)',
                 borderRadius: '32px 32px 0 0',
                 borderTop: '1px solid rgba(255,255,255,0.1)',
-                maxHeight: '92vh',
+                maxHeight: maxModalHeight,
                 display: 'flex',
                 flexDirection: 'column',
               }}>
