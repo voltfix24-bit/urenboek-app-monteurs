@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useAuth } from "@/hooks/useAuth";
@@ -39,6 +39,22 @@ export default function Planning() {
   const [showUrenModal, setShowUrenModal] = useState(false);
   const [modalItem, setModalItem] = useState<PlanningItem | null>(null);
   const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8, toelichting: "" });
+  const modalScrollRef = useRef<HTMLDivElement | null>(null);
+  const [showScrollHint, setShowScrollHint] = useState(false);
+
+  const updateScrollHint = useCallback(() => {
+    const el = modalScrollRef.current;
+    if (!el) { setShowScrollHint(false); return; }
+    const remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setShowScrollHint(remaining > 16);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!showUrenModal) return;
+    // wait one frame so layout is settled
+    const id = requestAnimationFrame(updateScrollHint);
+    return () => cancelAnimationFrame(id);
+  }, [showUrenModal, urenForm, updateScrollHint]);
   const weekNumber = getISOWeek(weekStart);
 
   const fetchPlanning = useCallback(async () => {
@@ -967,12 +983,15 @@ export default function Planning() {
               </div>
 
               {/* Scrollable */}
-              <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                overscrollBehavior: 'contain',
-                padding: '4px 24px 0',
-              }}>
+              <div
+                ref={modalScrollRef}
+                onScroll={updateScrollHint}
+                style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  overscrollBehavior: 'contain',
+                  padding: '4px 24px 0',
+                }}>
                 {/* Header */}
                 <div style={{
                   display: 'flex',
@@ -1310,7 +1329,55 @@ export default function Planning() {
                 padding: '14px 24px calc(env(safe-area-inset-bottom, 0px) + 18px)',
                 borderTop: '1px solid rgba(255,255,255,0.06)',
                 background: 'rgba(10,26,48,0.97)',
+                position: 'relative',
               }}>
+                {/* Scroll hint — fade + chevron when more content below */}
+                <div
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: '100%',
+                    height: 56,
+                    pointerEvents: 'none',
+                    background: 'linear-gradient(to top, rgba(10,26,48,0.97), rgba(10,26,48,0))',
+                    opacity: showScrollHint ? 1 : 0,
+                    transition: 'opacity 220ms ease',
+                  }}
+                />
+                <button
+                  type="button"
+                  aria-label="Scroll naar Indienen"
+                  onClick={() => {
+                    const el = modalScrollRef.current;
+                    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    bottom: 'calc(100% + 6px)',
+                    transform: 'translateX(-50%)',
+                    width: 30,
+                    height: 30,
+                    borderRadius: 9999,
+                    background: 'rgba(10,26,48,0.92)',
+                    border: '1px solid rgba(63,255,139,0.35)',
+                    color: '#3fff8b',
+                    display: showScrollHint ? 'flex' : 'none',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+                    animation: 'planningScrollHintBounce 1.6s ease-in-out infinite',
+                    padding: 0,
+                  }}>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 18, fontVariationSettings: "'wght' 400" }}>
+                    keyboard_arrow_down
+                  </span>
+                </button>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button
                     onClick={() => saveUren(false)}
