@@ -33,6 +33,16 @@ function vervaldatumStatus(verval: string | null) {
 
 export default function CertificatenOverzicht({ certificaten, toonToevoegen, medewerker_id, onRefresh }: Props) {
   const [showForm, setShowForm] = useState(false);
+  const [initialType, setInitialType] = useState<string | undefined>(undefined);
+
+  const openForm = (type?: string) => {
+    setInitialType(type);
+    setShowForm(true);
+  };
+  const closeForm = () => {
+    setShowForm(false);
+    setInitialType(undefined);
+  };
 
   const openFile = async (path: string) => {
     // Open een tab synchroon zodat iOS Safari de popup-blocker niet triggert
