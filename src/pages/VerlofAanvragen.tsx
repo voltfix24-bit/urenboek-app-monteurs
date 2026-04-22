@@ -78,19 +78,37 @@ export default function VerlofAanvragen() {
 
   const isValid = !!(range?.from && range?.to) && !validatieFout;
 
+  // Pre-flight validatie: zelfde regels als de live-validatie, vlak vóór het request.
+  // Geeft een specifieke foutmelding terug, of null als alles klopt.
+  const valideerVoorVersturen = (): string | null => {
+    if (!profileId) return "Profiel niet geladen — herlaad de pagina.";
+    if (!range?.from || !range?.to) return "Kies een start- en einddatum.";
+    if (range.from < today) return "Startdatum mag niet in het verleden liggen.";
+    if (range.to < range.from) return "Einddatum kan niet vóór de startdatum liggen.";
+    if (range.from > maxDate || range.to > maxDate) {
+      return `Datums mogen niet meer dan ${MAX_MAANDEN_VOORUIT} maanden in de toekomst liggen.`;
+    }
+    const dagen = differenceInCalendarDays(range.to, range.from) + 1;
+    if (dagen < 1) return "Periode moet minimaal 1 dag zijn.";
+    if (dagen > MAX_DAGEN) return `Maximaal ${MAX_DAGEN} dagen per aanvraag (nu ${dagen}).`;
+    if (!["vakantie", "verlof", "anders"].includes(type)) return "Ongeldig type verlof.";
+    return null;
+  };
+
   const handleVerstuur = async () => {
-    if (!profileId || !range?.from || !range?.to) return;
-    if (validatieFout) {
-      toast.error(validatieFout);
+    // Server-side-achtige guard vóór het request — blokkeert en toont toast bij elke fout.
+    const fout = valideerVoorVersturen();
+    if (fout) {
+      toast.error(fout);
       return;
     }
     setSending(true);
     const ok = await mutate(
       supabase.from("beschikbaarheid").insert({
-        medewerker_id: profileId,
+        medewerker_id: profileId!,
         type,
-        datum_van: format(range.from, "yyyy-MM-dd"),
-        datum_tot: format(range.to, "yyyy-MM-dd"),
+        datum_van: format(range!.from!, "yyyy-MM-dd"),
+        datum_tot: format(range!.to!, "yyyy-MM-dd"),
         reden: reden || null,
         status: "aangevraagd",
       } as any)
