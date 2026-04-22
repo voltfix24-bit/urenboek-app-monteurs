@@ -102,7 +102,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
           </span>
         </div>
         {toonToevoegen && medewerker_id && (
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "#3fff8b" }}>
+          <button onClick={() => openForm()} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "#3fff8b" }}>
             <Pencil className="h-3 w-3" /> Bewerken
           </button>
         )}
@@ -113,16 +113,24 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
           const items = grouped[cfg.type] ?? [];
           const isLeeg = items.length === 0;
           const hasFile = items.some(c => c.bestand_url);
+          const canEdit = toonToevoegen && !!medewerker_id;
 
           // ── ONTBREKEND CERTIFICAAT ──
           if (isLeeg) {
+            const Tag: any = canEdit ? "button" : "div";
             return (
-              <div
+              <Tag
                 key={cfg.type}
-                className="p-3 rounded-xl flex items-start justify-between gap-3"
+                {...(canEdit ? {
+                  type: "button",
+                  onClick: () => openForm(cfg.type),
+                  "aria-label": `${cfg.kortLabel || cfg.label} toevoegen`,
+                } : {})}
+                className={`w-full text-left p-3 rounded-xl flex items-start justify-between gap-3 transition-colors ${canEdit ? "hover:brightness-110 active:scale-[0.99]" : ""}`}
                 style={{
                   background: "rgba(254,179,0,0.05)",
                   border: "1px dashed rgba(254,179,0,0.35)",
+                  cursor: canEdit ? "pointer" : "default",
                 }}
               >
                 <div className="min-w-0">
@@ -131,13 +139,12 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                     {cfg.kortLabel || cfg.label}
                   </p>
                   <p className="text-[11px]" style={{ color: "#feb300", fontWeight: 600 }}>
-                    Ontbreekt — nog niet ingevuld
+                    Ontbreekt — tik om toe te voegen
                   </p>
                 </div>
-                {toonToevoegen && medewerker_id && (
-                  <button
-                    onClick={() => setShowForm(true)}
-                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap"
+                {canEdit && (
+                  <span
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap shrink-0"
                     style={{
                       background: "rgba(63,255,139,0.1)",
                       border: "1px solid rgba(63,255,139,0.3)",
@@ -145,9 +152,9 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                     }}
                   >
                     + Toevoegen
-                  </button>
+                  </span>
                 )}
-              </div>
+              </Tag>
             );
           }
 
