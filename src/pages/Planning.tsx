@@ -41,9 +41,11 @@ export default function Planning() {
   const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8, toelichting: "" });
   const modalScrollRef = useRef<HTMLDivElement | null>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
-  // Dynamische spacing voor sticky footer: safe-area-inset-bottom + eventuele
-  // viewport-offset (iOS URL-bar, Android keyboard) zodat Indienen niet wordt afgedekt.
+  // Dynamische spacing voor sticky footer + modal-positie wanneer iOS/Android
+  // keyboard of URL-bar het visualViewport verkleint. Het hele sheet wordt
+  // omhoog geschoven, zodat de Indienen-knop nooit onder het keyboard zit.
   const [footerOffset, setFooterOffset] = useState(0);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
   const [maxModalHeight, setMaxModalHeight] = useState<string>('92vh');
 
   const updateScrollHint = useCallback(() => {
@@ -60,12 +62,11 @@ export default function Planning() {
     return () => cancelAnimationFrame(id);
   }, [showUrenModal, urenForm, updateScrollHint]);
 
-  // Track safe-area + visualViewport (keyboard / iOS URL bar) → footer offset.
+  // Track safe-area + visualViewport (keyboard / iOS URL bar).
   useEffect(() => {
     if (!showUrenModal) return;
 
     const readSafeAreaInset = () => {
-      // Lees env(safe-area-inset-bottom) via een tijdelijk element.
       const probe = document.createElement('div');
       probe.style.cssText =
         'position:fixed;left:0;bottom:0;width:0;height:0;' +
@@ -79,13 +80,22 @@ export default function Planning() {
     const compute = () => {
       const safeInset = readSafeAreaInset();
       const vv = window.visualViewport;
-      // Hoeveel browserchrome / keyboard onderaan dekt het layout-viewport af.
-      const chromeOffset = vv
+      // Pixels die layout-viewport groter is dan het zichtbare visualViewport
+      // (= keyboard hoogte op iOS Safari, of Android browser-chrome dat overlapt).
+      const overlap = vv
         ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
         : 0;
-      // Minimaal de safe-area, plus eventuele keyboard/URL-bar overlap.
-      setFooterOffset(Math.max(safeInset, chromeOffset + safeInset * 0.5));
-      // Beperk modal tot zichtbare viewport, niet de layout viewport.
+
+      // > 80px → vrijwel zeker een keyboard. Daaronder enkel URL-bar dynamiek;
+      // sheet hoeft dan niet vertaald te worden.
+      const keyboardLikely = overlap > 80;
+      setKeyboardOffset(keyboardLikely ? overlap : 0);
+
+      // Footer-padding = altijd safe-area (sheet is al verschoven boven keyboard),
+      // met minimaal 12px lucht zodat de knop niet de rand raakt.
+      setFooterOffset(Math.max(safeInset, 12));
+
+      // Modal beperken tot zichtbare viewport (zonder keyboard).
       const usable = vv ? vv.height : window.innerHeight;
       setMaxModalHeight(`${Math.round(usable * 0.92)}px`);
     };
