@@ -315,50 +315,57 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel, ini
 
     if (hasExisting) {
       return (
-        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }}>
-          <Paperclip className="h-4 w-4 shrink-0" style={{ color: "#3fff8b" }} />
-          <span className="text-xs font-medium flex-1" style={{ color: "#3fff8b" }}>📎 Bewijs aanwezig</span>
-          <button type="button" onClick={(e) => { e.stopPropagation(); openSignedUrl(s.existingFileUrl!); }}
-            className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
-            Bekijken
-          </button>
-          <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRefs.current[cfg.type]?.click(); }}
-            className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
-            Vervangen
-          </button>
-          <input ref={el => { fileInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
-            accept="image/*,application/pdf" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
-        </div>
+        <>
+          {renderStatusBar(status)}
+          <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }}>
+            <Paperclip className="h-4 w-4 shrink-0" style={{ color: "#3fff8b" }} />
+            <span className="text-xs font-medium flex-1" style={{ color: "#3fff8b" }}>📎 Bewijs aanwezig</span>
+            <button type="button" onClick={(e) => { e.stopPropagation(); openSignedUrl(s.existingFileUrl!); }}
+              className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+              Bekijken
+            </button>
+            <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRefs.current[cfg.type]?.click(); }}
+              className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+              Vervangen
+            </button>
+            <input ref={el => { fileInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
+              accept="image/*,application/pdf" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
+          </div>
+        </>
       );
     }
 
     // Empty upload zone
     if (IS_TOUCH) {
       return (
-        <div className="mt-2 space-y-2" onClick={e => e.stopPropagation()}>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => cameraInputRefs.current[cfg.type]?.click()}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-[9px] text-xs"
-              style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
-              <Camera className="h-3.5 w-3.5" /> Foto maken
-            </button>
-            <button type="button" onClick={() => fileInputRefs.current[cfg.type]?.click()}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-[9px] text-xs"
-              style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
-              <FolderOpen className="h-3.5 w-3.5" /> Bestand kiezen
-            </button>
+        <div className="mt-2" onClick={e => e.stopPropagation()}>
+          {renderStatusBar(status)}
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <button type="button" onClick={() => cameraInputRefs.current[cfg.type]?.click()}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-[9px] text-xs"
+                style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+                <Camera className="h-3.5 w-3.5" /> Foto maken
+              </button>
+              <button type="button" onClick={() => fileInputRefs.current[cfg.type]?.click()}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-[9px] text-xs"
+                style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+                <FolderOpen className="h-3.5 w-3.5" /> Bestand kiezen
+              </button>
+            </div>
+            <p className="text-[10px] text-center" style={{ color: "#a0abc3" }}>{uploadHint}</p>
+            <input ref={el => { cameraInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
+              accept="image/*" capture="environment" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
+            <input ref={el => { fileInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
+              accept="image/*,application/pdf" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
           </div>
-          <p className="text-[10px] text-center" style={{ color: "#a0abc3" }}>{uploadHint}</p>
-          <input ref={el => { cameraInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
-            accept="image/*" capture="environment" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
-          <input ref={el => { fileInputRefs.current[cfg.type] = el; }} type="file" className="hidden"
-            accept="image/*,application/pdf" onChange={e => handleFileSelect(cfg.type, e.target.files?.[0] || null)} />
         </div>
       );
     }
 
     return (
       <div className="mt-2" onClick={e => e.stopPropagation()}>
+        {renderStatusBar(status)}
         <button type="button" onClick={() => fileInputRefs.current[cfg.type]?.click()}
           className="w-full p-3 rounded-[10px] text-center transition-colors group"
           style={{ background: "var(--app-navy)", border: "1.5px dashed rgba(106,118,140,0.15)", cursor: "pointer" }}
