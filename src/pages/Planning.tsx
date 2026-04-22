@@ -362,161 +362,562 @@ export default function Planning() {
 
             {/* PLANNING LIST */}
             {!loading && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0,
+              }}>
                 {Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)).map((day, i) => {
                   const dateStr = format(day, 'yyyy-MM-dd');
                   const isToday = dateStr === today;
-                  const dayItems = items.filter(item => item.datum === dateStr);
+                  const dayItems = items.filter(it => it.datum === dateStr);
                   const beschItem = getBeschikbaarheidForDate(dateStr);
-                  const DAGEN_LANG = ['MAANDAG', 'DINSDAG', 'WOENSDAG', 'DONDERDAG', 'VRIJDAG'];
-                  const dayLabel = `${DAGEN_LANG[i]} ${format(day, 'd MMM', { locale: nl }).toUpperCase()}`;
+                  const DOW = ['MA','DI','WO','DO','VR'][i];
+                  const isEmpty = !beschItem && dayItems.length === 0;
 
                   return (
-                    <div key={dateStr}>
-                      {/* Day header */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#a0abc3' }}>{dayLabel}</span>
+                    <div key={dateStr} style={{
+                      display: 'flex',
+                      gap: 12,
+                      paddingBottom: 16,
+                    }}>
+                      {/* LEFT RAIL */}
+                      <div style={{
+                        width: 44,
+                        flexShrink: 0,
+                        paddingTop: 2,
+                      }}>
+                        <div style={{
+                          fontSize: 10,
+                          letterSpacing: '0.8px',
+                          fontWeight: 600,
+                          fontFamily: 'Inter',
+                          textTransform: 'uppercase',
+                          color: isToday ? '#3fff8b' : '#54617A',
+                          marginBottom: 2,
+                        }}>
+                          {DOW}
+                        </div>
+                        <div style={{
+                          fontFamily: 'Manrope',
+                          fontSize: 26,
+                          fontWeight: 700,
+                          color: isToday ? '#3fff8b' : '#dae6ff',
+                          lineHeight: 1,
+                          letterSpacing: '-0.5px',
+                        }}>
+                          {format(day, 'd')}
+                        </div>
                         {isToday && (
-                          <span style={{ fontSize: 9, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', color: '#3fff8b', background: 'rgba(63,255,139,0.2)', borderRadius: 9999, padding: '2px 8px' }}>VANDAAG</span>
+                          <span
+                            className="material-symbols-outlined"
+                            style={{
+                              fontSize: 8,
+                              color: '#3fff8b',
+                              marginTop: 4,
+                              display: 'block',
+                              fontVariationSettings: "'FILL' 1",
+                            }}>
+                            radio_button_checked
+                          </span>
                         )}
                       </div>
 
-                      {/* Free day / absence */}
-                      {beschItem && (
-                        <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 16, padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, opacity: 0.5 }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#a0abc3' }}>beach_access</span>
-                          <span style={{ fontSize: 13, color: '#a0abc3', fontStyle: 'italic', fontFamily: 'Inter' }}>{beschItem.type === 'vakantie' ? 'Vakantie' : 'Afwezig'}</span>
-                        </div>
-                      )}
+                      {/* RIGHT CARD */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {/* Absent */}
+                        {beschItem && (
+                          <div style={{
+                            borderRadius: 12,
+                            border: '1px solid rgba(255,255,255,0.07)',
+                            background: '#0d1f38',
+                            padding: '14px 16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            opacity: 0.5,
+                          }}>
+                            <span
+                              className="material-symbols-outlined"
+                              style={{
+                                fontSize: 20,
+                                color: '#a0abc3',
+                                fontVariationSettings: "'wght' 300",
+                              }}>
+                              beach_access
+                            </span>
+                            <span style={{
+                              fontSize: 13,
+                              color: '#a0abc3',
+                              fontFamily: 'Inter',
+                              fontStyle: 'italic',
+                            }}>
+                              {beschItem.type === 'vakantie' ? 'Vakantie' : 'Afwezig'}
+                            </span>
+                          </div>
+                        )}
 
-                      {/* No planning */}
-                      {!beschItem && dayItems.length === 0 && (
-                        <div style={{ border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 16, padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, opacity: 0.5 }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#a0abc3' }}>beach_access</span>
-                          <span style={{ fontSize: 13, color: '#a0abc3', fontStyle: 'italic', fontFamily: 'Inter' }}>Geen werk gepland</span>
-                        </div>
-                      )}
+                        {/* No planning */}
+                        {isEmpty && (
+                          <div style={{
+                            borderRadius: 12,
+                            border: '1px dashed rgba(255,255,255,0.07)',
+                            padding: '14px 16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            opacity: 0.4,
+                          }}>
+                            <span
+                              className="material-symbols-outlined"
+                              style={{
+                                fontSize: 18,
+                                color: '#a0abc3',
+                                fontVariationSettings: "'wght' 300",
+                              }}>
+                              event_busy
+                            </span>
+                            <span style={{
+                              fontSize: 12,
+                              color: '#a0abc3',
+                              fontFamily: 'Inter',
+                            }}>
+                              Geen werk gepland
+                            </span>
+                          </div>
+                        )}
 
-                      {/* Project cards */}
-                      {!beschItem && dayItems.length > 0 && (
-                        <div style={{
-                          display: 'flex', flexDirection: 'column', borderRadius: 16, overflow: 'hidden',
-                          border: `1px solid ${isToday ? '#feb300' : 'rgba(63,255,139,0.3)'}`,
-                          borderLeft: `4px solid ${isToday ? '#feb300' : '#3fff8b'}`,
-                        }}>
-                          {dayItems.map((item, idx) => {
-                            const boeking = existingBoekingen.get(`${dateStr}|${item.project_id}`);
-                            const isGeboekt = !!boeking;
-                            const isLast = idx === dayItems.length - 1;
-                            const adres = volledigAdres({ straat: item.project_straat, postcode: item.project_postcode, stad: item.project_stad, adres: item.project_adres });
+                        {/* Project cards */}
+                        {!beschItem && dayItems.length > 0 && (
+                          <div style={{
+                            borderRadius: 12,
+                            border: `1px solid ${isToday ? 'rgba(63,255,139,0.25)' : 'rgba(255,255,255,0.07)'}`,
+                            background: '#0d1f38',
+                            overflow: 'hidden',
+                            boxShadow: isToday ? 'inset 3px 0 0 #3fff8b' : 'none',
+                          }}>
+                            {dayItems.map((item, idx) => {
+                              const boeking = existingBoekingen.get(`${dateStr}|${item.project_id}`);
+                              const isGeboekt = !!boeking;
+                              const isLast = idx === dayItems.length - 1;
+                              const adres = volledigAdres({
+                                straat: item.project_straat,
+                                postcode: item.project_postcode,
+                                stad: item.project_stad,
+                                adres: item.project_adres,
+                              });
 
-                            return (
-                              <div key={item.id}>
-                                <div
-                                  onClick={() => { if (!isGeboekt && item.is_definitief) openUrenModal(item); }}
-                                  style={{
-                                    padding: 20,
-                                    background: isToday ? 'rgba(254,179,0,0.04)' : 'rgba(10,26,48,0.7)',
-                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                    cursor: isGeboekt || !item.is_definitief ? 'default' : 'pointer',
-                                    opacity: item.is_definitief ? 1 : 0.5,
-                                  }}
-                                >
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                    {/* Activity badge */}
-                                    {item.activiteit && (
+                              return (
+                                <div key={item.id}>
+                                  <div
+                                    onClick={() => {
+                                      if (!isGeboekt && item.is_definitief) openUrenModal(item);
+                                    }}
+                                    style={{
+                                      padding: '14px 16px',
+                                      cursor: isGeboekt || !item.is_definitief ? 'default' : 'pointer',
+                                      opacity: item.is_definitief ? 1 : 0.5,
+                                    }}>
+                                    {/* Top row */}
+                                    <div style={{
+                                      display: 'flex',
+                                      alignItems: 'flex-start',
+                                      justifyContent: 'space-between',
+                                      gap: 8,
+                                      marginBottom: 8,
+                                    }}>
+                                      <div style={{ flex: 1, minWidth: 0 }}>
+                                        {item.activiteit && (
+                                          <div style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 5,
+                                            padding: '2px 8px',
+                                            borderRadius: 20,
+                                            marginBottom: 6,
+                                            background: item.activiteit_kleur
+                                              ? `${item.activiteit_kleur}22`
+                                              : 'rgba(63,255,139,0.1)',
+                                            border: `1px solid ${item.activiteit_kleur || '#3fff8b'}44`,
+                                          }}>
+                                            <span
+                                              className="material-symbols-outlined"
+                                              style={{
+                                                fontSize: 8,
+                                                color: item.activiteit_kleur || '#3fff8b',
+                                                fontVariationSettings: "'FILL' 1",
+                                              }}>
+                                              fiber_manual_record
+                                            </span>
+                                            <span style={{
+                                              fontSize: 10,
+                                              fontWeight: 600,
+                                              fontFamily: 'Inter',
+                                              color: item.activiteit_kleur || '#3fff8b',
+                                            }}>
+                                              {item.activiteit}
+                                            </span>
+                                          </div>
+                                        )}
+                                        <div style={{
+                                          fontSize: 15,
+                                          fontWeight: 700,
+                                          fontFamily: 'Manrope',
+                                          color: '#dae6ff',
+                                          marginBottom: 2,
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          whiteSpace: 'nowrap',
+                                        }}>
+                                          {item.project_naam}
+                                        </div>
+                                        <div style={{
+                                          fontSize: 11,
+                                          color: '#a0abc3',
+                                          fontFamily: 'Inter',
+                                        }}>
+                                          #{item.project_nummer}
+                                        </div>
+                                      </div>
+
+                                      {/* Status */}
+                                      {isGeboekt ? (
+                                        <div style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 4,
+                                          padding: '4px 10px',
+                                          borderRadius: 9999,
+                                          background: 'rgba(63,255,139,0.1)',
+                                          border: '1px solid rgba(63,255,139,0.25)',
+                                          flexShrink: 0,
+                                        }}>
+                                          <span
+                                            className="material-symbols-outlined"
+                                            style={{
+                                              fontSize: 13,
+                                              color: '#3fff8b',
+                                              fontVariationSettings: "'FILL' 1",
+                                            }}>
+                                            check_circle
+                                          </span>
+                                          <span style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            fontFamily: 'Inter',
+                                            color: '#3fff8b',
+                                          }}>
+                                            {boeking!.uren}u
+                                          </span>
+                                        </div>
+                                      ) : item.is_definitief ? (
+                                        <div style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 4,
+                                          padding: '4px 10px',
+                                          borderRadius: 9999,
+                                          background: isToday ? '#feb300' : 'rgba(254,179,0,0.1)',
+                                          border: isToday ? 'none' : '1px solid rgba(254,179,0,0.25)',
+                                          flexShrink: 0,
+                                        }}>
+                                          <span
+                                            className="material-symbols-outlined"
+                                            style={{
+                                              fontSize: 13,
+                                              color: isToday ? '#523700' : '#feb300',
+                                              fontVariationSettings: "'wght' 300",
+                                            }}>
+                                            pending
+                                          </span>
+                                          <span style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            fontFamily: 'Inter',
+                                            color: isToday ? '#523700' : '#feb300',
+                                          }}>
+                                            Boeken
+                                          </span>
+                                        </div>
+                                      ) : (
+                                        <div style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 4,
+                                          padding: '4px 10px',
+                                          borderRadius: 9999,
+                                          background: 'rgba(255,255,255,0.04)',
+                                          border: '1px solid rgba(255,255,255,0.08)',
+                                          flexShrink: 0,
+                                        }}>
+                                          <span
+                                            className="material-symbols-outlined"
+                                            style={{
+                                              fontSize: 13,
+                                              color: '#a0abc3',
+                                              fontVariationSettings: "'wght' 300",
+                                            }}>
+                                            lock
+                                          </span>
+                                          <span style={{
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            fontFamily: 'Inter',
+                                            color: '#a0abc3',
+                                          }}>
+                                            Concept
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Meta */}
+                                    <div style={{
+                                      display: 'grid',
+                                      gridTemplateColumns: '1fr 1fr',
+                                      gap: '5px 12px',
+                                      marginBottom:
+                                        (item.notitie ||
+                                         item.week_opmerking ||
+                                         (item.collega_ids?.length ?? 0) > 0 ||
+                                         adres)
+                                          ? 10 : 0,
+                                    }}>
                                       <div style={{
-                                        display: 'inline-flex', alignItems: 'center', gap: 5,
-                                        padding: '3px 10px', borderRadius: 20, marginBottom: 6,
-                                        background: item.activiteit_kleur ? `${item.activiteit_kleur}22` : 'rgba(63,255,139,0.1)',
-                                        border: `1px solid ${item.activiteit_kleur || '#3fff8b'}44`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 5,
                                       }}>
-                                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.activiteit_kleur || '#3fff8b', flexShrink: 0 }} />
-                                        <span style={{ fontSize: 11, fontWeight: 600, color: item.activiteit_kleur || '#3fff8b' }}>{item.activiteit}</span>
+                                        <span
+                                          className="material-symbols-outlined"
+                                          style={{
+                                            fontSize: 14,
+                                            color: '#54617A',
+                                            fontVariationSettings: "'wght' 300",
+                                          }}>
+                                          schedule
+                                        </span>
+                                        <span style={{
+                                          fontSize: 12,
+                                          color: '#a0abc3',
+                                          fontFamily: 'Inter',
+                                        }}>
+                                          {item.starttijd}–{item.eindtijd}
+                                        </span>
                                       </div>
-                                    )}
-                                    <div style={{ fontSize: 15, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter', marginBottom: 4 }}>{item.project_naam}</div>
-                                    <div style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter', marginBottom: 2 }}>{item.project_nummer}</div>
-                                    <div style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>{item.starttijd} – {item.eindtijd}</div>
-                                    {item.project_stad && (
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                                        <span className="material-symbols-outlined" style={{ fontSize: 12, color: '#a0abc3' }}>location_on</span>
-                                        <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>{item.project_stad}</span>
-                                      </div>
-                                    )}
-                                    {item.notitie && (
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, padding: '6px 10px', borderRadius: 10, background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.2)' }}>
-                                        <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#feb300' }}>chat_bubble</span>
-                                        <span style={{ fontSize: 11, color: '#feb300' }}>{item.notitie}</span>
-                                      </div>
-                                    )}
+                                      {item.project_stad && (
+                                        <div style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 5,
+                                        }}>
+                                          <span
+                                            className="material-symbols-outlined"
+                                            style={{
+                                              fontSize: 14,
+                                              color: '#54617A',
+                                              fontVariationSettings: "'wght' 300",
+                                            }}>
+                                            location_on
+                                          </span>
+                                          <span style={{
+                                            fontSize: 12,
+                                            color: '#a0abc3',
+                                            fontFamily: 'Inter',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                          }}>
+                                            {item.project_stad}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+
                                     {/* Colleagues */}
-                                    {item.collega_ids && item.collega_ids.length > 0 && (
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, padding: '6px 10px', borderRadius: 10, background: 'rgba(255,255,255,0.03)' }}>
-                                        <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#a0abc3' }}>group</span>
-                                        <span style={{ fontSize: 11, color: '#a0abc3' }}>
-                                          {item.collega_ids.map(id => (collegaMap.get(id) || 'Collega').split(' ')[0]).join(', ')}
+                                    {(item.collega_ids?.length ?? 0) > 0 && (
+                                      <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 6,
+                                        marginBottom: 8,
+                                      }}>
+                                        <span
+                                          className="material-symbols-outlined"
+                                          style={{
+                                            fontSize: 14,
+                                            color: '#54617A',
+                                            fontVariationSettings: "'wght' 300",
+                                          }}>
+                                          group
+                                        </span>
+                                        <span style={{
+                                          fontSize: 11,
+                                          color: '#a0abc3',
+                                          fontFamily: 'Inter',
+                                        }}>
+                                          {item.collega_ids!
+                                            .map(id => (collegaMap.get(id) || 'Collega').split(' ')[0])
+                                            .join(', ')}
                                         </span>
                                       </div>
                                     )}
-                                    {/* Week remark */}
-                                    {item.week_opmerking && (
-                                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginTop: 6, padding: '8px 10px', borderRadius: 10, background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.2)' }}>
-                                        <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#feb300', flexShrink: 0, marginTop: 1 }}>info</span>
-                                        <span style={{ fontSize: 11, color: '#feb300', lineHeight: 1.4 }}>{item.week_opmerking}</span>
+
+                                    {/* Note */}
+                                    {item.notitie && (
+                                      <div style={{
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        gap: 6,
+                                        padding: '7px 10px',
+                                        borderRadius: 8,
+                                        background: 'rgba(254,179,0,0.06)',
+                                        border: '1px solid rgba(254,179,0,0.15)',
+                                        marginBottom: 6,
+                                      }}>
+                                        <span
+                                          className="material-symbols-outlined"
+                                          style={{
+                                            fontSize: 14,
+                                            color: '#feb300',
+                                            fontVariationSettings: "'wght' 300",
+                                            flexShrink: 0,
+                                            marginTop: 1,
+                                          }}>
+                                          info
+                                        </span>
+                                        <span style={{
+                                          fontSize: 11,
+                                          color: '#feb300',
+                                          fontFamily: 'Inter',
+                                          lineHeight: 1.4,
+                                        }}>
+                                          {item.notitie}
+                                        </span>
                                       </div>
                                     )}
-                                    {/* Navigate button */}
-                                    {adres && (
-                                      <button onClick={(e) => { e.stopPropagation(); openNavigatie(adres); }} style={{
-                                        marginTop: 8, padding: '8px 12px', borderRadius: 10,
-                                        background: 'rgba(63,255,139,0.08)', border: '1px solid rgba(63,255,139,0.2)',
-                                        color: '#3fff8b', fontSize: 12, fontWeight: 600, fontFamily: 'Inter',
-                                        display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', width: '100%', justifyContent: 'center',
+
+                                    {/* Week remark */}
+                                    {item.week_opmerking && (
+                                      <div style={{
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        gap: 6,
+                                        padding: '7px 10px',
+                                        borderRadius: 8,
+                                        background: 'rgba(254,179,0,0.06)',
+                                        border: '1px solid rgba(254,179,0,0.15)',
+                                        marginBottom: 6,
                                       }}>
-                                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>navigation</span>
+                                        <span
+                                          className="material-symbols-outlined"
+                                          style={{
+                                            fontSize: 14,
+                                            color: '#feb300',
+                                            fontVariationSettings: "'wght' 300",
+                                            flexShrink: 0,
+                                            marginTop: 1,
+                                          }}>
+                                          info
+                                        </span>
+                                        <span style={{
+                                          fontSize: 11,
+                                          color: '#feb300',
+                                          fontFamily: 'Inter',
+                                          lineHeight: 1.4,
+                                        }}>
+                                          {item.week_opmerking}
+                                        </span>
+                                      </div>
+                                    )}
+
+                                    {/* Navigate */}
+                                    {adres && (
+                                      <button
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          openNavigatie(adres);
+                                        }}
+                                        style={{
+                                          marginTop: 4,
+                                          width: '100%',
+                                          padding: '9px 12px',
+                                          borderRadius: 10,
+                                          background: 'rgba(63,255,139,0.06)',
+                                          border: '1px solid rgba(63,255,139,0.15)',
+                                          color: '#3fff8b',
+                                          fontSize: 12,
+                                          fontWeight: 600,
+                                          fontFamily: 'Inter',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          gap: 6,
+                                          cursor: 'pointer',
+                                        }}>
+                                        <span
+                                          className="material-symbols-outlined"
+                                          style={{
+                                            fontSize: 16,
+                                            fontVariationSettings: "'wght' 300",
+                                          }}>
+                                          near_me
+                                        </span>
                                         Navigeer
                                       </button>
                                     )}
                                   </div>
-
-                                  {/* Status chip */}
-                                  <div style={{ flexShrink: 0, marginLeft: 12 }}>
-                                    {isGeboekt ? (
-                                      <div style={{ padding: '6px 12px', borderRadius: 9999, background: 'rgba(63,255,139,0.1)', border: '1px solid rgba(63,255,139,0.3)' }}>
-                                        <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b', textTransform: 'uppercase' }}>{boeking!.uren}U GEBOEKT</span>
-                                      </div>
-                                    ) : item.is_definitief ? (
-                                      <div style={{
-                                        padding: '6px 12px', borderRadius: 9999,
-                                        background: isToday ? '#feb300' : 'rgba(254,179,0,0.1)',
-                                        border: isToday ? 'none' : '1px solid rgba(254,179,0,0.3)',
-                                        boxShadow: isToday ? '0 0 10px rgba(254,179,0,0.3)' : 'none',
-                                      }}>
-                                        <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: isToday ? '#523700' : '#feb300', textTransform: 'uppercase' }}>NOG BOEKEN</span>
-                                      </div>
-                                    ) : (
-                                      <div style={{ padding: '6px 12px', borderRadius: 9999, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: '#a0abc3', textTransform: 'uppercase' }}>CONCEPT</span>
-                                      </div>
-                                    )}
-                                  </div>
+                                  {!isLast && (
+                                    <div style={{
+                                      height: 1,
+                                      background: 'rgba(61,72,93,0.5)',
+                                      margin: '0 16px',
+                                    }} />
+                                  )}
                                 </div>
-                                {!isLast && <div style={{ height: 1, background: 'rgba(61,72,93,0.5)', margin: '0 20px' }} />}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
 
-                {items.length === 0 && beschikbaarheid.length === 0 && (
-                  <div style={{ textAlign: 'center', padding: '48px 20px' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 48, color: '#a0abc3', marginBottom: 12, display: 'block' }}>calendar_today</span>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter', marginBottom: 6 }}>Geen bevestigde planning</p>
-                    <p style={{ fontSize: 13, color: '#a0abc3', fontFamily: 'Inter' }}>Je manager heeft de planning nog niet gepubliceerd voor deze week.</p>
+                {/* Empty full week */}
+                {items.length === 0 && beschikbaarheid.length === 0 && !loading && (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '48px 20px',
+                  }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 48,
+                        color: '#a0abc3',
+                        marginBottom: 12,
+                        display: 'block',
+                        fontVariationSettings: "'wght' 300",
+                      }}>
+                      calendar_today
+                    </span>
+                    <p style={{
+                      fontSize: 15,
+                      fontWeight: 700,
+                      fontFamily: 'Manrope',
+                      color: '#dae6ff',
+                      marginBottom: 6,
+                    }}>
+                      Geen bevestigde planning
+                    </p>
+                    <p style={{
+                      fontSize: 13,
+                      color: '#a0abc3',
+                      fontFamily: 'Inter',
+                      lineHeight: 1.6,
+                    }}>
+                      Je manager heeft de planning nog niet gepubliceerd voor deze week.
+                    </p>
                   </div>
                 )}
               </div>
