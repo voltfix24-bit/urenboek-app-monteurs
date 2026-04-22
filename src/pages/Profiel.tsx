@@ -805,13 +805,12 @@ export default function Profiel() {
 
       {/* Verlof modal */}
       {showVerlof && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }} onClick={() => setShowVerlof(false)}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }} onClick={() => setShowVerlof(false)}>
           <div onClick={e => e.stopPropagation()} style={{
             width: '100%', maxWidth: 480, background: 'rgba(12,20,27,0.95)', backdropFilter: 'blur(20px)',
             borderRadius: '32px 32px 0 0', borderTop: '1px solid rgba(66,73,80,0.1)',
-            maxHeight: '85vh', display: 'flex', flexDirection: 'column',
+            maxHeight: '92dvh', display: 'flex', flexDirection: 'column',
             boxShadow: '0 -20px 50px rgba(0,0,0,0.5)',
-            paddingBottom: 'calc(env(safe-area-inset-bottom, 34px) + 16px)',
           }}>
             {/* Handle */}
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
@@ -911,7 +910,12 @@ export default function Profiel() {
             </div>
 
             {/* Sticky submit button */}
-            <div style={{ padding: '12px 24px', borderTop: '1px solid rgba(66,73,80,0.15)', flexShrink: 0 }}>
+            <div style={{
+              padding: '12px 24px calc(env(safe-area-inset-bottom, 0px) + 16px)',
+              borderTop: '1px solid rgba(66,73,80,0.15)',
+              background: 'rgba(12,20,27,0.95)',
+              flexShrink: 0,
+            }}>
               <button onClick={requestVerlof} disabled={!verlofForm.datum_van || !verlofForm.datum_tot} style={{
                 width: '100%', padding: '18px 0', borderRadius: 14,
                 background: 'linear-gradient(135deg, #3fff8b, #13ea79)',
