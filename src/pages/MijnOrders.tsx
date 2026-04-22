@@ -1,19 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "sonner";
-import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
-import { HeaderLogo } from "@/components/HeaderLogo";
-import { Download, FileText, CheckCircle } from "lucide-react";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { euroDecimals as euro } from "@/lib/formatting";
-import { downloadInkooporderPdf } from "@/components/InkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
-import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { useNavigate } from "react-router-dom";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { WeekDownloadList } from "@/components/WeekDownloadList";
@@ -24,8 +15,6 @@ export default function MijnOrders() {
   const { profileId } = useProfile();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<any[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [orderRegels, setOrderRegels] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -40,39 +29,6 @@ export default function MijnOrders() {
   }, [profileId]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
-
-  const loadDetail = async (order: any) => {
-    setSelectedOrder(order);
-    const { data } = await supabase.from("inkooporder_regels").select("*, uren_boekingen(beschrijving, type)").eq("inkooporder_id", order.id).order("datum");
-    const verrijkt = (data || []).map((r: any) => ({
-      ...r,
-      activiteit: r.activiteit || (r.uren_boekingen as any)?.beschrijving || (r.uren_boekingen as any)?.type || "",
-    }));
-    const projIds = [...new Set(verrijkt.map((r: any) => r.project_id).filter(Boolean))];
-    if (projIds.length > 0) {
-      const { data: projs } = await supabase.from("projects").select("id, nummer").in("id", projIds);
-      const nummerMap = new Map((projs || []).map((p: any) => [p.id, p.nummer]));
-      verrijkt.forEach((r: any) => { r._project_nummer = nummerMap.get(r.project_id) || ""; });
-    }
-    setOrderRegels(verrijkt);
-  };
-
-  const downloadPdf = async () => {
-    if (!selectedOrder) return;
-    try {
-      let gkNaam: string | undefined;
-      if (selectedOrder.aangemaakt_door) {
-        const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
-        gkNaam = gk?.full_name || undefined;
-      }
-      const bedrijf = await getBedrijfsgegevens();
-      await downloadInkooporderPdf(selectedOrder, orderRegels, profile, bedrijf, gkNaam);
-      toast.success("PDF wordt gedownload");
-    } catch (err) {
-      console.error("PDF download failed:", err);
-      toast.error("PDF kon niet worden gegenereerd");
-    }
-  };
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#030e20' }}><Spinner /></div>;
 
