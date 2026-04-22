@@ -805,13 +805,12 @@ export default function Profiel() {
 
       {/* Verlof modal */}
       {showVerlof && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }} onClick={() => setShowVerlof(false)}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }} onClick={() => setShowVerlof(false)}>
           <div onClick={e => e.stopPropagation()} style={{
             width: '100%', maxWidth: 480, background: 'rgba(12,20,27,0.95)', backdropFilter: 'blur(20px)',
             borderRadius: '32px 32px 0 0', borderTop: '1px solid rgba(66,73,80,0.1)',
-            maxHeight: '85vh', display: 'flex', flexDirection: 'column',
+            maxHeight: '92dvh', display: 'flex', flexDirection: 'column',
             boxShadow: '0 -20px 50px rgba(0,0,0,0.5)',
-            paddingBottom: 'calc(env(safe-area-inset-bottom, 34px) + 16px)',
           }}>
             {/* Handle */}
             <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
