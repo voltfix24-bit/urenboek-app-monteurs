@@ -8,6 +8,7 @@ interface Props {
   medewerker_id: string;
   onSaved: () => void;
   onCancel?: () => void;
+  initialType?: string;
 }
 
 interface CertState {
@@ -22,7 +23,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"];
 const IS_TOUCH = typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
 
-export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: Props) {
+export default function CertificatenForm({ medewerker_id, onSaved, onCancel, initialType }: Props) {
   const [state, setState] = useState<Record<string, CertState>>({});
   const [uploads, setUploads] = useState<Record<string, File | null>>({});
   const [saving, setSaving] = useState(false);
@@ -32,6 +33,7 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const cameraInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const initialTypeRef = useRef<string | undefined>(initialType);
 
   useEffect(() => {
     loadExisting();
@@ -62,8 +64,19 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
         }
       }
     }
+    // Pre-select the requested type (e.g., from clicking a missing card)
+    const t = initialTypeRef.current;
+    if (t && initial[t] && !initial[t].checked) {
+      initial[t].checked = true;
+    }
     setState(initial);
     setLoading(false);
+    if (t) {
+      // Scroll the matching card into view after render
+      setTimeout(() => {
+        document.getElementById(`cert-card-${t}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
   };
 
   const toggle = (type: string) => {
@@ -311,7 +324,7 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel }: P
         const isChecked = s.checked;
 
         return (
-          <div key={cfg.type} className="rounded-[14px] transition-all" style={{
+          <div key={cfg.type} id={`cert-card-${cfg.type}`} className="rounded-[14px] transition-all" style={{
             background: isChecked ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
             border: isChecked ? "1.5px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
             padding: "14px 16px",
