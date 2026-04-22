@@ -336,21 +336,23 @@ export default function VerlofAanvragen() {
 
       {/* Header */}
       <header style={{
-        display: "flex", alignItems: "center", gap: 14, padding: "20px 20px 16px",
+        display: "flex", alignItems: "center", gap: 12, padding: "16px 20px 12px",
       }}>
         <button
           onClick={() => navigate(-1)}
+          aria-label="Terug"
           style={{
-            width: 40, height: 40, borderRadius: "50%", background: "#1d2730",
-            border: "none", color: GREEN, display: "flex",
+            width: 40, height: 40, borderRadius: 12, background: SURFACE,
+            border: "none", color: TEXT, display: "flex",
             alignItems: "center", justifyContent: "center", cursor: "pointer",
           }}>
           <span className="material-symbols-outlined" style={{ fontSize: 22 }}>arrow_back</span>
         </button>
         <h1 style={{
-          fontFamily: "Manrope", fontWeight: 800, fontSize: 22, color: TEXT,
+          fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: TEXT,
+          letterSpacing: "-0.01em",
         }}>
-          Verlof aanvragen
+          Verlofaanvraag
         </h1>
       </header>
 
@@ -458,41 +460,37 @@ export default function VerlofAanvragen() {
             </div>
           )}
 
-          {/* Summary */}
+          {/* Summary — compacte periode-bar met icoon */}
           {isValid && range?.from && range?.to && (
             <div style={{
-              marginTop: 12, padding: "14px 16px", borderRadius: 14,
-              background: SURFACE_2, display: "flex", justifyContent: "space-between",
-              alignItems: "center", gap: 12,
+              marginTop: 14, padding: "14px 16px", borderRadius: 14,
+              background: SURFACE_2,
+              display: "flex", alignItems: "center", gap: 14,
             }}>
-              <div style={{ minWidth: 0 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 12,
+                background: "rgba(63,255,139,0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 22, color: GREEN }}>
+                  calendar_today
+                </span>
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
                 <p style={{
-                  fontSize: 9, fontWeight: 700, color: SUBTLE,
-                  fontFamily: "Inter", textTransform: "uppercase",
-                  letterSpacing: "0.15em", marginBottom: 4,
-                }}>
-                  PERIODE
-                </p>
-                <p style={{
-                  fontFamily: "Inter", fontSize: 13, color: TEXT, fontWeight: 600,
+                  fontFamily: "Manrope", fontWeight: 800, fontSize: 15, color: TEXT,
+                  lineHeight: 1.2, marginBottom: 4,
                 }}>
                   {format(range.from, "d MMM", { locale: nl })}
                   {" – "}
                   {format(range.to, "d MMM yyyy", { locale: nl })}
                 </p>
-              </div>
-              <div style={{ textAlign: "right", flexShrink: 0 }}>
                 <p style={{
-                  fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: GREEN,
-                  lineHeight: 1, marginBottom: 2,
+                  fontFamily: "Inter", fontSize: 12, color: MUTED, fontWeight: 600,
                 }}>
-                  {aantalDagen}
-                </p>
-                <p style={{
-                  fontFamily: "Inter", fontSize: 10, color: MUTED, fontWeight: 600,
-                }}>
-                  {aantalDagen === 1 ? "dag" : "dagen"}
-                  {aantalWerkdagen !== aantalDagen && ` · ${aantalWerkdagen} werkd.`}
+                  {aantalDagen} {aantalDagen === 1 ? "dag" : "dagen"}
+                  {aantalWerkdagen !== aantalDagen && ` • ${aantalWerkdagen} werkdagen`}
                 </p>
               </div>
             </div>
@@ -534,17 +532,17 @@ export default function VerlofAanvragen() {
           disabled={!isValid || sending}
           style={{
             pointerEvents: "auto",
-            width: "100%", padding: "18px 0", borderRadius: 16,
+            width: "100%", padding: "16px 0", borderRadius: 14,
             background: isValid ? `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})` : SURFACE,
             border: "none", color: isValid ? "#003d1f" : SUBTLE,
-            fontFamily: "Manrope", fontWeight: 800, fontSize: 16,
-            textTransform: "uppercase", letterSpacing: "0.1em",
+            fontFamily: "Manrope", fontWeight: 800, fontSize: 15,
+            letterSpacing: "0.01em",
             cursor: isValid && !sending ? "pointer" : "not-allowed",
             opacity: sending ? 0.6 : 1,
             boxShadow: isValid ? "0 12px 40px rgba(63,255,139,0.25)" : "none",
             transition: "all 0.2s",
           }}>
-          {sending ? "Versturen..." : "Aanvraag versturen"}
+          {sending ? "Versturen…" : "Aanvraag versturen"}
         </button>
       </div>
 
