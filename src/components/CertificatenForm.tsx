@@ -285,10 +285,13 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel, ini
 
     if (isUploading) {
       return (
-        <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
-          <Loader2 className="h-4 w-4 animate-spin" style={{ color: "#3fff8b" }} />
-          <span className="text-xs" style={{ color: "#a0abc3" }}>Uploaden...</span>
-        </div>
+        <>
+          {renderStatusBar(status)}
+          <div className="flex items-center gap-2 mt-2 p-3 rounded-[10px]" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
+            <Loader2 className="h-4 w-4 animate-spin" style={{ color: "#3fff8b" }} />
+            <span className="text-xs" style={{ color: "#a0abc3" }}>Uploaden...</span>
+          </div>
+        </>
       );
     }
 
