@@ -77,7 +77,7 @@ function ManagerHandtekeningSection({ profileId }: { profileId: string | null })
   if (loading) return null;
 
   return (
-    <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+    <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }} className="space-y-3">
       <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Jouw handtekening</p>
       <p className="text-[10px]" style={{ color: "#a0abc3" }}>Voor digitale ondertekening van contracten</p>
 
@@ -157,7 +157,7 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
   }
 
   return (
-    <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+    <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }} className="space-y-3">
       <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Mijn contract</p>
 
       {contract?.status === "ondertekend_beiden" && (
@@ -364,7 +364,7 @@ export default function Profiel() {
           <div style={{
             background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
             backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)',
-            borderRadius: 24, padding: '32px 24px', marginBottom: 20,
+            borderRadius: 16, padding: '32px 24px', marginBottom: 12,
             display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden',
           }}>
             <div style={{ position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(63,255,139,0.15), transparent)', pointerEvents: 'none' }} />
@@ -387,7 +387,7 @@ export default function Profiel() {
 
           {/* Onboarding banner */}
           {profile?.account_status === 'onboarding' && (
-            <div style={{ padding: '14px 16px', borderRadius: 16, background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.2)', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{ padding: '14px 16px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(254,179,0,0.25)', borderLeft: '3px solid #feb300', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <div>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#feb300', fontFamily: 'Inter' }}>⚠ Account nog niet actief</p>
                 <p style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', marginTop: 2 }}>Vul je gegevens aan en rond je onboarding af.</p>
@@ -521,14 +521,14 @@ export default function Profiel() {
           {!permissies.zietDashboard && <MonteurContractSection profileId={profile?.id || null} />}
 
           {/* BESCHIKBAARHEID */}
-          <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: 0 }}>
             {/* Section title */}
             <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(165,172,180,0.6)', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 12 }}>
               Beschikbaarheid
             </p>
 
             {/* Vaste vrije dagen */}
-            <div style={{ background: '#0c141b', borderRadius: 16, padding: '16px 20px', marginBottom: 10 }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
               <p style={{ fontSize: 10, fontWeight: 700, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>
                 Vaste vrije dagen
               </p>
@@ -550,7 +550,7 @@ export default function Profiel() {
             </div>
 
             {/* Calendar */}
-            <div style={{ background: '#0c141b', borderRadius: 16, padding: 20, marginBottom: 10 }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: 20, marginBottom: 12 }}>
               {/* Month navigation */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                 <h4 style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 18, color: '#dae6ff', textTransform: 'capitalize' }}>
@@ -622,19 +622,23 @@ export default function Profiel() {
             </div>
 
             {/* Action buttons — 2 large cards */}
-            <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
               <button onClick={() => navigate("/verlof-aanvragen")} style={{
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                padding: '24px 16px', borderRadius: 20, background: '#172129',
-                border: '1px solid rgba(66,73,80,0.3)', cursor: 'pointer', gap: 8,
+                padding: '24px 16px', borderRadius: 16,
+                background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(106,118,140,0.15)', cursor: 'pointer', gap: 8,
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#74fbbb' }}>event_repeat</span>
                 <span style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 13, color: '#dae6ff' }}>Verlof aanvragen</span>
               </button>
               <button onClick={() => navigate("/ziek-melden")} style={{
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                padding: '24px 16px', borderRadius: 20, background: '#172129',
-                border: '1px solid rgba(66,73,80,0.3)', cursor: 'pointer', gap: 8,
+                padding: '24px 16px', borderRadius: 16,
+                background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(106,118,140,0.15)', cursor: 'pointer', gap: 8,
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#ff716c' }}>medical_services</span>
                 <span style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 13, color: '#dae6ff' }}>Ziek melden</span>
@@ -684,7 +688,10 @@ export default function Profiel() {
                     };
                     return (
                       <div key={b.id} style={{
-                        background: '#0c141b', borderRadius: 16, padding: '14px 16px',
+                        background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                        backdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(106,118,140,0.15)',
+                        borderRadius: 16, padding: '14px 16px',
                         display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'space-between',
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -733,7 +740,7 @@ export default function Profiel() {
           <CertificatenOverzicht certificaten={certs} toonToevoegen={true} medewerker_id={profile?.id} onRefresh={fetchCerts} />
 
           {/* NOODCONTACT */}
-          <div style={{ background: 'rgba(254,179,0,0.06)', border: '1px solid rgba(254,179,0,0.2)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
+          <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(254,179,0,0.25)', borderLeft: '3px solid #feb300', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: '#feb300', fontFamily: 'Inter', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span className="material-symbols-outlined" style={{ fontSize: 18 }}>emergency</span> Noodcontact
             </p>
@@ -767,7 +774,7 @@ export default function Profiel() {
             width: '100%', padding: '16px 20px', borderRadius: 16,
             background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
             border: '1px solid rgba(106,118,140,0.15)', borderLeft: '3px solid #3fff8b',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginBottom: 16,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginBottom: 12,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(63,255,139,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -784,9 +791,10 @@ export default function Profiel() {
           {/* INSTALLEER APP */}
           {canShowInstallPrompt() && (
             <button onClick={triggerInstallPrompt} style={{
-              width: '100%', padding: '16px 20px', borderRadius: 16, background: 'rgba(63,255,139,0.08)',
-              border: '1px solid rgba(63,255,139,0.3)', color: '#3fff8b', fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              width: '100%', padding: '16px 20px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(63,255,139,0.3)', borderLeft: '3px solid #3fff8b', color: '#3fff8b', fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12,
             }}>
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>install_mobile</span>
               Installeer app op beginscherm
