@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CERT_CONFIG, type CertConfig } from "@/lib/certificaten";
@@ -132,15 +133,86 @@ export default function CertificatenForm({ medewerker_id, onSaved, onCancel, ini
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const maxFuture = new Date(); maxFuture.setFullYear(maxFuture.getFullYear() + 20);
+
+    // Per-veld certificaat schema
+    const certSchema = z.object({
+      niveaus: z.array(z.string()),
+      vervaldatum: z.string(),
+      gebieden: z.array(z.string()),
+    });
+
     for (const cfg of CERT_CONFIG) {
       const s = state[cfg.type];
       if (!s?.checked) continue;
-      if (cfg.heeftNiveau && s.niveaus.length === 0) errs[cfg.type] = "Selecteer minimaal één niveau";
-      if (cfg.heeftVervaldatum && !s.vervaldatum) errs[cfg.type] = "Vul een geldigheidsdatum in";
-      if (cfg.heeftGebieden && s.gebieden.length === 0) errs[cfg.type] = "Selecteer minimaal één gebied";
+
+      // Basis schema parse (vangt onverwachte types af)
+      const parsed = certSchema.safeParse({
+        niveaus: s.niveaus,
+        vervaldatum: s.vervaldatum,
+        gebieden: s.gebieden,
+      });
+      if (!parsed.success) {
+        errs[cfg.type] = "Ongeldige invoer";
+        continue;
+      }
+
+      if (cfg.heeftNiveau && s.niveaus.length === 0) {
+        errs[cfg.type] = "Selecteer minimaal één niveau";
+        continue;
+      }
+      if (cfg.heeftGebieden && s.gebieden.length === 0) {
+        errs[cfg.type] = "Selecteer minimaal één gebied";
+        continue;
+      }
+      if (cfg.heeftVervaldatum) {
+        if (!s.vervaldatum) {
+          errs[cfg.type] = "Vul een geldigheidsdatum in";
+          continue;
+        }
+        // Datum-formaat & range
+        const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+        if (!datePattern.test(s.vervaldatum)) {
+          errs[cfg.type] = "Ongeldige datum (gebruik JJJJ-MM-DD)";
+          continue;
+        }
+        const d = new Date(s.vervaldatum);
+        if (Number.isNaN(d.getTime())) {
+          errs[cfg.type] = "Ongeldige datum";
+          continue;
+        }
+        if (d < today) {
+          errs[cfg.type] = "Vervaldatum mag niet in het verleden liggen";
+          continue;
+        }
+        if (d > maxFuture) {
+          errs[cfg.type] = "Vervaldatum is onrealistisch ver in de toekomst";
+          continue;
+        }
+      }
     }
+
     setErrors(errs);
-    return Object.keys(errs).length === 0;
+
+    if (Object.keys(errs).length > 0) {
+      const aantal = Object.keys(errs).length;
+      toast.error(
+        aantal === 1
+          ? "Vul de ontbrekende velden in om door te gaan"
+          : `${aantal} certificaten hebben ontbrekende of ongeldige velden`
+      );
+      // Scroll eerste fout in beeld
+      const firstErrorType = Object.keys(errs)[0];
+      setTimeout(() => {
+        document.getElementById(`cert-card-${firstErrorType}`)?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 50);
+      return false;
+    }
+    return true;
   };
 
   const uploadFile = async (type: string, file: File): Promise<string | null> => {
