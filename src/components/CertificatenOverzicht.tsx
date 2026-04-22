@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CERT_CONFIG } from "@/lib/certificaten";
 import { differenceInDays, parseISO, format } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Pencil, Paperclip, ExternalLink, ChevronRight } from "lucide-react";
+import { Pencil, Paperclip, ExternalLink, ChevronRight, AlertTriangle } from "lucide-react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import CertificatenForm from "./CertificatenForm";
 
@@ -87,6 +87,35 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
   const aanwezig = CERT_CONFIG.filter(cfg => (grouped[cfg.type]?.length ?? 0) > 0).length;
   const ontbreekt = totaal - aanwezig;
 
+  // ── WAARSCHUWING: certificaten verlopen of binnen 60 dagen ──
+  // Per type alleen de meest urgente registratie (laagste resterende dagen) meenemen.
+  const WAARSCHUWING_DAGEN = 60;
+  const nu = new Date();
+  type Waarschuwing = { type: string; label: string; dagen: number; vervaldatum: string };
+  const waarschuwingen: Waarschuwing[] = CERT_CONFIG
+    .map(cfg => {
+      const items = (grouped[cfg.type] ?? []).filter(c => c.vervaldatum);
+      if (items.length === 0) return null;
+      const meestUrgent = items.reduce((min, c) =>
+        parseISO(c.vervaldatum!).getTime() < parseISO(min.vervaldatum!).getTime() ? c : min
+      );
+      const dagen = differenceInDays(parseISO(meestUrgent.vervaldatum!), nu);
+      if (dagen > WAARSCHUWING_DAGEN) return null;
+      return {
+        type: cfg.type,
+        label: cfg.kortLabel || cfg.label,
+        dagen,
+        vervaldatum: meestUrgent.vervaldatum!,
+      } as Waarschuwing;
+    })
+    .filter((w): w is Waarschuwing => w !== null)
+    .sort((a, b) => a.dagen - b.dagen);
+
+  const heeftVerlopen = waarschuwingen.some(w => w.dagen < 0);
+  const stripBg = heeftVerlopen ? "rgba(255,113,108,0.08)" : "rgba(254,179,0,0.08)";
+  const stripBorder = heeftVerlopen ? "rgba(255,113,108,0.4)" : "rgba(254,179,0,0.4)";
+  const stripColor = heeftVerlopen ? "#ff716c" : "#feb300";
+
   return (
     <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
       <div className="flex items-center justify-between">
@@ -109,6 +138,68 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
           </button>
         )}
       </div>
+
+      {/* Waarschuwingsstrook — verlopen of binnen 60 dagen */}
+      {waarschuwingen.length > 0 && (
+        <div
+          role="alert"
+          className="rounded-xl p-3 flex items-start gap-2.5"
+          style={{ background: stripBg, border: `1px solid ${stripBorder}` }}
+        >
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: stripColor }} />
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <p className="text-xs font-bold" style={{ color: stripColor }}>
+              {heeftVerlopen
+                ? `${waarschuwingen.filter(w => w.dagen < 0).length} verlopen${waarschuwingen.some(w => w.dagen >= 0) ? ` · ${waarschuwingen.filter(w => w.dagen >= 0).length} binnenkort` : ""}`
+                : `${waarschuwingen.length} ${waarschuwingen.length === 1 ? "certificaat verloopt" : "certificaten verlopen"} binnen 60 dagen`}
+            </p>
+            <ul className="space-y-1">
+              {waarschuwingen.slice(0, 4).map(w => {
+                const Tag: any = toonToevoegen && medewerker_id ? "button" : "div";
+                return (
+                  <Tag
+                    key={w.type}
+                    {...(toonToevoegen && medewerker_id ? {
+                      type: "button",
+                      onClick: () => openForm(w.type),
+                      "aria-label": `${w.label} verlengen`,
+                    } : {})}
+                    className={`w-full flex items-center justify-between gap-2 text-[11px] ${toonToevoegen && medewerker_id ? "hover:brightness-125 active:scale-[0.99] transition" : ""}`}
+                    style={{ color: "#dae6ff", textAlign: "left" }}
+                  >
+                    <span className="font-semibold truncate">{w.label}</span>
+                    <span className="shrink-0 font-bold" style={{ color: w.dagen < 0 ? "#ff716c" : "#feb300" }}>
+                      {w.dagen < 0
+                        ? `${Math.abs(w.dagen)} dgn verlopen`
+                        : w.dagen === 0
+                          ? "vandaag"
+                          : `nog ${w.dagen} dgn`}
+                    </span>
+                  </Tag>
+                );
+              })}
+              {waarschuwingen.length > 4 && (
+                <li className="text-[11px]" style={{ color: "#a0abc3" }}>
+                  +{waarschuwingen.length - 4} meer…
+                </li>
+              )}
+            </ul>
+            {toonToevoegen && medewerker_id && (
+              <button
+                onClick={() => openForm()}
+                className="mt-1 px-2.5 py-1 rounded-lg text-[10px] font-bold"
+                style={{
+                  background: "rgba(63,255,139,0.1)",
+                  border: "1px solid rgba(63,255,139,0.3)",
+                  color: "#3fff8b",
+                }}
+              >
+                Verlengen / nieuwe upload
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-2">
         {CERT_CONFIG.map(cfg => {
