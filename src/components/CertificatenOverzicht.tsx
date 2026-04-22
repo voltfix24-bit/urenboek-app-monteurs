@@ -36,6 +36,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
   const [showForm, setShowForm] = useState(false);
   const [initialType, setInitialType] = useState<string | undefined>(undefined);
   const [detailType, setDetailType] = useState<string | null>(null);
+  const [detailSort, setDetailSort] = useState<"datum" | "status">("datum");
 
   const openForm = (type?: string) => {
     setInitialType(type);
@@ -269,12 +270,28 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
       {(() => {
         const cfg = detailType ? CERT_CONFIG.find(c => c.type === detailType) : null;
         const items = cfg ? (grouped[cfg.type] ?? []) : [];
-        const sortedItems = [...items].sort((a, b) => {
+
+        // Datum-sortering: eerst-vervallend bovenaan; ontbrekende vervaldata onderaan.
+        const datumSorted = [...items].sort((a, b) => {
           if (!a.vervaldatum && !b.vervaldatum) return 0;
           if (!a.vervaldatum) return 1;
           if (!b.vervaldatum) return -1;
           return parseISO(a.vervaldatum).getTime() - parseISO(b.vervaldatum).getTime();
         });
+
+        // Status-sortering: 0 = verlopen (met bewijs), 1 = actueel (geldig + bewijs),
+        // 2 = geldig zonder bewijs / geen vervaldatum / overig.
+        const statusRank = (c: Certificaat): number => {
+          if (!c.vervaldatum) return 2;
+          const dagen = differenceInDays(parseISO(c.vervaldatum), new Date());
+          if (dagen < 0 && c.bestand_url) return 0;
+          if (dagen >= 0 && c.bestand_url) return 1;
+          return 2;
+        };
+        const statusSorted = [...datumSorted].sort((a, b) => statusRank(a) - statusRank(b));
+
+        const sortedItems = detailSort === "status" ? statusSorted : datumSorted;
+
         return (
           <BottomSheet
             open={!!cfg}
@@ -284,10 +301,43 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
           >
             {cfg && (
               <div className="space-y-3 pb-2">
-                <p className="text-xs" style={{ color: "#a0abc3" }}>
-                  {items.length} {items.length === 1 ? "registratie" : "registraties"} —
-                  {" "}{items.filter(i => i.bestand_url).length} met bewijs
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs" style={{ color: "#a0abc3" }}>
+                    {items.length} {items.length === 1 ? "registratie" : "registraties"} —
+                    {" "}{items.filter(i => i.bestand_url).length} met bewijs
+                  </p>
+                  {items.length > 1 && (
+                    <div
+                      role="tablist"
+                      aria-label="Sorteren"
+                      className="flex p-0.5 rounded-lg"
+                      style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.2)" }}
+                    >
+                      {([
+                        { key: "datum", label: "Datum" },
+                        { key: "status", label: "Status" },
+                      ] as const).map(opt => {
+                        const active = detailSort === opt.key;
+                        return (
+                          <button
+                            key={opt.key}
+                            role="tab"
+                            aria-selected={active}
+                            onClick={() => setDetailSort(opt.key)}
+                            className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition"
+                            style={{
+                              background: active ? "#3fff8b" : "transparent",
+                              color: active ? "#003d1f" : "#a0abc3",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
 
                 {sortedItems.map((item, idx) => {
                   const status = vervaldatumStatus(item.vervaldatum);
