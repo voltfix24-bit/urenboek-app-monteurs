@@ -910,7 +910,12 @@ export default function Profiel() {
             </div>
 
             {/* Sticky submit button */}
-            <div style={{ padding: '12px 24px', borderTop: '1px solid rgba(66,73,80,0.15)', flexShrink: 0 }}>
+            <div style={{
+              padding: '12px 24px calc(env(safe-area-inset-bottom, 0px) + 16px)',
+              borderTop: '1px solid rgba(66,73,80,0.15)',
+              background: 'rgba(12,20,27,0.95)',
+              flexShrink: 0,
+            }}>
               <button onClick={requestVerlof} disabled={!verlofForm.datum_van || !verlofForm.datum_tot} style={{
                 width: '100%', padding: '18px 0', borderRadius: 14,
                 background: 'linear-gradient(135deg, #3fff8b, #13ea79)',
