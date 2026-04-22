@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import type { NavBadges } from "@/hooks/useNavBadges";
 import { NavBadge } from "./NavBadge";
-import { Clock, CheckCircle, CalendarDays, Bell, User, LayoutDashboard, FolderOpen, FileText, Users, type LucideIcon } from "lucide-react";
+import { CheckCircle, CalendarDays, Bell, User, LayoutDashboard, FolderOpen, FileText, Users, type LucideIcon } from "lucide-react";
 
 interface TabDef {
   key: string;
@@ -22,8 +22,7 @@ export function BottomNav({ badges }: BottomNavProps) {
   const { permissies, isManager, isUitvoerder } = useAuth();
 
   const monteurTabs: TabDef[] = [
-    { key: "/", icon: Clock, label: "Uren", badge: badges.afgekeurdeUren },
-    { key: "/planning", icon: CalendarDays, label: "Planning" },
+    { key: "/planning", icon: CalendarDays, label: "Planning", badge: badges.afgekeurdeUren },
     { key: "/mijn-orders", icon: FileText, label: "Orders", badge: badges.nieuweOrders },
     { key: "/mededelingen", icon: Bell, label: "Berichten", badge: badges.ongelezen },
     { key: "/profiel", icon: User, label: "Profiel" },

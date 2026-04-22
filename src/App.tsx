@@ -14,7 +14,7 @@ import { UpdatePrompt } from "@/components/UpdatePrompt";
 import { VersionFooter } from "@/components/VersionFooter";
 
 // Critical pages — loaded eagerly
-import Index from "./pages/Index";
+// Index removed: monteur landing now redirects to /planning
 import Auth from "./pages/Auth";
 import Setup from "./pages/Setup";
 import ResetPassword from "./pages/ResetPassword";
@@ -96,7 +96,7 @@ function RoleRoute({ children, check }: { children: React.ReactNode; check: (p: 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { session, loading, permissies } = useAuth();
   if (loading) return null;
-  if (session) return <Navigate to={permissies.zietDashboard ? "/dashboard" : "/"} replace />;
+  if (session) return <Navigate to={permissies.zietDashboard ? "/dashboard" : "/planning"} replace />;
   return <>{children}</>;
 }
 
@@ -132,8 +132,8 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><RB><Onboarding /></RB></ProtectedRoute>} />
               <Route path="/onboarding-welkom" element={<ProtectedRoute><L><OnboardingWelkom /></L></ProtectedRoute>} />
 
-              {/* Index — eager (monteur start page) */}
-              <Route path="/" element={<ProtectedRoute><RB><Index /></RB></ProtectedRoute>} />
+              {/* Index — monteur start page redirects to planning */}
+              <Route path="/" element={<ProtectedRoute><Navigate to="/planning" replace /></ProtectedRoute>} />
 
               {/* Lazy routes */}
               <Route path="/planning" element={<RoleRoute check={p => p.zietPlanning}><L><Planning /></L></RoleRoute>} />
