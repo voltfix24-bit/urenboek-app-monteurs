@@ -983,12 +983,15 @@ export default function Planning() {
               </div>
 
               {/* Scrollable */}
-              <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                overscrollBehavior: 'contain',
-                padding: '4px 24px 0',
-              }}>
+              <div
+                ref={modalScrollRef}
+                onScroll={updateScrollHint}
+                style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  overscrollBehavior: 'contain',
+                  padding: '4px 24px 0',
+                }}>
                 {/* Header */}
                 <div style={{
                   display: 'flex',
