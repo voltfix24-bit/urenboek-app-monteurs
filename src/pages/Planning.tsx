@@ -41,12 +41,21 @@ export default function Planning() {
   const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8, toelichting: "" });
   const modalScrollRef = useRef<HTMLDivElement | null>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
-  // Dynamische spacing voor sticky footer + modal-positie wanneer iOS/Android
-  // keyboard of URL-bar het visualViewport verkleint. Het hele sheet wordt
-  // omhoog geschoven, zodat de Indienen-knop nooit onder het keyboard zit.
+  // Dynamische spacing voor sticky footer + modal-positie wanneer iOS Safari /
+  // Android Chrome het visualViewport verkleinen (keyboard, URL-bar). Het sheet
+  // wordt omhoog vertaald zodat de Indienen-knop nooit onder het keyboard zit.
+  //
+  // Verschillen iOS vs Android:
+  // - iOS Safari: keyboard verkleint alleen visualViewport.height; innerHeight
+  //   blijft gelijk → overlap = innerHeight - vv.height - vv.offsetTop > 0.
+  // - Android Chrome ≥108 (default `resizes-visual`): zelfde als iOS, werkt.
+  // - Android Chrome legacy / WebView (`resizes-content`): keyboard verkleint
+  //   innerHeight zelf → overlap blijft 0. We vangen dit op met focus-scroll.
+  // - Android URL-bar: bij scrollen verandert layout viewport; `dvh` in maxHeight
+  //   reageert daar correct op zonder JS.
   const [footerOffset, setFooterOffset] = useState(0);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
-  const [maxModalHeight, setMaxModalHeight] = useState<string>('92vh');
+  const [maxModalHeight, setMaxModalHeight] = useState<string>('92dvh');
 
   const updateScrollHint = useCallback(() => {
     const el = modalScrollRef.current;
@@ -57,12 +66,11 @@ export default function Planning() {
 
   useLayoutEffect(() => {
     if (!showUrenModal) return;
-    // wait one frame so layout is settled
     const id = requestAnimationFrame(updateScrollHint);
     return () => cancelAnimationFrame(id);
   }, [showUrenModal, urenForm, updateScrollHint]);
 
-  // Track safe-area + visualViewport (keyboard / iOS URL bar).
+  // Track safe-area + visualViewport (keyboard / URL-bar) en focus-fallback.
   useEffect(() => {
     if (!showUrenModal) return;
 
@@ -80,24 +88,39 @@ export default function Planning() {
     const compute = () => {
       const safeInset = readSafeAreaInset();
       const vv = window.visualViewport;
-      // Pixels die layout-viewport groter is dan het zichtbare visualViewport
-      // (= keyboard hoogte op iOS Safari, of Android browser-chrome dat overlapt).
+      // Pixels waarmee layout-viewport groter is dan zichtbaar visualViewport
+      // (= keyboard hoogte op iOS Safari + Android Chrome `resizes-visual`).
       const overlap = vv
         ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
         : 0;
 
-      // > 80px → vrijwel zeker een keyboard. Daaronder enkel URL-bar dynamiek;
-      // sheet hoeft dan niet vertaald te worden.
-      const keyboardLikely = overlap > 80;
+      // > 60px → vrijwel zeker keyboard (ook split/floating Android keyboards).
+      // Een dynamische URL-bar transitie is doorgaans 40-56px, dus die negeren we.
+      const keyboardLikely = overlap > 60;
       setKeyboardOffset(keyboardLikely ? overlap : 0);
 
-      // Footer-padding = altijd safe-area (sheet is al verschoven boven keyboard),
-      // met minimaal 12px lucht zodat de knop niet de rand raakt.
+      // Footer-padding: altijd safe-area, minimaal 12px lucht.
       setFooterOffset(Math.max(safeInset, 12));
 
-      // Modal beperken tot zichtbare viewport (zonder keyboard).
+      // Modal-hoogte op zichtbare viewport (keyboard al uitgesloten via vv.height).
       const usable = vv ? vv.height : window.innerHeight;
       setMaxModalHeight(`${Math.round(usable * 0.92)}px`);
+    };
+
+    // Fallback voor Android Chrome `resizes-content` mode of WebViews:
+    // visualViewport beweegt niet, maar input krijgt focus → scroll input in beeld.
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const tag = target.tagName;
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') return;
+      // Wacht tot keyboard animatie + visualViewport-resize gebeurd is.
+      setTimeout(() => {
+        if (keyboardOffset === 0) {
+          // Geen viewport-shift gedetecteerd → laat browser zelf scrollen.
+          target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+      }, 300);
     };
 
     compute();
@@ -105,13 +128,15 @@ export default function Planning() {
     window.addEventListener('orientationchange', compute);
     window.visualViewport?.addEventListener('resize', compute);
     window.visualViewport?.addEventListener('scroll', compute);
+    document.addEventListener('focusin', handleFocusIn);
     return () => {
       window.removeEventListener('resize', compute);
       window.removeEventListener('orientationchange', compute);
       window.visualViewport?.removeEventListener('resize', compute);
       window.visualViewport?.removeEventListener('scroll', compute);
+      document.removeEventListener('focusin', handleFocusIn);
     };
-  }, [showUrenModal]);
+  }, [showUrenModal, keyboardOffset]);
   const weekNumber = getISOWeek(weekStart);
 
   const fetchPlanning = useCallback(async () => {
