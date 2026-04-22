@@ -603,13 +603,14 @@ export default function Profiel() {
                 })}
               </div>
 
-              {/* Legend */}
+              {/* Legend — kleuren komen exact overeen met TYPE_COLORS gebruikt op de kalender */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(66,73,80,0.4)' }}>
                 {[
-                  { label: 'Vrije dag', color: '#424950' },
-                  { label: 'Vakantie', color: '#00dcfd' },
-                  { label: 'Ziek', color: '#ff716c' },
-                  { label: 'Verlof', color: '#74fbbb' },
+                  { label: 'Vaste vrije dag', color: '#a0abc3' },
+                  { label: 'Vakantie', color: TYPE_COLORS.vakantie.dot },
+                  { label: 'Verlof', color: TYPE_COLORS.verlof.dot },
+                  { label: 'Ziek', color: TYPE_COLORS.ziek.dot },
+                  { label: 'Anders', color: TYPE_COLORS.anders.dot },
                 ].map(l => (
                   <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.color, flexShrink: 0 }} />
