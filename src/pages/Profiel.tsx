@@ -619,7 +619,7 @@ export default function Profiel() {
 
             {/* Action buttons — 2 large cards */}
             <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-              <button onClick={() => setShowVerlof(true)} style={{
+              <button onClick={() => navigate("/verlof-aanvragen")} style={{
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 padding: '24px 16px', borderRadius: 20, background: '#172129',
                 border: '1px solid rgba(66,73,80,0.3)', cursor: 'pointer', gap: 8,

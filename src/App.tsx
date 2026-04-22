@@ -45,6 +45,7 @@ const ContractAanmaken = lazy(() => import("./pages/ContractAanmaken"));
 const ContractOndertekenen = lazy(() => import("./pages/ContractOndertekenen"));
 const OnboardingWelkom = lazy(() => import("./pages/OnboardingWelkom"));
 const ZiekMelden = lazy(() => import("./pages/ZiekMelden"));
+const VerlofAanvragen = lazy(() => import("./pages/VerlofAanvragen"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -141,6 +142,7 @@ const App = () => (
               <Route path="/profiel" element={<ProtectedRoute><L><Profiel /></L></ProtectedRoute>} />
               <Route path="/mijn-orders" element={<RoleRoute check={p => p.zietInkooporders}><L><MijnOrders /></L></RoleRoute>} />
               <Route path="/ziek-melden" element={<ProtectedRoute><L><ZiekMelden /></L></ProtectedRoute>} />
+              <Route path="/verlof-aanvragen" element={<ProtectedRoute><L><VerlofAanvragen /></L></ProtectedRoute>} />
 
               <Route path="/dashboard" element={<RoleRoute check={p => p.zietDashboard}><L><Dashboard /></L></RoleRoute>} />
               <Route path="/goedkeuring" element={<RoleRoute check={p => p.zietGoedkeuring}><L><Goedkeuring /></L></RoleRoute>} />
