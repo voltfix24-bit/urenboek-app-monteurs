@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CERT_CONFIG } from "@/lib/certificaten";
 import { differenceInDays, parseISO, format } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Pencil, Award, Paperclip } from "lucide-react";
+import { Pencil, Paperclip } from "lucide-react";
 import CertificatenForm from "./CertificatenForm";
 
 interface Certificaat {
