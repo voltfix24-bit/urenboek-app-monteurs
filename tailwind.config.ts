@@ -14,6 +14,7 @@ export default {
     },
     extend: {
       colors: {
+        "app-navy": "var(--app-navy)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
