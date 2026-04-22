@@ -807,8 +807,8 @@ export default function Profiel() {
       {showVerlof && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }} onClick={() => setShowVerlof(false)}>
           <div onClick={e => e.stopPropagation()} style={{
-            width: '100%', maxWidth: 480, background: 'rgba(12,20,27,0.95)', backdropFilter: 'blur(20px)',
-            borderRadius: '32px 32px 0 0', borderTop: '1px solid rgba(66,73,80,0.1)',
+            width: '100%', maxWidth: 480, background: '#030e20',
+            borderRadius: '32px 32px 0 0', borderTop: '1px solid rgba(255,255,255,0.08)',
             maxHeight: '92dvh', display: 'flex', flexDirection: 'column',
             boxShadow: '0 -20px 50px rgba(0,0,0,0.5)',
           }}>

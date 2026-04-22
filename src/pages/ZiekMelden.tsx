@@ -236,8 +236,8 @@ export default function ZiekMelden() {
   /* ── FORM SCREEN ── */
   return (
     <div style={{
-      minHeight: "100vh",
-      background: "#080f15",
+      minHeight: "100dvh",
+      background: "#030e20",
       paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 96px)",
     }}>
       {/* Header with back button */}
