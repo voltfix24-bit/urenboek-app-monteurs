@@ -1151,298 +1151,298 @@ export default function Profiel() {
           }
 
           {/* BESCHIKBAARHEID */}
-          <div style={{ marginBottom: 0 }}>
-            {/* Section title */}
-            <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(165,172,180,0.6)', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 12 }}>
+          <div style={{
+            background: '#111a2c',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: 16,
+            marginBottom: 12,
+            padding: '16px 20px',
+          }}>
+            <h3 style={{
+              fontSize: 11,
+              fontWeight: 700,
+              fontFamily: 'Inter',
+              color: 'rgba(218,230,255,0.5)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.15em',
+              marginBottom: 14,
+            }}>
               Beschikbaarheid
+            </h3>
+            <p style={{
+              fontSize: 11,
+              color: '#a0abc3',
+              fontFamily: 'Inter',
+              marginBottom: 10,
+            }}>
+              Vaste vrije dagen
             </p>
-
-            {/* Vaste vrije dagen */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>
-                Vaste vrije dagen
-              </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4 }}>
-                {[1, 2, 3, 4, 5, 6, 0].map(dag => {
-                  const active = profile?.vaste_vrije_dagen?.includes(dag);
-                  return (
-                    <button key={dag} onClick={() => toggleVrijeDag(dag)} style={{
-                      flex: 1, padding: '8px 0', borderRadius: 8,
-                      background: active ? 'rgba(63,255,139,0.1)' : '#1d2730',
-                      border: active ? '2px solid #3fff8b' : '2px solid transparent',
-                      color: active ? '#3fff8b' : 'rgba(165,172,180,0.4)',
-                      fontFamily: 'Inter', fontWeight: 700, fontSize: 11, cursor: 'pointer',
-                      opacity: active ? 1 : 0.7,
-                    }}>{DAGEN_LABEL[dag]}</button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Calendar */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: 20, marginBottom: 12 }}>
-              {/* Month navigation */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <h4 style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 18, color: '#dae6ff', textTransform: 'capitalize' }}>
-                  {format(calMonth, 'MMMM yyyy', { locale: nl })}
-                </h4>
-                <div style={{ display: 'flex', gap: 16 }}>
-                  <button onClick={() => setCalMonth(subMonths(calMonth, 1))} style={{ background: 'none', border: 'none', color: '#6f767e', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 22 }}>chevron_left</span>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 4,
+            }}>
+              {[1,2,3,4,5,6,0].map(dag => {
+                const active = profile?.vaste_vrije_dagen?.includes(dag);
+                return (
+                  <button
+                    key={dag}
+                    onClick={() => toggleVrijeDag(dag)}
+                    style={{
+                      flex: 1,
+                      aspectRatio: '1',
+                      borderRadius: 12,
+                      background: active
+                        ? 'rgba(63,255,139,0.15)'
+                        : '#060e20',
+                      border: active
+                        ? '1px solid rgba(63,255,139,0.4)'
+                        : '1px solid rgba(255,255,255,0.05)',
+                      color: active ? '#3fff8b' : '#54617A',
+                      fontFamily: 'Inter',
+                      fontWeight: 700,
+                      fontSize: 10,
+                      cursor: 'pointer',
+                      boxShadow: active
+                        ? '0 0 12px rgba(63,255,139,0.15)'
+                        : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    {DAGEN_LABEL[dag]}
                   </button>
-                  <button onClick={() => setCalMonth(addMonths(calMonth, 1))} style={{ background: 'none', border: 'none', color: '#6f767e', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 22 }}>chevron_right</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Day headers */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 8 }}>
-                {['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].map(d => (
-                  <div key={d} style={{ textAlign: 'center', fontSize: 9, fontWeight: 700, color: '#424950', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em', paddingBottom: 4 }}>
-                    {d}
-                  </div>
-                ))}
-              </div>
-
-              {/* Calendar days */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', rowGap: 16 }}>
-                {Array.from({ length: (startPad + 6) % 7 }).map((_, i) => (<div key={`pad-${i}`} />))}
-                {days.map(day => {
-                  const status = getDayStatus(day);
-                  const isToday = isSameDay(day, new Date());
-                  const dotColor = status ? (TYPE_COLORS[status.type]?.dot || '#a0abc3') : null;
-                  return (
-                    <div key={day.toISOString()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, position: 'relative' }}>
-                      <div style={{
-                        width: 32, height: 32, borderRadius: 10,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: isToday ? '#3fff8b' : 'transparent',
-                      }}>
-                        <span style={{
-                          fontSize: 12,
-                          fontWeight: isToday ? 700 : 500,
-                          color: isToday ? '#080f15' : (dotColor || '#a0abc3'),
-                        }}>{format(day, 'd')}</span>
-                      </div>
-                      {status && (
-                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: dotColor }} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Legend — kleuren komen exact overeen met TYPE_COLORS gebruikt op de kalender */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(66,73,80,0.4)' }}>
-                {[
-                  { label: 'Vaste vrije dag', color: '#a0abc3' },
-                  { label: 'Vakantie', color: TYPE_COLORS.vakantie.dot },
-                  { label: 'Verlof', color: TYPE_COLORS.verlof.dot },
-                  { label: 'Ziek', color: TYPE_COLORS.ziek.dot },
-                  { label: 'Anders', color: TYPE_COLORS.anders.dot },
-                ].map(l => (
-                  <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.color, flexShrink: 0 }} />
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#a0abc3', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      {l.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Action buttons — 2 large cards */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-              <button onClick={() => navigate("/verlof-aanvragen")} style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                padding: '24px 16px', borderRadius: 16,
-                background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(106,118,140,0.15)', cursor: 'pointer', gap: 8,
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#74fbbb' }}>event_repeat</span>
-                <span style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 13, color: '#dae6ff' }}>Verlof aanvragen</span>
-              </button>
-              <button onClick={() => navigate("/ziek-melden")} style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                padding: '24px 16px', borderRadius: 16,
-                background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(106,118,140,0.15)', cursor: 'pointer', gap: 8,
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#ff716c' }}>medical_services</span>
-                <span style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 13, color: '#dae6ff' }}>Ziek melden</span>
-              </button>
-            </div>
-
-            {/* Recente aanvragen */}
-            {beschikbaarheid.length > 0 && (
-              <div>
-                <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(165,172,180,0.6)', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 10 }}>
-                  Recente aanvragen
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {beschikbaarheid.slice(0, 5).map(b => {
-                    const TYPE_ICONS: Record<string, string> = {
-                      vakantie: 'beach_access',
-                      verlof: 'event_repeat',
-                      anders: 'more_time',
-                      ziek: 'medical_services',
-                    };
-                    const TYPE_COLORS_BG: Record<string, string> = {
-                      vakantie: 'rgba(0,220,253,0.1)',
-                      verlof: 'rgba(116,251,187,0.1)',
-                      anders: 'rgba(165,172,180,0.1)',
-                      ziek: 'rgba(255,113,108,0.1)',
-                    };
-                    const TYPE_ICON_COLORS: Record<string, string> = {
-                      vakantie: '#00dcfd',
-                      verlof: '#74fbbb',
-                      anders: '#a0abc3',
-                      ziek: '#ff716c',
-                    };
-                    const STATUS_COLORS: Record<string, string> = {
-                      aangevraagd: '#00dcfd',
-                      goedgekeurd: '#3fff8b',
-                      afgekeurd: '#ff716c',
-                    };
-                    const STATUS_BG: Record<string, string> = {
-                      aangevraagd: 'rgba(0,220,253,0.1)',
-                      goedgekeurd: 'rgba(63,255,139,0.1)',
-                      afgekeurd: 'rgba(255,113,108,0.1)',
-                    };
-                    const STATUS_BORDER: Record<string, string> = {
-                      aangevraagd: 'rgba(0,220,253,0.3)',
-                      goedgekeurd: 'rgba(63,255,139,0.3)',
-                      afgekeurd: 'rgba(255,113,108,0.3)',
-                    };
-                    return (
-                      <div key={b.id} style={{
-                        background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
-                        backdropFilter: 'blur(12px)',
-                        border: '1px solid rgba(106,118,140,0.15)',
-                        borderRadius: 16, padding: '14px 16px',
-                        display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'space-between',
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                          <div style={{
-                            width: 44, height: 44, borderRadius: 12,
-                            background: TYPE_COLORS_BG[b.type] || 'rgba(165,172,180,0.1)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                          }}>
-                            <span className="material-symbols-outlined" style={{
-                              fontSize: 20,
-                              color: TYPE_ICON_COLORS[b.type] || '#a0abc3',
-                              fontVariationSettings: "'FILL' 1",
-                            }}>{TYPE_ICONS[b.type] || 'event'}</span>
-                          </div>
-                          <div>
-                            <p style={{ fontFamily: 'Manrope', fontWeight: 700, fontSize: 14, color: '#dae6ff', textTransform: 'capitalize', marginBottom: 2 }}>
-                              {b.type}
-                            </p>
-                            <p style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter' }}>
-                              {format(parseISO(b.datum_van), 'd MMM', { locale: nl })}
-                              {' – '}
-                              {format(parseISO(b.datum_tot), 'd MMM', { locale: nl })}
-                            </p>
-                          </div>
-                        </div>
-                        <div style={{
-                          padding: '4px 10px', borderRadius: 6,
-                          background: STATUS_BG[b.status] || STATUS_BG.aangevraagd,
-                          border: `1px solid ${STATUS_BORDER[b.status] || STATUS_BORDER.aangevraagd}`,
-                        }}>
-                          <span style={{
-                            fontSize: 9, fontWeight: 800,
-                            color: STATUS_COLORS[b.status] || STATUS_COLORS.aangevraagd,
-                            fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em',
-                          }}>{b.status}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* CERTIFICATEN */}
-          <CertificatenOverzicht certificaten={certs} toonToevoegen={true} medewerker_id={profile?.id} onRefresh={fetchCerts} />
-
-          {/* NOODCONTACT */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(254,179,0,0.25)', borderLeft: '3px solid #feb300', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: '#feb300', fontFamily: 'Inter', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>emergency</span> Noodcontact
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>Naam</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#dae6ff', fontFamily: 'Inter' }}>{(profile as any)?.noodcontact_naam || '—'}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>Telefoon</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#dae6ff', fontFamily: 'Inter' }}>{(profile as any)?.noodcontact_tel || '—'}</span>
-              </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* INSTELLINGEN */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, marginBottom: 12, overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(61,72,93,0.3)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3' }}>settings</span>
-                <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'Inter', color: '#dae6ff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Instellingen</span>
+          {/* ACTIE KNOPPEN */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 12,
+            marginBottom: 12,
+          }}>
+            <button
+              onClick={() => navigate('/verlof-aanvragen')}
+              style={{
+                background: 'rgba(63,255,139,0.08)',
+                border: '1px solid rgba(63,255,139,0.25)',
+                borderRadius: 16,
+                padding: '20px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 10,
+                cursor: 'pointer',
+              }}>
+              <div style={{
+                width: 48, height: 48,
+                borderRadius: '50%',
+                background: 'rgba(63,255,139,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: 24,
+                    color: '#3fff8b',
+                    fontVariationSettings: "'wght' 300",
+                  }}>
+                  event_busy
+                </span>
               </div>
-            </div>
-            <div style={{ padding: '16px 20px' }}>
-              <PasswordChange />
-            </div>
+              <span style={{
+                fontSize: 11,
+                fontWeight: 700,
+                fontFamily: 'Inter',
+                color: '#3fff8b',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                textAlign: 'center',
+              }}>
+                Verlof aanvragen
+              </span>
+            </button>
+            <button
+              onClick={() => navigate('/ziek-melden')}
+              style={{
+                background: 'rgba(255,113,108,0.08)',
+                border: '1px solid rgba(255,113,108,0.25)',
+                borderRadius: 16,
+                padding: '20px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 10,
+                cursor: 'pointer',
+              }}>
+              <div style={{
+                width: 48, height: 48,
+                borderRadius: '50%',
+                background: 'rgba(255,113,108,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: 24,
+                    color: '#ff716c',
+                    fontVariationSettings: "'wght' 300",
+                  }}>
+                  medical_services
+                </span>
+              </div>
+              <span style={{
+                fontSize: 11,
+                fontWeight: 700,
+                fontFamily: 'Inter',
+                color: '#ff716c',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                textAlign: 'center',
+              }}>
+                Ziek melden
+              </span>
+            </button>
           </div>
 
           {/* MIJN ORDERS SHORTCUT */}
-          <button onClick={() => navigate('/mijn-orders')} style={{
-            width: '100%', padding: '16px 20px', borderRadius: 16,
-            background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
-            border: '1px solid rgba(106,118,140,0.15)', borderLeft: '3px solid #3fff8b',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginBottom: 12,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(63,255,139,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 22, color: '#3fff8b' }}>receipt_long</span>
+          <button
+            onClick={() => navigate('/mijn-orders')}
+            style={{
+              width: '100%',
+              padding: '16px 20px',
+              borderRadius: 16,
+              background: '#111a2c',
+              border: '1px solid rgba(255,255,255,0.05)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              marginBottom: 12,
+            }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+            }}>
+              <div style={{
+                width: 44, height: 44,
+                borderRadius: '50%',
+                background: 'rgba(63,255,139,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: 22,
+                    color: '#3fff8b',
+                    fontVariationSettings: "'wght' 300",
+                  }}>
+                  receipt_long
+                </span>
               </div>
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#dae6ff', fontFamily: 'Inter', marginBottom: 2 }}>Mijn inkooporders</div>
-                <div style={{ fontSize: 11, color: '#a0abc3', fontFamily: 'Inter' }}>Bekijk je orders en PDF's</div>
+                <div style={{
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: '#dae6ff',
+                  fontFamily: 'Inter',
+                  marginBottom: 2,
+                }}>
+                  Mijn inkooporders
+                </div>
+                <div style={{
+                  fontSize: 11,
+                  color: '#a0abc3',
+                  fontFamily: 'Inter',
+                }}>
+                  Bekijk je orders en PDF's
+                </div>
               </div>
             </div>
-            <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#a0abc3', opacity: 0.6 }}>chevron_right</span>
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 20,
+                color: '#54617A',
+                fontVariationSettings: "'wght' 300",
+              }}>
+              chevron_right
+            </span>
           </button>
 
           {/* INSTALLEER APP */}
           {canShowInstallPrompt() && (
-            <button onClick={triggerInstallPrompt} style={{
-              width: '100%', padding: '16px 20px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(63,255,139,0.3)', borderLeft: '3px solid #3fff8b', color: '#3fff8b', fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12,
-            }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>install_mobile</span>
+            <button
+              onClick={triggerInstallPrompt}
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                borderRadius: 16,
+                background: '#111a2c',
+                border: '1px solid rgba(63,255,139,0.2)',
+                color: '#3fff8b',
+                fontFamily: 'Inter',
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                marginBottom: 12,
+              }}>
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 20,
+                  fontVariationSettings: "'wght' 300",
+                }}>
+                install_mobile
+              </span>
               Installeer app op beginscherm
             </button>
           )}
 
           {/* UITLOGGEN */}
-          <button onClick={signOut} style={{
-            width: '100%', padding: '16px 20px', borderRadius: 16, background: 'transparent',
-            border: '1px solid #ff716c', color: '#ff716c', fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>logout</span>
+          <button
+            onClick={signOut}
+            style={{
+              width: '100%',
+              padding: '16px 20px',
+              borderRadius: 16,
+              background: 'transparent',
+              border: '1px solid rgba(255,113,108,0.3)',
+              color: '#ff716c',
+              fontFamily: 'Inter',
+              fontWeight: 600,
+              fontSize: 14,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}>
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 20,
+                fontVariationSettings: "'wght' 300",
+              }}>
+              logout
+            </span>
             Uitloggen
           </button>
         </main>
-
         <BottomNav badges={badges} />
       </div>
     </PageShell>
