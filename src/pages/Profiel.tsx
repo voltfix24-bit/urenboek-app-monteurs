@@ -364,7 +364,7 @@ export default function Profiel() {
           <div style={{
             background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
             backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)',
-            borderRadius: 24, padding: '32px 24px', marginBottom: 20,
+            borderRadius: 16, padding: '32px 24px', marginBottom: 12,
             display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', overflow: 'hidden',
           }}>
             <div style={{ position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(63,255,139,0.15), transparent)', pointerEvents: 'none' }} />
@@ -387,7 +387,7 @@ export default function Profiel() {
 
           {/* Onboarding banner */}
           {profile?.account_status === 'onboarding' && (
-            <div style={{ padding: '14px 16px', borderRadius: 16, background: 'rgba(254,179,0,0.08)', border: '1px solid rgba(254,179,0,0.2)', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{ padding: '14px 16px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(254,179,0,0.25)', borderLeft: '3px solid #feb300', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <div>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#feb300', fontFamily: 'Inter' }}>⚠ Account nog niet actief</p>
                 <p style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter', marginTop: 2 }}>Vul je gegevens aan en rond je onboarding af.</p>
@@ -521,7 +521,7 @@ export default function Profiel() {
           {!permissies.zietDashboard && <MonteurContractSection profileId={profile?.id || null} />}
 
           {/* BESCHIKBAARHEID */}
-          <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: 0 }}>
             {/* Section title */}
             <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(165,172,180,0.6)', fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 12 }}>
               Beschikbaarheid
@@ -774,7 +774,7 @@ export default function Profiel() {
             width: '100%', padding: '16px 20px', borderRadius: 16,
             background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
             border: '1px solid rgba(106,118,140,0.15)', borderLeft: '3px solid #3fff8b',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginBottom: 16,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginBottom: 12,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(63,255,139,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
