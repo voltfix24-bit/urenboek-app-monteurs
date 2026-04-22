@@ -8,7 +8,7 @@ import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { volledigAdres } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ChevronLeft, ChevronRight, Lock, CalendarDays, ThermometerSun, Palmtree, MessageSquare, Clock, Check, MapPin, Navigation, Users, Info } from "lucide-react";
+
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { nl } from "date-fns/locale";
@@ -240,32 +240,120 @@ export default function Planning() {
 
         <PullToRefresh onRefresh={async () => { await fetchPlanning(); }}>
           <main style={{ padding: '24px 20px' }}>
-            {/* WEEK SELECTOR */}
-            <section style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            {/* ── WEEK HEADER ── */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              marginBottom: 16,
+            }}>
               <div>
-                <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#3fff8b', marginBottom: 4 }}>JOUW PLANNING</p>
-                <h2 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 26, color: '#dae6ff', lineHeight: 1, marginBottom: 4 }}>Week {weekNumber}</h2>
-                <p style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>
-                  {format(weekStart, 'EEE d MMM', { locale: nl })} t/m {format(addDays(weekStart, 4), 'EEE d MMM', { locale: nl })}
+                <p style={{
+                  fontSize: 10, fontWeight: 700,
+                  fontFamily: 'Inter',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.2em',
+                  color: '#3fff8b', marginBottom: 4,
+                }}>
+                  Jouw planning
+                </p>
+                <h2 style={{
+                  fontFamily: 'Manrope',
+                  fontWeight: 800, fontSize: 28,
+                  color: '#dae6ff', lineHeight: 1,
+                  letterSpacing: '-0.5px',
+                  marginBottom: 5,
+                }}>
+                  Week {weekNumber}
+                </h2>
+                <p style={{
+                  fontSize: 12, color: '#a0abc3',
+                  fontFamily: 'Inter',
+                }}>
+                  {format(weekStart, 'EEE d MMM', { locale: nl })}
+                  {' — '}
+                  {format(addDays(weekStart, 4), 'EEE d MMM', { locale: nl })}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setWeekStart(w => addWeeks(w, -1))} style={{
-                  width: 44, height: 44, borderRadius: 12, background: '#102038',
-                  border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>chevron_left</span>
+                <button
+                  onClick={() => setWeekStart(w => addWeeks(w, -1))}
+                  style={{
+                    width: 40, height: 40,
+                    borderRadius: 12,
+                    background: '#0d1f38',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    color: '#dae6ff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 20, fontVariationSettings: "'wght' 300" }}>
+                    chevron_left
+                  </span>
                 </button>
-                <button onClick={() => setWeekStart(w => addWeeks(w, 1))} style={{
-                  width: 44, height: 44, borderRadius: 12, background: '#102038',
-                  border: '1px solid rgba(255,255,255,0.07)', color: '#dae6ff',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>chevron_right</span>
+                <button
+                  onClick={() => setWeekStart(w => addWeeks(w, 1))}
+                  style={{
+                    width: 40, height: 40,
+                    borderRadius: 12,
+                    background: '#0d1f38',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    color: '#dae6ff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 20, fontVariationSettings: "'wght' 300" }}>
+                    chevron_right
+                  </span>
                 </button>
               </div>
-            </section>
+            </div>
+
+            {/* ── WEEK PROGRESS STRIP ── */}
+            <div style={{
+              display: 'flex', gap: 5,
+              marginBottom: 28,
+            }}>
+              {Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)).map((day, i) => {
+                const ds = format(day, 'yyyy-MM-dd');
+                const isToday = ds === today;
+                const hasItems = items.some(it => it.datum === ds);
+                const barColor =
+                  isToday ? '#3fff8b'
+                  : hasItems ? '#feb300'
+                  : 'rgba(255,255,255,0.07)';
+                return (
+                  <div key={i} style={{ flex: 1 }}>
+                    <div style={{
+                      height: 3, borderRadius: 2,
+                      background: isToday
+                        ? `linear-gradient(90deg, #3fff8b 50%, rgba(255,255,255,0.07) 50%)`
+                        : barColor,
+                      marginBottom: 6,
+                    }} />
+                    <div style={{
+                      fontSize: 9.5,
+                      fontFamily: 'Inter',
+                      fontWeight: isToday ? 700 : 400,
+                      color: isToday ? '#3fff8b' : '#54617A',
+                      letterSpacing: '0.5px',
+                      textTransform: 'uppercase',
+                    }}>
+                      {['MA','DI','WO','DO','VR'][i]}
+                      {' '}{format(day, 'd')}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
             {/* LOADING */}
             {loading && (
