@@ -952,7 +952,6 @@ export default function Planning() {
                 maxHeight: '92vh',
                 display: 'flex',
                 flexDirection: 'column',
-                paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)',
               }}>
               {/* Handle */}
               <div style={{
