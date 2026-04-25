@@ -647,15 +647,29 @@ export default function Planning() {
                                 adres: item.project_adres,
                               });
 
+                              const isBewerkbaar = isGeboekt && boeking!.status !== "goedgekeurd";
+                              const klikbaar = (!isGeboekt && item.is_definitief) || isBewerkbaar;
+                              // Kleurschema per status van de boeking
+                              const boekingKleur = !isGeboekt ? null : (
+                                boeking!.status === "goedgekeurd" ? { bg: "rgba(63,255,139,0.1)", border: "rgba(63,255,139,0.25)", fg: "#3fff8b", icon: "check_circle", fill: true } :
+                                boeking!.status === "afgekeurd"   ? { bg: "rgba(255,113,108,0.1)", border: "rgba(255,113,108,0.25)", fg: "#ff716c", icon: "error", fill: true } :
+                                boeking!.status === "ingediend"   ? { bg: "rgba(254,179,0,0.1)",  border: "rgba(254,179,0,0.25)",  fg: "#feb300", icon: "schedule", fill: false } :
+                                                                    { bg: "#102038",                border: "rgba(255,255,255,0.08)", fg: "#a0abc3", icon: "edit_note", fill: false }
+                              );
+
                               return (
                                 <div key={item.id}>
                                   <div
                                     onClick={() => {
-                                      if (!isGeboekt && item.is_definitief) openUrenModal(item);
+                                      if (isBewerkbaar) {
+                                        openUrenModal(item, boeking!);
+                                      } else if (!isGeboekt && item.is_definitief) {
+                                        openUrenModal(item);
+                                      }
                                     }}
                                     style={{
                                       padding: '14px 16px',
-                                      cursor: isGeboekt || !item.is_definitief ? 'default' : 'pointer',
+                                      cursor: klikbaar ? 'pointer' : 'default',
                                       opacity: item.is_definitief ? 1 : 0.5,
                                     }}>
                                     {/* Top row */}
@@ -721,34 +735,47 @@ export default function Planning() {
                                       </div>
 
                                       {/* Status */}
-                                      {isGeboekt ? (
+                                      {isGeboekt && boekingKleur ? (
                                         <div style={{
                                           display: 'flex',
                                           alignItems: 'center',
                                           gap: 4,
                                           padding: '4px 10px',
                                           borderRadius: 9999,
-                                          background: 'rgba(63,255,139,0.1)',
-                                          border: '1px solid rgba(63,255,139,0.25)',
+                                          background: boekingKleur.bg,
+                                          border: `1px solid ${boekingKleur.border}`,
                                           flexShrink: 0,
                                         }}>
                                           <span
                                             className="material-symbols-outlined"
                                             style={{
                                               fontSize: 13,
-                                              color: '#3fff8b',
-                                              fontVariationSettings: "'FILL' 1",
+                                              color: boekingKleur.fg,
+                                              fontVariationSettings: boekingKleur.fill ? "'FILL' 1" : "'wght' 400",
                                             }}>
-                                            check_circle
+                                            {boekingKleur.icon}
                                           </span>
                                           <span style={{
                                             fontSize: 11,
                                             fontWeight: 700,
                                             fontFamily: 'Inter',
-                                            color: '#3fff8b',
+                                            color: boekingKleur.fg,
                                           }}>
                                             {boeking!.uren}u
                                           </span>
+                                          {isBewerkbaar && (
+                                            <span
+                                              className="material-symbols-outlined"
+                                              style={{
+                                                fontSize: 11,
+                                                color: boekingKleur.fg,
+                                                opacity: 0.75,
+                                                marginLeft: 2,
+                                                fontVariationSettings: "'wght' 400",
+                                              }}>
+                                              edit
+                                            </span>
+                                          )}
                                         </div>
                                       ) : item.is_definitief ? (
                                         <div style={{
