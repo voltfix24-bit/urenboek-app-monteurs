@@ -747,48 +747,67 @@ export default function Planning() {
                                               : boeking!.status === "afgekeurd"
                                                 ? "Afgekeurd door manager. Tik om te corrigeren en opnieuw in te dienen."
                                                 : "Concept — nog niet ingediend. Tik om aan te passen of in te dienen.";
+                                        const hint = isBewerkbaar ? "Aanpasbaar" : "Vergrendeld";
                                         return (
-                                        <div
-                                          title={tooltip}
-                                          aria-label={tooltip}
-                                          style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 4,
-                                            padding: '4px 10px',
-                                            borderRadius: 9999,
-                                            background: boekingKleur.bg,
-                                            border: `1px solid ${boekingKleur.border}`,
-                                            flexShrink: 0,
-                                            cursor: isBewerkbaar ? 'pointer' : 'help',
-                                          }}>
-                                          <span
-                                            className="material-symbols-outlined"
+                                        <div style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 6,
+                                          flexShrink: 0,
+                                        }}>
+                                          <div
+                                            title={tooltip}
+                                            aria-label={tooltip}
                                             style={{
-                                              fontSize: 13,
-                                              color: boekingKleur.fg,
-                                              fontVariationSettings: boekingKleur.fill ? "'FILL' 1" : "'wght' 400",
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: 4,
+                                              padding: '4px 10px',
+                                              borderRadius: 9999,
+                                              background: boekingKleur.bg,
+                                              border: `1px solid ${boekingKleur.border}`,
+                                              cursor: isBewerkbaar ? 'pointer' : 'help',
                                             }}>
-                                            {boekingKleur.icon}
-                                          </span>
+                                            <span
+                                              className="material-symbols-outlined"
+                                              style={{
+                                                fontSize: 13,
+                                                color: boekingKleur.fg,
+                                                fontVariationSettings: boekingKleur.fill ? "'FILL' 1" : "'wght' 400",
+                                              }}>
+                                              {boekingKleur.icon}
+                                            </span>
+                                            <span style={{
+                                              fontSize: 11,
+                                              fontWeight: 700,
+                                              fontFamily: 'Inter',
+                                              color: boekingKleur.fg,
+                                            }}>
+                                              {boeking!.uren}u
+                                            </span>
+                                            <span
+                                              className="material-symbols-outlined"
+                                              style={{
+                                                fontSize: 11,
+                                                color: boekingKleur.fg,
+                                                opacity: 0.75,
+                                                marginLeft: 2,
+                                                fontVariationSettings: "'wght' 400",
+                                              }}>
+                                              {isBewerkbaar ? "edit" : "lock"}
+                                            </span>
+                                          </div>
                                           <span style={{
-                                            fontSize: 11,
+                                            fontSize: 10,
                                             fontWeight: 700,
                                             fontFamily: 'Inter',
                                             color: boekingKleur.fg,
+                                            opacity: 0.7,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.06em',
+                                            whiteSpace: 'nowrap',
                                           }}>
-                                            {boeking!.uren}u
-                                          </span>
-                                          <span
-                                            className="material-symbols-outlined"
-                                            style={{
-                                              fontSize: 11,
-                                              color: boekingKleur.fg,
-                                              opacity: 0.75,
-                                              marginLeft: 2,
-                                              fontVariationSettings: "'wght' 400",
-                                            }}>
-                                            {isBewerkbaar ? "edit" : "lock"}
+                                            {hint}
                                           </span>
                                         </div>
                                         );
