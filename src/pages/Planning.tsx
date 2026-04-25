@@ -1162,7 +1162,7 @@ export default function Planning() {
                     {editingBoekingId ? "Uren aanpassen" : "Uren boeken"}
                   </h2>
                   <button
-                    onClick={() => setShowUrenModal(false)}
+                    onClick={() => { setShowUrenModal(false); setEditingBoekingId(null); }}
                     style={{
                       width: 36, height: 36,
                       borderRadius: '50%',
