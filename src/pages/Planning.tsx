@@ -249,9 +249,18 @@ export default function Planning() {
     return Math.max(0.5, Math.round(diff * 2) / 2);
   }
 
-  function openUrenModal(item: PlanningItem) {
+  function openUrenModal(item: PlanningItem, existing?: ExistingBoeking) {
     setModalItem(item);
-    setUrenForm({ werkzaamheden: "monteren", uren: 8, toelichting: "" });
+    if (existing) {
+      setEditingBoekingId(existing.id);
+      // Probeer toelichting uit beschrijving te halen (formaat: "type — afwijking +Xu: toelichting")
+      const m = existing.beschrijving?.match(/:\s*(.+)$/);
+      const toelichting = m && existing.beschrijving?.includes("afwijking") ? m[1] : "";
+      setUrenForm({ werkzaamheden: existing.type || "monteren", uren: existing.uren, toelichting });
+    } else {
+      setEditingBoekingId(null);
+      setUrenForm({ werkzaamheden: "monteren", uren: 8, toelichting: "" });
+    }
     setShowUrenModal(true);
   }
 
@@ -267,7 +276,31 @@ export default function Planning() {
     const beschrijving = needsToelichting
       ? `${urenForm.werkzaamheden} — afwijking ${urenForm.uren - planned > 0 ? '+' : ''}${(urenForm.uren - planned).toFixed(1)}u: ${urenForm.toelichting.trim()}`
       : urenForm.werkzaamheden;
-    // Stap 1: altijd eerst als concept inserten (RLS staat alleen 'concept' toe bij insert)
+
+    // EDIT modus: bestaande boeking updaten (alleen toegestaan zolang nog niet goedgekeurd)
+    if (editingBoekingId) {
+      // Eerst status terug naar 'concept' (RLS staat update alleen toe bij concept/ingediend/afgekeurd → met_check verlangt 'concept' of 'ingediend')
+      const { error: updErr } = await supabase
+        .from("uren_boekingen")
+        .update({
+          uren: urenForm.uren,
+          type: urenForm.werkzaamheden,
+          beschrijving,
+          status: submitDirect ? "ingediend" : "concept",
+        })
+        .eq("id", editingBoekingId);
+      if (updErr) {
+        toast.error("Kon uren niet aanpassen: " + updErr.message);
+        return;
+      }
+      toast.success(submitDirect ? "Aangepast en opnieuw ingediend ✓" : "Uren aangepast");
+      setShowUrenModal(false);
+      setEditingBoekingId(null);
+      fetchPlanning();
+      return;
+    }
+
+    // NIEUW: Stap 1: altijd eerst als concept inserten (RLS staat alleen 'concept' toe bij insert)
     const { data: inserted, error: insertErr } = await supabase
       .from("uren_boekingen")
       .insert({
