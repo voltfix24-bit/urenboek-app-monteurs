@@ -1159,7 +1159,7 @@ export default function Planning() {
                     fontSize: 22,
                     color: '#dae6ff',
                   }}>
-                    Uren boeken
+                    {editingBoekingId ? "Uren aanpassen" : "Uren boeken"}
                   </h2>
                   <button
                     onClick={() => setShowUrenModal(false)}
