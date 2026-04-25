@@ -254,12 +254,14 @@ export default function Planning() {
     setModalItem(item);
     if (existing) {
       setEditingBoekingId(existing.id);
+      setEditingBoekingStatus(existing.status || null);
       // Probeer toelichting uit beschrijving te halen (formaat: "type — afwijking +Xu: toelichting")
       const m = existing.beschrijving?.match(/:\s*(.+)$/);
       const toelichting = m && existing.beschrijving?.includes("afwijking") ? m[1] : "";
       setUrenForm({ werkzaamheden: existing.type || "monteren", uren: existing.uren, toelichting });
     } else {
       setEditingBoekingId(null);
+      setEditingBoekingStatus(null);
       setUrenForm({ werkzaamheden: "monteren", uren: 8, toelichting: "" });
     }
     setShowUrenModal(true);
