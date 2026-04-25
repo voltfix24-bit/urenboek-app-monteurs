@@ -38,6 +38,7 @@ export default function Planning() {
   const [existingBoekingen, setExistingBoekingen] = useState<Map<string, ExistingBoeking>>(new Map());
   const [showUrenModal, setShowUrenModal] = useState(false);
   const [modalItem, setModalItem] = useState<PlanningItem | null>(null);
+  const [editingBoekingId, setEditingBoekingId] = useState<string | null>(null);
   const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8, toelichting: "" });
   const modalScrollRef = useRef<HTMLDivElement | null>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
