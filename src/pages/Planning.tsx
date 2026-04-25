@@ -156,14 +156,14 @@ export default function Planning() {
     const [{ data }, { data: beschData }, { data: boekData }] = await Promise.all([
       supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id, activiteit, activiteit_kleur, collega_ids, week_opmerking").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
       supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", profileId).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
-      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr),
+      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status, type, beschrijving").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr),
     ]);
     setBeschikbaarheid((beschData ?? []) as any);
 
     // Map existing boekingen by datum+project_id
     const boekMap = new Map<string, ExistingBoeking>();
     (boekData ?? []).forEach((b: any) => {
-      boekMap.set(`${b.datum}|${b.project_id}`, { id: b.id, uren: Number(b.uren), status: b.status });
+      boekMap.set(`${b.datum}|${b.project_id}`, { id: b.id, uren: Number(b.uren), status: b.status, type: b.type ?? "monteren", beschrijving: b.beschrijving ?? "" });
     });
     setExistingBoekingen(boekMap);
 
