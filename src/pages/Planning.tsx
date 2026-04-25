@@ -738,17 +738,30 @@ export default function Planning() {
                                       </div>
 
                                       {/* Status */}
-                                      {isGeboekt && boekingKleur ? (
-                                        <div style={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: 4,
-                                          padding: '4px 10px',
-                                          borderRadius: 9999,
-                                          background: boekingKleur.bg,
-                                          border: `1px solid ${boekingKleur.border}`,
-                                          flexShrink: 0,
-                                        }}>
+                                      {isGeboekt && boekingKleur ? (() => {
+                                        const tooltip =
+                                          boeking!.status === "goedgekeurd"
+                                            ? "Goedgekeurd door manager — vergrendeld. Vraag de manager om het terug te zetten als er iets klopt niet."
+                                            : boeking!.status === "ingediend"
+                                              ? "Ingediend, wacht op goedkeuring. Tik om aan te passen — gaat dan terug naar concept of opnieuw indienen."
+                                              : boeking!.status === "afgekeurd"
+                                                ? "Afgekeurd door manager. Tik om te corrigeren en opnieuw in te dienen."
+                                                : "Concept — nog niet ingediend. Tik om aan te passen of in te dienen.";
+                                        return (
+                                        <div
+                                          title={tooltip}
+                                          aria-label={tooltip}
+                                          style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 4,
+                                            padding: '4px 10px',
+                                            borderRadius: 9999,
+                                            background: boekingKleur.bg,
+                                            border: `1px solid ${boekingKleur.border}`,
+                                            flexShrink: 0,
+                                            cursor: isBewerkbaar ? 'pointer' : 'help',
+                                          }}>
                                           <span
                                             className="material-symbols-outlined"
                                             style={{
@@ -766,21 +779,20 @@ export default function Planning() {
                                           }}>
                                             {boeking!.uren}u
                                           </span>
-                                          {isBewerkbaar && (
-                                            <span
-                                              className="material-symbols-outlined"
-                                              style={{
-                                                fontSize: 11,
-                                                color: boekingKleur.fg,
-                                                opacity: 0.75,
-                                                marginLeft: 2,
-                                                fontVariationSettings: "'wght' 400",
-                                              }}>
-                                              edit
-                                            </span>
-                                          )}
+                                          <span
+                                            className="material-symbols-outlined"
+                                            style={{
+                                              fontSize: 11,
+                                              color: boekingKleur.fg,
+                                              opacity: 0.75,
+                                              marginLeft: 2,
+                                              fontVariationSettings: "'wght' 400",
+                                            }}>
+                                            {isBewerkbaar ? "edit" : "lock"}
+                                          </span>
                                         </div>
-                                      ) : item.is_definitief ? (
+                                        );
+                                      })() : item.is_definitief ? (
                                         <div style={{
                                           display: 'flex',
                                           alignItems: 'center',
