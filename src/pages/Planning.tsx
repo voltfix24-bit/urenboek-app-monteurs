@@ -21,7 +21,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 
 interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; activiteit: string | null; activiteit_kleur: string | null; collega_ids: string[] | null; week_opmerking: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
-interface ExistingBoeking { id: string; uren: number; status: string; }
+interface ExistingBoeking { id: string; uren: number; status: string; type: string; beschrijving: string; }
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
@@ -38,6 +38,7 @@ export default function Planning() {
   const [existingBoekingen, setExistingBoekingen] = useState<Map<string, ExistingBoeking>>(new Map());
   const [showUrenModal, setShowUrenModal] = useState(false);
   const [modalItem, setModalItem] = useState<PlanningItem | null>(null);
+  const [editingBoekingId, setEditingBoekingId] = useState<string | null>(null);
   const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8, toelichting: "" });
   const modalScrollRef = useRef<HTMLDivElement | null>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
@@ -156,14 +157,14 @@ export default function Planning() {
     const [{ data }, { data: beschData }, { data: boekData }] = await Promise.all([
       supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id, activiteit, activiteit_kleur, collega_ids, week_opmerking").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
       supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", profileId).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
-      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr),
+      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status, type, beschrijving").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr),
     ]);
     setBeschikbaarheid((beschData ?? []) as any);
 
     // Map existing boekingen by datum+project_id
     const boekMap = new Map<string, ExistingBoeking>();
     (boekData ?? []).forEach((b: any) => {
-      boekMap.set(`${b.datum}|${b.project_id}`, { id: b.id, uren: Number(b.uren), status: b.status });
+      boekMap.set(`${b.datum}|${b.project_id}`, { id: b.id, uren: Number(b.uren), status: b.status, type: b.type ?? "monteren", beschrijving: b.beschrijving ?? "" });
     });
     setExistingBoekingen(boekMap);
 
@@ -248,9 +249,18 @@ export default function Planning() {
     return Math.max(0.5, Math.round(diff * 2) / 2);
   }
 
-  function openUrenModal(item: PlanningItem) {
+  function openUrenModal(item: PlanningItem, existing?: ExistingBoeking) {
     setModalItem(item);
-    setUrenForm({ werkzaamheden: "monteren", uren: 8, toelichting: "" });
+    if (existing) {
+      setEditingBoekingId(existing.id);
+      // Probeer toelichting uit beschrijving te halen (formaat: "type — afwijking +Xu: toelichting")
+      const m = existing.beschrijving?.match(/:\s*(.+)$/);
+      const toelichting = m && existing.beschrijving?.includes("afwijking") ? m[1] : "";
+      setUrenForm({ werkzaamheden: existing.type || "monteren", uren: existing.uren, toelichting });
+    } else {
+      setEditingBoekingId(null);
+      setUrenForm({ werkzaamheden: "monteren", uren: 8, toelichting: "" });
+    }
     setShowUrenModal(true);
   }
 
@@ -266,7 +276,31 @@ export default function Planning() {
     const beschrijving = needsToelichting
       ? `${urenForm.werkzaamheden} — afwijking ${urenForm.uren - planned > 0 ? '+' : ''}${(urenForm.uren - planned).toFixed(1)}u: ${urenForm.toelichting.trim()}`
       : urenForm.werkzaamheden;
-    // Stap 1: altijd eerst als concept inserten (RLS staat alleen 'concept' toe bij insert)
+
+    // EDIT modus: bestaande boeking updaten (alleen toegestaan zolang nog niet goedgekeurd)
+    if (editingBoekingId) {
+      // Eerst status terug naar 'concept' (RLS staat update alleen toe bij concept/ingediend/afgekeurd → met_check verlangt 'concept' of 'ingediend')
+      const { error: updErr } = await supabase
+        .from("uren_boekingen")
+        .update({
+          uren: urenForm.uren,
+          type: urenForm.werkzaamheden,
+          beschrijving,
+          status: submitDirect ? "ingediend" : "concept",
+        })
+        .eq("id", editingBoekingId);
+      if (updErr) {
+        toast.error("Kon uren niet aanpassen: " + updErr.message);
+        return;
+      }
+      toast.success(submitDirect ? "Aangepast en opnieuw ingediend ✓" : "Uren aangepast");
+      setShowUrenModal(false);
+      setEditingBoekingId(null);
+      fetchPlanning();
+      return;
+    }
+
+    // NIEUW: Stap 1: altijd eerst als concept inserten (RLS staat alleen 'concept' toe bij insert)
     const { data: inserted, error: insertErr } = await supabase
       .from("uren_boekingen")
       .insert({
@@ -613,15 +647,29 @@ export default function Planning() {
                                 adres: item.project_adres,
                               });
 
+                              const isBewerkbaar = isGeboekt && boeking!.status !== "goedgekeurd";
+                              const klikbaar = (!isGeboekt && item.is_definitief) || isBewerkbaar;
+                              // Kleurschema per status van de boeking
+                              const boekingKleur = !isGeboekt ? null : (
+                                boeking!.status === "goedgekeurd" ? { bg: "rgba(63,255,139,0.1)", border: "rgba(63,255,139,0.25)", fg: "#3fff8b", icon: "check_circle", fill: true } :
+                                boeking!.status === "afgekeurd"   ? { bg: "rgba(255,113,108,0.1)", border: "rgba(255,113,108,0.25)", fg: "#ff716c", icon: "error", fill: true } :
+                                boeking!.status === "ingediend"   ? { bg: "rgba(254,179,0,0.1)",  border: "rgba(254,179,0,0.25)",  fg: "#feb300", icon: "schedule", fill: false } :
+                                                                    { bg: "#102038",                border: "rgba(255,255,255,0.08)", fg: "#a0abc3", icon: "edit_note", fill: false }
+                              );
+
                               return (
                                 <div key={item.id}>
                                   <div
                                     onClick={() => {
-                                      if (!isGeboekt && item.is_definitief) openUrenModal(item);
+                                      if (isBewerkbaar) {
+                                        openUrenModal(item, boeking!);
+                                      } else if (!isGeboekt && item.is_definitief) {
+                                        openUrenModal(item);
+                                      }
                                     }}
                                     style={{
                                       padding: '14px 16px',
-                                      cursor: isGeboekt || !item.is_definitief ? 'default' : 'pointer',
+                                      cursor: klikbaar ? 'pointer' : 'default',
                                       opacity: item.is_definitief ? 1 : 0.5,
                                     }}>
                                     {/* Top row */}
@@ -687,34 +735,47 @@ export default function Planning() {
                                       </div>
 
                                       {/* Status */}
-                                      {isGeboekt ? (
+                                      {isGeboekt && boekingKleur ? (
                                         <div style={{
                                           display: 'flex',
                                           alignItems: 'center',
                                           gap: 4,
                                           padding: '4px 10px',
                                           borderRadius: 9999,
-                                          background: 'rgba(63,255,139,0.1)',
-                                          border: '1px solid rgba(63,255,139,0.25)',
+                                          background: boekingKleur.bg,
+                                          border: `1px solid ${boekingKleur.border}`,
                                           flexShrink: 0,
                                         }}>
                                           <span
                                             className="material-symbols-outlined"
                                             style={{
                                               fontSize: 13,
-                                              color: '#3fff8b',
-                                              fontVariationSettings: "'FILL' 1",
+                                              color: boekingKleur.fg,
+                                              fontVariationSettings: boekingKleur.fill ? "'FILL' 1" : "'wght' 400",
                                             }}>
-                                            check_circle
+                                            {boekingKleur.icon}
                                           </span>
                                           <span style={{
                                             fontSize: 11,
                                             fontWeight: 700,
                                             fontFamily: 'Inter',
-                                            color: '#3fff8b',
+                                            color: boekingKleur.fg,
                                           }}>
                                             {boeking!.uren}u
                                           </span>
+                                          {isBewerkbaar && (
+                                            <span
+                                              className="material-symbols-outlined"
+                                              style={{
+                                                fontSize: 11,
+                                                color: boekingKleur.fg,
+                                                opacity: 0.75,
+                                                marginLeft: 2,
+                                                fontVariationSettings: "'wght' 400",
+                                              }}>
+                                              edit
+                                            </span>
+                                          )}
                                         </div>
                                       ) : item.is_definitief ? (
                                         <div style={{
@@ -1098,10 +1159,10 @@ export default function Planning() {
                     fontSize: 22,
                     color: '#dae6ff',
                   }}>
-                    Uren boeken
+                    {editingBoekingId ? "Uren aanpassen" : "Uren boeken"}
                   </h2>
                   <button
-                    onClick={() => setShowUrenModal(false)}
+                    onClick={() => { setShowUrenModal(false); setEditingBoekingId(null); }}
                     style={{
                       width: 36, height: 36,
                       borderRadius: '50%',
