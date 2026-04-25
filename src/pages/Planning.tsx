@@ -21,7 +21,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 
 interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; activiteit: string | null; activiteit_kleur: string | null; collega_ids: string[] | null; week_opmerking: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
-interface ExistingBoeking { id: string; uren: number; status: string; }
+interface ExistingBoeking { id: string; uren: number; status: string; type: string; beschrijving: string; }
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
