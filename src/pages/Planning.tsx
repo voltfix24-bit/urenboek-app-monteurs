@@ -39,6 +39,7 @@ export default function Planning() {
   const [showUrenModal, setShowUrenModal] = useState(false);
   const [modalItem, setModalItem] = useState<PlanningItem | null>(null);
   const [editingBoekingId, setEditingBoekingId] = useState<string | null>(null);
+  const [editingBoekingStatus, setEditingBoekingStatus] = useState<string | null>(null);
   const [urenForm, setUrenForm] = useState({ werkzaamheden: "monteren" as string, uren: 8, toelichting: "" });
   const modalScrollRef = useRef<HTMLDivElement | null>(null);
   const [showScrollHint, setShowScrollHint] = useState(false);
@@ -253,12 +254,14 @@ export default function Planning() {
     setModalItem(item);
     if (existing) {
       setEditingBoekingId(existing.id);
+      setEditingBoekingStatus(existing.status || null);
       // Probeer toelichting uit beschrijving te halen (formaat: "type — afwijking +Xu: toelichting")
       const m = existing.beschrijving?.match(/:\s*(.+)$/);
       const toelichting = m && existing.beschrijving?.includes("afwijking") ? m[1] : "";
       setUrenForm({ werkzaamheden: existing.type || "monteren", uren: existing.uren, toelichting });
     } else {
       setEditingBoekingId(null);
+      setEditingBoekingStatus(null);
       setUrenForm({ werkzaamheden: "monteren", uren: 8, toelichting: "" });
     }
     setShowUrenModal(true);
@@ -1123,17 +1126,113 @@ export default function Planning() {
                 transition: 'transform 0.2s ease-out',
                 willChange: 'transform',
               }}>
-              {/* Handle */}
+              {/* Sticky top: handle + titel + sluit (altijd zichtbaar, blijft niet weg-scrollen) */}
               <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                padding: '10px 0 6px',
+                flexShrink: 0,
+                background: 'rgba(10,26,48,0.97)',
+                borderTopLeftRadius: 32,
+                borderTopRightRadius: 32,
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
               }}>
+                {/* Handle */}
                 <div style={{
-                  width: 48, height: 4,
-                  borderRadius: 9999,
-                  background: 'rgba(255,255,255,0.15)',
-                }} />
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '10px 0 6px',
+                }}>
+                  <div style={{
+                    width: 48, height: 4,
+                    borderRadius: 9999,
+                    background: 'rgba(255,255,255,0.15)',
+                  }} />
+                </div>
+
+                {/* Header rij */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  padding: '6px 20px 14px',
+                }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h2 style={{
+                      fontFamily: 'Manrope',
+                      fontWeight: 800,
+                      fontSize: 20,
+                      color: '#dae6ff',
+                      lineHeight: 1.15,
+                      marginBottom: 4,
+                    }}>
+                      {editingBoekingId ? "Uren aanpassen" : "Uren boeken"}
+                    </h2>
+                    <p style={{
+                      fontSize: 12,
+                      color: '#a0abc3',
+                      fontFamily: 'Inter',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {format(
+                        new Date(modalItem.datum + 'T12:00:00'),
+                        'EEE d MMM',
+                        { locale: nl }
+                      )}
+                      {' · '}
+                      {modalItem.starttijd}–{modalItem.eindtijd}
+                      {editingBoekingStatus && (
+                        <>
+                          {' · '}
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '2px 8px',
+                            borderRadius: 9999,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                            verticalAlign: '1px',
+                            background:
+                              editingBoekingStatus === 'ingediend' ? 'rgba(254,179,0,0.18)'
+                              : editingBoekingStatus === 'afgekeurd' ? 'rgba(255,113,108,0.18)'
+                              : 'rgba(255,255,255,0.08)',
+                            color:
+                              editingBoekingStatus === 'ingediend' ? '#feb300'
+                              : editingBoekingStatus === 'afgekeurd' ? '#ff716c'
+                              : '#a0abc3',
+                          }}>
+                            {editingBoekingStatus}
+                          </span>
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => { setShowUrenModal(false); setEditingBoekingId(null); setEditingBoekingStatus(null); }}
+                    aria-label="Sluiten"
+                    style={{
+                      flexShrink: 0,
+                      width: 44, height: 44,
+                      borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      color: '#dae6ff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                    }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 22,
+                        fontVariationSettings: "'wght' 400",
+                      }}>
+                      close
+                    </span>
+                  </button>
+                </div>
               </div>
 
               {/* Scrollable */}
@@ -1143,48 +1242,10 @@ export default function Planning() {
                 style={{
                   flex: 1,
                   overflowY: 'auto',
+                  WebkitOverflowScrolling: 'touch',
                   overscrollBehavior: 'contain',
-                  padding: '4px 24px 0',
+                  padding: '16px 24px 0',
                 }}>
-                {/* Header */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: 16,
-                }}>
-                  <h2 style={{
-                    fontFamily: 'Manrope',
-                    fontWeight: 800,
-                    fontSize: 22,
-                    color: '#dae6ff',
-                  }}>
-                    {editingBoekingId ? "Uren aanpassen" : "Uren boeken"}
-                  </h2>
-                  <button
-                    onClick={() => { setShowUrenModal(false); setEditingBoekingId(null); }}
-                    style={{
-                      width: 36, height: 36,
-                      borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.06)',
-                      border: 'none',
-                      color: '#a0abc3',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                    }}>
-                    <span
-                      className="material-symbols-outlined"
-                      style={{
-                        fontSize: 18,
-                        fontVariationSettings: "'wght' 300",
-                      }}>
-                      close
-                    </span>
-                  </button>
-                </div>
-
                 {/* Project info */}
                 <div style={{
                   padding: '12px 14px',
