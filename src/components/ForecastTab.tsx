@@ -3,10 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
 import { SPEC_CODES, GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/specCodes";
-import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, Check, Info } from "lucide-react";
+import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, Check, Info, Download } from "lucide-react";
 
 import { euroDecimals as fmt } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
+import { generateForecastPdf } from "@/lib/forecastPdf";
 
 const mono = "font-mono tracking-tight";
 
@@ -184,11 +185,39 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     );
   }
 
+  const downloadBtn = regels.length > 0 ? (
+    <div className="flex justify-end">
+      <button
+        onClick={() => generateForecastPdf(projectId)}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12px] font-semibold transition-colors"
+        style={{
+          background: "rgba(63,255,139,0.1)",
+          color: "#3fff8b",
+          border: "1px solid rgba(63,255,139,0.3)",
+        }}
+        title="Download prijzenblad als PDF om te delen met de opdrachtgever"
+      >
+        <Download className="h-3.5 w-3.5" />
+        Prijzenblad (PDF)
+      </button>
+    </div>
+  ) : null;
+
   if (methode === "stuksprijzen") {
-    return <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} saved={saved} />;
+    return (
+      <div className="space-y-3">
+        {downloadBtn}
+        <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} saved={saved} />
+      </div>
+    );
   }
 
-  return <UrenEditor regels={regels} monteurs={monteurs} alleProfielen={alleProfielen} onUpdate={updateRegels} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} saveVerwachteOmzet={saveVerwachteOmzet} saved={saved} />;
+  return (
+    <div className="space-y-3">
+      {downloadBtn}
+      <UrenEditor regels={regels} monteurs={monteurs} alleProfielen={alleProfielen} onUpdate={updateRegels} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} saveVerwachteOmzet={saveVerwachteOmzet} saved={saved} />
+    </div>
+  );
 }
 
 function StuksprijzenEditor({ regels, onUpdate, specCodes, saved }: { regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; specCodes: SpecCode[]; saved: boolean }) {
