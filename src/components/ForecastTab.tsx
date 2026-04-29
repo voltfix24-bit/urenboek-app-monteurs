@@ -232,21 +232,38 @@ export function ForecastTab({ projectId }: { projectId: string }) {
           Wijzig naar {otherLabel}
         </button>
       </div>
-      {regels.length > 0 && (
-        <button
-          onClick={() => generateForecastPdf(projectId)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12px] font-semibold transition-colors"
-          style={{
-            background: "rgba(63,255,139,0.1)",
-            color: "#3fff8b",
-            border: "1px solid rgba(63,255,139,0.3)",
-          }}
-          title="Download prijzenblad als PDF om te delen met de opdrachtgever"
-        >
-          <Download className="h-3.5 w-3.5" />
-          Prijzenblad (PDF)
-        </button>
-      )}
+      <div className="flex items-center gap-2 flex-wrap">
+        {regels.length > 0 && (methode === "stuksprijzen" || methode === "intake") && (
+          <button
+            onClick={() => generatePrijzenbladExcel(projectId)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12px] font-semibold transition-colors"
+            style={{
+              background: "rgba(63,255,139,0.1)",
+              color: "#3fff8b",
+              border: "1px solid rgba(63,255,139,0.3)",
+            }}
+            title="Download prijzenblad in vaste Excel-template (aantallen + totaal worden ingevuld)"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5" />
+            Prijzenblad (Excel)
+          </button>
+        )}
+        {regels.length > 0 && (
+          <button
+            onClick={() => generateForecastPdf(projectId)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12px] font-semibold transition-colors"
+            style={{
+              background: "rgba(63,255,139,0.1)",
+              color: "#3fff8b",
+              border: "1px solid rgba(63,255,139,0.3)",
+            }}
+            title="Download prijzenblad als PDF om te delen met de opdrachtgever"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Prijzenblad (PDF)
+          </button>
+        )}
+      </div>
     </div>
   );
 
