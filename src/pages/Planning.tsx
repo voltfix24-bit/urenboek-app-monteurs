@@ -751,7 +751,9 @@ export default function Planning() {
                                       {isGeboekt && boekingKleur ? (() => {
                                         const tooltip =
                                           boeking!.status === "goedgekeurd"
-                                            ? "Goedgekeurd door manager — vergrendeld. Vraag de manager om het terug te zetten als er iets klopt niet."
+                                            ? (isManager
+                                                ? "Goedgekeurd. Als manager kun je deze boeking nog corrigeren — status gaat dan terug naar 'Wacht op akkoord'."
+                                                : "Goedgekeurd door manager — vergrendeld. Vraag de manager om het terug te zetten als er iets niet klopt.")
                                             : boeking!.status === "ingediend"
                                               ? "Ingediend, wacht op goedkeuring. Tik om aan te passen — gaat dan terug naar concept of opnieuw indienen."
                                               : boeking!.status === "afgekeurd"
