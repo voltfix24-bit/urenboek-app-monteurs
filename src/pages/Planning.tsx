@@ -280,17 +280,26 @@ export default function Planning() {
       ? `${urenForm.werkzaamheden} — afwijking ${urenForm.uren - planned > 0 ? '+' : ''}${(urenForm.uren - planned).toFixed(1)}u: ${urenForm.toelichting.trim()}`
       : urenForm.werkzaamheden;
 
-    // EDIT modus: bestaande boeking updaten (alleen toegestaan zolang nog niet goedgekeurd)
+    // EDIT modus: bestaande boeking updaten
     if (editingBoekingId) {
-      // Eerst status terug naar 'concept' (RLS staat update alleen toe bij concept/ingediend/afgekeurd → met_check verlangt 'concept' of 'ingediend')
+      // Voor manager: ook goedgekeurde boekingen mogen worden aangepast.
+      // We zetten dan approved_by terug naar null en de status naar 'ingediend'
+      // (manager kan daarna desgewenst opnieuw goedkeuren).
+      const wasGoedgekeurd = modalBoekingStatus === "goedgekeurd";
+      const updatePayload: Record<string, unknown> = {
+        uren: urenForm.uren,
+        type: urenForm.werkzaamheden,
+        beschrijving,
+      };
+      if (isManager && wasGoedgekeurd) {
+        updatePayload.status = submitDirect ? "goedgekeurd" : "ingediend";
+        if (!submitDirect) updatePayload.approved_by = null;
+      } else {
+        updatePayload.status = submitDirect ? "ingediend" : "concept";
+      }
       const { error: updErr } = await supabase
         .from("uren_boekingen")
-        .update({
-          uren: urenForm.uren,
-          type: urenForm.werkzaamheden,
-          beschrijving,
-          status: submitDirect ? "ingediend" : "concept",
-        })
+        .update(updatePayload)
         .eq("id", editingBoekingId);
       if (updErr) {
         toast.error("Kon uren niet aanpassen: " + updErr.message);
@@ -299,6 +308,7 @@ export default function Planning() {
       toast.success(submitDirect ? "Aangepast en opnieuw ingediend ✓" : "Uren aangepast");
       setShowUrenModal(false);
       setEditingBoekingId(null);
+      setModalBoekingStatus(null);
       fetchPlanning();
       return;
     }
