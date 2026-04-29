@@ -107,7 +107,13 @@ export async function generatePrijzenbladExcel(projectId: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Prijzenblad-${project?.nummer ?? "project"}.xlsx`;
+    const safe = (s: string) =>
+      s.replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim();
+    const nr = safe(project?.nummer ?? "project");
+    const naam = safe(project?.naam ?? "");
+    a.download = naam
+      ? `Prijzenblad-${nr}-${naam}.xlsx`
+      : `Prijzenblad-${nr}.xlsx`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
