@@ -26,7 +26,7 @@ interface ExistingBoeking { id: string; uren: number; status: string; type: stri
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
 export default function Planning() {
-  const { user } = useAuth();
+  const { user, isManager } = useAuth();
   const { badges } = useNavBadges();
   const { profileId, profile: profileData } = useProfile();
   const navigate = useNavigate();
@@ -280,17 +280,26 @@ export default function Planning() {
       ? `${urenForm.werkzaamheden} — afwijking ${urenForm.uren - planned > 0 ? '+' : ''}${(urenForm.uren - planned).toFixed(1)}u: ${urenForm.toelichting.trim()}`
       : urenForm.werkzaamheden;
 
-    // EDIT modus: bestaande boeking updaten (alleen toegestaan zolang nog niet goedgekeurd)
+    // EDIT modus: bestaande boeking updaten
     if (editingBoekingId) {
-      // Eerst status terug naar 'concept' (RLS staat update alleen toe bij concept/ingediend/afgekeurd → met_check verlangt 'concept' of 'ingediend')
+      // Voor manager: ook goedgekeurde boekingen mogen worden aangepast.
+      // We zetten dan approved_by terug naar null en de status naar 'ingediend'
+      // (manager kan daarna desgewenst opnieuw goedkeuren).
+      const wasGoedgekeurd = editingBoekingStatus === "goedgekeurd";
+      const updatePayload: Record<string, unknown> = {
+        uren: urenForm.uren,
+        type: urenForm.werkzaamheden,
+        beschrijving,
+      };
+      if (isManager && wasGoedgekeurd) {
+        updatePayload.status = submitDirect ? "goedgekeurd" : "ingediend";
+        if (!submitDirect) updatePayload.approved_by = null;
+      } else {
+        updatePayload.status = submitDirect ? "ingediend" : "concept";
+      }
       const { error: updErr } = await supabase
         .from("uren_boekingen")
-        .update({
-          uren: urenForm.uren,
-          type: urenForm.werkzaamheden,
-          beschrijving,
-          status: submitDirect ? "ingediend" : "concept",
-        })
+        .update(updatePayload)
         .eq("id", editingBoekingId);
       if (updErr) {
         toast.error("Kon uren niet aanpassen: " + updErr.message);
@@ -299,6 +308,7 @@ export default function Planning() {
       toast.success(submitDirect ? "Aangepast en opnieuw ingediend ✓" : "Uren aangepast");
       setShowUrenModal(false);
       setEditingBoekingId(null);
+      setEditingBoekingStatus(null);
       fetchPlanning();
       return;
     }
@@ -650,7 +660,7 @@ export default function Planning() {
                                 adres: item.project_adres,
                               });
 
-                              const isBewerkbaar = isGeboekt && boeking!.status !== "goedgekeurd";
+                              const isBewerkbaar = isGeboekt && (isManager || boeking!.status !== "goedgekeurd");
                               const klikbaar = (!isGeboekt && item.is_definitief) || isBewerkbaar;
                               // Kleurschema per status van de boeking
                               const boekingKleur = !isGeboekt ? null : (
@@ -741,7 +751,9 @@ export default function Planning() {
                                       {isGeboekt && boekingKleur ? (() => {
                                         const tooltip =
                                           boeking!.status === "goedgekeurd"
-                                            ? "Goedgekeurd door manager — vergrendeld. Vraag de manager om het terug te zetten als er iets klopt niet."
+                                            ? (isManager
+                                                ? "Goedgekeurd. Als manager kun je deze boeking nog corrigeren — status gaat dan terug naar 'Wacht op akkoord'."
+                                                : "Goedgekeurd door manager — vergrendeld. Vraag de manager om het terug te zetten als er iets niet klopt.")
                                             : boeking!.status === "ingediend"
                                               ? "Ingediend, wacht op goedkeuring. Tik om aan te passen — gaat dan terug naar concept of opnieuw indienen."
                                               : boeking!.status === "afgekeurd"
