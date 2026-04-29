@@ -26,7 +26,7 @@ interface ExistingBoeking { id: string; uren: number; status: string; type: stri
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
 export default function Planning() {
-  const { user } = useAuth();
+  const { user, isManager } = useAuth();
   const { badges } = useNavBadges();
   const { profileId, profile: profileData } = useProfile();
   const navigate = useNavigate();
