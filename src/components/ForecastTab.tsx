@@ -3,11 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
 import { SPEC_CODES, GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/specCodes";
-import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, Check, Info, Download } from "lucide-react";
+import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, Check, Info, Download, FileSpreadsheet } from "lucide-react";
 
 import { euroDecimals as fmt } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 import { generateForecastPdf } from "@/lib/forecastPdf";
+import { generatePrijzenbladExcel } from "@/lib/prijzenbladExcel";
 
 const mono = "font-mono tracking-tight";
 
