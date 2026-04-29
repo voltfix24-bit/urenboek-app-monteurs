@@ -114,6 +114,30 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     setMethode(m);
   }
 
+  async function changeMethode(nieuweMethode: string) {
+    if (!forecastId) return;
+    const label = nieuweMethode === "stuksprijzen" ? "stuksprijzen" : nieuweMethode === "uren" ? "uren" : nieuweMethode;
+    const ok = window.confirm(
+      `Weet je zeker dat je de vergoedingsmethode wijzigt naar "${label}"?\n\nAlle bestaande forecast-regels van dit project worden verwijderd.`
+    );
+    if (!ok) return;
+    // Bestaande regels wissen
+    await supabase.from("forecast_regels").delete().eq("forecast_id", forecastId);
+    // Methode updaten + verwachte omzet resetten
+    const { error } = await supabase
+      .from("project_forecast")
+      .update({ methode: nieuweMethode, verwachte_omzet: 0 } as any)
+      .eq("id", forecastId);
+    if (error) {
+      toast.error("Kon methode niet wijzigen: " + error.message);
+      return;
+    }
+    setMethode(nieuweMethode);
+    setRegels([]);
+    setVerwachteOmzet(0);
+    toast.success(`Vergoedingsmethode gewijzigd naar ${label}`);
+  }
+
   async function saveVerwachteOmzet(omzet: number) {
     if (!forecastId) return;
     await supabase
