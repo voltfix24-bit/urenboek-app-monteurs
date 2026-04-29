@@ -209,28 +209,50 @@ export function ForecastTab({ projectId }: { projectId: string }) {
     );
   }
 
-  const downloadBtn = regels.length > 0 ? (
-    <div className="flex justify-end">
-      <button
-        onClick={() => generateForecastPdf(projectId)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12px] font-semibold transition-colors"
-        style={{
-          background: "rgba(63,255,139,0.1)",
-          color: "#3fff8b",
-          border: "1px solid rgba(63,255,139,0.3)",
-        }}
-        title="Download prijzenblad als PDF om te delen met de opdrachtgever"
-      >
-        <Download className="h-3.5 w-3.5" />
-        Prijzenblad (PDF)
-      </button>
-    </div>
-  ) : null;
+  const methodeLabel = methode === "stuksprijzen" ? "Stuksprijzen" : methode === "uren" ? "Op uren" : methode === "intake" ? "Intake (stuksprijzen)" : methode;
+  const otherMethode = (methode === "stuksprijzen" || methode === "intake") ? "uren" : "stuksprijzen";
+  const otherLabel = otherMethode === "stuksprijzen" ? "Stuksprijzen" : "Op uren";
 
-  if (methode === "stuksprijzen") {
+  const headerBar = (
+    <div className="flex items-center justify-between gap-2 flex-wrap">
+      <div className="flex items-center gap-2 text-[11px]" style={{ color: "#a0abc3" }}>
+        <span className="uppercase tracking-wider">Methode:</span>
+        <span className="font-semibold" style={{ color: "#dae6ff" }}>{methodeLabel}</span>
+        <button
+          onClick={() => changeMethode(otherMethode)}
+          className="px-2 py-1 rounded-[8px] text-[11px] font-semibold transition-colors"
+          style={{
+            background: "rgba(254,179,0,0.1)",
+            color: "#feb300",
+            border: "1px solid rgba(254,179,0,0.3)",
+          }}
+          title={`Wijzig vergoedingsmethode naar ${otherLabel}. Bestaande regels worden gewist.`}
+        >
+          Wijzig naar {otherLabel}
+        </button>
+      </div>
+      {regels.length > 0 && (
+        <button
+          onClick={() => generateForecastPdf(projectId)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12px] font-semibold transition-colors"
+          style={{
+            background: "rgba(63,255,139,0.1)",
+            color: "#3fff8b",
+            border: "1px solid rgba(63,255,139,0.3)",
+          }}
+          title="Download prijzenblad als PDF om te delen met de opdrachtgever"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Prijzenblad (PDF)
+        </button>
+      )}
+    </div>
+  );
+
+  if (methode === "stuksprijzen" || methode === "intake") {
     return (
       <div className="space-y-3">
-        {downloadBtn}
+        {headerBar}
         <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} saved={saved} />
       </div>
     );
@@ -238,7 +260,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-3">
-      {downloadBtn}
+      {headerBar}
       <UrenEditor regels={regels} monteurs={monteurs} alleProfielen={alleProfielen} onUpdate={updateRegels} verwachteOmzet={verwachteOmzet} setVerwachteOmzet={setVerwachteOmzet} saveVerwachteOmzet={saveVerwachteOmzet} saved={saved} />
     </div>
   );
