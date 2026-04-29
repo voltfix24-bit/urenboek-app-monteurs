@@ -285,7 +285,7 @@ export default function Planning() {
       // Voor manager: ook goedgekeurde boekingen mogen worden aangepast.
       // We zetten dan approved_by terug naar null en de status naar 'ingediend'
       // (manager kan daarna desgewenst opnieuw goedkeuren).
-      const wasGoedgekeurd = modalBoekingStatus === "goedgekeurd";
+      const wasGoedgekeurd = editingBoekingStatus === "goedgekeurd";
       const updatePayload: Record<string, unknown> = {
         uren: urenForm.uren,
         type: urenForm.werkzaamheden,
@@ -308,7 +308,7 @@ export default function Planning() {
       toast.success(submitDirect ? "Aangepast en opnieuw ingediend ✓" : "Uren aangepast");
       setShowUrenModal(false);
       setEditingBoekingId(null);
-      setModalBoekingStatus(null);
+      setEditingBoekingStatus(null);
       fetchPlanning();
       return;
     }
