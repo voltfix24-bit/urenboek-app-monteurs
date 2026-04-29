@@ -660,7 +660,7 @@ export default function Planning() {
                                 adres: item.project_adres,
                               });
 
-                              const isBewerkbaar = isGeboekt && boeking!.status !== "goedgekeurd";
+                              const isBewerkbaar = isGeboekt && (isManager || boeking!.status !== "goedgekeurd");
                               const klikbaar = (!isGeboekt && item.is_definitief) || isBewerkbaar;
                               // Kleurschema per status van de boeking
                               const boekingKleur = !isGeboekt ? null : (
