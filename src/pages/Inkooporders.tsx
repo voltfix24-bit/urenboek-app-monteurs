@@ -37,18 +37,7 @@ export default function Inkooporders() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderRegels, setOrderRegels] = useState<any[]>([]);
   const [showCreate, setShowCreate] = useState(false);
-
-  // Create wizard state
-  const [wizStep, setWizStep] = useState(1);
-  const [wizMedewerker, setWizMedewerker] = useState("");
-  const [wizVan, setWizVan] = useState("");
-  const [wizTot, setWizTot] = useState("");
-  const [wizBoekingen, setWizBoekingen] = useState<any[]>([]);
-  const [wizSelected, setWizSelected] = useState<Set<string>>(new Set());
-  const [wizTarief, setWizTarief] = useState<number>(0);
-  const [wizNotitie, setWizNotitie] = useState("");
-  const [wizMedProfile, setWizMedProfile] = useState<any>(null);
-  const [wizLoading, setWizLoading] = useState(false);
+  const [wizardInitial, setWizardInitial] = useState<{ medewerkerId?: string; van?: string; tot?: string } | undefined>(undefined);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
