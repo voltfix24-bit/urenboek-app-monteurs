@@ -196,11 +196,7 @@ export default function Inkooporders() {
                 <div className="flex items-center gap-2">
                   <OrderStatusBadge status={selectedOrder.status} />
                   <button onClick={async () => {
-                    let prof = wizMedProfile;
-                    if (!prof) {
-                      const { data } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", selectedOrder.medewerker_id).single();
-                      prof = data;
-                    }
+                    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", selectedOrder.medewerker_id).single();
                     let gkNaam: string | undefined;
                     if (selectedOrder.aangemaakt_door) {
                       const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
