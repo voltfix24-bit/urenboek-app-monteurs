@@ -188,11 +188,11 @@ export default function Inkooporders() {
 
           {/* Order Detail */}
           {selectedOrder && (
-            <div className="rounded-2xl p-5 space-y-4" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(63,255,139,0.3)" }}>
+            <div className="rounded-2xl p-5 space-y-4" style={{ background: T.surface, border: `1px solid ${T.borderActive}` }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold" style={{ fontFamily: "DM Mono, monospace", color: "#dae6ff" }}>{selectedOrder.order_nummer}</h3>
-                  <p className="text-xs" style={{ color: "#a0abc3" }}>{selectedOrder.medewerker_naam} · {selectedOrder.periode_van} → {selectedOrder.periode_tot}</p>
+                  <h3 className="text-lg font-bold" style={{ fontFamily: T.mono, color: T.text }}>{selectedOrder.order_nummer}</h3>
+                  <p className="text-xs" style={{ color: T.textMuted }}>{selectedOrder.medewerker_naam} · {selectedOrder.periode_van} → {selectedOrder.periode_tot}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <OrderStatusBadge status={selectedOrder.status} />
@@ -205,7 +205,7 @@ export default function Inkooporders() {
                     }
                     const bedrijf = await getBedrijfsgegevens();
                     generatePdf(selectedOrder, orderRegels, prof, bedrijf, gkNaam);
-                  }} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+                  }} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: `1px solid ${T.border}`, color: T.textMuted }}>
                     <Download className="h-3.5 w-3.5" /> PDF
                   </button>
                 </div>
@@ -215,68 +215,68 @@ export default function Inkooporders() {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr style={{ borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
+                    <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                       {["Datum", "Project", "Activiteit", "Uren", "Tarief", "Bedrag"].map(h => (
-                        <th key={h} className="text-left pb-2 px-2 font-semibold" style={{ color: "#a0abc3", fontSize: 10, textTransform: "uppercase" }}>{h}</th>
+                        <th key={h} className="text-left pb-2 px-2 font-semibold" style={{ color: T.textMuted, fontSize: 10, textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {orderRegels.map(r => (
-                      <tr key={r.id} style={{ borderBottom: "1px solid #102038" }}>
-                        <td className="py-2 px-2" style={{ color: "#dae6ff" }}>{r.datum}</td>
+                      <tr key={r.id} style={{ borderBottom: `1px solid ${T.step}` }}>
+                        <td className="py-2 px-2" style={{ color: T.text }}>{r.datum}</td>
                         <td className="py-2 px-2">
-                          <span style={{ color: "#dae6ff" }}>{r.project_naam}</span>
-                          {r._project_nummer && <span className="block text-[10px]" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>{r._project_nummer}</span>}
+                          <span style={{ color: T.text }}>{r.project_naam}</span>
+                          {r._project_nummer && <span className="block text-[10px]" style={{ color: T.textMuted, fontFamily: T.mono }}>{r._project_nummer}</span>}
                         </td>
-                        <td className="py-2 px-2" style={{ color: "#a0abc3" }}>{r.activiteit || "—"}</td>
-                        <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace" }}>{r.uren}</td>
-                        <td className="py-2 px-2" style={{ fontFamily: "DM Mono, monospace" }}>{euro(r.uurtarief)}</td>
-                        <td className="py-2 px-2 font-semibold" style={{ fontFamily: "DM Mono, monospace" }}>{euro(r.bedrag)}</td>
+                        <td className="py-2 px-2" style={{ color: T.textMuted }}>{r.activiteit || "—"}</td>
+                        <td className="py-2 px-2" style={{ fontFamily: T.mono, color: T.text }}>{r.uren}</td>
+                        <td className="py-2 px-2" style={{ fontFamily: T.mono, color: T.text }}>{euro(r.uurtarief)}</td>
+                        <td className="py-2 px-2 font-semibold" style={{ fontFamily: T.mono, color: T.text }}>{euro(r.bedrag)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr style={{ borderTop: "2px solid rgba(63,255,139,0.3)" }}>
+                    <tr style={{ borderTop: `2px solid ${T.borderActive}` }}>
                       <td colSpan={3} />
-                      <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace" }}>{selectedOrder.totaal_uren}u</td>
-                      <td className="py-2 px-2 text-right font-semibold" style={{ color: "#a0abc3" }}>Subtotaal:</td>
-                      <td className="py-2 px-2 font-bold" style={{ fontFamily: "DM Mono, monospace" }}>{euro(Number(selectedOrder.totaal_excl_btw))}</td>
+                      <td className="py-2 px-2 font-bold" style={{ fontFamily: T.mono, color: T.text }}>{selectedOrder.totaal_uren}u</td>
+                      <td className="py-2 px-2 text-right font-semibold" style={{ color: T.textMuted }}>Subtotaal:</td>
+                      <td className="py-2 px-2 font-bold" style={{ fontFamily: T.mono, color: T.text }}>{euro(Number(selectedOrder.totaal_excl_btw))}</td>
                     </tr>
                     <tr>
                       <td colSpan={4} />
-                      <td className="py-1 px-2 text-right" style={{ color: "#a0abc3" }}>BTW:</td>
-                      <td className="py-1 px-2" style={{ fontFamily: "DM Mono, monospace", color: "#feb300" }}>Verlegd (art. 12 Wet OB)</td>
+                      <td className="py-1 px-2 text-right" style={{ color: T.textMuted }}>BTW:</td>
+                      <td className="py-1 px-2" style={{ fontFamily: T.mono, color: T.warn }}>Verlegd (art. 12 Wet OB)</td>
                     </tr>
                     <tr>
                       <td colSpan={4} />
-                      <td className="py-1 px-2 text-right font-bold" style={{ color: "#3fff8b" }}>Te factureren:</td>
-                      <td className="py-1 px-2 font-bold text-base" style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(Number(selectedOrder.totaal_excl_btw))}</td>
+                      <td className="py-1 px-2 text-right font-bold" style={{ color: T.primary }}>Te factureren:</td>
+                      <td className="py-1 px-2 font-bold text-base" style={{ fontFamily: T.mono, color: T.primary }}>{euro(Number(selectedOrder.totaal_excl_btw))}</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
 
               {/* Status actions */}
-              <div className="flex flex-wrap items-center gap-2 pt-2" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
+              <div className="flex flex-wrap items-center gap-2 pt-2" style={{ borderTop: `1px solid ${T.border}` }}>
                 {selectedOrder.status === "concept" && (
-                  <button onClick={() => updateOrderStatus(selectedOrder.id, "verzonden")} className="px-4 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
+                  <button onClick={() => updateOrderStatus(selectedOrder.id, "verzonden")} className="px-4 py-2 rounded-xl text-xs font-bold text-white" style={{ background: T.primaryGradient }}>
                     Verzenden naar monteur
                   </button>
                 )}
                 {selectedOrder.status === "verzonden" && (
                   <div className="flex items-center gap-2">
-                    <input value={factuurNummer} onChange={e => setFactuurNummer(e.target.value)} placeholder="Factuurnummer" className="px-3 py-2 rounded-xl text-xs" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-                    <input type="date" value={factuurDatum} onChange={e => setFactuurDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-                    <button onClick={() => { if (!factuurNummer) { toast.error("Vul factuurnummer in"); return; } updateOrderStatus(selectedOrder.id, "factuur_ontvangen", { factuur_nummer: factuurNummer, factuur_datum: factuurDatum || new Date().toISOString() }); }} className="px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)", color: "#6e9bff" }}>
+                    <input value={factuurNummer} onChange={e => setFactuurNummer(e.target.value)} placeholder="Factuurnummer" className="px-3 py-2 rounded-xl text-xs" style={{ background: T.navy, border: `1px solid ${T.border}`, color: T.text }} />
+                    <input type="date" value={factuurDatum} onChange={e => setFactuurDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: T.navy, border: `1px solid ${T.border}`, color: T.text }} />
+                    <button onClick={() => { if (!factuurNummer) { toast.error("Vul factuurnummer in"); return; } updateOrderStatus(selectedOrder.id, "factuur_ontvangen", { factuur_nummer: factuurNummer, factuur_datum: factuurDatum || new Date().toISOString() }); }} className="px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: T.infoSoft, border: `1px solid ${T.infoBorder}`, color: T.info }}>
                       Factuur registreren
                     </button>
                   </div>
                 )}
                 {selectedOrder.status === "factuur_ontvangen" && (
                   <div className="flex items-center gap-2">
-                    <input type="date" value={betaaldDatum} onChange={e => setBetaaldDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-                    <button onClick={() => updateOrderStatus(selectedOrder.id, "betaald", { betaald_op: betaaldDatum || new Date().toISOString() })} className="px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
+                    <input type="date" value={betaaldDatum} onChange={e => setBetaaldDatum(e.target.value)} className="px-3 py-2 rounded-xl text-xs" style={{ background: T.navy, border: `1px solid ${T.border}`, color: T.text }} />
+                    <button onClick={() => updateOrderStatus(selectedOrder.id, "betaald", { betaald_op: betaaldDatum || new Date().toISOString() })} className="px-4 py-2 rounded-xl text-xs font-semibold" style={{ background: T.primarySoft, border: `1px solid ${T.borderActive}`, color: T.primary }}>
                       Betaling registreren
                     </button>
                   </div>
@@ -291,7 +291,7 @@ export default function Inkooporders() {
                   setSelectedOrder(null);
                   fetchOrders();
                 }} className="ml-auto px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5"
-                  style={{ background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.3)", color: "#ff716c" }}>
+                  style={{ background: T.dangerSoft, border: `1px solid ${T.dangerBorder}`, color: T.danger }}>
                   <Trash2 className="h-3.5 w-3.5" /> Verwijderen
                 </button>
               </div>
