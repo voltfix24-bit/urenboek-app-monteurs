@@ -124,19 +124,19 @@ export default function Inkooporders() {
 
   const generatePdf = downloadInkooporderPdf;
 
-  if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "#a0abc3" }}>Alleen managers.</p></div>;
+  if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: T.navy }}><p style={{ color: T.textMuted }}>Alleen managers.</p></div>;
 
   return (
     <>
       <DesktopSidebar badges={badges} />
       <PageShell>
-        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, rgba(10,26,48,0.7) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
+        <header className="sticky top-0 z-30" style={{ background: T.surfaceBlur, backdropFilter: "blur(12px)", borderBottom: `1px solid ${T.border}` }}>
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <HeaderLogo />
-              <span className="text-base font-bold tracking-tight" style={{ color: "#dae6ff" }}>Inkooporders</span>
+              <span className="text-base font-bold tracking-tight" style={{ color: T.text }}>Inkooporders</span>
             </div>
-            <button onClick={() => { setWizardInitial(undefined); setShowCreate(true); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
+            <button onClick={() => { setWizardInitial(undefined); setShowCreate(true); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: T.primaryGradient }}>
               <Plus className="h-3.5 w-3.5" /> Nieuwe order
             </button>
           </div>
