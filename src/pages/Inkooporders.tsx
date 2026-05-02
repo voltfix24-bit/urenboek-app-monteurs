@@ -8,16 +8,14 @@ import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import { PageShell } from "@/components/PageShell";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
-import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
-import { Plus, Download, ChevronRight, ArrowLeft, X, Check, FileText, AlertTriangle, Trash2 } from "lucide-react";
-import { format, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
+import { Plus, Download, FileText, Trash2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { nl } from "date-fns/locale";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { downloadInkooporderPdf } from "@/components/InkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
 import { WeekDownloadList } from "@/components/WeekDownloadList";
+import { InkooporderWizard } from "@/components/inkooporders/InkooporderWizard";
 
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 
