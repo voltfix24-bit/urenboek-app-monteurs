@@ -16,6 +16,7 @@ import { downloadInkooporderPdf } from "@/components/InkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
 import { WeekDownloadList } from "@/components/WeekDownloadList";
 import { InkooporderWizard } from "@/components/inkooporders/InkooporderWizard";
+import { T } from "@/lib/inkooporderTheme";
 
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 
