@@ -2066,6 +2066,7 @@ export type Database = {
         Returns: boolean
       }
       next_contract_nummer: { Args: never; Returns: string }
+      next_inkooporder_nummer: { Args: never; Returns: string }
     }
     Enums: {
       app_role: "monteur" | "schakelmonteur" | "uitvoerder" | "wv" | "manager"

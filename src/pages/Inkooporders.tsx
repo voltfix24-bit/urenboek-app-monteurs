@@ -8,16 +8,14 @@ import { getBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import { PageShell } from "@/components/PageShell";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
-import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
-import { Plus, Download, ChevronRight, ArrowLeft, X, Check, FileText, AlertTriangle, Trash2 } from "lucide-react";
-import { format, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
+import { Plus, Download, FileText, Trash2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { nl } from "date-fns/locale";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { downloadInkooporderPdf } from "@/components/InkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
 import { WeekDownloadList } from "@/components/WeekDownloadList";
+import { InkooporderWizard } from "@/components/inkooporders/InkooporderWizard";
 
 import { INKOOPORDER_STATUS_CONFIG } from "@/lib/inkooporderStatus";
 
@@ -39,18 +37,7 @@ export default function Inkooporders() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderRegels, setOrderRegels] = useState<any[]>([]);
   const [showCreate, setShowCreate] = useState(false);
-
-  // Create wizard state
-  const [wizStep, setWizStep] = useState(1);
-  const [wizMedewerker, setWizMedewerker] = useState("");
-  const [wizVan, setWizVan] = useState("");
-  const [wizTot, setWizTot] = useState("");
-  const [wizBoekingen, setWizBoekingen] = useState<any[]>([]);
-  const [wizSelected, setWizSelected] = useState<Set<string>>(new Set());
-  const [wizTarief, setWizTarief] = useState<number>(0);
-  const [wizNotitie, setWizNotitie] = useState("");
-  const [wizMedProfile, setWizMedProfile] = useState<any>(null);
-  const [wizLoading, setWizLoading] = useState(false);
+  const [wizardInitial, setWizardInitial] = useState<{ medewerkerId?: string; van?: string; tot?: string } | undefined>(undefined);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -78,11 +65,8 @@ export default function Inkooporders() {
     const tot = searchParams.get("tot");
     if (medId && van && tot && medewerkers.length > 0) {
       didAutoOpen.current = true;
-      setWizMedewerker(medId);
-      setWizVan(van);
-      setWizTot(tot);
+      setWizardInitial({ medewerkerId: medId, van, tot });
       setShowCreate(true);
-      setWizStep(2);
     }
   }, [searchParams, medewerkers]);
 
@@ -108,97 +92,6 @@ export default function Inkooporders() {
       verrijkt.forEach((r: any) => { r._project_nummer = nummerMap.get(r.project_id) || ""; });
     }
     setOrderRegels(verrijkt);
-  };
-
-  // Generate next order number
-  const generateOrderNummer = async () => {
-    const year = new Date().getFullYear();
-    const { data } = await supabase.from("inkooporders").select("order_nummer").like("order_nummer", `TV-${year}-%`).order("order_nummer", { ascending: false }).limit(1);
-    if (data && data.length > 0) {
-      const last = data[0].order_nummer;
-      const num = parseInt(last.split("-")[2]) + 1;
-      return `TV-${year}-${String(num).padStart(4, "0")}`;
-    }
-    return `TV-${year}-0001`;
-  };
-
-  // Wizard: load boekingen
-  const loadBoekingen = async () => {
-    if (!wizMedewerker || !wizVan || !wizTot) return;
-    setWizLoading(true);
-    const { data } = await supabase.from("uren_boekingen").select("id, datum, project_id, uren, beschrijving, type").eq("medewerker_id", wizMedewerker).eq("status", "goedgekeurd").gte("datum", wizVan).lte("datum", wizTot).order("datum");
-    // Filter out boekingen already on an order
-    const { data: existingRegels } = await supabase.from("inkooporder_regels").select("uren_boeking_id");
-    const usedIds = new Set(
-      (existingRegels || [])
-        .map((r: any) => r.uren_boeking_id)
-        .filter(Boolean)
-    );
-    const beschikbaar = (data || []).filter((b: any) => !usedIds.has(b.id));
-    // Get project names
-    const projIds = [...new Set(beschikbaar.map((b: any) => b.project_id))];
-    const { data: projs } = projIds.length > 0 ? await supabase.from("projects").select("id, naam, nummer").in("id", projIds) : { data: [] };
-    const projMap = new Map((projs || []).map((p: any) => [p.id, p]));
-    const enriched = beschikbaar.map((b: any) => {
-      const proj = projMap.get(b.project_id) || { naam: "", nummer: "" };
-      return { ...b, project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, activiteit: b.type || null };
-    });
-    setWizBoekingen(enriched);
-    setWizSelected(new Set(enriched.map((b: any) => b.id)));
-    // Get profile + tarief
-    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", wizMedewerker).single();
-    setWizMedProfile(prof);
-    setWizTarief(Number(prof?.uurtarief) || 0);
-    setWizLoading(false);
-    setWizStep(3);
-  };
-
-  const wizTotaalUren = useMemo(() => wizBoekingen.filter(b => wizSelected.has(b.id)).reduce((s, b) => s + Number(b.uren), 0), [wizBoekingen, wizSelected]);
-  const wizSubtotaal = wizTotaalUren * wizTarief;
-  // BTW verlegd — ZZP monteurs do not charge BTW to TerreVolt BV (art. 12 Wet OB)
-  const wizBtw = 0;
-  const wizTotaalIncl = wizSubtotaal;
-
-  const createOrder = async () => {
-    const orderNummer = await generateOrderNummer();
-    const selectedBoekingen = wizBoekingen.filter(b => wizSelected.has(b.id));
-    const { data: order, error } = await supabase.from("inkooporders").insert({
-      order_nummer: orderNummer,
-      medewerker_id: wizMedewerker,
-      periode_van: wizVan,
-      periode_tot: wizTot,
-      status: "concept",
-      totaal_uren: wizTotaalUren,
-      totaal_excl_btw: wizSubtotaal,
-      btw_bedrag: 0,
-      totaal_incl_btw: wizSubtotaal,
-      aangemaakt_door: profileId,
-      notitie: wizNotitie || null,
-    } as any).select("id").single();
-    if (error || !order) { toast.error("Fout bij aanmaken"); return; }
-    // Insert regels
-    const regels = selectedBoekingen.map((b: any) => ({
-      inkooporder_id: order.id,
-      uren_boeking_id: b.id,
-      datum: b.datum,
-      project_id: b.project_id,
-      project_naam: b.project_naam,
-      activiteit: b.activiteit || null,
-      uren: Number(b.uren),
-      uurtarief: wizTarief,
-      bedrag: Number(b.uren) * wizTarief,
-    }));
-    await supabase.from("inkooporder_regels").insert(regels as any);
-    toast.success(`Inkooporder ${orderNummer} aangemaakt`);
-    setShowCreate(false);
-    resetWizard();
-    fetchOrders();
-  };
-
-  const resetWizard = () => {
-    setWizStep(1); setWizMedewerker(""); setWizVan(""); setWizTot("");
-    setWizBoekingen([]); setWizSelected(new Set()); setWizTarief(0);
-    setWizNotitie(""); setWizMedProfile(null);
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string, extra?: any) => {
@@ -242,7 +135,7 @@ export default function Inkooporders() {
               <HeaderLogo />
               <span className="text-base font-bold tracking-tight" style={{ color: "#dae6ff" }}>Inkooporders</span>
             </div>
-            <button onClick={() => { setShowCreate(true); resetWizard(); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
+            <button onClick={() => { setWizardInitial(undefined); setShowCreate(true); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
               <Plus className="h-3.5 w-3.5" /> Nieuwe order
             </button>
           </div>
@@ -303,11 +196,7 @@ export default function Inkooporders() {
                 <div className="flex items-center gap-2">
                   <OrderStatusBadge status={selectedOrder.status} />
                   <button onClick={async () => {
-                    let prof = wizMedProfile;
-                    if (!prof) {
-                      const { data } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", selectedOrder.medewerker_id).single();
-                      prof = data;
-                    }
+                    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", selectedOrder.medewerker_id).single();
                     let gkNaam: string | undefined;
                     if (selectedOrder.aangemaakt_door) {
                       const { data: gk } = await supabase.from("profiles").select("full_name").eq("id", selectedOrder.aangemaakt_door).maybeSingle();
@@ -410,117 +299,18 @@ export default function Inkooporders() {
         </main>
 
         {/* Create wizard modal */}
-        {showCreate && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-            <div className="w-full max-w-lg mx-4 rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Nieuwe inkooporder</h3>
-                <button onClick={() => { setShowCreate(false); resetWizard(); }} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#102038" }}><X className="h-4 w-4" style={{ color: "#a0abc3" }} /></button>
-              </div>
-
-              {wizStep === 1 && (
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Stap 1 — Selecteer monteur</p>
-                  <select value={wizMedewerker} onChange={e => setWizMedewerker(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
-                    <option value="">Kies medewerker...</option>
-                    {medewerkers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-                  </select>
-                  <button disabled={!wizMedewerker} onClick={() => setWizStep(2)} className="w-full py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
-                    Volgende →
-                  </button>
-                </div>
-              )}
-
-              {wizStep === 2 && (
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Stap 2 — Selecteer periode</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Van</label>
-                      <input type="date" value={wizVan} onChange={e => setWizVan(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Tot</label>
-                      <input type="date" value={wizTot} onChange={e => setWizTot(e.target.value)} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setWizStep(1)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
-                    <button disabled={!wizVan || !wizTot} onClick={loadBoekingen} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
-                      {wizLoading ? "Laden..." : "Boekingen ophalen →"}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {wizStep === 3 && (
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Stap 3 — Selecteer uren ({wizBoekingen.length} beschikbaar)</p>
-                  {wizBoekingen.length === 0 ? (
-                    <p className="text-sm py-4 text-center" style={{ color: "#a0abc3" }}>Geen goedgekeurde uren gevonden in deze periode</p>
-                  ) : (
-                    <div className="space-y-1 max-h-48 overflow-y-auto">
-                      {wizBoekingen.map(b => (
-                        <label key={b.id} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer" style={{ background: wizSelected.has(b.id) ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1px solid ${wizSelected.has(b.id) ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}` }}>
-                          <input type="checkbox" checked={wizSelected.has(b.id)} onChange={() => {
-                            const next = new Set(wizSelected);
-                            next.has(b.id) ? next.delete(b.id) : next.add(b.id);
-                            setWizSelected(next);
-                          }} />
-                          <div className="flex-1 min-w-0">
-                            <span className="text-xs font-medium" style={{ color: "#dae6ff" }}>{b.datum}</span>
-                            <span className="text-[11px] ml-2" style={{ color: "#a0abc3" }}>{b.project_naam} · {b.activiteit || b.type}</span>
-                          </div>
-                          <span className="text-xs font-bold shrink-0" style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{b.uren}u</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <button onClick={() => setWizStep(2)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
-                    <button disabled={wizSelected.size === 0} onClick={() => setWizStep(4)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
-                      Controleren → ({wizTotaalUren}u)
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {wizStep === 4 && (
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Stap 4 — Controleer & bevestig</p>
-                  {wizMedProfile && !wizMedProfile.kvk_nummer && (
-                    <div className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)" }}>
-                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "#feb300" }} />
-                      <span className="text-[11px]" style={{ color: "#feb300" }}>Monteur heeft nog geen ZZP gegevens ingevuld. PDF is incompleet.</span>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Uurtarief</label>
-                      <input type="number" value={wizTarief} onChange={e => setWizTarief(Number(e.target.value))} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: "DM Mono, monospace" }} />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Betalingstermijn</label>
-                      <span className="block px-3 py-2 text-sm" style={{ color: "#dae6ff" }}>{wizMedProfile?.betalingstermijn || 30} dagen</span>
-                    </div>
-                  </div>
-                  <div className="rounded-xl p-3 space-y-1" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
-                    <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>Uren</span><span style={{ fontFamily: "DM Mono, monospace" }}>{wizTotaalUren}u × €{wizTarief}</span></div>
-                    <div className="flex justify-between text-xs"><span style={{ color: "#a0abc3" }}>BTW</span><span style={{ fontFamily: "DM Mono, monospace", color: "#feb300" }}>Verlegd (artikel 12)</span></div>
-                    <div className="flex justify-between text-sm font-bold pt-2" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}><span style={{ color: "#dae6ff" }}>Te factureren</span><span style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(wizSubtotaal)}</span></div>
-                  </div>
-                  <textarea value={wizNotitie} onChange={e => setWizNotitie(e.target.value)} placeholder="Notitie (optioneel)" className="w-full px-3 py-2 rounded-xl text-sm" rows={2} style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-                  <div className="flex gap-2">
-                    <button onClick={() => setWizStep(3)} className="flex-1 py-2.5 rounded-xl text-xs font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Vorige</button>
-                    <button onClick={createOrder} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
-                      Order aanmaken
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        <InkooporderWizard
+          open={showCreate}
+          medewerkers={medewerkers}
+          profileId={profileId}
+          initial={wizardInitial}
+          onClose={() => { setShowCreate(false); setWizardInitial(undefined); }}
+          onCreated={() => {
+            setShowCreate(false);
+            setWizardInitial(undefined);
+            fetchOrders();
+          }}
+        />
       </PageShell>
     </>
   );
