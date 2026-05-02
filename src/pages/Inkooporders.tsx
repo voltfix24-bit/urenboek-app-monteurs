@@ -65,11 +65,8 @@ export default function Inkooporders() {
     const tot = searchParams.get("tot");
     if (medId && van && tot && medewerkers.length > 0) {
       didAutoOpen.current = true;
-      setWizMedewerker(medId);
-      setWizVan(van);
-      setWizTot(tot);
+      setWizardInitial({ medewerkerId: medId, van, tot });
       setShowCreate(true);
-      setWizStep(2);
     }
   }, [searchParams, medewerkers]);
 
@@ -95,97 +92,6 @@ export default function Inkooporders() {
       verrijkt.forEach((r: any) => { r._project_nummer = nummerMap.get(r.project_id) || ""; });
     }
     setOrderRegels(verrijkt);
-  };
-
-  // Generate next order number
-  const generateOrderNummer = async () => {
-    const year = new Date().getFullYear();
-    const { data } = await supabase.from("inkooporders").select("order_nummer").like("order_nummer", `TV-${year}-%`).order("order_nummer", { ascending: false }).limit(1);
-    if (data && data.length > 0) {
-      const last = data[0].order_nummer;
-      const num = parseInt(last.split("-")[2]) + 1;
-      return `TV-${year}-${String(num).padStart(4, "0")}`;
-    }
-    return `TV-${year}-0001`;
-  };
-
-  // Wizard: load boekingen
-  const loadBoekingen = async () => {
-    if (!wizMedewerker || !wizVan || !wizTot) return;
-    setWizLoading(true);
-    const { data } = await supabase.from("uren_boekingen").select("id, datum, project_id, uren, beschrijving, type").eq("medewerker_id", wizMedewerker).eq("status", "goedgekeurd").gte("datum", wizVan).lte("datum", wizTot).order("datum");
-    // Filter out boekingen already on an order
-    const { data: existingRegels } = await supabase.from("inkooporder_regels").select("uren_boeking_id");
-    const usedIds = new Set(
-      (existingRegels || [])
-        .map((r: any) => r.uren_boeking_id)
-        .filter(Boolean)
-    );
-    const beschikbaar = (data || []).filter((b: any) => !usedIds.has(b.id));
-    // Get project names
-    const projIds = [...new Set(beschikbaar.map((b: any) => b.project_id))];
-    const { data: projs } = projIds.length > 0 ? await supabase.from("projects").select("id, naam, nummer").in("id", projIds) : { data: [] };
-    const projMap = new Map((projs || []).map((p: any) => [p.id, p]));
-    const enriched = beschikbaar.map((b: any) => {
-      const proj = projMap.get(b.project_id) || { naam: "", nummer: "" };
-      return { ...b, project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, activiteit: b.type || null };
-    });
-    setWizBoekingen(enriched);
-    setWizSelected(new Set(enriched.map((b: any) => b.id)));
-    // Get profile + tarief
-    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon").eq("id", wizMedewerker).single();
-    setWizMedProfile(prof);
-    setWizTarief(Number(prof?.uurtarief) || 0);
-    setWizLoading(false);
-    setWizStep(3);
-  };
-
-  const wizTotaalUren = useMemo(() => wizBoekingen.filter(b => wizSelected.has(b.id)).reduce((s, b) => s + Number(b.uren), 0), [wizBoekingen, wizSelected]);
-  const wizSubtotaal = wizTotaalUren * wizTarief;
-  // BTW verlegd — ZZP monteurs do not charge BTW to TerreVolt BV (art. 12 Wet OB)
-  const wizBtw = 0;
-  const wizTotaalIncl = wizSubtotaal;
-
-  const createOrder = async () => {
-    const orderNummer = await generateOrderNummer();
-    const selectedBoekingen = wizBoekingen.filter(b => wizSelected.has(b.id));
-    const { data: order, error } = await supabase.from("inkooporders").insert({
-      order_nummer: orderNummer,
-      medewerker_id: wizMedewerker,
-      periode_van: wizVan,
-      periode_tot: wizTot,
-      status: "concept",
-      totaal_uren: wizTotaalUren,
-      totaal_excl_btw: wizSubtotaal,
-      btw_bedrag: 0,
-      totaal_incl_btw: wizSubtotaal,
-      aangemaakt_door: profileId,
-      notitie: wizNotitie || null,
-    } as any).select("id").single();
-    if (error || !order) { toast.error("Fout bij aanmaken"); return; }
-    // Insert regels
-    const regels = selectedBoekingen.map((b: any) => ({
-      inkooporder_id: order.id,
-      uren_boeking_id: b.id,
-      datum: b.datum,
-      project_id: b.project_id,
-      project_naam: b.project_naam,
-      activiteit: b.activiteit || null,
-      uren: Number(b.uren),
-      uurtarief: wizTarief,
-      bedrag: Number(b.uren) * wizTarief,
-    }));
-    await supabase.from("inkooporder_regels").insert(regels as any);
-    toast.success(`Inkooporder ${orderNummer} aangemaakt`);
-    setShowCreate(false);
-    resetWizard();
-    fetchOrders();
-  };
-
-  const resetWizard = () => {
-    setWizStep(1); setWizMedewerker(""); setWizVan(""); setWizTot("");
-    setWizBoekingen([]); setWizSelected(new Set()); setWizTarief(0);
-    setWizNotitie(""); setWizMedProfile(null);
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string, extra?: any) => {
