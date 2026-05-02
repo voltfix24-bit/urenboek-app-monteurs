@@ -135,7 +135,7 @@ export default function Inkooporders() {
               <HeaderLogo />
               <span className="text-base font-bold tracking-tight" style={{ color: "#dae6ff" }}>Inkooporders</span>
             </div>
-            <button onClick={() => { setShowCreate(true); resetWizard(); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
+            <button onClick={() => { setWizardInitial(undefined); setShowCreate(true); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
               <Plus className="h-3.5 w-3.5" /> Nieuwe order
             </button>
           </div>
