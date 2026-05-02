@@ -4,24 +4,7 @@ import { toast } from "sonner";
 import { X, Check, AlertTriangle, ChevronLeft, Users, Calendar, ListChecks, FileCheck2 } from "lucide-react";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
-
-// ─── Design tokens (gedeeld met Inkooporders.tsx) ──────────────────────────
-const T = {
-  navy: "var(--app-navy)",
-  surface: "rgba(10,26,48,0.7)",
-  border: "rgba(106,118,140,0.15)",
-  borderActive: "rgba(63,255,139,0.3)",
-  text: "#dae6ff",
-  textMuted: "#a0abc3",
-  primary: "#3fff8b",
-  primaryGradient: "linear-gradient(135deg, #3fff8b, #005d2c)",
-  primarySoft: "rgba(63,255,139,0.1)",
-  warn: "#feb300",
-  warnSoft: "rgba(254,179,0,0.08)",
-  warnBorder: "rgba(254,179,0,0.3)",
-  mono: "DM Mono, monospace",
-  step: "#102038",
-};
+import { T } from "@/lib/inkooporderTheme";
 
 interface Medewerker { id: string; full_name: string }
 interface Boeking {
