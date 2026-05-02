@@ -147,9 +147,9 @@ export default function Inkooporders() {
           <div className="flex flex-wrap gap-1.5">
             {["alle", "concept", "verzonden", "factuur_ontvangen", "betaald"].map(s => (
               <button key={s} onClick={() => setStatusFilter(s)} className="px-3 py-1.5 rounded-full text-[11px] font-semibold" style={{
-                background: statusFilter === s ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
-                border: `1px solid ${statusFilter === s ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`,
-                color: statusFilter === s ? "#3fff8b" : "#a0abc3",
+                background: statusFilter === s ? T.primarySoft : T.surface,
+                border: `1px solid ${statusFilter === s ? T.borderActive : T.border}`,
+                color: statusFilter === s ? T.primary : T.textMuted,
               }}>
                 {s === "alle" ? "Alle" : INKOOPORDER_STATUS_CONFIG[s]?.label || s}
               </button>
@@ -164,23 +164,23 @@ export default function Inkooporders() {
           {loading ? (
             <Spinner padding="py-8" />
           ) : filteredOrders.length === 0 ? (
-            <div className="text-center py-12 rounded-2xl" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
-              <FileText className="h-8 w-8 mx-auto mb-2" style={{ color: "#a0abc3" }} />
-              <p className="text-sm font-medium" style={{ color: "#dae6ff" }}>Geen inkooporders</p>
+            <div className="text-center py-12 rounded-2xl" style={{ background: T.surface, border: `1px solid ${T.border}` }}>
+              <FileText className="h-8 w-8 mx-auto mb-2" style={{ color: T.textMuted }} />
+              <p className="text-sm font-medium" style={{ color: T.text }}>Geen inkooporders</p>
             </div>
           ) : (
             <div className="space-y-2">
               {filteredOrders.map(o => (
-                <button key={o.id} onClick={() => loadOrderDetail(o)} className="w-full text-left rounded-2xl p-4" style={{ background: "rgba(10,26,48,0.7)", border: `1px solid ${selectedOrder?.id === o.id ? "#3fff8b" : "rgba(106,118,140,0.15)"}` }}>
+                <button key={o.id} onClick={() => loadOrderDetail(o)} className="w-full text-left rounded-2xl p-4" style={{ background: T.surface, border: `1px solid ${selectedOrder?.id === o.id ? T.primary : T.border}` }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[13px] font-bold" style={{ fontFamily: "DM Mono, monospace", color: "#dae6ff" }}>{o.order_nummer}</span>
-                      <span className="text-xs ml-2" style={{ color: "#a0abc3" }}>· {o.medewerker_naam}</span>
+                      <span className="text-[13px] font-bold" style={{ fontFamily: T.mono, color: T.text }}>{o.order_nummer}</span>
+                      <span className="text-xs ml-2" style={{ color: T.textMuted }}>· {o.medewerker_naam}</span>
                     </div>
                     <OrderStatusBadge status={o.status} />
                   </div>
-                  <p className="text-[11px] mt-1" style={{ color: "#a0abc3" }}>{o.periode_van} → {o.periode_tot}</p>
-                  <p className="text-lg font-bold mt-1" style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(Number(o.totaal_excl_btw) || 0)}</p>
+                  <p className="text-[11px] mt-1" style={{ color: T.textMuted }}>{o.periode_van} → {o.periode_tot}</p>
+                  <p className="text-lg font-bold mt-1" style={{ fontFamily: T.mono, color: T.primary }}>{euro(Number(o.totaal_excl_btw) || 0)}</p>
                 </button>
               ))}
             </div>
