@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
     const { error } = await adminClient.auth.admin.updateUserById(user_id, updateData);
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
+      return new Response(JSON.stringify({ error: "Reset mislukt" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

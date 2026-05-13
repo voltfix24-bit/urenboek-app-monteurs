@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       );
 
     if (statusError) {
-      return new Response(JSON.stringify({ error: statusError.message }), {
+      return new Response(JSON.stringify({ error: "Bijwerken mislukt" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

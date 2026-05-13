@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       user_metadata: { full_name: fullName },
     });
     if (createError) {
-      return new Response(JSON.stringify({ error: createError.message }), {
+      return new Response(JSON.stringify({ error: "Aanmaken mislukt" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

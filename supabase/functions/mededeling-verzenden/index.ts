@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (insertError || !mededeling) {
-      return new Response(JSON.stringify({ error: insertError?.message || "Insert failed" }), {
+      return new Response(JSON.stringify({ error: "Versturen mislukt" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

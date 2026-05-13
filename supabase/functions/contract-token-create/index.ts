@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     });
 
     if (insertErr) {
-      return new Response(JSON.stringify({ error: insertErr.message }), {
+      return new Response(JSON.stringify({ error: "Token aanmaken mislukt" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
