@@ -52,7 +52,9 @@ Een lopende afzonderlijke opdracht eindigt niet automatisch door beëindiging va
 
 Opdrachtgever kan een afzonderlijke opdracht met onmiddellijke ingang beëindigen indien Opdrachtnemer ernstig tekortschiet in de nakoming, veiligheidsregels of projectregels ernstig overtreedt, vereiste certificeringen of aanwijzingen ontbreken of verlopen, of Opdrachtnemer surseance van betaling aanvraagt, failliet wordt verklaard of zijn onderneming beëindigt.
 
-Bij tussentijdse beëindiging heeft Opdrachtnemer uitsluitend recht op vergoeding van de aantoonbaar en deugdelijk verrichte werkzaamheden tot de beëindigingsdatum.`;
+Bij tussentijdse beëindiging heeft Opdrachtnemer uitsluitend recht op vergoeding van de aantoonbaar en deugdelijk verrichte werkzaamheden tot de beëindigingsdatum.
+
+Indien Opdrachtgever een lopende opdracht beëindigt zonder aantoonbare tekortkoming van Opdrachtnemer, heeft Opdrachtnemer recht op vergoeding van minimaal twee weken aan het overeengekomen tarief, berekend op basis van het gemiddelde aantal gewerkte uren in de voorafgaande vier weken.`;
 
 export const ARTIKEL_5 = `ARTIKEL 5 - VERVANGING
 
@@ -142,7 +144,9 @@ Het is Opdrachtnemer zonder voorafgaande schriftelijke toestemming van Opdrachtg
 
 Dit beding strekt uitsluitend ter bescherming van het zakelijke netwerk, de goodwill en de investeringen van Opdrachtgever.
 
-Dit beding geldt niet indien de betreffende klantrelatie aantoonbaar al voor de eerste inzet via Opdrachtgever bestond, Opdrachtgever vooraf schriftelijke toestemming heeft gegeven, of toepassing van het beding in de concrete situatie naar maatstaven van redelijkheid en billijkheid onaanvaardbaar zou zijn.`;
+Dit beding geldt niet indien de betreffende klantrelatie aantoonbaar al voor de eerste inzet via Opdrachtgever bestond, Opdrachtgever vooraf schriftelijke toestemming heeft gegeven, of toepassing van het beding in de concrete situatie naar maatstaven van redelijkheid en billijkheid onaanvaardbaar zou zijn.
+
+Dit beding is uitsluitend van toepassing op actieve benadering van klanten door Opdrachtnemer. Inkomend contact vanuit de klant en openbare aanbestedingen vallen uitdrukkelijk buiten de reikwijdte van dit beding.`;
 
 export const ARTIKEL_14 = `ARTIKEL 14 - ANTI-RONSELBEDING
 
@@ -161,6 +165,8 @@ Dit artikel verhindert Opdrachtnemer niet om in algemene zin voor andere opdrach
 export const ARTIKEL_16 = `ARTIKEL 16 - BOETEBEDING
 
 Bij overtreding van artikel 12, 13, 14 of 15 verbeurt Opdrachtnemer aan Opdrachtgever, zonder nadere ingebrekestelling, een direct opeisbare boete van EUR 5.000 per overtreding en EUR 500 per dag dat de overtreding voortduurt.
+
+De totale boete per overtreding bedraagt nimmer meer dan EUR 15.000 per kalenderjaar.
 
 Deze boete laat het recht van Opdrachtgever op volledige schadevergoeding onverlet indien de werkelijk geleden schade hoger is.`;
 
