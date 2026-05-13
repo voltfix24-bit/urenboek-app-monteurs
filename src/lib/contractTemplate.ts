@@ -144,7 +144,9 @@ Het is Opdrachtnemer zonder voorafgaande schriftelijke toestemming van Opdrachtg
 
 Dit beding strekt uitsluitend ter bescherming van het zakelijke netwerk, de goodwill en de investeringen van Opdrachtgever.
 
-Dit beding geldt niet indien de betreffende klantrelatie aantoonbaar al voor de eerste inzet via Opdrachtgever bestond, Opdrachtgever vooraf schriftelijke toestemming heeft gegeven, of toepassing van het beding in de concrete situatie naar maatstaven van redelijkheid en billijkheid onaanvaardbaar zou zijn.`;
+Dit beding geldt niet indien de betreffende klantrelatie aantoonbaar al voor de eerste inzet via Opdrachtgever bestond, Opdrachtgever vooraf schriftelijke toestemming heeft gegeven, of toepassing van het beding in de concrete situatie naar maatstaven van redelijkheid en billijkheid onaanvaardbaar zou zijn.
+
+Dit beding is uitsluitend van toepassing op actieve benadering van klanten door Opdrachtnemer. Inkomend contact vanuit de klant en openbare aanbestedingen vallen uitdrukkelijk buiten de reikwijdte van dit beding.`;
 
 export const ARTIKEL_14 = `ARTIKEL 14 - ANTI-RONSELBEDING
 
