@@ -166,6 +166,8 @@ export const ARTIKEL_16 = `ARTIKEL 16 - BOETEBEDING
 
 Bij overtreding van artikel 12, 13, 14 of 15 verbeurt Opdrachtnemer aan Opdrachtgever, zonder nadere ingebrekestelling, een direct opeisbare boete van EUR 5.000 per overtreding en EUR 500 per dag dat de overtreding voortduurt.
 
+De totale boete per overtreding bedraagt nimmer meer dan EUR 15.000 per kalenderjaar.
+
 Deze boete laat het recht van Opdrachtgever op volledige schadevergoeding onverlet indien de werkelijk geleden schade hoger is.`;
 
 export const ARTIKEL_17 = `ARTIKEL 17 - PERSOONSGEGEVENS
