@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      return new Response(JSON.stringify({ error: createError.message }), {
+      return new Response(JSON.stringify({ error: "Registratie mislukt" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

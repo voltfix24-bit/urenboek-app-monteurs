@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
     const { error } = await adminClient.auth.admin.updateUserById(user_id, updateData);
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
+      return new Response(JSON.stringify({ error: "Reset mislukt" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -103,8 +103,9 @@ Deno.serve(async (req) => {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+  } catch (_err) {
+    console.error("edge function error:", _err);
+    return new Response(JSON.stringify({ error: "Interne fout" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
         data: { full_name: fullName },
       });
       if (inviteError) {
-        return new Response(JSON.stringify({ error: inviteError.message }), {
+        return new Response(JSON.stringify({ error: "Uitnodigen mislukt" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       });
 
       if (existingUserError) {
-        return new Response(JSON.stringify({ error: existingUserError.message }), {
+        return new Response(JSON.stringify({ error: "Gebruikerslijst ophalen mislukt" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
         });
 
         if (updateError) {
-          return new Response(JSON.stringify({ error: updateError.message }), {
+          return new Response(JSON.stringify({ error: "Bijwerken mislukt" }), {
             status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
           user_metadata: { full_name: fullName },
         });
         if (createError) {
-          return new Response(JSON.stringify({ error: createError.message }), {
+          return new Response(JSON.stringify({ error: "Aanmaken mislukt" }), {
             status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
@@ -185,8 +185,9 @@ Deno.serve(async (req) => {
       JSON.stringify({ success: true, user: { id: newUser.user.id, email, fullName, role } }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+  } catch (_err) {
+    console.error("edge function error:", _err);
+    return new Response(JSON.stringify({ error: "Interne fout" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

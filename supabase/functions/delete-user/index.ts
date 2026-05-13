@@ -261,7 +261,7 @@ Deno.serve(async (req) => {
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
     if (deleteError) {
       console.error("Auth delete error:", deleteError);
-      return new Response(JSON.stringify({ error: `Auth gebruiker verwijderen mislukt: ${deleteError.message}` }), {
+      return new Response(JSON.stringify({ error: "Auth gebruiker verwijderen mislukt" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("delete-user error:", err);
-    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : "Onbekende fout bij verwijderen" }), {
+    return new Response(JSON.stringify({ error: "Onbekende fout bij verwijderen" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

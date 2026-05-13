@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (insertError || !mededeling) {
-      return new Response(JSON.stringify({ error: insertError?.message || "Insert failed" }), {
+      return new Response(JSON.stringify({ error: "Versturen mislukt" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -122,8 +122,9 @@ Deno.serve(async (req) => {
       JSON.stringify({ success: true, mededelingId: mededeling.id, recipients: recipientIds.length }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+  } catch (_err) {
+    console.error("edge function error:", _err);
+    return new Response(JSON.stringify({ error: "Interne fout" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
