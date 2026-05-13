@@ -52,7 +52,9 @@ Een lopende afzonderlijke opdracht eindigt niet automatisch door beëindiging va
 
 Opdrachtgever kan een afzonderlijke opdracht met onmiddellijke ingang beëindigen indien Opdrachtnemer ernstig tekortschiet in de nakoming, veiligheidsregels of projectregels ernstig overtreedt, vereiste certificeringen of aanwijzingen ontbreken of verlopen, of Opdrachtnemer surseance van betaling aanvraagt, failliet wordt verklaard of zijn onderneming beëindigt.
 
-Bij tussentijdse beëindiging heeft Opdrachtnemer uitsluitend recht op vergoeding van de aantoonbaar en deugdelijk verrichte werkzaamheden tot de beëindigingsdatum.`;
+Bij tussentijdse beëindiging heeft Opdrachtnemer uitsluitend recht op vergoeding van de aantoonbaar en deugdelijk verrichte werkzaamheden tot de beëindigingsdatum.
+
+Indien Opdrachtgever een lopende opdracht beëindigt zonder aantoonbare tekortkoming van Opdrachtnemer, heeft Opdrachtnemer recht op vergoeding van minimaal twee weken aan het overeengekomen tarief, berekend op basis van het gemiddelde aantal gewerkte uren in de voorafgaande vier weken.`;
 
 export const ARTIKEL_5 = `ARTIKEL 5 - VERVANGING
 
