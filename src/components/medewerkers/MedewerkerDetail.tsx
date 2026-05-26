@@ -485,7 +485,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
             className="w-full mt-2 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
             style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}
           >
-            <KeyRound className="h-3.5 w-3.5" /> Wachtwoord instellen / resetten
+            <KeyRound className="h-3.5 w-3.5" /> Gebruikersnaam & wachtwoord instellen
           </button>
         )}
 
