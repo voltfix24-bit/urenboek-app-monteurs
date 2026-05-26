@@ -316,6 +316,33 @@ export default function Onderaannemers() {
               </div>
             </div>
 
+            {/* Inloggegevens / wachtwoord reset */}
+            <div style={{ background: "#0a1a30", borderRadius: 16, padding: 18, marginBottom: 20, border: "1px solid rgba(106,118,140,0.15)" }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#6a768c", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Inloggegevens</p>
+              <p style={{ fontSize: 12, color: "#a0abc3", marginBottom: 12, lineHeight: 1.5 }}>
+                Deze onderaannemer kan inloggen met e-mail <b style={{ color: "#dae6ff" }}>{selected.email || "—"}</b> en ziet daarna de planning en uren van zijn monteurs. Genereer hieronder een nieuw wachtwoord om mee te delen.
+              </p>
+              <button
+                type="button"
+                onClick={resetOnderaannemerPassword}
+                disabled={pwResetting || !selected.email}
+                style={{ ...secondaryBtn, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: pwResetting ? 0.6 : 1 }}
+              >
+                {pwResetting ? "Bezig…" : "Nieuw wachtwoord genereren"}
+              </button>
+              {newOaPw && (
+                <div style={{ marginTop: 12 }}>
+                  <CredsCard
+                    email={newOaPw.email}
+                    pw={newOaPw.pw}
+                    onCopy={() => copyCreds(newOaPw.email, newOaPw.pw)}
+                    onClose={() => setNewOaPw(null)}
+                  />
+                </div>
+              )}
+            </div>
+
+
             {/* Contact info */}
             <div style={{ background: "#0a1a30", borderRadius: 16, padding: 18, marginBottom: 20, border: "1px solid rgba(106,118,140,0.15)" }}>
               <p style={{ fontSize: 10, fontWeight: 700, color: "#6a768c", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>Bedrijfsgegevens</p>
