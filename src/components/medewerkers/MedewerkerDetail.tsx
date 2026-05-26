@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText, Check, X, Trash2, Edit2, Save } from "lucide-react";
+import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText, Check, X, Trash2, Edit2, Save, KeyRound, Copy, Eye, EyeOff, RotateCw } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
@@ -135,6 +135,40 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
   const [contract, setContract] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [showPwPanel, setShowPwPanel] = useState(false);
+  const [newPw, setNewPw] = useState("");
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwResult, setPwResult] = useState<string | null>(null);
+
+  function genPw() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    let r = "";
+    for (let i = 0; i < 10; i++) r += chars.charAt(Math.floor(Math.random() * chars.length));
+    setNewPw(r);
+    setShowNewPw(true);
+  }
+
+  async function saveWachtwoord() {
+    if (!newPw || newPw.length < 8) { toast.error("Wachtwoord moet minimaal 8 tekens zijn"); return; }
+    setPwSaving(true);
+    const { data, error } = await supabase.functions.invoke("reset-password", {
+      body: { user_id: emp.user_id, password: newPw },
+    });
+    setPwSaving(false);
+    if (error || data?.error) { toast.error(data?.error || "Fout bij instellen wachtwoord"); return; }
+    setPwResult(newPw);
+    setNewPw("");
+    toast.success("Wachtwoord ingesteld ✓");
+  }
+
+  function kopieerInloggegevens() {
+    if (!pwResult) return;
+    const tekst = `Inloggegevens TerreVolt Urenregistratie:\nE-mail: ${emp.email || ""}\nWachtwoord: ${pwResult}\n\nLog in op: ${window.location.origin}`;
+    navigator.clipboard.writeText(tekst);
+    toast.success("Inloggegevens gekopieerd!");
+  }
+
   const [editForm, setEditForm] = useState({
     full_name: emp.full_name,
     telefoon: emp.telefoon || "",
@@ -165,9 +199,12 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
     });
   }, [emp.id, emp.full_name, emp.telefoon, emp.adres, emp.email, emp.bedrijfsnaam, emp.kvk_nummer, emp.btw_nummer, emp.iban, emp.uurtarief, emp.noodcontact_naam, emp.noodcontact_tel]);
 
-  // Reset editing mode only when switching to a different employee
+  // Reset editing mode and password panel only when switching to a different employee
   useEffect(() => {
     setEditing(false);
+    setShowPwPanel(false);
+    setNewPw("");
+    setPwResult(null);
   }, [emp.id]);
 
   useEffect(() => {
@@ -426,9 +463,73 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       <Section title="Account info">
         <div className="space-y-1">
           <div className="flex items-center gap-2"><StatusBadge emp={emp} /></div>
+          {emp.email && <p className="text-[11px]" style={{ color: "#a0abc3" }}>E-mail: <span style={{ color: "#dae6ff" }}>{emp.email}</span></p>}
           {emp.invited_at && <p className="text-[11px]" style={{ color: "#a0abc3" }}>Uitgenodigd op: {format(parseISO(emp.invited_at), "d MMM yyyy HH:mm", { locale: nl })}</p>}
           {emp.activated_at && <p className="text-[11px]" style={{ color: "#a0abc3" }}>Geactiveerd op: {format(parseISO(emp.activated_at), "d MMM yyyy HH:mm", { locale: nl })}</p>}
         </div>
+
+        {!showPwPanel && !pwResult && (
+          <button
+            onClick={() => setShowPwPanel(true)}
+            className="w-full mt-2 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
+            style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}
+          >
+            <KeyRound className="h-3.5 w-3.5" /> Wachtwoord instellen / resetten
+          </button>
+        )}
+
+        {showPwPanel && !pwResult && (
+          <div className="mt-2 space-y-2 p-3 rounded-xl" style={{ background: "var(--app-navy)", border: "1px solid rgba(63,255,139,0.3)" }}>
+            <p className="text-[11px]" style={{ color: "#a0abc3" }}>
+              Stel een nieuw wachtwoord in voor <strong style={{ color: "#dae6ff" }}>{emp.full_name}</strong>. Het oude wachtwoord vervalt direct.
+            </p>
+            <div className="flex gap-1.5">
+              <div className="relative flex-1">
+                <input
+                  type={showNewPw ? "text" : "password"}
+                  value={newPw}
+                  onChange={e => setNewPw(e.target.value)}
+                  placeholder="Min. 8 tekens"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm pr-8"
+                  style={{ background: "#0a1a30", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}
+                />
+                <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-2 top-1/2 -translate-y-1/2" style={{ color: "#a0abc3" }}>
+                  {showNewPw ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+              <button type="button" onClick={genPw} className="px-3 py-2.5 rounded-xl text-sm shrink-0" style={{ background: "#0a1a30", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }} title="Genereer wachtwoord">
+                <RotateCw className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => { setShowPwPanel(false); setNewPw(""); }} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "#102038", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>
+                Annuleren
+              </button>
+              <button onClick={saveWachtwoord} disabled={pwSaving || newPw.length < 8} className="flex-1 py-2 rounded-xl text-xs font-bold" style={{ background: newPw.length >= 8 ? "linear-gradient(135deg, #3fff8b, #005d2c)" : "#102038", color: newPw.length >= 8 ? "#fff" : "#a0abc3" }}>
+                {pwSaving ? "Bezig..." : "Wachtwoord opslaan"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {pwResult && (
+          <div className="mt-2 space-y-2 p-3 rounded-xl" style={{ background: "rgba(63,255,139,0.08)", border: "1px solid rgba(63,255,139,0.3)" }}>
+            <p className="text-[11px] font-semibold" style={{ color: "#3fff8b" }}>✓ Nieuw wachtwoord ingesteld</p>
+            <div className="text-[11px] space-y-1" style={{ color: "#a0abc3" }}>
+              <p>E-mail: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4 }}>{emp.email}</code></p>
+              <p>Wachtwoord: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4, fontFamily: "monospace" }}>{pwResult}</code></p>
+            </div>
+            <p className="text-[10px]" style={{ color: "#feb300" }}>⚠ Bewaar of deel deze gegevens nu — ze worden niet opnieuw getoond.</p>
+            <div className="flex gap-2">
+              <button onClick={kopieerInloggegevens} className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5" style={{ background: "#3fff8b", color: "#003817" }}>
+                <Copy className="h-3.5 w-3.5" /> Kopieer inloggegevens
+              </button>
+              <button onClick={() => { setPwResult(null); setShowPwPanel(false); }} className="px-3 py-2 rounded-xl text-xs font-semibold" style={{ background: "#102038", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>
+                Sluiten
+              </button>
+            </div>
+          </div>
+        )}
       </Section>
 
       {/* Verwijderen */}
