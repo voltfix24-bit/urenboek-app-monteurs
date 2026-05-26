@@ -58,6 +58,7 @@ export default function Onderaannemers() {
   const [oaBedrijf, setOaBedrijf] = useState("");
   const [oaKvk, setOaKvk] = useState("");
   const [oaIban, setOaIban] = useState("");
+  const [oaUurtarief, setOaUurtarief] = useState("");
   const [oaPw, setOaPw] = useState("");
   const [oaShowPw, setOaShowPw] = useState(false);
   const [oaSaving, setOaSaving] = useState(false);
