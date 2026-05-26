@@ -112,7 +112,7 @@ export default function Onderaannemers() {
 
   const resetOaForm = () => {
     setOaVoornaam(""); setOaAchternaam(""); setOaEmail(""); setOaTel("");
-    setOaBedrijf(""); setOaKvk(""); setOaIban(""); setOaPw("");
+    setOaBedrijf(""); setOaKvk(""); setOaIban(""); setOaUurtarief(""); setOaPw("");
   };
 
   const resetMonteurForm = () => {
