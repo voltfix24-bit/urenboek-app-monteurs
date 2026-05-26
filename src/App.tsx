@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth, type RolPermissies } from "@/hooks/useAuth";
 import { ProfileProvider } from "@/hooks/useProfile";
+import { ActiveMedewerkerProvider } from "@/hooks/useActiveMedewerker";
 import { NavBadgesProvider } from "@/hooks/useNavBadges";
 import { AppErrorBoundary, RouteErrorBoundary } from "@/components/AppErrorBoundary";
 import { Spinner } from "@/components/ui/Spinner";
@@ -124,6 +125,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <ProfileProvider>
+            <ActiveMedewerkerProvider>
             <NavBadgesProvider>
             <Routes>
               {/* Public — eager */}
@@ -168,6 +170,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             </NavBadgesProvider>
+            </ActiveMedewerkerProvider>
             </ProfileProvider>
           </AuthProvider>
         </BrowserRouter>

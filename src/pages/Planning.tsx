@@ -18,6 +18,8 @@ import { mutate } from "@/lib/supabaseHelpers";
 import { ListSkeleton, PlanningCardSkeleton } from "@/components/ui/Skeletons";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
+import { useActiveMedewerker } from "@/hooks/useActiveMedewerker";
+import { MonteurSwitcher } from "@/components/MonteurSwitcher";
 
 interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; activiteit: string | null; activiteit_kleur: string | null; collega_ids: string[] | null; week_opmerking: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
@@ -29,6 +31,8 @@ export default function Planning() {
   const { user, isManager } = useAuth();
   const { badges } = useNavBadges();
   const { profileId, profile: profileData } = useProfile();
+  const { activeProfileId, activeLid, isOnderaannemer } = useActiveMedewerker();
+  const queryProfileId = activeProfileId || profileId;
   const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [items, setItems] = useState<PlanningItem[]>([]);
@@ -150,15 +154,15 @@ export default function Planning() {
   const weekNumber = getISOWeek(weekStart);
 
   const fetchPlanning = useCallback(async () => {
-    if (!user || !profileId) return;
+    if (!user || !queryProfileId) return;
     setLoading(true);
     const startStr = format(weekStart, "yyyy-MM-dd");
     const endStr = format(addDays(weekStart, 6), "yyyy-MM-dd");
 
     const [{ data }, { data: beschData }, { data: boekData }] = await Promise.all([
-      supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id, activiteit, activiteit_kleur, collega_ids, week_opmerking").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
-      supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", profileId).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
-      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status, type, beschrijving").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr),
+      supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id, activiteit, activiteit_kleur, collega_ids, week_opmerking").eq("medewerker_id", queryProfileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
+      supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", queryProfileId).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
+      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status, type, beschrijving").eq("medewerker_id", queryProfileId).gte("datum", startStr).lte("datum", endStr),
     ]);
     setBeschikbaarheid((beschData ?? []) as any);
 
@@ -198,11 +202,11 @@ export default function Planning() {
         }));
 
         // Cache planning data for offline use
-        await cachePlanning(profileId, startStr, data as any[]);
+        await cachePlanning(queryProfileId, startStr, data as any[]);
       }
     } else {
       // Offline: use cached data
-      const cached = await getCachedPlanning(profileId, startStr);
+      const cached = await getCachedPlanning(queryProfileId, startStr);
       if (cached) {
         const projectIds = [...new Set(cached.map((d: any) => d.project_id))];
         let projMap = new Map();
@@ -216,7 +220,7 @@ export default function Planning() {
       }
     }
     setLoading(false);
-  }, [user, weekStart]);
+  }, [user, weekStart, queryProfileId]);
 
   useEffect(() => { fetchPlanning(); }, [fetchPlanning]);
 
@@ -268,7 +272,7 @@ export default function Planning() {
   }
 
   const saveUren = async (submitDirect: boolean) => {
-    if (!profileId || !modalItem) return;
+    if (!queryProfileId || !modalItem) return;
     const planned = calcDefaultUren(modalItem.starttijd, modalItem.eindtijd);
     const diff = Math.abs(urenForm.uren - planned);
     const needsToelichting = diff > 0.5;
@@ -317,7 +321,7 @@ export default function Planning() {
     const { data: inserted, error: insertErr } = await supabase
       .from("uren_boekingen")
       .insert({
-        medewerker_id: profileId,
+        medewerker_id: queryProfileId,
         project_id: modalItem.project_id,
         datum: modalItem.datum,
         uren: urenForm.uren,
@@ -392,6 +396,7 @@ export default function Planning() {
         <MobileHeader initials={profileData?.full_name?.charAt(0)?.toUpperCase() || 'U'} />
 
         <PullToRefresh onRefresh={async () => { await fetchPlanning(); }}>
+          <MonteurSwitcher />
           <main style={{ padding: '24px 20px' }}>
             {/* ── WEEK HEADER ── */}
             <div style={{
@@ -408,7 +413,7 @@ export default function Planning() {
                   letterSpacing: '0.2em',
                   color: '#3fff8b', marginBottom: 4,
                 }}>
-                  Jouw planning
+                  {isOnderaannemer && activeLid && !activeLid.is_self ? `Planning · ${activeLid.full_name}` : 'Jouw planning'}
                 </p>
                 <h2 style={{
                   fontFamily: 'Manrope',

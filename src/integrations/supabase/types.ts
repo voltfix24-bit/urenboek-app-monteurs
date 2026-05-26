@@ -2085,6 +2085,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_onderaannemer_van: {
+        Args: { _profile_id: string; _user_id: string }
+        Returns: boolean
+      }
       next_contract_nummer: { Args: never; Returns: string }
       next_inkooporder_nummer: { Args: never; Returns: string }
     }
