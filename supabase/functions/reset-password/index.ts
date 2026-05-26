@@ -93,13 +93,29 @@ Deno.serve(async (req) => {
     const { error } = await adminClient.auth.admin.updateUserById(user_id, updateData);
 
     if (error) {
-      return new Response(JSON.stringify({ error: "Reset mislukt" }), {
+      return new Response(JSON.stringify({ error: error.message || "Reset mislukt" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    let profileWarning: string | null = null;
+    const profilePatch: { account_status: string; activated_at: string; email?: string } = {
+      account_status: "active",
+      activated_at: new Date().toISOString(),
+    };
+    if (email) profilePatch.email = email;
+
+    const { error: profileError } = await adminClient
+      .from("profiles")
+      .update(profilePatch)
+      .eq("user_id", user_id);
+
+    if (profileError) {
+      profileWarning = "Inloggen is bijgewerkt, maar profielgegevens konden niet volledig worden opgeslagen.";
+    }
+
+    return new Response(JSON.stringify({ success: true, profileWarning }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
