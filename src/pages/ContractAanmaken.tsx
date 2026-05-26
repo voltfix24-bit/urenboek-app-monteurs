@@ -235,6 +235,43 @@ export default function ContractAanmaken() {
 
       {stap === 3 && (
         <div className="space-y-4">
+          {/* Snel aanpassen vlak voor versturen */}
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+            <div className="flex items-center justify-between">
+              <SectieHeader>Snel aanpassen</SectieHeader>
+              <button
+                onClick={() => setStap(1)}
+                className="text-[10px] font-medium px-2 py-1 rounded mb-1"
+                style={{ color: "#6e9bff", border: "1px solid rgba(110,155,255,0.3)" }}>
+                Volledig bewerken
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Uurtarief (€)</label>
+                <Input type="number" value={uurtarief} onChange={e => setUurtarief(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Ingangsdatum</label>
+                <Input type="date" value={startdatum} onChange={e => setStartdatum(e.target.value)} className="mt-1" />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Naam opdrachtnemer</label>
+              <Input value={otNaam} onChange={e => setOtNaam(e.target.value)} className="mt-1" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>KVK opdrachtnemer</label>
+                <Input value={otKvk} onChange={e => setOtKvk(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Plaats ondertekening</label>
+                <Input value={plaats} onChange={e => setPlaats(e.target.value)} className="mt-1" />
+              </div>
+            </div>
+          </div>
+
           <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <SectieHeader>Contract preview</SectieHeader>
             <div className="max-h-[400px] overflow-y-auto pr-2 space-y-3 text-xs" style={{ color: "#a0abc3" }}>
