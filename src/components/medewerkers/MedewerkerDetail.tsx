@@ -137,9 +137,10 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
   const [editing, setEditing] = useState(false);
   const [showPwPanel, setShowPwPanel] = useState(false);
   const [newPw, setNewPw] = useState("");
+  const [newEmail, setNewEmail] = useState(emp.email || "");
   const [showNewPw, setShowNewPw] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
-  const [pwResult, setPwResult] = useState<string | null>(null);
+  const [pwResult, setPwResult] = useState<{ pw: string; email: string } | null>(null);
 
   function genPw() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
@@ -151,23 +152,32 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
 
   async function saveWachtwoord() {
     if (!newPw || newPw.length < 8) { toast.error("Wachtwoord moet minimaal 8 tekens zijn"); return; }
+    const emailTrim = newEmail.trim().toLowerCase();
+    if (!emailTrim || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+      toast.error("Gebruikersnaam (e-mail) is ongeldig"); return;
+    }
     setPwSaving(true);
     const { data, error } = await supabase.functions.invoke("reset-password", {
-      body: { user_id: emp.user_id, password: newPw },
+      body: { user_id: emp.user_id, password: newPw, email: emailTrim },
     });
+    if (!error && !data?.error && emailTrim !== (emp.email || "").toLowerCase()) {
+      await supabase.from("profiles").update({ email: emailTrim }).eq("id", emp.id);
+    }
     setPwSaving(false);
     if (error || data?.error) { toast.error(data?.error || "Fout bij instellen wachtwoord"); return; }
-    setPwResult(newPw);
+    setPwResult({ pw: newPw, email: emailTrim });
     setNewPw("");
-    toast.success("Wachtwoord ingesteld ✓");
+    toast.success("Inloggegevens ingesteld ✓");
+    onRefresh?.();
   }
 
   function kopieerInloggegevens() {
     if (!pwResult) return;
-    const tekst = `Inloggegevens TerreVolt Urenregistratie:\nGebruikersnaam: ${emp.email || ""}\nE-mail: ${emp.email || ""}\nWachtwoord: ${pwResult}\n\nLog in op: ${window.location.origin}`;
+    const tekst = `Inloggegevens TerreVolt Urenregistratie:\nGebruikersnaam: ${pwResult.email}\nWachtwoord: ${pwResult.pw}\n\nLog in op: ${window.location.origin}`;
     navigator.clipboard.writeText(tekst);
     toast.success("Inloggegevens gekopieerd!");
   }
+
 
   const [editForm, setEditForm] = useState({
     full_name: emp.full_name,
@@ -204,8 +214,9 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
     setEditing(false);
     setShowPwPanel(false);
     setNewPw("");
+    setNewEmail(emp.email || "");
     setPwResult(null);
-  }, [emp.id]);
+  }, [emp.id, emp.email]);
 
   useEffect(() => {
     if (!emp.id) return;
@@ -474,15 +485,28 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
             className="w-full mt-2 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
             style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}
           >
-            <KeyRound className="h-3.5 w-3.5" /> Wachtwoord instellen / resetten
+            <KeyRound className="h-3.5 w-3.5" /> Gebruikersnaam & wachtwoord instellen
           </button>
         )}
 
         {showPwPanel && !pwResult && (
           <div className="mt-2 space-y-2 p-3 rounded-xl" style={{ background: "var(--app-navy)", border: "1px solid rgba(63,255,139,0.3)" }}>
             <p className="text-[11px]" style={{ color: "#a0abc3" }}>
-              Stel een nieuw wachtwoord in voor <strong style={{ color: "#dae6ff" }}>{emp.full_name}</strong>. Het oude wachtwoord vervalt direct.
+              Stel gebruikersnaam (e-mail) en wachtwoord in voor <strong style={{ color: "#dae6ff" }}>{emp.full_name}</strong>. Hiermee logt deze medewerker in.
             </p>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider" style={{ color: "#6a768c" }}>Gebruikersnaam (e-mail)</label>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={e => setNewEmail(e.target.value)}
+                placeholder="naam@bedrijf.nl"
+                autoComplete="off"
+                className="w-full px-3 py-2.5 rounded-xl text-sm mt-1"
+                style={{ background: "#0a1a30", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}
+              />
+            </div>
+            <label className="text-[10px] uppercase tracking-wider block" style={{ color: "#6a768c" }}>Wachtwoord</label>
             <div className="flex gap-1.5">
               <div className="relative flex-1">
                 <input
@@ -514,11 +538,10 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
 
         {pwResult && (
           <div className="mt-2 space-y-2 p-3 rounded-xl" style={{ background: "rgba(63,255,139,0.08)", border: "1px solid rgba(63,255,139,0.3)" }}>
-            <p className="text-[11px] font-semibold" style={{ color: "#3fff8b" }}>✓ Nieuw wachtwoord ingesteld</p>
+            <p className="text-[11px] font-semibold" style={{ color: "#3fff8b" }}>✓ Inloggegevens ingesteld</p>
             <div className="text-[11px] space-y-1" style={{ color: "#a0abc3" }}>
-              <p>Gebruikersnaam: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4 }}>{emp.email}</code></p>
-              <p>E-mail: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4 }}>{emp.email}</code></p>
-              <p>Wachtwoord: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4, fontFamily: "monospace" }}>{pwResult}</code></p>
+              <p>Gebruikersnaam: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4 }}>{pwResult.email}</code></p>
+              <p>Wachtwoord: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4, fontFamily: "monospace" }}>{pwResult.pw}</code></p>
             </div>
             <p className="text-[10px]" style={{ color: "#feb300" }}>⚠ Bewaar of deel deze gegevens nu — ze worden niet opnieuw getoond.</p>
             <div className="flex gap-2">
