@@ -77,6 +77,7 @@ const PATH_PERMISSION_MAP: Record<string, keyof RolPermissies> = {
   "/projecten": "zietProjecten",
   "/opdrachtgevers": "magTeamBeheren",
   "/medewerkers": "zietTeam",
+  "/onderaannemers": "zietTeam",
   "/kandidaten": "zietKandidaten",
 };
 
