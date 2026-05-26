@@ -328,6 +328,7 @@ export default function Onderaannemers() {
                 <Input placeholder="KvK" value={oaKvk} onChange={setOaKvk} />
                 <Input placeholder="IBAN" value={oaIban} onChange={setOaIban} />
               </div>
+              <Input placeholder="Uurtarief (€ per uur)" type="number" value={oaUurtarief} onChange={setOaUurtarief} />
               <Input placeholder="E-mail (= gebruikersnaam)" type="email" value={oaEmail} onChange={setOaEmail} />
               <Input placeholder="Telefoon" value={oaTel} onChange={setOaTel} />
               <div style={{ position: "relative" }}>
