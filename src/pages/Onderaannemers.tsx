@@ -75,6 +75,62 @@ export default function Onderaannemers() {
   const [mSaving, setMSaving] = useState(false);
   const [lastCreatedMonteur, setLastCreatedMonteur] = useState<{ email: string; pw: string } | null>(null);
 
+  // Bewerken bestaande monteur
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editVoornaam, setEditVoornaam] = useState("");
+  const [editAchternaam, setEditAchternaam] = useState("");
+  const [editTel, setEditTel] = useState("");
+  const [editRole, setEditRole] = useState("monteur");
+  const [editSaving, setEditSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const startEdit = (m: Monteur) => {
+    const parts = (m.full_name || "").trim().split(/\s+/);
+    setEditId(m.id);
+    setEditVoornaam(parts[0] || "");
+    setEditAchternaam(parts.slice(1).join(" "));
+    setEditTel(m.telefoon || "");
+    setEditRole(m.role || "monteur");
+  };
+  const cancelEdit = () => { setEditId(null); };
+
+  const saveEdit = async (m: Monteur) => {
+    if (!editVoornaam.trim() || !editAchternaam.trim()) {
+      toast.error("Vul voornaam en achternaam in"); return;
+    }
+    setEditSaving(true);
+    const fullName = `${editVoornaam.trim()} ${editAchternaam.trim()}`.trim();
+    const { error: pErr } = await supabase.from("profiles").update({
+      full_name: fullName,
+      telefoon: editTel || "",
+    }).eq("id", m.id);
+    if (pErr) { toast.error("Opslaan mislukt"); setEditSaving(false); return; }
+    if (editRole !== (m.role || "monteur")) {
+      await supabase.from("user_roles").delete().eq("user_id", m.user_id);
+      await supabase.from("user_roles").insert({ user_id: m.user_id, role: editRole as any });
+    }
+    toast.success("Monteur bijgewerkt");
+    setEditId(null);
+    setEditSaving(false);
+    load();
+  };
+
+  const deleteMonteur = async (m: Monteur) => {
+    if (!confirm(`Weet je zeker dat je ${m.full_name} permanent wilt verwijderen?`)) return;
+    setDeletingId(m.id);
+    const { data, error } = await supabase.functions.invoke("delete-user", {
+      body: { userId: m.user_id },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Verwijderen mislukt");
+      setDeletingId(null);
+      return;
+    }
+    toast.success(`${m.full_name} verwijderd`);
+    setDeletingId(null);
+    load();
+  };
+
   const load = async () => {
     setLoading(true);
     const { data: profielen } = await supabase
