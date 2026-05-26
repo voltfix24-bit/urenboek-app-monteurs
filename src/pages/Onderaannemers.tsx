@@ -150,6 +150,7 @@ export default function Onderaannemers() {
         bedrijfsnaam: oaBedrijf || null,
         kvk_nummer: oaKvk || null,
         iban: oaIban || null,
+        uurtarief: oaUurtarief ? Number(oaUurtarief.replace(",", ".")) : null,
       }).eq("id", data.profile_id);
     }
     toast.success(`Onderaannemer ${fullName} aangemaakt`);
