@@ -161,20 +161,22 @@ export default function Onderaannemers() {
   const handleAddMonteur = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selected) return;
-    if (!mVoornaam.trim() || !mAchternaam.trim() || !mEmail.trim() || !mPw) {
-      toast.error("Vul voornaam, achternaam, e-mail en wachtwoord in");
+    if (!mVoornaam.trim() || !mAchternaam.trim()) {
+      toast.error("Vul voornaam en achternaam in");
       return;
     }
-    if (mPw.length < 8) { toast.error("Wachtwoord min. 8 tekens"); return; }
     setMSaving(true);
     const fullName = `${mVoornaam.trim()} ${mAchternaam.trim()}`.trim();
+    const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+    const domain = slug(selected.bedrijfsnaam || selected.full_name) || "onderaannemer";
+    const autoEmail = `${slug(mVoornaam)}.${slug(mAchternaam)}.${Math.random().toString(36).slice(2, 6)}@${domain}.local`;
+    const autoPw = genPw() + "A1!";
     const { data, error } = await supabase.functions.invoke("create-user", {
       body: {
-        email: mEmail.trim(),
-        password: mPw,
+        email: autoEmail,
+        password: autoPw,
         fullName,
         role: mRole,
-        telefoon: mTel || null,
         onderaannemer_id: selected.id,
       },
     });
@@ -183,11 +185,7 @@ export default function Onderaannemers() {
       setMSaving(false);
       return;
     }
-    if (data?.profile_id) {
-      await supabase.from("profiles").update({ email: mEmail.trim() }).eq("id", data.profile_id);
-    }
     toast.success(`Monteur ${fullName} toegevoegd onder ${selected.full_name}`);
-    setLastCreatedMonteur({ email: mEmail.trim(), pw: mPw });
     resetMonteurForm();
     setShowAddMonteur(false);
     load();
