@@ -260,25 +260,13 @@ export default function Onderaannemers() {
                   <Input placeholder="Voornaam" value={mVoornaam} onChange={setMVoornaam} />
                   <Input placeholder="Achternaam" value={mAchternaam} onChange={setMAchternaam} />
                 </div>
-                <Input placeholder="E-mail (= gebruikersnaam)" type="email" value={mEmail} onChange={setMEmail} />
-                <Input placeholder="Telefoon" value={mTel} onChange={setMTel} />
                 <select value={mRole} onChange={(e) => setMRole(e.target.value)} style={selectStyle}>
                   {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
-                <div style={{ position: "relative" }}>
-                  <Input placeholder="Wachtwoord" type={mShowPw ? "text" : "password"} value={mPw} onChange={setMPw} />
-                  <button type="button" onClick={() => setMShowPw(!mShowPw)} style={iconBtn}>{mShowPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button type="button" onClick={() => setMPw(genPw())} style={secondaryBtn}>Genereer</button>
-                  <button type="submit" disabled={mSaving} style={primaryBtn}>{mSaving ? "Bezig…" : "Toevoegen"}</button>
-                </div>
+                <button type="submit" disabled={mSaving} style={primaryBtn}>{mSaving ? "Bezig…" : "Toevoegen"}</button>
               </form>
             )}
 
-            {lastCreatedMonteur && (
-              <CredsCard email={lastCreatedMonteur.email} pw={lastCreatedMonteur.pw} onCopy={() => copyCreds(lastCreatedMonteur.email, lastCreatedMonteur.pw)} onClose={() => setLastCreatedMonteur(null)} />
-            )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {mList.length === 0 && !showAddMonteur && (
