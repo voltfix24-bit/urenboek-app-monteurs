@@ -160,9 +160,9 @@ export default function Planning() {
     const endStr = format(addDays(weekStart, 6), "yyyy-MM-dd");
 
     const [{ data }, { data: beschData }, { data: boekData }] = await Promise.all([
-      supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id, activiteit, activiteit_kleur, collega_ids, week_opmerking").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
-      supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", profileId).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
-      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status, type, beschrijving").eq("medewerker_id", profileId).gte("datum", startStr).lte("datum", endStr),
+      supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id, activiteit, activiteit_kleur, collega_ids, week_opmerking").eq("medewerker_id", queryProfileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
+      supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", queryProfileId).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
+      supabase.from("uren_boekingen").select("id, datum, project_id, uren, status, type, beschrijving").eq("medewerker_id", queryProfileId).gte("datum", startStr).lte("datum", endStr),
     ]);
     setBeschikbaarheid((beschData ?? []) as any);
 
