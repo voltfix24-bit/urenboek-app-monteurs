@@ -164,7 +164,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
 
   function kopieerInloggegevens() {
     if (!pwResult) return;
-    const tekst = `Inloggegevens TerreVolt Urenregistratie:\nE-mail: ${emp.email || ""}\nWachtwoord: ${pwResult}\n\nLog in op: ${window.location.origin}`;
+    const tekst = `Inloggegevens TerreVolt Urenregistratie:\nGebruikersnaam: ${emp.email || ""}\nE-mail: ${emp.email || ""}\nWachtwoord: ${pwResult}\n\nLog in op: ${window.location.origin}`;
     navigator.clipboard.writeText(tekst);
     toast.success("Inloggegevens gekopieerd!");
   }
