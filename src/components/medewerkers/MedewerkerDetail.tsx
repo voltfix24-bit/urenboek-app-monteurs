@@ -492,8 +492,21 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
         {showPwPanel && !pwResult && (
           <div className="mt-2 space-y-2 p-3 rounded-xl" style={{ background: "var(--app-navy)", border: "1px solid rgba(63,255,139,0.3)" }}>
             <p className="text-[11px]" style={{ color: "#a0abc3" }}>
-              Stel een nieuw wachtwoord in voor <strong style={{ color: "#dae6ff" }}>{emp.full_name}</strong>. Het oude wachtwoord vervalt direct.
+              Stel gebruikersnaam (e-mail) en wachtwoord in voor <strong style={{ color: "#dae6ff" }}>{emp.full_name}</strong>. Hiermee logt deze medewerker in.
             </p>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider" style={{ color: "#6a768c" }}>Gebruikersnaam (e-mail)</label>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={e => setNewEmail(e.target.value)}
+                placeholder="naam@bedrijf.nl"
+                autoComplete="off"
+                className="w-full px-3 py-2.5 rounded-xl text-sm mt-1"
+                style={{ background: "#0a1a30", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}
+              />
+            </div>
+            <label className="text-[10px] uppercase tracking-wider block" style={{ color: "#6a768c" }}>Wachtwoord</label>
             <div className="flex gap-1.5">
               <div className="relative flex-1">
                 <input
