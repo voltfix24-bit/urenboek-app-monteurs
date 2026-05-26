@@ -137,9 +137,10 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
   const [editing, setEditing] = useState(false);
   const [showPwPanel, setShowPwPanel] = useState(false);
   const [newPw, setNewPw] = useState("");
+  const [newEmail, setNewEmail] = useState(emp.email || "");
   const [showNewPw, setShowNewPw] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
-  const [pwResult, setPwResult] = useState<string | null>(null);
+  const [pwResult, setPwResult] = useState<{ pw: string; email: string } | null>(null);
 
   function genPw() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
@@ -151,23 +152,32 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
 
   async function saveWachtwoord() {
     if (!newPw || newPw.length < 8) { toast.error("Wachtwoord moet minimaal 8 tekens zijn"); return; }
+    const emailTrim = newEmail.trim().toLowerCase();
+    if (!emailTrim || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+      toast.error("Gebruikersnaam (e-mail) is ongeldig"); return;
+    }
     setPwSaving(true);
     const { data, error } = await supabase.functions.invoke("reset-password", {
-      body: { user_id: emp.user_id, password: newPw },
+      body: { user_id: emp.user_id, password: newPw, email: emailTrim },
     });
+    if (!error && !data?.error && emailTrim !== (emp.email || "").toLowerCase()) {
+      await supabase.from("profiles").update({ email: emailTrim }).eq("id", emp.id);
+    }
     setPwSaving(false);
     if (error || data?.error) { toast.error(data?.error || "Fout bij instellen wachtwoord"); return; }
-    setPwResult(newPw);
+    setPwResult({ pw: newPw, email: emailTrim });
     setNewPw("");
-    toast.success("Wachtwoord ingesteld ✓");
+    toast.success("Inloggegevens ingesteld ✓");
+    onRefresh?.();
   }
 
   function kopieerInloggegevens() {
     if (!pwResult) return;
-    const tekst = `Inloggegevens TerreVolt Urenregistratie:\nGebruikersnaam: ${emp.email || ""}\nE-mail: ${emp.email || ""}\nWachtwoord: ${pwResult}\n\nLog in op: ${window.location.origin}`;
+    const tekst = `Inloggegevens TerreVolt Urenregistratie:\nGebruikersnaam: ${pwResult.email}\nWachtwoord: ${pwResult.pw}\n\nLog in op: ${window.location.origin}`;
     navigator.clipboard.writeText(tekst);
     toast.success("Inloggegevens gekopieerd!");
   }
+
 
   const [editForm, setEditForm] = useState({
     full_name: emp.full_name,
