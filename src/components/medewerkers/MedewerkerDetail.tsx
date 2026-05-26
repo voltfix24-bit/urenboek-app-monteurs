@@ -199,9 +199,12 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
     });
   }, [emp.id, emp.full_name, emp.telefoon, emp.adres, emp.email, emp.bedrijfsnaam, emp.kvk_nummer, emp.btw_nummer, emp.iban, emp.uurtarief, emp.noodcontact_naam, emp.noodcontact_tel]);
 
-  // Reset editing mode only when switching to a different employee
+  // Reset editing mode and password panel only when switching to a different employee
   useEffect(() => {
     setEditing(false);
+    setShowPwPanel(false);
+    setNewPw("");
+    setPwResult(null);
   }, [emp.id]);
 
   useEffect(() => {
