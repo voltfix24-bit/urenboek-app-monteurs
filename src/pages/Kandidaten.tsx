@@ -79,6 +79,36 @@ export default function Kandidaten() {
   const [correctieBerichten, setCorrectieBerichten] = useState<any[]>([]);
   const [editFields, setEditFields] = useState<Record<string, string>>({});
   const [resending, setResending] = useState(false);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
+
+  async function inviteAccount(k: Kandidaat) {
+    if (k.profiel_id) { toast.info("Deze kandidaat heeft al een account"); return; }
+    setInvitingId(k.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-user", {
+        body: {
+          email: k.email,
+          fullName: `${k.voornaam} ${k.achternaam}`,
+          role: "monteur",
+          telefoon: k.telefoon || "",
+          uurtarief: k.afgesproken_tarief || null,
+          invite_only: true,
+        },
+      });
+      if (error || !data?.profile_id) {
+        toast.error(data?.error || "Uitnodigen mislukt");
+        return;
+      }
+      await supabase.from("kandidaten").update({ profiel_id: data.profile_id }).eq("id", k.id);
+      toast.success(`Uitnodiging verstuurd naar ${k.email} ✓`);
+      fetchKandidaten();
+    } catch (err) {
+      console.error(err);
+      toast.error("Uitnodigen mislukt");
+    } finally {
+      setInvitingId(null);
+    }
+  }
 
   const fetchKandidaten = useCallback(async () => {
     const [{ data: kData }, { data: cData }, { data: bData }] = await Promise.all([
@@ -533,9 +563,25 @@ export default function Kandidaten() {
                       </div>
                     )}
                     {!wachtOpManager && !heeftCorrectie && k.status === "gecontracteerd" && (
-                      <span className="text-[10px] font-medium" style={{ color: "#3fff8b" }}>
-                        ✓ Gecontracteerd
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-medium" style={{ color: "#3fff8b" }}>
+                          ✓ Gecontracteerd
+                        </span>
+                        {!k.profiel_id && (
+                          <button
+                            onClick={() => inviteAccount(k)}
+                            disabled={invitingId === k.id}
+                            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg font-medium"
+                            style={{ background: "rgba(63,255,139,0.12)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}
+                          >
+                            <UserPlus className="w-3 h-3" />
+                            {invitingId === k.id ? "Versturen..." : "Account uitnodigen"}
+                          </button>
+                        )}
+                        {k.profiel_id && (
+                          <span className="text-[10px]" style={{ color: "#a0abc3" }}>· Account actief</span>
+                        )}
+                      </div>
                     )}
                     {k.status !== "afgewezen" && k.status !== "gecontracteerd" && k.status !== "on_hold" && !wachtOpManager && !heeftCorrectie && (
                       <div className="flex items-center gap-2">
