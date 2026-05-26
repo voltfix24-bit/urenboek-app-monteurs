@@ -12,7 +12,7 @@ import { KANDIDAAT_STATUS_CONFIG, CONTRACT_STATUS_CONFIG } from "@/lib/contractS
 import { generateContractPdf } from "@/lib/contractPdf";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { toast } from "sonner";
-import { UserPlus, MoreHorizontal, ChevronRight, Copy, AlertTriangle, Trash2, Pause, Play } from "lucide-react";
+import { UserPlus, MoreHorizontal, ChevronRight, Copy, AlertTriangle, Trash2, Pause, Play, Pencil } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import type { Kandidaat, ContractData } from "@/types/app";
 
@@ -59,6 +59,8 @@ export default function Kandidaten() {
   const [showTarief, setShowTarief] = useState<string | null>(null);
   const [nieuwForm, setNieuwForm] = useState({ voornaam: "", achternaam: "", email: "", telefoon: "", notities: "" });
   const [tariefForm, setTariefForm] = useState({ tarief: "", notitie: "" });
+  const [bewerkKandidaat, setBewerkKandidaat] = useState<Kandidaat | null>(null);
+  const [bewerkForm, setBewerkForm] = useState({ voornaam: "", achternaam: "", email: "", telefoon: "" });
   const [saving, setSaving] = useState(false);
 
   // Manager signing state
@@ -308,6 +310,41 @@ export default function Kandidaten() {
     fetchKandidaten();
   }
 
+  function openBewerk(k: Kandidaat) {
+    setBewerkKandidaat(k);
+    setBewerkForm({
+      voornaam: k.voornaam,
+      achternaam: k.achternaam,
+      email: k.email,
+      telefoon: k.telefoon || "",
+    });
+  }
+
+  async function bewerkOpslaan() {
+    if (!bewerkKandidaat) return;
+    const email = bewerkForm.email.trim();
+    if (!bewerkForm.voornaam.trim() || !bewerkForm.achternaam.trim() || !email) {
+      toast.error("Vul verplichte velden in");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Ongeldig e-mailadres");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from("kandidaten").update({
+      voornaam: bewerkForm.voornaam.trim(),
+      achternaam: bewerkForm.achternaam.trim(),
+      email,
+      telefoon: bewerkForm.telefoon.trim() || null,
+    }).eq("id", bewerkKandidaat.id);
+    setSaving(false);
+    if (error) { toast.error("Fout bij opslaan"); return; }
+    toast.success("Kandidaat bijgewerkt ✓");
+    setBewerkKandidaat(null);
+    fetchKandidaten();
+  }
+
   async function tariefOpslaan(id: string) {
     const tarief = parseFloat(tariefForm.tarief);
     if (isNaN(tarief) || tarief <= 0) { toast.error("Vul een geldig tarief in"); return; }
@@ -517,9 +554,16 @@ export default function Kandidaten() {
                         </button>
                       </div>
                     )}
-                    <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "#ff716c" }}>
-                      <Trash2 className="w-3 h-3" /> Verwijderen
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {k.status !== "gecontracteerd" && (
+                        <button onClick={() => openBewerk(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "#6e9bff" }}>
+                          <Pencil className="w-3 h-3" /> Bewerken
+                        </button>
+                      )}
+                      <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "#ff716c" }}>
+                        <Trash2 className="w-3 h-3" /> Verwijderen
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -575,6 +619,35 @@ export default function Kandidaten() {
           </div>
         </div>
       )}
+
+      {/* Bewerk kandidaat modal */}
+      {bewerkKandidaat && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "rgba(0,0,0,0.5)" }} onClick={() => setBewerkKandidaat(null)}>
+          <div className="w-full max-w-lg rounded-t-2xl p-5 space-y-3 animate-in slide-in-from-bottom" style={{ background: "rgba(10,26,48,0.95)", maxHeight: "85vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-2" style={{ background: "rgba(106,118,140,0.15)" }} />
+            <h3 className="text-base font-semibold" style={{ color: "#dae6ff" }}>Kandidaat bewerken</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <Input placeholder="Voornaam *" value={bewerkForm.voornaam} onChange={e => setBewerkForm(p => ({ ...p, voornaam: e.target.value }))} />
+              <Input placeholder="Achternaam *" value={bewerkForm.achternaam} onChange={e => setBewerkForm(p => ({ ...p, achternaam: e.target.value }))} />
+            </div>
+            <Input placeholder="E-mailadres *" type="email" value={bewerkForm.email} onChange={e => setBewerkForm(p => ({ ...p, email: e.target.value }))} />
+            <Input placeholder="Telefoonnummer" value={bewerkForm.telefoon} onChange={e => setBewerkForm(p => ({ ...p, telefoon: e.target.value }))} />
+            <p className="text-[11px]" style={{ color: "#a0abc3" }}>
+              Let op: wijzigingen gelden alleen voor deze kandidaat. Reeds verstuurde contracten of uitnodigingen behouden het oude e-mailadres totdat je een nieuwe link genereert.
+            </p>
+            <div className="flex gap-2 pt-2">
+              <button onClick={() => setBewerkKandidaat(null)} className="flex-1 py-2.5 rounded-xl text-sm"
+                style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
+              <button onClick={bewerkOpslaan} disabled={saving}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: "#3fff8b", color: "#fff" }}>
+                {saving ? "Opslaan..." : "Opslaan"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Manager onderteken modal */}
       {signKandidaat && signContract && (
