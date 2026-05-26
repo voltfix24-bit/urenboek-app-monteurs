@@ -35,6 +35,7 @@ const Profiel = lazy(() => import("./pages/Profiel"));
 const ProjectPlanning = lazy(() => import("./pages/ProjectPlanning"));
 const Overuren = lazy(() => import("./pages/Overuren"));
 const Medewerkers = lazy(() => import("./pages/Medewerkers"));
+const Onderaannemers = lazy(() => import("./pages/Onderaannemers"));
 const IntakeRegelBeheer = lazy(() => import("./pages/IntakeRegelBeheer"));
 const TarievenBeheer = lazy(() => import("./pages/TarievenBeheer"));
 const Inkooporders = lazy(() => import("./pages/Inkooporders"));
