@@ -76,10 +76,25 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
     if (van > tot) { toast.error("Van-datum moet vóór tot-datum liggen"); return; }
     setLoadingBoekingen(true);
     try {
+      // Bepaal of geselecteerde medewerker een onderaannemer is → dan ook uren van zijn monteurs meenemen
+      const selectedMed = medewerkers.find(m => m.id === medewerker);
+      const teamIds: string[] = [medewerker];
+      const naamMap = new Map<string, string>([[medewerker, selectedMed?.full_name || ""]]);
+      if (selectedMed?.is_onderaannemer) {
+        const { data: monteurs } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .eq("onderaannemer_id", medewerker);
+        (monteurs || []).forEach((m: any) => {
+          teamIds.push(m.id);
+          naamMap.set(m.id, m.full_name);
+        });
+      }
+
       const { data: rawBoekingen } = await supabase
         .from("uren_boekingen")
-        .select("id, datum, project_id, uren, beschrijving, type")
-        .eq("medewerker_id", medewerker)
+        .select("id, datum, project_id, uren, beschrijving, type, medewerker_id")
+        .in("medewerker_id", teamIds)
         .eq("status", "goedgekeurd")
         .gte("datum", van)
         .lte("datum", tot)
@@ -104,7 +119,13 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
       const projMap = new Map((projs || []).map((p: any) => [p.id, p]));
       const enriched: Boeking[] = beschikbaar.map((b: any) => {
         const p = projMap.get(b.project_id) || { naam: "", nummer: "" };
-        return { ...b, project_naam: (p as any).naam, project_nummer: (p as any).nummer, activiteit: b.type || null };
+        return {
+          ...b,
+          project_naam: (p as any).naam,
+          project_nummer: (p as any).nummer,
+          activiteit: b.type || null,
+          monteur_naam: naamMap.get(b.medewerker_id) || "",
+        };
       });
       setBoekingen(enriched);
       setSelected(new Set(enriched.map(b => b.id))); // standaard alles geselecteerd
