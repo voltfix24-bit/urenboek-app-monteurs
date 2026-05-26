@@ -6,10 +6,11 @@ import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 import { T } from "@/lib/inkooporderTheme";
 
-interface Medewerker { id: string; full_name: string }
+interface Medewerker { id: string; full_name: string; is_onderaannemer?: boolean; monteur_count?: number }
 interface Boeking {
   id: string; datum: string; project_id: string; uren: number; beschrijving?: string; type?: string;
   project_naam?: string; project_nummer?: string; activiteit?: string | null;
+  medewerker_id?: string; monteur_naam?: string;
 }
 interface Profile {
   id: string; full_name: string; uurtarief?: number | null; kvk_nummer?: string | null;
@@ -75,10 +76,25 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
     if (van > tot) { toast.error("Van-datum moet vóór tot-datum liggen"); return; }
     setLoadingBoekingen(true);
     try {
+      // Bepaal of geselecteerde medewerker een onderaannemer is → dan ook uren van zijn monteurs meenemen
+      const selectedMed = medewerkers.find(m => m.id === medewerker);
+      const teamIds: string[] = [medewerker];
+      const naamMap = new Map<string, string>([[medewerker, selectedMed?.full_name || ""]]);
+      if (selectedMed?.is_onderaannemer) {
+        const { data: monteurs } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .eq("onderaannemer_id", medewerker);
+        (monteurs || []).forEach((m: any) => {
+          teamIds.push(m.id);
+          naamMap.set(m.id, m.full_name);
+        });
+      }
+
       const { data: rawBoekingen } = await supabase
         .from("uren_boekingen")
-        .select("id, datum, project_id, uren, beschrijving, type")
-        .eq("medewerker_id", medewerker)
+        .select("id, datum, project_id, uren, beschrijving, type, medewerker_id")
+        .in("medewerker_id", teamIds)
         .eq("status", "goedgekeurd")
         .gte("datum", van)
         .lte("datum", tot)
@@ -103,7 +119,13 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
       const projMap = new Map((projs || []).map((p: any) => [p.id, p]));
       const enriched: Boeking[] = beschikbaar.map((b: any) => {
         const p = projMap.get(b.project_id) || { naam: "", nummer: "" };
-        return { ...b, project_naam: (p as any).naam, project_nummer: (p as any).nummer, activiteit: b.type || null };
+        return {
+          ...b,
+          project_naam: (p as any).naam,
+          project_nummer: (p as any).nummer,
+          activiteit: b.type || null,
+          monteur_naam: naamMap.get(b.medewerker_id) || "",
+        };
       });
       setBoekingen(enriched);
       setSelected(new Set(enriched.map(b => b.id))); // standaard alles geselecteerd
@@ -259,8 +281,21 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
               style={{ background: T.navy, border: `1px solid ${T.border}`, color: T.text }}
             >
               <option value="">Kies medewerker…</option>
-              {medewerkers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+              {medewerkers.map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.full_name}{m.is_onderaannemer ? ` — onderaannemer${m.monteur_count ? ` (+${m.monteur_count} monteurs)` : ""}` : ""}
+                </option>
+              ))}
             </select>
+            {(() => {
+              const sel = medewerkers.find(m => m.id === medewerker);
+              if (!sel?.is_onderaannemer) return null;
+              return (
+                <div className="rounded-xl p-2.5 text-[11px]" style={{ background: T.primarySoft, border: `1px solid ${T.borderActive}`, color: T.primary }}>
+                  Onderaannemer geselecteerd — uren van {sel.full_name} én zijn {sel.monteur_count ?? 0} monteur(s) worden in deze order verzameld.
+                </div>
+              );
+            })()}
             <div className="flex gap-2">
               <button
                 onClick={handleClose}
@@ -353,8 +388,15 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                           setSelected(next);
                         }} />
                       <div className="flex-1 min-w-0">
-                        <span className="text-xs font-medium" style={{ color: T.text }}>{b.datum}</span>
-                        <span className="text-[11px] ml-2" style={{ color: T.textMuted }}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium" style={{ color: T.text }}>{b.datum}</span>
+                          {b.monteur_naam && medewerkers.find(m => m.id === medewerker)?.is_onderaannemer && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: T.primarySoft, color: T.primary, border: `1px solid ${T.borderActive}` }}>
+                              {b.monteur_naam}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px]" style={{ color: T.textMuted }}>
                           {b.project_naam || "—"} · {b.activiteit || b.type}
                         </span>
                       </div>

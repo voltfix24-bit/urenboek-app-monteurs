@@ -49,9 +49,27 @@ export default function Inkooporders() {
       const nameMap = new Map((profs || []).map((p: any) => [p.id, p.full_name]));
       setOrders(data.map((o: any) => ({ ...o, medewerker_naam: nameMap.get(o.medewerker_id) || "Onbekend" })));
     }
-    // Load medewerkers for filter
-    const { data: meds } = await supabase.from("profiles").select("id, full_name");
-    setMedewerkers(meds || []);
+    // Load medewerkers for filter + wizard (incl. onderaannemer-info)
+    const { data: meds } = await supabase
+      .from("profiles")
+      .select("id, full_name, is_onderaannemer, onderaannemer_id")
+      .order("full_name");
+    // Tel monteurs per onderaannemer
+    const counts = new Map<string, number>();
+    (meds || []).forEach((m: any) => {
+      if (m.onderaannemer_id) counts.set(m.onderaannemer_id, (counts.get(m.onderaannemer_id) || 0) + 1);
+    });
+    const verrijkt = (meds || []).map((m: any) => ({
+      ...m,
+      monteur_count: m.is_onderaannemer ? (counts.get(m.id) || 0) : 0,
+    }));
+    // Onderaannemers eerst, dan rest
+    verrijkt.sort((a: any, b: any) => {
+      if (a.is_onderaannemer && !b.is_onderaannemer) return -1;
+      if (!a.is_onderaannemer && b.is_onderaannemer) return 1;
+      return (a.full_name || "").localeCompare(b.full_name || "");
+    });
+    setMedewerkers(verrijkt);
     setLoading(false);
   }, []);
 
