@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, user: { id: newUser.user.id, email, fullName, role } }),
+      JSON.stringify({ success: true, user: { id: newUser.user.id, email, fullName, role }, profile_id: profileId }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (_err) {
