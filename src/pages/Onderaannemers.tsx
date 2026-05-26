@@ -359,18 +359,51 @@ export default function Onderaannemers() {
                   Nog geen monteurs onder deze onderaannemer
                 </div>
               )}
-              {mList.map((m) => (
-                <div key={m.id} style={{ background: "#0a1a30", borderRadius: 14, padding: 14, border: "1px solid rgba(106,118,140,0.15)", display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(63,255,139,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, color: "#3fff8b", fontSize: 13 }}>
-                    {m.full_name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+              {mList.map((m) => {
+                const isEditing = editId === m.id;
+                if (isEditing) {
+                  return (
+                    <div key={m.id} style={{ background: "#0a1a30", borderRadius: 14, padding: 14, border: "1px solid rgba(63,255,139,0.3)", display: "flex", flexDirection: "column", gap: 10 }}>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.15em" }}>Monteur bewerken</p>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                        <Input placeholder="Voornaam" value={editVoornaam} onChange={setEditVoornaam} />
+                        <Input placeholder="Achternaam" value={editAchternaam} onChange={setEditAchternaam} />
+                      </div>
+                      <Input placeholder="Telefoon" value={editTel} onChange={setEditTel} />
+                      <select value={editRole} onChange={(e) => setEditRole(e.target.value)} style={selectStyle}>
+                        {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                      </select>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button type="button" onClick={cancelEdit} style={secondaryBtn}>Annuleren</button>
+                        <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} style={{ ...secondaryBtn, color: "#ff716c", border: "1px solid rgba(255,113,108,0.3)", background: "rgba(255,113,108,0.1)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                          <Trash2 size={14} /> {deletingId === m.id ? "Bezig…" : "Verwijderen"}
+                        </button>
+                        <button type="button" onClick={() => saveEdit(m)} disabled={editSaving} style={{ ...primaryBtn, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                          <Check size={14} /> {editSaving ? "Bezig…" : "Opslaan"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div key={m.id} style={{ background: "#0a1a30", borderRadius: 14, padding: 14, border: "1px solid rgba(106,118,140,0.15)", display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(63,255,139,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, color: "#3fff8b", fontSize: 13 }}>
+                      {m.full_name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 700, color: "#dae6ff", fontSize: 14 }}>{m.full_name}</p>
+                      <p style={{ fontSize: 12, color: "#6a768c" }}>{m.email || m.telefoon || "—"}</p>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.1em" }}>{m.role || "monteur"}</span>
+                    <button type="button" onClick={() => startEdit(m)} title="Bewerken" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(106,118,140,0.15)", border: "1px solid rgba(106,118,140,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#a0abc3" }}>
+                      <Pencil size={14} />
+                    </button>
+                    <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} title="Verwijderen" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#ff716c", opacity: deletingId === m.id ? 0.5 : 1 }}>
+                      <Trash2 size={14} />
+                    </button>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontWeight: 700, color: "#dae6ff", fontSize: 14 }}>{m.full_name}</p>
-                    <p style={{ fontSize: 12, color: "#6a768c" }}>{m.email || m.telefoon || "—"}</p>
-                  </div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.1em" }}>{m.role || "monteur"}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </main>
         </div>
