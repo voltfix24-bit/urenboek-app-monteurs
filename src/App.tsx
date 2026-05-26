@@ -125,6 +125,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <ProfileProvider>
+            <ActiveMedewerkerProvider>
             <NavBadgesProvider>
             <Routes>
               {/* Public — eager */}
@@ -169,6 +170,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             </NavBadgesProvider>
+            </ActiveMedewerkerProvider>
             </ProfileProvider>
           </AuthProvider>
         </BrowserRouter>
