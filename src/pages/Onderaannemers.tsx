@@ -84,6 +84,28 @@ export default function Onderaannemers() {
   const [editSaving, setEditSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // Wachtwoord reset voor onderaannemer (account delen)
+  const [pwResetting, setPwResetting] = useState(false);
+  const [newOaPw, setNewOaPw] = useState<{ email: string; pw: string } | null>(null);
+
+  const resetOnderaannemerPassword = async () => {
+    if (!selected) return;
+    if (!confirm(`Nieuw wachtwoord genereren voor ${selected.full_name}? Het oude wachtwoord werkt daarna niet meer.`)) return;
+    setPwResetting(true);
+    const pw = genPw() + "A1!";
+    const { data, error } = await supabase.functions.invoke("reset-password", {
+      body: { user_id: selected.user_id, password: pw },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Reset mislukt");
+      setPwResetting(false);
+      return;
+    }
+    toast.success("Nieuw wachtwoord aangemaakt");
+    setNewOaPw({ email: selected.email || "", pw });
+    setPwResetting(false);
+  };
+
   const startEdit = (m: Monteur) => {
     const parts = (m.full_name || "").trim().split(/\s+/);
     setEditId(m.id);
