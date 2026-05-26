@@ -6,7 +6,7 @@ import { PageShell } from "@/components/PageShell";
 import { toast } from "sonner";
 import {
   ArrowLeft, Plus, X, Building2, Users, Copy, Eye, EyeOff,
-  Phone, Mail, ChevronRight,
+  Phone, Mail, ChevronRight, Pencil, Trash2, Check,
 } from "lucide-react";
 
 interface Onderaannemer {
