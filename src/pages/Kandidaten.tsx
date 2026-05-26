@@ -79,6 +79,36 @@ export default function Kandidaten() {
   const [correctieBerichten, setCorrectieBerichten] = useState<any[]>([]);
   const [editFields, setEditFields] = useState<Record<string, string>>({});
   const [resending, setResending] = useState(false);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
+
+  async function inviteAccount(k: Kandidaat) {
+    if (k.profiel_id) { toast.info("Deze kandidaat heeft al een account"); return; }
+    setInvitingId(k.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-user", {
+        body: {
+          email: k.email,
+          fullName: `${k.voornaam} ${k.achternaam}`,
+          role: "monteur",
+          telefoon: k.telefoon || "",
+          uurtarief: k.afgesproken_tarief || null,
+          invite_only: true,
+        },
+      });
+      if (error || !data?.profile_id) {
+        toast.error(data?.error || "Uitnodigen mislukt");
+        return;
+      }
+      await supabase.from("kandidaten").update({ profiel_id: data.profile_id }).eq("id", k.id);
+      toast.success(`Uitnodiging verstuurd naar ${k.email} ✓`);
+      fetchKandidaten();
+    } catch (err) {
+      console.error(err);
+      toast.error("Uitnodigen mislukt");
+    } finally {
+      setInvitingId(null);
+    }
+  }
 
   const fetchKandidaten = useCallback(async () => {
     const [{ data: kData }, { data: cData }, { data: bData }] = await Promise.all([
