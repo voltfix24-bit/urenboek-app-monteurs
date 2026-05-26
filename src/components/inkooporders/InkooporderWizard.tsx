@@ -6,10 +6,11 @@ import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 import { T } from "@/lib/inkooporderTheme";
 
-interface Medewerker { id: string; full_name: string }
+interface Medewerker { id: string; full_name: string; is_onderaannemer?: boolean; monteur_count?: number }
 interface Boeking {
   id: string; datum: string; project_id: string; uren: number; beschrijving?: string; type?: string;
   project_naam?: string; project_nummer?: string; activiteit?: string | null;
+  medewerker_id?: string; monteur_naam?: string;
 }
 interface Profile {
   id: string; full_name: string; uurtarief?: number | null; kvk_nummer?: string | null;
