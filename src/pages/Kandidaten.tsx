@@ -620,6 +620,35 @@ export default function Kandidaten() {
         </div>
       )}
 
+      {/* Bewerk kandidaat modal */}
+      {bewerkKandidaat && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "rgba(0,0,0,0.5)" }} onClick={() => setBewerkKandidaat(null)}>
+          <div className="w-full max-w-lg rounded-t-2xl p-5 space-y-3 animate-in slide-in-from-bottom" style={{ background: "rgba(10,26,48,0.95)", maxHeight: "85vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full mx-auto mb-2" style={{ background: "rgba(106,118,140,0.15)" }} />
+            <h3 className="text-base font-semibold" style={{ color: "#dae6ff" }}>Kandidaat bewerken</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <Input placeholder="Voornaam *" value={bewerkForm.voornaam} onChange={e => setBewerkForm(p => ({ ...p, voornaam: e.target.value }))} />
+              <Input placeholder="Achternaam *" value={bewerkForm.achternaam} onChange={e => setBewerkForm(p => ({ ...p, achternaam: e.target.value }))} />
+            </div>
+            <Input placeholder="E-mailadres *" type="email" value={bewerkForm.email} onChange={e => setBewerkForm(p => ({ ...p, email: e.target.value }))} />
+            <Input placeholder="Telefoonnummer" value={bewerkForm.telefoon} onChange={e => setBewerkForm(p => ({ ...p, telefoon: e.target.value }))} />
+            <p className="text-[11px]" style={{ color: "#a0abc3" }}>
+              Let op: wijzigingen gelden alleen voor deze kandidaat. Reeds verstuurde contracten of uitnodigingen behouden het oude e-mailadres totdat je een nieuwe link genereert.
+            </p>
+            <div className="flex gap-2 pt-2">
+              <button onClick={() => setBewerkKandidaat(null)} className="flex-1 py-2.5 rounded-xl text-sm"
+                style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
+              <button onClick={bewerkOpslaan} disabled={saving}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: "#3fff8b", color: "#fff" }}>
+                {saving ? "Opslaan..." : "Opslaan"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* Manager onderteken modal */}
       {signKandidaat && signContract && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setSignKandidaat(null); setSignContract(null); }}>
