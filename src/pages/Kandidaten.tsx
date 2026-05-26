@@ -554,9 +554,16 @@ export default function Kandidaten() {
                         </button>
                       </div>
                     )}
-                    <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "#ff716c" }}>
-                      <Trash2 className="w-3 h-3" /> Verwijderen
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {k.status !== "gecontracteerd" && (
+                        <button onClick={() => openBewerk(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "#6e9bff" }}>
+                          <Pencil className="w-3 h-3" /> Bewerken
+                        </button>
+                      )}
+                      <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "#ff716c" }}>
+                        <Trash2 className="w-3 h-3" /> Verwijderen
+                      </button>
+                    </div>
                   </div>
                 </div>
 
