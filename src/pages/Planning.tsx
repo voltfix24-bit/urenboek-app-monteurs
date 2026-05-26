@@ -220,7 +220,7 @@ export default function Planning() {
       }
     }
     setLoading(false);
-  }, [user, weekStart]);
+  }, [user, weekStart, queryProfileId]);
 
   useEffect(() => { fetchPlanning(); }, [fetchPlanning]);
 
