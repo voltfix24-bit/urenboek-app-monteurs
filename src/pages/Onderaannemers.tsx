@@ -125,18 +125,10 @@ export default function Onderaannemers() {
       return;
     }
 
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .update({ email: oaAccountEmail.trim(), account_status: "active" })
-      .eq("id", selected.id);
-
-    if (profileError) {
-      toast.error("Account gemaakt, maar profiel kon niet worden bijgewerkt");
-      setOaAccountSaving(false);
-      return;
-    }
-
     toast.success("Account voor onderaannemer aangemaakt");
+    if (data?.profileWarning) {
+      toast.warning(data.profileWarning);
+    }
     setNewOaPw({ email: oaAccountEmail.trim(), pw: oaAccountPw });
     setOaAccountPw("");
     setOaAccountSaving(false);
