@@ -281,8 +281,21 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
               style={{ background: T.navy, border: `1px solid ${T.border}`, color: T.text }}
             >
               <option value="">Kies medewerker…</option>
-              {medewerkers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+              {medewerkers.map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.full_name}{m.is_onderaannemer ? ` — onderaannemer${m.monteur_count ? ` (+${m.monteur_count} monteurs)` : ""}` : ""}
+                </option>
+              ))}
             </select>
+            {(() => {
+              const sel = medewerkers.find(m => m.id === medewerker);
+              if (!sel?.is_onderaannemer) return null;
+              return (
+                <div className="rounded-xl p-2.5 text-[11px]" style={{ background: T.primarySoft, border: `1px solid ${T.borderActive}`, color: T.primary }}>
+                  Onderaannemer geselecteerd — uren van {sel.full_name} én zijn {sel.monteur_count ?? 0} monteur(s) worden in deze order verzameld.
+                </div>
+              );
+            })()}
             <div className="flex gap-2">
               <button
                 onClick={handleClose}
