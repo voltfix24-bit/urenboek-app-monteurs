@@ -161,20 +161,22 @@ export default function Onderaannemers() {
   const handleAddMonteur = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selected) return;
-    if (!mVoornaam.trim() || !mAchternaam.trim() || !mEmail.trim() || !mPw) {
-      toast.error("Vul voornaam, achternaam, e-mail en wachtwoord in");
+    if (!mVoornaam.trim() || !mAchternaam.trim()) {
+      toast.error("Vul voornaam en achternaam in");
       return;
     }
-    if (mPw.length < 8) { toast.error("Wachtwoord min. 8 tekens"); return; }
     setMSaving(true);
     const fullName = `${mVoornaam.trim()} ${mAchternaam.trim()}`.trim();
+    const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+    const domain = slug(selected.bedrijfsnaam || selected.full_name) || "onderaannemer";
+    const autoEmail = `${slug(mVoornaam)}.${slug(mAchternaam)}.${Math.random().toString(36).slice(2, 6)}@${domain}.local`;
+    const autoPw = genPw() + "A1!";
     const { data, error } = await supabase.functions.invoke("create-user", {
       body: {
-        email: mEmail.trim(),
-        password: mPw,
+        email: autoEmail,
+        password: autoPw,
         fullName,
         role: mRole,
-        telefoon: mTel || null,
         onderaannemer_id: selected.id,
       },
     });
@@ -183,11 +185,7 @@ export default function Onderaannemers() {
       setMSaving(false);
       return;
     }
-    if (data?.profile_id) {
-      await supabase.from("profiles").update({ email: mEmail.trim() }).eq("id", data.profile_id);
-    }
     toast.success(`Monteur ${fullName} toegevoegd onder ${selected.full_name}`);
-    setLastCreatedMonteur({ email: mEmail.trim(), pw: mPw });
     resetMonteurForm();
     setShowAddMonteur(false);
     load();
@@ -262,25 +260,13 @@ export default function Onderaannemers() {
                   <Input placeholder="Voornaam" value={mVoornaam} onChange={setMVoornaam} />
                   <Input placeholder="Achternaam" value={mAchternaam} onChange={setMAchternaam} />
                 </div>
-                <Input placeholder="E-mail (= gebruikersnaam)" type="email" value={mEmail} onChange={setMEmail} />
-                <Input placeholder="Telefoon" value={mTel} onChange={setMTel} />
                 <select value={mRole} onChange={(e) => setMRole(e.target.value)} style={selectStyle}>
                   {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
-                <div style={{ position: "relative" }}>
-                  <Input placeholder="Wachtwoord" type={mShowPw ? "text" : "password"} value={mPw} onChange={setMPw} />
-                  <button type="button" onClick={() => setMShowPw(!mShowPw)} style={iconBtn}>{mShowPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button type="button" onClick={() => setMPw(genPw())} style={secondaryBtn}>Genereer</button>
-                  <button type="submit" disabled={mSaving} style={primaryBtn}>{mSaving ? "Bezig…" : "Toevoegen"}</button>
-                </div>
+                <button type="submit" disabled={mSaving} style={primaryBtn}>{mSaving ? "Bezig…" : "Toevoegen"}</button>
               </form>
             )}
 
-            {lastCreatedMonteur && (
-              <CredsCard email={lastCreatedMonteur.email} pw={lastCreatedMonteur.pw} onCopy={() => copyCreds(lastCreatedMonteur.email, lastCreatedMonteur.pw)} onClose={() => setLastCreatedMonteur(null)} />
-            )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {mList.length === 0 && !showAddMonteur && (
