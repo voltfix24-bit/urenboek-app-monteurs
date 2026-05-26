@@ -310,6 +310,41 @@ export default function Kandidaten() {
     fetchKandidaten();
   }
 
+  function openBewerk(k: Kandidaat) {
+    setBewerkKandidaat(k);
+    setBewerkForm({
+      voornaam: k.voornaam,
+      achternaam: k.achternaam,
+      email: k.email,
+      telefoon: k.telefoon || "",
+    });
+  }
+
+  async function bewerkOpslaan() {
+    if (!bewerkKandidaat) return;
+    const email = bewerkForm.email.trim();
+    if (!bewerkForm.voornaam.trim() || !bewerkForm.achternaam.trim() || !email) {
+      toast.error("Vul verplichte velden in");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Ongeldig e-mailadres");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from("kandidaten").update({
+      voornaam: bewerkForm.voornaam.trim(),
+      achternaam: bewerkForm.achternaam.trim(),
+      email,
+      telefoon: bewerkForm.telefoon.trim() || null,
+    }).eq("id", bewerkKandidaat.id);
+    setSaving(false);
+    if (error) { toast.error("Fout bij opslaan"); return; }
+    toast.success("Kandidaat bijgewerkt ✓");
+    setBewerkKandidaat(null);
+    fetchKandidaten();
+  }
+
   async function tariefOpslaan(id: string) {
     const tarief = parseFloat(tariefForm.tarief);
     if (isNaN(tarief) || tarief <= 0) { toast.error("Vul een geldig tarief in"); return; }
