@@ -59,6 +59,8 @@ export default function Kandidaten() {
   const [showTarief, setShowTarief] = useState<string | null>(null);
   const [nieuwForm, setNieuwForm] = useState({ voornaam: "", achternaam: "", email: "", telefoon: "", notities: "" });
   const [tariefForm, setTariefForm] = useState({ tarief: "", notitie: "" });
+  const [bewerkKandidaat, setBewerkKandidaat] = useState<Kandidaat | null>(null);
+  const [bewerkForm, setBewerkForm] = useState({ voornaam: "", achternaam: "", email: "", telefoon: "" });
   const [saving, setSaving] = useState(false);
 
   // Manager signing state
