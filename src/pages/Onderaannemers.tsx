@@ -18,6 +18,7 @@ interface Onderaannemer {
   bedrijfsnaam: string | null;
   kvk_nummer: string | null;
   iban: string | null;
+  uurtarief: number | null;
   account_status: string;
 }
 
