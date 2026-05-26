@@ -140,7 +140,7 @@ Opdrachtnemer draagt er zorg voor dat door hem ingeschakelde derden dezelfde geh
 
 export const ARTIKEL_13 = `ARTIKEL 13 - RELATIEBEDING
 
-Het is Opdrachtnemer zonder voorafgaande schriftelijke toestemming van Opdrachtgever niet toegestaan om gedurende de looptijd van deze overeenkomst en gedurende twaalf maanden na beëindiging daarvan, direct of indirect, werkzaamheden te verrichten voor eindopdrachtgevers of klanten van Opdrachtgever waarmee Opdrachtnemer via Opdrachtgever in contact is gekomen, indien en voor zover die werkzaamheden buiten Opdrachtgever om worden verricht.
+Het is Opdrachtnemer zonder voorafgaande schriftelijke toestemming van Opdrachtgever niet toegestaan om gedurende de looptijd van deze overeenkomst en gedurende twee maanden na beëindiging daarvan, direct of indirect, werkzaamheden te verrichten voor eindopdrachtgevers of klanten van Opdrachtgever waarmee Opdrachtnemer via Opdrachtgever in contact is gekomen, indien en voor zover die werkzaamheden buiten Opdrachtgever om worden verricht.
 
 Dit beding strekt uitsluitend ter bescherming van het zakelijke netwerk, de goodwill en de investeringen van Opdrachtgever.
 
