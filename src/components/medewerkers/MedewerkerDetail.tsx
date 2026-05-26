@@ -135,6 +135,40 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
   const [contract, setContract] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [showPwPanel, setShowPwPanel] = useState(false);
+  const [newPw, setNewPw] = useState("");
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwResult, setPwResult] = useState<string | null>(null);
+
+  function genPw() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    let r = "";
+    for (let i = 0; i < 10; i++) r += chars.charAt(Math.floor(Math.random() * chars.length));
+    setNewPw(r);
+    setShowNewPw(true);
+  }
+
+  async function saveWachtwoord() {
+    if (!newPw || newPw.length < 8) { toast.error("Wachtwoord moet minimaal 8 tekens zijn"); return; }
+    setPwSaving(true);
+    const { data, error } = await supabase.functions.invoke("reset-password", {
+      body: { user_id: emp.user_id, password: newPw },
+    });
+    setPwSaving(false);
+    if (error || data?.error) { toast.error(data?.error || "Fout bij instellen wachtwoord"); return; }
+    setPwResult(newPw);
+    setNewPw("");
+    toast.success("Wachtwoord ingesteld ✓");
+  }
+
+  function kopieerInloggegevens() {
+    if (!pwResult) return;
+    const tekst = `Inloggegevens TerreVolt Urenregistratie:\nE-mail: ${emp.email || ""}\nWachtwoord: ${pwResult}\n\nLog in op: ${window.location.origin}`;
+    navigator.clipboard.writeText(tekst);
+    toast.success("Inloggegevens gekopieerd!");
+  }
+
   const [editForm, setEditForm] = useState({
     full_name: emp.full_name,
     telefoon: emp.telefoon || "",
