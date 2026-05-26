@@ -388,8 +388,15 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                           setSelected(next);
                         }} />
                       <div className="flex-1 min-w-0">
-                        <span className="text-xs font-medium" style={{ color: T.text }}>{b.datum}</span>
-                        <span className="text-[11px] ml-2" style={{ color: T.textMuted }}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium" style={{ color: T.text }}>{b.datum}</span>
+                          {b.monteur_naam && medewerkers.find(m => m.id === medewerker)?.is_onderaannemer && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: T.primarySoft, color: T.primary, border: `1px solid ${T.borderActive}` }}>
+                              {b.monteur_naam}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px]" style={{ color: T.textMuted }}>
                           {b.project_naam || "—"} · {b.activiteit || b.type}
                         </span>
                       </div>
