@@ -53,9 +53,11 @@ const MANAGER_GROEPEN: NavGroep[] = [
     label: "Team",
     items: [
       { path: "/medewerkers", icon: Users, label: "Medewerkers", badgeKey: "verificatieNodig" },
+      { path: "/onderaannemers", icon: Building2, label: "Onderaannemers" },
       { path: "/kandidaten", icon: UserPlus, label: "Kandidaten" },
     ],
   },
+
 ];
 
 const BEHEER_ITEMS: NavItem[] = [
@@ -75,6 +77,7 @@ const PATH_PERMISSION_MAP: Record<string, keyof RolPermissies> = {
   "/projecten": "zietProjecten",
   "/opdrachtgevers": "magTeamBeheren",
   "/medewerkers": "zietTeam",
+  "/onderaannemers": "zietTeam",
   "/kandidaten": "zietKandidaten",
 };
 

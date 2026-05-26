@@ -1296,11 +1296,13 @@ export type Database = {
           iban: string | null
           id: string
           invited_at: string | null
+          is_onderaannemer: boolean
           kvk_nummer: string | null
           noodcontact_naam: string | null
           noodcontact_tel: string | null
           onboarding_voltooid: boolean
           onboarding_voltooid_op: string | null
+          onderaannemer_id: string | null
           rijbewijs: boolean
           telefoon: string
           updated_at: string
@@ -1327,11 +1329,13 @@ export type Database = {
           iban?: string | null
           id?: string
           invited_at?: string | null
+          is_onderaannemer?: boolean
           kvk_nummer?: string | null
           noodcontact_naam?: string | null
           noodcontact_tel?: string | null
           onboarding_voltooid?: boolean
           onboarding_voltooid_op?: string | null
+          onderaannemer_id?: string | null
           rijbewijs?: boolean
           telefoon?: string
           updated_at?: string
@@ -1358,11 +1362,13 @@ export type Database = {
           iban?: string | null
           id?: string
           invited_at?: string | null
+          is_onderaannemer?: boolean
           kvk_nummer?: string | null
           noodcontact_naam?: string | null
           noodcontact_tel?: string | null
           onboarding_voltooid?: boolean
           onboarding_voltooid_op?: string | null
+          onderaannemer_id?: string | null
           rijbewijs?: boolean
           telefoon?: string
           updated_at?: string
@@ -1381,6 +1387,20 @@ export type Database = {
           {
             foreignKeyName: "profiles_geverifieerd_door_fkey"
             columns: ["geverifieerd_door"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_onderaannemer_id_fkey"
+            columns: ["onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_onderaannemer_id_fkey"
+            columns: ["onderaannemer_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]

@@ -35,6 +35,7 @@ const Profiel = lazy(() => import("./pages/Profiel"));
 const ProjectPlanning = lazy(() => import("./pages/ProjectPlanning"));
 const Overuren = lazy(() => import("./pages/Overuren"));
 const Medewerkers = lazy(() => import("./pages/Medewerkers"));
+const Onderaannemers = lazy(() => import("./pages/Onderaannemers"));
 const IntakeRegelBeheer = lazy(() => import("./pages/IntakeRegelBeheer"));
 const TarievenBeheer = lazy(() => import("./pages/TarievenBeheer"));
 const Inkooporders = lazy(() => import("./pages/Inkooporders"));
@@ -153,6 +154,7 @@ const App = () => (
               <Route path="/projecten/:projectId/planning" element={<RoleRoute check={p => p.zietProjecten}><L><ProjectPlanning /></L></RoleRoute>} />
               <Route path="/opdrachtgevers" element={<RoleRoute check={p => p.magTeamBeheren}><L><Opdrachtgevers /></L></RoleRoute>} />
               <Route path="/medewerkers" element={<RoleRoute check={p => p.zietTeam}><L><Medewerkers /></L></RoleRoute>} />
+              <Route path="/onderaannemers" element={<RoleRoute check={p => p.zietTeam}><L><Onderaannemers /></L></RoleRoute>} />
               <Route path="/inkooporders" element={<RoleRoute check={p => p.zietAlleInkooporders}><L><Inkooporders /></L></RoleRoute>} />
 
               <Route path="/beheer/intake-regels" element={<RoleRoute check={p => p.zietBeheer}><L><IntakeRegelBeheer /></L></RoleRoute>} />

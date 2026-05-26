@@ -57,7 +57,9 @@ Deno.serve(async (req) => {
       noodcontact_naam, noodcontact_tel,
       contract_einddatum, uurtarief,
       invite_only, certificaten,
+      is_onderaannemer, onderaannemer_id,
     } = await req.json();
+
 
     if (!email || !fullName || !role) {
       return new Response(JSON.stringify({ error: "Email, naam en rol zijn verplicht" }), {
@@ -148,6 +150,8 @@ Deno.serve(async (req) => {
         contract_einddatum: contract_einddatum || null,
         account_status: invite_only ? "invited" : "active",
         invited_at: new Date().toISOString(),
+        is_onderaannemer: !!is_onderaannemer,
+        onderaannemer_id: onderaannemer_id || null,
       }).select("id").single();
       profileId = newProfile!.id;
     } else {
@@ -163,9 +167,12 @@ Deno.serve(async (req) => {
         contract_einddatum: contract_einddatum || null,
         account_status: invite_only ? "invited" : "active",
         invited_at: new Date().toISOString(),
+        is_onderaannemer: !!is_onderaannemer,
+        onderaannemer_id: onderaannemer_id || null,
       }).eq("id", existingProfile.id);
       profileId = existingProfile.id;
     }
+
 
     // Assign role
     await adminClient.from("user_roles").insert({ user_id: newUser.user.id, role });
