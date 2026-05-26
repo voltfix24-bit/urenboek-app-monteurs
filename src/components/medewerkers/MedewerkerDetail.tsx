@@ -214,8 +214,9 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
     setEditing(false);
     setShowPwPanel(false);
     setNewPw("");
+    setNewEmail(emp.email || "");
     setPwResult(null);
-  }, [emp.id]);
+  }, [emp.id, emp.email]);
 
   useEffect(() => {
     if (!emp.id) return;
