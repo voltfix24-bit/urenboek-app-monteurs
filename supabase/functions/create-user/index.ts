@@ -57,7 +57,9 @@ Deno.serve(async (req) => {
       noodcontact_naam, noodcontact_tel,
       contract_einddatum, uurtarief,
       invite_only, certificaten,
+      is_onderaannemer, onderaannemer_id,
     } = await req.json();
+
 
     if (!email || !fullName || !role) {
       return new Response(JSON.stringify({ error: "Email, naam en rol zijn verplicht" }), {
