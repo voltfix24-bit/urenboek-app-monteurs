@@ -460,9 +460,73 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       <Section title="Account info">
         <div className="space-y-1">
           <div className="flex items-center gap-2"><StatusBadge emp={emp} /></div>
+          {emp.email && <p className="text-[11px]" style={{ color: "#a0abc3" }}>E-mail: <span style={{ color: "#dae6ff" }}>{emp.email}</span></p>}
           {emp.invited_at && <p className="text-[11px]" style={{ color: "#a0abc3" }}>Uitgenodigd op: {format(parseISO(emp.invited_at), "d MMM yyyy HH:mm", { locale: nl })}</p>}
           {emp.activated_at && <p className="text-[11px]" style={{ color: "#a0abc3" }}>Geactiveerd op: {format(parseISO(emp.activated_at), "d MMM yyyy HH:mm", { locale: nl })}</p>}
         </div>
+
+        {!showPwPanel && !pwResult && (
+          <button
+            onClick={() => setShowPwPanel(true)}
+            className="w-full mt-2 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
+            style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}
+          >
+            <KeyRound className="h-3.5 w-3.5" /> Wachtwoord instellen / resetten
+          </button>
+        )}
+
+        {showPwPanel && !pwResult && (
+          <div className="mt-2 space-y-2 p-3 rounded-xl" style={{ background: "var(--app-navy)", border: "1px solid rgba(63,255,139,0.3)" }}>
+            <p className="text-[11px]" style={{ color: "#a0abc3" }}>
+              Stel een nieuw wachtwoord in voor <strong style={{ color: "#dae6ff" }}>{emp.full_name}</strong>. Het oude wachtwoord vervalt direct.
+            </p>
+            <div className="flex gap-1.5">
+              <div className="relative flex-1">
+                <input
+                  type={showNewPw ? "text" : "password"}
+                  value={newPw}
+                  onChange={e => setNewPw(e.target.value)}
+                  placeholder="Min. 8 tekens"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm pr-8"
+                  style={{ background: "#0a1a30", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}
+                />
+                <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-2 top-1/2 -translate-y-1/2" style={{ color: "#a0abc3" }}>
+                  {showNewPw ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+              <button type="button" onClick={genPw} className="px-3 py-2.5 rounded-xl text-sm shrink-0" style={{ background: "#0a1a30", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }} title="Genereer wachtwoord">
+                <RotateCw className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => { setShowPwPanel(false); setNewPw(""); }} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "#102038", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>
+                Annuleren
+              </button>
+              <button onClick={saveWachtwoord} disabled={pwSaving || newPw.length < 8} className="flex-1 py-2 rounded-xl text-xs font-bold" style={{ background: newPw.length >= 8 ? "linear-gradient(135deg, #3fff8b, #005d2c)" : "#102038", color: newPw.length >= 8 ? "#fff" : "#a0abc3" }}>
+                {pwSaving ? "Bezig..." : "Wachtwoord opslaan"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {pwResult && (
+          <div className="mt-2 space-y-2 p-3 rounded-xl" style={{ background: "rgba(63,255,139,0.08)", border: "1px solid rgba(63,255,139,0.3)" }}>
+            <p className="text-[11px] font-semibold" style={{ color: "#3fff8b" }}>✓ Nieuw wachtwoord ingesteld</p>
+            <div className="text-[11px] space-y-1" style={{ color: "#a0abc3" }}>
+              <p>E-mail: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4 }}>{emp.email}</code></p>
+              <p>Wachtwoord: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4, fontFamily: "monospace" }}>{pwResult}</code></p>
+            </div>
+            <p className="text-[10px]" style={{ color: "#feb300" }}>⚠ Bewaar of deel deze gegevens nu — ze worden niet opnieuw getoond.</p>
+            <div className="flex gap-2">
+              <button onClick={kopieerInloggegevens} className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5" style={{ background: "#3fff8b", color: "#003817" }}>
+                <Copy className="h-3.5 w-3.5" /> Kopieer inloggegevens
+              </button>
+              <button onClick={() => { setPwResult(null); setShowPwPanel(false); }} className="px-3 py-2 rounded-xl text-xs font-semibold" style={{ background: "#102038", color: "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>
+                Sluiten
+              </button>
+            </div>
+          </div>
+        )}
       </Section>
 
       {/* Verwijderen */}
