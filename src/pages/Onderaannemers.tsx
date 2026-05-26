@@ -245,6 +245,32 @@ export default function Onderaannemers() {
               <Row label="Telefoon" value={selected.telefoon || "—"} icon={<Phone size={14} />} />
               <Row label="KvK" value={selected.kvk_nummer || "—"} />
               <Row label="IBAN" value={selected.iban || "—"} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid rgba(106,118,140,0.1)" }}>
+                <span style={{ fontSize: 12, color: "#6a768c" }}>Uurtarief</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 13, color: "#a0abc3" }}>€</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    defaultValue={selected.uurtarief ?? ""}
+                    onBlur={async (e) => {
+                      const v = e.target.value;
+                      const num = v ? Number(v.replace(",", ".")) : null;
+                      if ((selected.uurtarief ?? null) === num) return;
+                      const { error } = await supabase
+                        .from("profiles")
+                        .update({ uurtarief: num })
+                        .eq("id", selected.id);
+                      if (error) { toast.error("Opslaan mislukt"); return; }
+                      toast.success("Uurtarief opgeslagen");
+                      load();
+                    }}
+                    placeholder="—"
+                    style={{ width: 90, textAlign: "right", background: "#061327", border: "1px solid rgba(106,118,140,0.25)", borderRadius: 8, padding: "6px 8px", color: "#dae6ff", fontFamily: "DM Mono, monospace", fontSize: 13 }}
+                  />
+                  <span style={{ fontSize: 11, color: "#6a768c" }}>/uur</span>
+                </div>
+              </div>
             </div>
 
             {/* Monteurs eronder */}
