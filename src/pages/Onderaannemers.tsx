@@ -79,7 +79,7 @@ export default function Onderaannemers() {
     setLoading(true);
     const { data: profielen } = await supabase
       .from("profiles")
-      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,kvk_nummer,iban,account_status,is_onderaannemer,onderaannemer_id")
+      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,kvk_nummer,iban,uurtarief,account_status,is_onderaannemer,onderaannemer_id")
       .order("full_name");
     const { data: rollen } = await supabase.from("user_roles").select("user_id,role");
     const rolMap = new Map((rollen || []).map((r) => [r.user_id, r.role]));
