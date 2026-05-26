@@ -516,6 +516,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
           <div className="mt-2 space-y-2 p-3 rounded-xl" style={{ background: "rgba(63,255,139,0.08)", border: "1px solid rgba(63,255,139,0.3)" }}>
             <p className="text-[11px] font-semibold" style={{ color: "#3fff8b" }}>✓ Nieuw wachtwoord ingesteld</p>
             <div className="text-[11px] space-y-1" style={{ color: "#a0abc3" }}>
+              <p>Gebruikersnaam: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4 }}>{emp.email}</code></p>
               <p>E-mail: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4 }}>{emp.email}</code></p>
               <p>Wachtwoord: <code style={{ color: "#dae6ff", background: "#102038", padding: "1px 6px", borderRadius: 4, fontFamily: "monospace" }}>{pwResult}</code></p>
             </div>
