@@ -87,6 +87,61 @@ export default function Onderaannemers() {
   // Wachtwoord reset voor onderaannemer (account delen)
   const [pwResetting, setPwResetting] = useState(false);
   const [newOaPw, setNewOaPw] = useState<{ email: string; pw: string } | null>(null);
+  const [oaAccountEmail, setOaAccountEmail] = useState("");
+  const [oaAccountPw, setOaAccountPw] = useState("");
+  const [oaAccountShowPw, setOaAccountShowPw] = useState(false);
+  const [oaAccountSaving, setOaAccountSaving] = useState(false);
+
+  useEffect(() => {
+    setOaAccountEmail(selected?.email || "");
+    setOaAccountPw("");
+    setOaAccountShowPw(false);
+    setNewOaPw(null);
+  }, [selected?.id]);
+
+  const createOnderaannemerAccount = async () => {
+    if (!selected) return;
+    if (!oaAccountEmail.trim() || !oaAccountPw.trim()) {
+      toast.error("Vul e-mail en wachtwoord in");
+      return;
+    }
+    if (oaAccountPw.length < 8) {
+      toast.error("Wachtwoord min. 8 tekens");
+      return;
+    }
+
+    setOaAccountSaving(true);
+    const { data, error } = await supabase.functions.invoke("reset-password", {
+      body: {
+        user_id: selected.user_id,
+        email: oaAccountEmail.trim(),
+        password: oaAccountPw,
+      },
+    });
+
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Account aanmaken mislukt");
+      setOaAccountSaving(false);
+      return;
+    }
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ email: oaAccountEmail.trim(), account_status: "active" })
+      .eq("id", selected.id);
+
+    if (profileError) {
+      toast.error("Account gemaakt, maar profiel kon niet worden bijgewerkt");
+      setOaAccountSaving(false);
+      return;
+    }
+
+    toast.success("Account voor onderaannemer aangemaakt");
+    setNewOaPw({ email: oaAccountEmail.trim(), pw: oaAccountPw });
+    setOaAccountPw("");
+    setOaAccountSaving(false);
+    load();
+  };
 
   const resetOnderaannemerPassword = async () => {
     if (!selected) return;
@@ -320,16 +375,30 @@ export default function Onderaannemers() {
             <div style={{ background: "#0a1a30", borderRadius: 16, padding: 18, marginBottom: 20, border: "1px solid rgba(106,118,140,0.15)" }}>
               <p style={{ fontSize: 10, fontWeight: 700, color: "#6a768c", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Inloggegevens</p>
               <p style={{ fontSize: 12, color: "#a0abc3", marginBottom: 12, lineHeight: 1.5 }}>
-                Deze onderaannemer kan inloggen met e-mail <b style={{ color: "#dae6ff" }}>{selected.email || "—"}</b> en ziet daarna de planning en uren van zijn monteurs. Genereer hieronder een nieuw wachtwoord om mee te delen.
+                Deze onderaannemer ziet na inloggen de planning en uren van de monteurs onder hem. {selected.email ? <>Huidige login: <b style={{ color: "#dae6ff" }}>{selected.email}</b>.</> : "Deze onderaannemer heeft nog geen login."}
               </p>
-              <button
-                type="button"
-                onClick={resetOnderaannemerPassword}
-                disabled={pwResetting || !selected.email}
-                style={{ ...secondaryBtn, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: pwResetting ? 0.6 : 1 }}
-              >
-                {pwResetting ? "Bezig…" : "Nieuw wachtwoord genereren"}
-              </button>
+              {selected.email ? (
+                <button
+                  type="button"
+                  onClick={resetOnderaannemerPassword}
+                  disabled={pwResetting}
+                  style={{ ...secondaryBtn, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: pwResetting ? 0.6 : 1 }}
+                >
+                  {pwResetting ? "Bezig…" : "Nieuw wachtwoord genereren"}
+                </button>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <Input placeholder="E-mail (= gebruikersnaam)" type="email" value={oaAccountEmail} onChange={setOaAccountEmail} />
+                  <div style={{ position: "relative" }}>
+                    <Input placeholder="Wachtwoord" type={oaAccountShowPw ? "text" : "password"} value={oaAccountPw} onChange={setOaAccountPw} />
+                    <button type="button" onClick={() => setOaAccountShowPw(!oaAccountShowPw)} style={iconBtn}>{oaAccountShowPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button type="button" onClick={() => setOaAccountPw(genPw() + "A1!")} style={secondaryBtn}>Genereer</button>
+                    <button type="button" onClick={createOnderaannemerAccount} disabled={oaAccountSaving} style={primaryBtn}>{oaAccountSaving ? "Bezig…" : "Account aanmaken"}</button>
+                  </div>
+                </div>
+              )}
               {newOaPw && (
                 <div style={{ marginTop: 12 }}>
                   <CredsCard
