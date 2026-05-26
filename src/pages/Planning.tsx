@@ -396,6 +396,7 @@ export default function Planning() {
         <MobileHeader initials={profileData?.full_name?.charAt(0)?.toUpperCase() || 'U'} />
 
         <PullToRefresh onRefresh={async () => { await fetchPlanning(); }}>
+          <MonteurSwitcher />
           <main style={{ padding: '24px 20px' }}>
             {/* ── WEEK HEADER ── */}
             <div style={{
@@ -412,7 +413,7 @@ export default function Planning() {
                   letterSpacing: '0.2em',
                   color: '#3fff8b', marginBottom: 4,
                 }}>
-                  Jouw planning
+                  {isOnderaannemer && activeLid && !activeLid.is_self ? `Planning · ${activeLid.full_name}` : 'Jouw planning'}
                 </p>
                 <h2 style={{
                   fontFamily: 'Manrope',
