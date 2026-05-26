@@ -154,7 +154,7 @@ export default function Planning() {
   const weekNumber = getISOWeek(weekStart);
 
   const fetchPlanning = useCallback(async () => {
-    if (!user || !profileId) return;
+    if (!user || !queryProfileId) return;
     setLoading(true);
     const startStr = format(weekStart, "yyyy-MM-dd");
     const endStr = format(addDays(weekStart, 6), "yyyy-MM-dd");
@@ -202,11 +202,11 @@ export default function Planning() {
         }));
 
         // Cache planning data for offline use
-        await cachePlanning(profileId, startStr, data as any[]);
+        await cachePlanning(queryProfileId, startStr, data as any[]);
       }
     } else {
       // Offline: use cached data
-      const cached = await getCachedPlanning(profileId, startStr);
+      const cached = await getCachedPlanning(queryProfileId, startStr);
       if (cached) {
         const projectIds = [...new Set(cached.map((d: any) => d.project_id))];
         let projMap = new Map();
@@ -272,7 +272,7 @@ export default function Planning() {
   }
 
   const saveUren = async (submitDirect: boolean) => {
-    if (!profileId || !modalItem) return;
+    if (!queryProfileId || !modalItem) return;
     const planned = calcDefaultUren(modalItem.starttijd, modalItem.eindtijd);
     const diff = Math.abs(urenForm.uren - planned);
     const needsToelichting = diff > 0.5;
@@ -321,7 +321,7 @@ export default function Planning() {
     const { data: inserted, error: insertErr } = await supabase
       .from("uren_boekingen")
       .insert({
-        medewerker_id: profileId,
+        medewerker_id: queryProfileId,
         project_id: modalItem.project_id,
         datum: modalItem.datum,
         uren: urenForm.uren,
