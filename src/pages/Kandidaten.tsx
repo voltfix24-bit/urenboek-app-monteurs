@@ -12,7 +12,7 @@ import { KANDIDAAT_STATUS_CONFIG, CONTRACT_STATUS_CONFIG } from "@/lib/contractS
 import { generateContractPdf } from "@/lib/contractPdf";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { toast } from "sonner";
-import { UserPlus, MoreHorizontal, ChevronRight, Copy, AlertTriangle, Trash2, Pause, Play } from "lucide-react";
+import { UserPlus, MoreHorizontal, ChevronRight, Copy, AlertTriangle, Trash2, Pause, Play, Pencil } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import type { Kandidaat, ContractData } from "@/types/app";
 
