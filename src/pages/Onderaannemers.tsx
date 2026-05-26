@@ -6,7 +6,7 @@ import { PageShell } from "@/components/PageShell";
 import { toast } from "sonner";
 import {
   ArrowLeft, Plus, X, Building2, Users, Copy, Eye, EyeOff,
-  Phone, Mail, ChevronRight,
+  Phone, Mail, ChevronRight, Pencil, Trash2, Check,
 } from "lucide-react";
 
 interface Onderaannemer {
@@ -74,6 +74,62 @@ export default function Onderaannemers() {
   const [mShowPw, setMShowPw] = useState(false);
   const [mSaving, setMSaving] = useState(false);
   const [lastCreatedMonteur, setLastCreatedMonteur] = useState<{ email: string; pw: string } | null>(null);
+
+  // Bewerken bestaande monteur
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editVoornaam, setEditVoornaam] = useState("");
+  const [editAchternaam, setEditAchternaam] = useState("");
+  const [editTel, setEditTel] = useState("");
+  const [editRole, setEditRole] = useState("monteur");
+  const [editSaving, setEditSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const startEdit = (m: Monteur) => {
+    const parts = (m.full_name || "").trim().split(/\s+/);
+    setEditId(m.id);
+    setEditVoornaam(parts[0] || "");
+    setEditAchternaam(parts.slice(1).join(" "));
+    setEditTel(m.telefoon || "");
+    setEditRole(m.role || "monteur");
+  };
+  const cancelEdit = () => { setEditId(null); };
+
+  const saveEdit = async (m: Monteur) => {
+    if (!editVoornaam.trim() || !editAchternaam.trim()) {
+      toast.error("Vul voornaam en achternaam in"); return;
+    }
+    setEditSaving(true);
+    const fullName = `${editVoornaam.trim()} ${editAchternaam.trim()}`.trim();
+    const { error: pErr } = await supabase.from("profiles").update({
+      full_name: fullName,
+      telefoon: editTel || "",
+    }).eq("id", m.id);
+    if (pErr) { toast.error("Opslaan mislukt"); setEditSaving(false); return; }
+    if (editRole !== (m.role || "monteur")) {
+      await supabase.from("user_roles").delete().eq("user_id", m.user_id);
+      await supabase.from("user_roles").insert({ user_id: m.user_id, role: editRole as any });
+    }
+    toast.success("Monteur bijgewerkt");
+    setEditId(null);
+    setEditSaving(false);
+    load();
+  };
+
+  const deleteMonteur = async (m: Monteur) => {
+    if (!confirm(`Weet je zeker dat je ${m.full_name} permanent wilt verwijderen?`)) return;
+    setDeletingId(m.id);
+    const { data, error } = await supabase.functions.invoke("delete-user", {
+      body: { userId: m.user_id },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Verwijderen mislukt");
+      setDeletingId(null);
+      return;
+    }
+    toast.success(`${m.full_name} verwijderd`);
+    setDeletingId(null);
+    load();
+  };
 
   const load = async () => {
     setLoading(true);
@@ -303,18 +359,51 @@ export default function Onderaannemers() {
                   Nog geen monteurs onder deze onderaannemer
                 </div>
               )}
-              {mList.map((m) => (
-                <div key={m.id} style={{ background: "#0a1a30", borderRadius: 14, padding: 14, border: "1px solid rgba(106,118,140,0.15)", display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(63,255,139,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, color: "#3fff8b", fontSize: 13 }}>
-                    {m.full_name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+              {mList.map((m) => {
+                const isEditing = editId === m.id;
+                if (isEditing) {
+                  return (
+                    <div key={m.id} style={{ background: "#0a1a30", borderRadius: 14, padding: 14, border: "1px solid rgba(63,255,139,0.3)", display: "flex", flexDirection: "column", gap: 10 }}>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.15em" }}>Monteur bewerken</p>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                        <Input placeholder="Voornaam" value={editVoornaam} onChange={setEditVoornaam} />
+                        <Input placeholder="Achternaam" value={editAchternaam} onChange={setEditAchternaam} />
+                      </div>
+                      <Input placeholder="Telefoon" value={editTel} onChange={setEditTel} />
+                      <select value={editRole} onChange={(e) => setEditRole(e.target.value)} style={selectStyle}>
+                        {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                      </select>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button type="button" onClick={cancelEdit} style={secondaryBtn}>Annuleren</button>
+                        <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} style={{ ...secondaryBtn, color: "#ff716c", border: "1px solid rgba(255,113,108,0.3)", background: "rgba(255,113,108,0.1)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                          <Trash2 size={14} /> {deletingId === m.id ? "Bezig…" : "Verwijderen"}
+                        </button>
+                        <button type="button" onClick={() => saveEdit(m)} disabled={editSaving} style={{ ...primaryBtn, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                          <Check size={14} /> {editSaving ? "Bezig…" : "Opslaan"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div key={m.id} style={{ background: "#0a1a30", borderRadius: 14, padding: 14, border: "1px solid rgba(106,118,140,0.15)", display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(63,255,139,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, color: "#3fff8b", fontSize: 13 }}>
+                      {m.full_name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 700, color: "#dae6ff", fontSize: 14 }}>{m.full_name}</p>
+                      <p style={{ fontSize: 12, color: "#6a768c" }}>{m.email || m.telefoon || "—"}</p>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.1em" }}>{m.role || "monteur"}</span>
+                    <button type="button" onClick={() => startEdit(m)} title="Bewerken" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(106,118,140,0.15)", border: "1px solid rgba(106,118,140,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#a0abc3" }}>
+                      <Pencil size={14} />
+                    </button>
+                    <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} title="Verwijderen" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#ff716c", opacity: deletingId === m.id ? 0.5 : 1 }}>
+                      <Trash2 size={14} />
+                    </button>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontWeight: 700, color: "#dae6ff", fontSize: 14 }}>{m.full_name}</p>
-                    <p style={{ fontSize: 12, color: "#6a768c" }}>{m.email || m.telefoon || "—"}</p>
-                  </div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.1em" }}>{m.role || "monteur"}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </main>
         </div>
