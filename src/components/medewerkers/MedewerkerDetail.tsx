@@ -86,13 +86,18 @@ function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
         </div>
 
         <div className="flex gap-2 mt-3">
-          <button onClick={() => setShowActiveer(true)} disabled={!alleChecks} className="flex-1 py-2 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "#3fff8b", color: "#fff" }}>
+          <button onClick={() => setShowActiveer(true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "#3fff8b", color: "#fff" }}>
             ✓ Activeren
           </button>
           <button onClick={() => setShowAfwijzen(true)} className="flex-1 py-2 rounded-xl text-xs font-semibold" style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c", border: "1px solid rgba(255,113,108,0.3)" }}>
             ✕ Afwijzen
           </button>
         </div>
+        {!alleChecks && (
+          <p className="text-[10px] mt-1" style={{ color: "#feb300" }}>
+            Niet alle checks zijn voldaan — je kunt alsnog activeren (handmatige overschrijving).
+          </p>
+        )}
       </div>
 
       <AlertDialog open={showActiveer} onOpenChange={setShowActiveer}>
@@ -101,6 +106,17 @@ function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
             <AlertDialogTitle style={{ color: "#dae6ff" }}>Account activeren</AlertDialogTitle>
             <AlertDialogDescription style={{ color: "#a0abc3" }}>
               Weet je zeker dat je <strong>{emp.full_name}</strong> wilt activeren? Ze kunnen daarna worden ingepland en uren boeken.
+              {!alleChecks && (
+                <>
+                  <br /><br />
+                  <span style={{ color: "#feb300" }}>⚠ Ontbrekend:</span>
+                  <ul className="list-disc ml-5 mt-1">
+                    {checks.filter(c => !c.ok).map((c, i) => (
+                      <li key={i} style={{ color: "#feb300" }}>{c.label}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -109,6 +125,7 @@ function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
 
       <AlertDialog open={showAfwijzen} onOpenChange={setShowAfwijzen}>
         <AlertDialogContent style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
