@@ -117,9 +117,18 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
     if (!profileId) return;
     supabase.from("contracten").select("*").eq("profiel_id", profileId)
       .in("status", ["ondertekend_beiden", "ondertekend_ot", "verstuurd"])
-      .order("aangemaakt_op", { ascending: false }).limit(1).maybeSingle()
-      .then(({ data }) => { setContract(data); setLoading(false); });
+      .order("aangemaakt_op", { ascending: false })
+      .then(({ data }) => {
+        // Prioriteer ondertekende contracten boven 'verstuurd' duplicaten
+        const prio: Record<string, number> = { ondertekend_beiden: 0, ondertekend_ot: 1, verstuurd: 2 };
+        const best = (data ?? []).slice().sort(
+          (a, b) => (prio[a.status] ?? 9) - (prio[b.status] ?? 9)
+        )[0] ?? null;
+        setContract(best);
+        setLoading(false);
+      });
   }, [profileId]);
+
 
   if (loading) return null;
 
