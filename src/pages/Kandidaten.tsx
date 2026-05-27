@@ -457,8 +457,8 @@ export default function Kandidaten() {
           {gefilterd.map(k => {
             const sc = KANDIDAAT_STATUS_CONFIG[k.status] || KANDIDAAT_STATUS_CONFIG.gesprek;
             const contract = getContractForKandidaat(k.id);
-            const wachtOpManager = k.status === "uitgenodigd" && contract?.status === "ondertekend_ot";
-            const heeftCorrectie = k.status === "uitgenodigd" && contract?.status === "correctie_gevraagd";
+            const wachtOpManager = contract?.status === "ondertekend_ot";
+            const heeftCorrectie = contract?.status === "correctie_gevraagd";
             const contractBerichten = contract ? getBerichtenForContract(contract.id) : [];
             const ongelezen = contractBerichten.filter(b => !b.gelezen_op && b.richting === "kandidaat_naar_manager").length;
 
