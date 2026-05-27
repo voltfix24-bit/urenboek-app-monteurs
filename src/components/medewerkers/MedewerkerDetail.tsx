@@ -243,10 +243,15 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
       .eq("profiel_id", emp.id)
       .in("status", ["ondertekend_beiden", "ondertekend_ot", "verstuurd", "concept"])
       .order("aangemaakt_op", { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => setContract(data));
+      .then(({ data }) => {
+        const prio: Record<string, number> = { ondertekend_beiden: 0, ondertekend_ot: 1, verstuurd: 2, concept: 3 };
+        const best = (data ?? []).slice().sort(
+          (a, b) => (prio[a.status] ?? 9) - (prio[b.status] ?? 9)
+        )[0] ?? null;
+        setContract(best);
+      });
   }, [emp.id]);
+
 
   const saveProfile = async () => {
     if (!editForm.full_name.trim()) { toast.error("Naam is verplicht"); return; }
