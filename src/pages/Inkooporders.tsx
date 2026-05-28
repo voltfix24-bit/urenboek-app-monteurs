@@ -162,16 +162,43 @@ export default function Inkooporders() {
 
         <main className="px-4 py-4 space-y-4">
           {/* Filters */}
-          <div className="flex flex-wrap gap-1.5">
-            {["alle", "concept", "verzonden", "factuur_ontvangen", "betaald"].map(s => (
-              <button key={s} onClick={() => setStatusFilter(s)} className="px-3 py-1.5 rounded-full text-[11px] font-semibold" style={{
-                background: statusFilter === s ? T.primarySoft : T.surface,
-                border: `1px solid ${statusFilter === s ? T.borderActive : T.border}`,
-                color: statusFilter === s ? T.primary : T.textMuted,
-              }}>
-                {s === "alle" ? "Alle" : INKOOPORDER_STATUS_CONFIG[s]?.label || s}
-              </button>
-            ))}
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              {["alle", "concept", "verzonden", "factuur_ontvangen", "betaald"].map(s => (
+                <button key={s} onClick={() => setStatusFilter(s)} className="px-3 py-1.5 rounded-full text-[11px] font-semibold" style={{
+                  background: statusFilter === s ? T.primarySoft : T.surface,
+                  border: `1px solid ${statusFilter === s ? T.borderActive : T.border}`,
+                  color: statusFilter === s ? T.primary : T.textMuted,
+                }}>
+                  {s === "alle" ? "Alle" : INKOOPORDER_STATUS_CONFIG[s]?.label || s}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: T.textMuted }}>Monteur</label>
+              <select
+                value={medewerkerFilter}
+                onChange={e => setMedewerkerFilter(e.target.value)}
+                className="flex-1 max-w-xs px-3 py-2 rounded-xl text-xs"
+                style={{ background: T.navy, border: `1px solid ${medewerkerFilter ? T.borderActive : T.border}`, color: T.text }}
+              >
+                <option value="">Alle monteurs</option>
+                {medewerkers.map(m => (
+                  <option key={m.id} value={m.id}>
+                    {m.full_name}{m.is_onderaannemer ? ` — onderaannemer${m.monteur_count ? ` (+${m.monteur_count})` : ""}` : ""}
+                  </option>
+                ))}
+              </select>
+              {medewerkerFilter && (
+                <button
+                  onClick={() => setMedewerkerFilter("")}
+                  className="px-2.5 py-2 rounded-xl text-[11px] font-semibold"
+                  style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.textMuted }}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Per week downloaden */}
