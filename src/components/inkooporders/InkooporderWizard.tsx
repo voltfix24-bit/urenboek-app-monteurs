@@ -57,6 +57,9 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
   const [medProfile, setMedProfile] = useState<Profile | null>(null);
   const [loadingBoekingen, setLoadingBoekingen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [weken, setWeken] = useState<WeekOptie[]>([]);
+  const [loadingWeken, setLoadingWeken] = useState(false);
+  const [geselecteerdeWeek, setGeselecteerdeWeek] = useState<string>("");
 
   // Init vanuit URL params (vanuit Goedkeuring)
   useEffect(() => {
@@ -72,6 +75,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
     setStep(1); setMedewerker(""); setVan(""); setTot("");
     setBoekingen([]); setSelected(new Set()); setTarief(0);
     setNotitie(""); setMedProfile(null);
+    setWeken([]); setGeselecteerdeWeek("");
   }, []);
 
   const handleClose = () => { reset(); onClose(); };
@@ -82,9 +86,75 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
   );
   const subtotaal = totaalUren * tarief;
 
-  const loadBoekingen = async () => {
-    if (!medewerker || !van || !tot) return;
-    if (van > tot) { toast.error("Van-datum moet vóór tot-datum liggen"); return; }
+  // Laad beschikbare weken zodra stap 2 actief is voor de geselecteerde monteur
+  useEffect(() => {
+    if (step !== 2 || !medewerker) return;
+    let cancelled = false;
+    (async () => {
+      setLoadingWeken(true);
+      try {
+        const selectedMed = medewerkers.find(m => m.id === medewerker);
+        const teamIds: string[] = [medewerker];
+        if (selectedMed?.is_onderaannemer) {
+          const { data: monteurs } = await supabase
+            .from("profiles").select("id").eq("onderaannemer_id", medewerker);
+          (monteurs || []).forEach((m: any) => teamIds.push(m.id));
+        }
+        const vandaag = format(new Date(), "yyyy-MM-dd");
+        const { data: rawBoekingen } = await supabase
+          .from("uren_boekingen")
+          .select("id, datum, uren")
+          .in("medewerker_id", teamIds)
+          .eq("status", "goedgekeurd")
+          .lte("datum", vandaag)
+          .order("datum");
+
+        const ids = (rawBoekingen || []).map((b: any) => b.id);
+        const usedIds = new Set<string>();
+        if (ids.length) {
+          const { data: usedRegels } = await supabase
+            .from("inkooporder_regels")
+            .select("uren_boeking_id")
+            .in("uren_boeking_id", ids);
+          (usedRegels || []).forEach((r: any) => r.uren_boeking_id && usedIds.add(r.uren_boeking_id));
+        }
+        const beschikbaar = (rawBoekingen || []).filter((b: any) => !usedIds.has(b.id));
+
+        const map = new Map<string, WeekOptie>();
+        for (const b of beschikbaar) {
+          const d = parseISO(b.datum);
+          const jaar = getISOWeekYear(d);
+          const week = getISOWeek(d);
+          const key = `${jaar}-W${String(week).padStart(2, "0")}`;
+          if (!map.has(key)) {
+            map.set(key, {
+              key, jaar, week,
+              van: format(startOfISOWeek(d), "yyyy-MM-dd"),
+              tot: format(endOfISOWeek(d), "yyyy-MM-dd"),
+              aantalBoekingen: 0,
+              totaalUren: 0,
+            });
+          }
+          const g = map.get(key)!;
+          g.aantalBoekingen += 1;
+          g.totaalUren += Number(b.uren) || 0;
+        }
+        const lijst = Array.from(map.values()).sort((a, b) =>
+          a.jaar !== b.jaar ? b.jaar - a.jaar : b.week - a.week
+        );
+        if (!cancelled) setWeken(lijst);
+      } finally {
+        if (!cancelled) setLoadingWeken(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [step, medewerker, medewerkers]);
+
+  const loadBoekingen = async (vanArg?: string, totArg?: string) => {
+    const vanD = vanArg ?? van;
+    const totD = totArg ?? tot;
+    if (!medewerker || !vanD || !totD) return;
+    if (vanD > totD) { toast.error("Van-datum moet vóór tot-datum liggen"); return; }
     setLoadingBoekingen(true);
     try {
       // Bepaal of geselecteerde medewerker een onderaannemer is → dan ook uren van zijn monteurs meenemen
@@ -107,8 +177,8 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
         .select("id, datum, project_id, uren, beschrijving, type, medewerker_id")
         .in("medewerker_id", teamIds)
         .eq("status", "goedgekeurd")
-        .gte("datum", van)
-        .lte("datum", tot)
+        .gte("datum", vanD)
+        .lte("datum", totD)
         .order("datum");
 
       // Filter al-gebruikte boekingen (gericht, niet hele tabel)
