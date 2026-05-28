@@ -5,6 +5,17 @@ import { X, Check, AlertTriangle, ChevronLeft, Users, Calendar, ListChecks, File
 import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 import { T } from "@/lib/inkooporderTheme";
+import { format, parseISO, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
+
+interface WeekOptie {
+  key: string;          // "2026-W21"
+  jaar: number;
+  week: number;
+  van: string;          // YYYY-MM-DD (maandag)
+  tot: string;          // YYYY-MM-DD (zondag)
+  aantalBoekingen: number;
+  totaalUren: number;
+}
 
 interface Medewerker { id: string; full_name: string; is_onderaannemer?: boolean; monteur_count?: number }
 interface Boeking {
