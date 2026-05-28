@@ -397,31 +397,68 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
           </div>
         )}
 
-        {/* Stap 2: Periode */}
+        {/* Stap 2: Periode (week-selectie) */}
         {step === 2 && (
           <div className="space-y-3">
-            <p className="text-xs" style={{ color: T.textMuted }}>Welke periode wil je factureren?</p>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-[10px] font-medium" style={{ color: T.textMuted }}>Van</label>
-                <input type="date" value={van} onChange={e => setVan(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl text-sm"
-                  style={{ background: T.navy, border: `1px solid ${T.border}`, color: T.text }} />
+            <p className="text-xs" style={{ color: T.textMuted }}>
+              Welke week wil je factureren? Alleen weken met nog niet gefactureerde, goedgekeurde uren worden getoond.
+            </p>
+
+            {loadingWeken ? (
+              <div className="py-6 flex justify-center"><Spinner center={false} /></div>
+            ) : weken.length === 0 ? (
+              <div className="rounded-xl p-6 text-center space-y-2" style={{ background: T.navy, border: `1px solid ${T.border}` }}>
+                <AlertTriangle className="h-6 w-6 mx-auto" style={{ color: T.warn }} />
+                <p className="text-sm font-medium" style={{ color: T.text }}>Geen beschikbare weken</p>
+                <p className="text-[11px]" style={{ color: T.textMuted }}>
+                  Alle goedgekeurde uren tot vandaag staan al op een inkooporder, of er zijn nog geen goedgekeurde uren.
+                </p>
               </div>
-              <div>
-                <label className="text-[10px] font-medium" style={{ color: T.textMuted }}>Tot</label>
-                <input type="date" value={tot} onChange={e => setTot(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl text-sm"
-                  style={{ background: T.navy, border: `1px solid ${T.border}`, color: T.text }} />
+            ) : (
+              <div className="space-y-1.5 max-h-72 overflow-y-auto">
+                {weken.map(w => {
+                  const isSel = geselecteerdeWeek === w.key;
+                  return (
+                    <button
+                      key={w.key}
+                      type="button"
+                      onClick={() => {
+                        setGeselecteerdeWeek(w.key);
+                        setVan(w.van);
+                        setTot(w.tot);
+                      }}
+                      className="w-full flex items-center justify-between p-3 rounded-xl text-left"
+                      style={{
+                        background: isSel ? T.primarySoft : T.navy,
+                        border: `1px solid ${isSel ? T.borderActive : T.border}`,
+                      }}
+                    >
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold" style={{ color: T.text }}>
+                          Week {w.week} · {w.jaar}
+                        </div>
+                        <div className="text-[11px]" style={{ color: T.textMuted }}>
+                          {format(parseISO(w.van), "dd-MM")} → {format(parseISO(w.tot), "dd-MM")} · {w.aantalBoekingen} boeking{w.aantalBoekingen === 1 ? "" : "en"}
+                        </div>
+                      </div>
+                      <span className="text-sm font-bold shrink-0" style={{ fontFamily: T.mono, color: T.primary }}>
+                        {w.totaalUren}u
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-            </div>
+            )}
+
             <div className="flex gap-2">
               <button onClick={() => setStep(1)}
                 className="flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1"
                 style={{ background: T.navy, border: `1px solid ${T.border}`, color: T.textMuted }}>
                 <ChevronLeft className="h-3.5 w-3.5" /> Vorige
               </button>
-              <button disabled={!van || !tot || loadingBoekingen} onClick={loadBoekingen}
+              <button
+                disabled={!geselecteerdeWeek || loadingBoekingen}
+                onClick={() => loadBoekingen()}
                 className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-40"
                 style={{ background: T.primaryGradient }}>
                 {loadingBoekingen ? "Laden…" : "Boekingen ophalen →"}
