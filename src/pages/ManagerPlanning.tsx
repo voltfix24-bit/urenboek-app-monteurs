@@ -17,10 +17,11 @@ import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns"
 import { nl } from "date-fns/locale";
 import { generatePlanningPdf, generatePersoneelsPdf } from "@/lib/planningPdf";
 
-interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; }
-interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; }
+interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; planning_group_id: string | null; }
+interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; planning_partner_ids: string[]; }
 interface ProjectInfo { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
 interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_tot: string; type: string; status: string; }
+
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
@@ -87,16 +88,17 @@ export default function ManagerPlanning() {
     const startStr = format(weekStart, "yyyy-MM-dd");
     const endStr = format(addDays(weekStart, 4), "yyyy-MM-dd");
     const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }] = await Promise.all([
-      supabase.from("planning").select("*, activiteit, activiteit_kleur").gte("datum", startStr).lte("datum", endStr),
-      supabase.from("profiles").select("id, full_name, vaste_vrije_dagen").eq("account_status", "active").order("full_name"),
+      supabase.from("planning").select("*, activiteit, activiteit_kleur, planning_group_id").gte("datum", startStr).lte("datum", endStr),
+      supabase.from("profiles").select("id, full_name, vaste_vrije_dagen, planning_partner_ids").eq("account_status", "active").order("full_name"),
       supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
     ]);
-    setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "", activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null })));
-    setMedewerkers((profData ?? []) as any);
+    setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "", activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, planning_group_id: d.planning_group_id || null })));
+    setMedewerkers(((profData ?? []) as any[]).map((p) => ({ ...p, planning_partner_ids: p.planning_partner_ids || [] })) as any);
     setProjects((projData ?? []) as any);
     setBeschikbaarheid((beschData ?? []) as any);
     setLoading(false);
+
   }, [weekStart]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
@@ -157,19 +159,63 @@ export default function ManagerPlanning() {
   const savePlanning = async () => {
     if (!myProfileId) return;
     if (editId) {
-      if (!await mutate(supabase.from("planning").update({ project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any).eq("id", editId))) return;
-      toast.success("Planning bijgewerkt"); setShowModal(false); fetchAll();
+      const existing = entries.find(e => e.id === editId);
+      const updatePayload = { project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any;
+      if (existing?.planning_group_id) {
+        // update alle gekoppelde entries
+        if (!await mutate(supabase.from("planning").update(updatePayload).eq("planning_group_id", existing.planning_group_id))) return;
+        toast.success("Planning bijgewerkt voor hele ploeg");
+      } else {
+        if (!await mutate(supabase.from("planning").update(updatePayload).eq("id", editId))) return;
+        toast.success("Planning bijgewerkt");
+      }
+      setShowModal(false); fetchAll();
     } else {
-      if (!await mutate(supabase.from("planning").insert({ medewerker_id: modalForm.medewerker_id, project_id: modalForm.project_id, datum: modalForm.datum, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie, created_by: myProfileId } as any))) return;
-      toast.success("Ingepland!"); setShowModal(false); fetchAll();
+      // Verzamel ploeg = self + vaste collega's
+      const me = medewerkers.find(m => m.id === modalForm.medewerker_id);
+      const partners = (me?.planning_partner_ids || []).filter(pid => medewerkers.some(mm => mm.id === pid));
+      // Filter partners die al planning hebben op deze datum
+      const skipPartners = partners.filter(pid => entries.some(e => e.medewerker_id === pid && e.datum === modalForm.datum));
+      const inGroup = [modalForm.medewerker_id, ...partners.filter(p => !skipPartners.includes(p))];
+      const groupId = inGroup.length > 1 ? (crypto.randomUUID?.() ?? null) : null;
+      const rows = inGroup.map((medId) => ({
+        medewerker_id: medId,
+        project_id: modalForm.project_id,
+        datum: modalForm.datum,
+        starttijd: modalForm.starttijd,
+        eindtijd: modalForm.eindtijd,
+        notitie: modalForm.notitie,
+        created_by: myProfileId,
+        planning_group_id: groupId,
+        collega_ids: inGroup.filter(x => x !== medId),
+      })) as any;
+      if (!await mutate(supabase.from("planning").insert(rows))) return;
+      if (inGroup.length > 1) {
+        toast.success(`Ingepland voor ${inGroup.length} monteurs`);
+      } else {
+        toast.success("Ingepland!");
+      }
+      if (skipPartners.length > 0) {
+        const namen = skipPartners.map(pid => medewerkers.find(mm => mm.id === pid)?.full_name).filter(Boolean).join(", ");
+        toast.info(`Overgeslagen (al ingepland): ${namen}`);
+      }
+      setShowModal(false); fetchAll();
     }
   };
 
   const deletePlanning = async () => {
     if (!editId) return;
-    if (!await mutate(supabase.from("planning").delete().eq("id", editId))) return;
-    toast.success("Verwijderd"); setShowModal(false); fetchAll();
+    const existing = entries.find(e => e.id === editId);
+    if (existing?.planning_group_id) {
+      if (!await mutate(supabase.from("planning").delete().eq("planning_group_id", existing.planning_group_id))) return;
+      toast.success("Planning van ploeg verwijderd");
+    } else {
+      if (!await mutate(supabase.from("planning").delete().eq("id", editId))) return;
+      toast.success("Verwijderd");
+    }
+    setShowModal(false); fetchAll();
   };
+
 
   const projMap = new Map(projects.map(p => [p.id, p]));
   const medName = (id: string) => medewerkers.find(m => m.id === id)?.full_name || "?";
