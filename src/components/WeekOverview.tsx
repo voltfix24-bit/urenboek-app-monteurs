@@ -14,7 +14,7 @@ export function WeekOverview({ weekDates, entries, onRemove }: WeekOverviewProps
     return (
       <div className="text-center py-10 text-muted-foreground rounded-2xl border bg-card shadow-card">
         <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-          <ClipboardList className="h-5 w-5" style={{ color: "#6b7280" }} />
+          <ClipboardList className="h-5 w-5" style={{ color: "#a0abc3" }} />
         </div>
         <p className="text-sm font-medium">Nog geen uren deze week</p>
         <p className="text-xs mt-1">Voeg uren toe via het formulier hierboven</p>

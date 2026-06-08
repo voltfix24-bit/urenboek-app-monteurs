@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     paddingRight: 36,
     fontFamily: "Helvetica",
     fontSize: 9,
-    color: "#047857",
+    color: "#072100",
   },
   header: {
     flexDirection: "row",
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   partijNaam: {
     fontSize: 11,
     fontFamily: "Helvetica-Bold",
-    color: "#047857",
+    color: "#072100",
     marginBottom: 4,
   },
   partijDetail: {
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   kolBedrag: { width: 46, textAlign: "right" },
   tabelTekst: {
     fontSize: 8,
-    color: "#047857",
+    color: "#072100",
   },
   tabelProject: {
     fontSize: 8,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   finWaarde: {
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
-    color: "#047857",
+    color: "#072100",
   },
   totaalBox: {
     flexDirection: "row",

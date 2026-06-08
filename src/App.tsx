@@ -4,9 +4,7 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { ROUTE_ACCESS } from "@/lib/routeAccess";
-import type { RolPermissies } from "@/lib/permissions";
+import { AuthProvider, useAuth, type RolPermissies } from "@/hooks/useAuth";
 import { ProfileProvider } from "@/hooks/useProfile";
 import { ActiveMedewerkerProvider } from "@/hooks/useActiveMedewerker";
 import { NavBadgesProvider } from "@/hooks/useNavBadges";
@@ -142,31 +140,31 @@ const App = () => (
               <Route path="/" element={<ProtectedRoute><Navigate to="/planning" replace /></ProtectedRoute>} />
 
               {/* Lazy routes */}
-              <Route path="/planning" element={<RoleRoute check={ROUTE_ACCESS["/planning"]}><L><Planning /></L></RoleRoute>} />
-              <Route path="/mededelingen" element={<RoleRoute check={ROUTE_ACCESS["/mededelingen"]}><L><Mededelingen /></L></RoleRoute>} />
+              <Route path="/planning" element={<RoleRoute check={p => p.zietPlanning}><L><Planning /></L></RoleRoute>} />
+              <Route path="/mededelingen" element={<RoleRoute check={p => p.zietMededelingen}><L><Mededelingen /></L></RoleRoute>} />
               <Route path="/profiel" element={<ProtectedRoute><L><Profiel /></L></ProtectedRoute>} />
-              <Route path="/mijn-orders" element={<RoleRoute check={ROUTE_ACCESS["/mijn-orders"]}><L><MijnOrders /></L></RoleRoute>} />
+              <Route path="/mijn-orders" element={<RoleRoute check={p => p.zietInkooporders}><L><MijnOrders /></L></RoleRoute>} />
               <Route path="/ziek-melden" element={<ProtectedRoute><L><ZiekMelden /></L></ProtectedRoute>} />
               <Route path="/verlof-aanvragen" element={<ProtectedRoute><L><VerlofAanvragen /></L></ProtectedRoute>} />
 
-              <Route path="/dashboard" element={<RoleRoute check={ROUTE_ACCESS["/dashboard"]}><L><Dashboard /></L></RoleRoute>} />
-              <Route path="/goedkeuring" element={<RoleRoute check={ROUTE_ACCESS["/goedkeuring"]}><L><Goedkeuring /></L></RoleRoute>} />
-              <Route path="/overuren" element={<RoleRoute check={ROUTE_ACCESS["/overuren"]}><L><Overuren /></L></RoleRoute>} />
-              <Route path="/rapportage" element={<RoleRoute check={ROUTE_ACCESS["/rapportage"]}><L><Rapportage /></L></RoleRoute>} />
-              <Route path="/manager-planning" element={<RoleRoute check={ROUTE_ACCESS["/manager-planning"]}><L><ManagerPlanning /></L></RoleRoute>} />
-              <Route path="/projecten" element={<RoleRoute check={ROUTE_ACCESS["/projecten"]}><L><Projecten /></L></RoleRoute>} />
-              <Route path="/projecten/:projectId/planning" element={<RoleRoute check={ROUTE_ACCESS["/projecten/:projectId/planning"]}><L><ProjectPlanning /></L></RoleRoute>} />
-              <Route path="/opdrachtgevers" element={<RoleRoute check={ROUTE_ACCESS["/opdrachtgevers"]}><L><Opdrachtgevers /></L></RoleRoute>} />
-              <Route path="/medewerkers" element={<RoleRoute check={ROUTE_ACCESS["/medewerkers"]}><L><Medewerkers /></L></RoleRoute>} />
-              <Route path="/onderaannemers" element={<RoleRoute check={ROUTE_ACCESS["/onderaannemers"]}><L><Onderaannemers /></L></RoleRoute>} />
-              <Route path="/inkooporders" element={<RoleRoute check={ROUTE_ACCESS["/inkooporders"]}><L><Inkooporders /></L></RoleRoute>} />
+              <Route path="/dashboard" element={<RoleRoute check={p => p.zietDashboard}><L><Dashboard /></L></RoleRoute>} />
+              <Route path="/goedkeuring" element={<RoleRoute check={p => p.zietGoedkeuring}><L><Goedkeuring /></L></RoleRoute>} />
+              <Route path="/overuren" element={<RoleRoute check={p => p.zietOveruren}><L><Overuren /></L></RoleRoute>} />
+              <Route path="/rapportage" element={<RoleRoute check={p => p.zietRapportage}><L><Rapportage /></L></RoleRoute>} />
+              <Route path="/manager-planning" element={<RoleRoute check={p => p.zietManagerPlanning}><L><ManagerPlanning /></L></RoleRoute>} />
+              <Route path="/projecten" element={<RoleRoute check={p => p.zietProjecten}><L><Projecten /></L></RoleRoute>} />
+              <Route path="/projecten/:projectId/planning" element={<RoleRoute check={p => p.zietProjecten}><L><ProjectPlanning /></L></RoleRoute>} />
+              <Route path="/opdrachtgevers" element={<RoleRoute check={p => p.magTeamBeheren}><L><Opdrachtgevers /></L></RoleRoute>} />
+              <Route path="/medewerkers" element={<RoleRoute check={p => p.zietTeam}><L><Medewerkers /></L></RoleRoute>} />
+              <Route path="/onderaannemers" element={<RoleRoute check={p => p.zietTeam}><L><Onderaannemers /></L></RoleRoute>} />
+              <Route path="/inkooporders" element={<RoleRoute check={p => p.zietAlleInkooporders}><L><Inkooporders /></L></RoleRoute>} />
 
-              <Route path="/beheer/intake-regels" element={<RoleRoute check={ROUTE_ACCESS["/beheer/intake-regels"]}><L><IntakeRegelBeheer /></L></RoleRoute>} />
-              <Route path="/beheer/tarieven" element={<RoleRoute check={ROUTE_ACCESS["/beheer/tarieven"]}><L><TarievenBeheer /></L></RoleRoute>} />
-              <Route path="/beheer/bedrijf" element={<RoleRoute check={ROUTE_ACCESS["/beheer/bedrijf"]}><L><BedrijfsgegevensBeheer /></L></RoleRoute>} />
+              <Route path="/beheer/intake-regels" element={<RoleRoute check={p => p.zietBeheer}><L><IntakeRegelBeheer /></L></RoleRoute>} />
+              <Route path="/beheer/tarieven" element={<RoleRoute check={p => p.zietBeheer}><L><TarievenBeheer /></L></RoleRoute>} />
+              <Route path="/beheer/bedrijf" element={<RoleRoute check={p => p.zietBeheer}><L><BedrijfsgegevensBeheer /></L></RoleRoute>} />
 
-              <Route path="/kandidaten" element={<RoleRoute check={ROUTE_ACCESS["/kandidaten"]}><L><Kandidaten /></L></RoleRoute>} />
-              <Route path="/kandidaten/:kandidaatId/contract" element={<RoleRoute check={ROUTE_ACCESS["/kandidaten/:kandidaatId/contract"]}><L><ContractAanmaken /></L></RoleRoute>} />
+              <Route path="/kandidaten" element={<RoleRoute check={p => p.zietKandidaten}><L><Kandidaten /></L></RoleRoute>} />
+              <Route path="/kandidaten/:kandidaatId/contract" element={<RoleRoute check={p => p.magContractenBeheren}><L><ContractAanmaken /></L></RoleRoute>} />
               <Route path="/contract/ondertekenen/:token" element={<RB><Suspense fallback={<PageLoader />}><ContractOndertekenen /></Suspense></RB>} />
 
               <Route path="*" element={<NotFound />} />

@@ -67,9 +67,9 @@ export function PullToRefresh({ onRefresh, children }: Props) {
         >
           <Loader2
             className={`h-5 w-5 ${refreshing ? "animate-spin" : ""}`}
-            style={{ color: "#10b981", opacity: refreshing ? 1 : Math.min(deltaY / ACTIVATE_AT, 1) }}
+            style={{ color: "#3fff8b", opacity: refreshing ? 1 : Math.min(deltaY / ACTIVATE_AT, 1) }}
           />
-          <span className="text-[10px] font-medium mt-1" style={{ color: "#10b981" }}>
+          <span className="text-[10px] font-medium mt-1" style={{ color: "#3fff8b" }}>
             {refreshing ? "Verversen..." : deltaY >= ACTIVATE_AT ? "Loslaten om te verversen" : ""}
           </span>
         </div>

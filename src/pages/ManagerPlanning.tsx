@@ -8,9 +8,9 @@ import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle, MapPin, Search, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle, MapPin } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
-
+import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { volledigAdres } from "@/lib/utils";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
@@ -33,7 +33,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
-const AVATAR_COLORS = ['var(--accent)', 'var(--accent)', '#2563eb', 'var(--warn-text)', '#a78bfa'];
+const AVATAR_COLORS = ['var(--accent)', 'var(--accent)', '#6e9bff', 'var(--warn-text)', '#a78bfa'];
 
 function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null, weekDateStrings?: string[]): string[] {
   const conflicts: string[] = [];
@@ -85,10 +85,6 @@ export default function ManagerPlanning() {
   const [editId, setEditId] = useState<string | null>(null);
   const [expandedMedewerker, setExpandedMedewerker] = useState<string | null>(null);
   const [planningView, setPlanningView] = useState<'grid' | 'klus'>('grid');
-  const [projectSearch, setProjectSearch] = useState("");
-  const [extraIds, setExtraIds] = useState<string[]>([]);
-  const [collegaSearch, setCollegaSearch] = useState("");
-  const [collegaOpen, setCollegaOpen] = useState(false);
 
   const weekNumber = getISOWeek(weekStart);
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
@@ -168,9 +164,6 @@ export default function ManagerPlanning() {
 
   const openAddModal = (medewerker_id: string, datum: string) => {
     const existing = entries.find(e => e.medewerker_id === medewerker_id && e.datum === datum);
-    setExtraIds([]);
-    setCollegaSearch("");
-    setCollegaOpen(false);
     if (existing) {
       setEditId(existing.id);
       setModalForm({ medewerker_id: existing.medewerker_id, project_id: existing.project_id, datum: existing.datum, starttijd: existing.starttijd, eindtijd: existing.eindtijd, notitie: existing.notitie });
@@ -186,46 +179,22 @@ export default function ManagerPlanning() {
     if (editId) {
       const existing = entries.find(e => e.id === editId);
       const updatePayload = { project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any;
-      let groupId = existing?.planning_group_id || null;
       if (existing?.planning_group_id) {
+        // update alle gekoppelde entries
         if (!await mutate(supabase.from("planning").update(updatePayload).eq("planning_group_id", existing.planning_group_id))) return;
+        toast.success("Planning bijgewerkt voor hele ploeg");
       } else {
-        // Als we extra collega's toevoegen maken we alsnog een group_id aan
-        if (extraIds.length > 0) {
-          groupId = crypto.randomUUID?.() ?? null;
-          if (!await mutate(supabase.from("planning").update({ ...updatePayload, planning_group_id: groupId }).eq("id", editId))) return;
-        } else {
-          if (!await mutate(supabase.from("planning").update(updatePayload).eq("id", editId))) return;
-        }
+        if (!await mutate(supabase.from("planning").update(updatePayload).eq("id", editId))) return;
+        toast.success("Planning bijgewerkt");
       }
-      // Voeg extra collega's toe aan deze planning
-      let addedCount = 0;
-      let skippedNames: string[] = [];
-      if (extraIds.length > 0) {
-        const existingForDay = entries.filter(e => e.datum === modalForm.datum);
-        const toAdd = extraIds.filter(pid => !existingForDay.some(e => e.medewerker_id === pid));
-        skippedNames = extraIds.filter(pid => existingForDay.some(e => e.medewerker_id === pid))
-          .map(pid => medewerkers.find(m => m.id === pid)?.full_name).filter(Boolean) as string[];
-        if (toAdd.length > 0) {
-          const rows = toAdd.map(medId => ({
-            medewerker_id: medId, project_id: modalForm.project_id, datum: modalForm.datum,
-            starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie,
-            created_by: myProfileId, planning_group_id: groupId, collega_ids: [],
-          })) as any;
-          if (!await mutate(supabase.from("planning").insert(rows))) return;
-          addedCount = toAdd.length;
-        }
-      }
-      toast.success(addedCount > 0 ? `Planning bijgewerkt, ${addedCount} collega(s) toegevoegd` : (existing?.planning_group_id ? "Planning bijgewerkt voor hele ploeg" : "Planning bijgewerkt"));
-      if (skippedNames.length > 0) toast.info(`Overgeslagen (al ingepland): ${skippedNames.join(", ")}`);
       setShowModal(false); fetchAll();
     } else {
-      // Verzamel ploeg = self + vaste collega's + extra geselecteerde
+      // Verzamel ploeg = self + vaste collega's
       const me = medewerkers.find(m => m.id === modalForm.medewerker_id);
       const partners = (me?.planning_partner_ids || []).filter(pid => medewerkers.some(mm => mm.id === pid));
-      const allCandidates = Array.from(new Set([...partners, ...extraIds])).filter(pid => pid !== modalForm.medewerker_id);
-      const skipPartners = allCandidates.filter(pid => entries.some(e => e.medewerker_id === pid && e.datum === modalForm.datum));
-      const inGroup = [modalForm.medewerker_id, ...allCandidates.filter(p => !skipPartners.includes(p))];
+      // Filter partners die al planning hebben op deze datum
+      const skipPartners = partners.filter(pid => entries.some(e => e.medewerker_id === pid && e.datum === modalForm.datum));
+      const inGroup = [modalForm.medewerker_id, ...partners.filter(p => !skipPartners.includes(p))];
       const groupId = inGroup.length > 1 ? (crypto.randomUUID?.() ?? null) : null;
       const rows = inGroup.map((medId) => ({
         medewerker_id: medId,
@@ -939,267 +908,77 @@ export default function ManagerPlanning() {
         }}>
           <Plus size={20} /> Inplannen
         </button>
-        
+        <BottomNav badges={badges} />
       </div>
       </PullToRefresh>
 
       {/* MODAL */}
       {showModal && (() => {
-        // Week-context van de geselecteerde datum (binnen modal navigeerbaar)
-        const modalDate = modalForm.datum ? new Date(modalForm.datum + "T00:00:00") : new Date();
-        const modalWeekStart = startOfISOWeek(modalDate);
-        const modalWeekNumber = getISOWeek(modalWeekStart);
-        const modalWeekDates = Array.from({ length: 5 }, (_, i) => addDays(modalWeekStart, i));
-        const selProj = projects.find(p => p.id === modalForm.project_id);
-        const filteredProjects = projects.filter(p => {
-          if (!projectSearch.trim()) return true;
-          const q = projectSearch.toLowerCase();
-          return (p.nummer || "").toLowerCase().includes(q) || (p.naam || "").toLowerCase().includes(q);
-        });
-        const shiftWeek = (delta: number) => {
-          const newDate = addDays(modalWeekStart, delta * 7);
-          setModalForm({ ...modalForm, datum: format(newDate, "yyyy-MM-dd") });
-        };
         const modalBody = (
           <>
-            <div style={{ width: 48, height: 6, borderRadius: 9999, background: "var(--planning-border-soft)", margin: "0 auto 16px" }} />
-            {/* Header */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
-              <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "var(--text-primary)" }}>
-                {editId ? "Planning bewerken" : "Project Inplannen"}
-              </h2>
-              <button onClick={() => { setShowModal(false); setProjectSearch(""); }} style={{ background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer", padding: 4 }}>
-                <X size={20} />
-              </button>
-            </div>
-            <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Inter", marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ opacity: 0.7 }}>Technician:</span>
-              <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{medName(modalForm.medewerker_id) || "—"}</span>
-            </p>
-
-            {/* Collega's toevoegen */}
-            {(() => {
-              const candidates = medewerkers.filter(m => m.id !== modalForm.medewerker_id && !extraIds.includes(m.id));
-              const filtered = collegaSearch.trim()
-                ? candidates.filter(m => m.full_name.toLowerCase().includes(collegaSearch.toLowerCase()))
-                : candidates;
-              return (
-                <div style={{ marginBottom: 16, position: "relative" }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Collega's toevoegen</label>
-                  <div style={{ position: "relative" }}>
-                    <Plus size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
-                    <input
-                      value={collegaSearch}
-                      onChange={e => { setCollegaSearch(e.target.value); setCollegaOpen(true); }}
-                      onFocus={() => setCollegaOpen(true)}
-                      placeholder="Zoek collega's..."
-                      style={{ width: "100%", padding: "10px 12px 10px 34px", borderRadius: 12, fontSize: 13, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }}
-                    />
+            <div style={{ width: 48, height: 6, borderRadius: 9999, background: "var(--planning-border-soft)", margin: "0 auto 20px" }} />
+            <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "var(--text-primary)", marginBottom: 4 }}>
+              {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
+            </h2>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Inter", marginBottom: 16 }}>{modalForm.datum}</p>
+            {modalStatus && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: modalStatus.bg, border: `1px solid ${modalStatus.color}33`, marginBottom: 12 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: modalStatus.color, fontFamily: "Inter" }}>{modalStatus.label}</span>
+              </div>
+            )}
+            {modalConflicts.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                {modalConflicts.map((c, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: "var(--danger-light)", border: "1px solid var(--danger-border)", marginBottom: 6 }}>
+                    <AlertTriangle size={14} style={{ color: "var(--danger)", flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, fontWeight: 500, color: "var(--danger)", fontFamily: "Inter" }}>Conflict: {c}</span>
                   </div>
-                  {collegaOpen && filtered.length > 0 && (
-                    <div style={{ marginTop: 6, maxHeight: 160, overflowY: "auto", borderRadius: 12, border: "1px solid var(--planning-border-soft)", background: "var(--app-navy)" }}>
-                      {filtered.slice(0, 30).map(m => {
-                        const conflict = entries.some(e => e.medewerker_id === m.id && e.datum === modalForm.datum);
-                        return (
-                          <button
-                            key={m.id}
-                            onClick={() => { setExtraIds([...extraIds, m.id]); setCollegaSearch(""); setCollegaOpen(false); }}
-                            style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "transparent", border: "none", borderBottom: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
-                          >
-                            <span>{m.full_name}</span>
-                            {conflict && <span style={{ fontSize: 10, color: "var(--warn-text)" }}>al ingepland</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {extraIds.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-                      {extraIds.map(pid => {
-                        const m = medewerkers.find(mm => mm.id === pid);
-                        if (!m) return null;
-                        return (
-                          <span key={pid} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 9999, background: "var(--accent-light, rgba(34,197,94,0.12))", border: "1px solid var(--accent-border)", color: "var(--accent)", fontSize: 12, fontFamily: "Inter", fontWeight: 600 }}>
-                            {m.full_name}
-                            <button onClick={() => setExtraIds(extraIds.filter(x => x !== pid))} style={{ background: "transparent", border: "none", color: "var(--accent)", cursor: "pointer", padding: 0, display: "flex" }}>
-                              <X size={12} />
-                            </button>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-
-
-
-            {/* Week selectie */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Week selectie</label>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderRadius: 12, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)" }}>
-                <button onClick={() => shiftWeek(-1)} style={{ background: "transparent", border: "none", color: "var(--text-primary)", cursor: "pointer", padding: 4, display: "flex" }}>
-                  <ChevronLeft size={18} />
-                </button>
-                <span style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>
-                  Week {modalWeekNumber}: {format(modalWeekStart, "d MMM", { locale: nl })} – {format(addDays(modalWeekStart, 4), "d MMM", { locale: nl })}
-                </span>
-                <button onClick={() => shiftWeek(1)} style={{ background: "transparent", border: "none", color: "var(--text-primary)", cursor: "pointer", padding: 4, display: "flex" }}>
-                  <ChevronRight size={18} />
-                </button>
+                ))}
               </div>
-            </div>
-
-            {/* Status */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Status</label>
-              {modalConflicts.length === 0 ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: "var(--accent-light, rgba(34,197,94,0.1))", border: "1px solid var(--accent-border)" }}>
-                  <CheckCircle2 size={16} style={{ color: "var(--accent)" }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)", fontFamily: "Inter" }}>Beschikbaar</span>
-                </div>
-              ) : (
-                <div>
-                  {modalConflicts.map((c, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: "var(--danger-light)", border: "1px solid var(--danger-border)", marginBottom: 6 }}>
-                      <AlertTriangle size={14} style={{ color: "var(--danger)", flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--danger)", fontFamily: "Inter" }}>{c}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {modalStatus && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 10, background: modalStatus.bg, border: `1px solid ${modalStatus.color}33`, marginTop: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: modalStatus.color, fontFamily: "Inter" }}>{modalStatus.label}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Dagen van de week */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 8 }}>Dagen van de week</label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
-                {modalWeekDates.map((d) => {
-                  const dStr = format(d, "yyyy-MM-dd");
-                  const active = dStr === modalForm.datum;
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Project</label>
+                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }}>
+                  {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
+                </select>
+                {(() => {
+                  const selProj = projects.find(p => p.id === modalForm.project_id);
+                  if (!selProj) return null;
+                  const addr = volledigAdres(selProj);
                   return (
-                    <button
-                      key={dStr}
-                      onClick={() => setModalForm({ ...modalForm, datum: dStr })}
-                      style={{
-                        padding: "10px 4px",
-                        borderRadius: 12,
-                        background: active ? "var(--accent)" : "var(--app-navy)",
-                        border: `1px solid ${active ? "var(--accent)" : "var(--planning-border-soft)"}`,
-                        color: active ? "var(--on-accent)" : "var(--text-primary)",
-                        cursor: "pointer",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 2,
-                        fontFamily: "Inter",
-                      }}
-                    >
-                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", opacity: active ? 0.9 : 0.7 }}>
-                        {format(d, "EEE", { locale: nl }).slice(0, 2)}
-                      </span>
-                      <span style={{ fontSize: 16, fontWeight: 800, fontFamily: "Manrope" }}>{format(d, "dd")}</span>
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, marginTop: 6, background: "var(--planning-card)", border: "1px solid var(--planning-border-soft)" }}>
+                      <MapPin size={12} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
+                      <span style={{ fontSize: 11, color: addr ? "var(--text-secondary)" : "var(--warn-text)", fontFamily: "Inter" }}>{addr || "⚠ Geen adres ingevuld"}</span>
+                    </div>
                   );
-                })}
+                })()}
               </div>
-            </div>
-
-            {/* Select Project */}
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Select Project</label>
-              <div style={{ position: "relative", marginBottom: 8 }}>
-                <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
-                <input
-                  value={projectSearch}
-                  onChange={e => setProjectSearch(e.target.value)}
-                  placeholder="Zoek project op nummer of naam…"
-                  style={{ width: "100%", padding: "10px 12px 10px 34px", borderRadius: 12, fontSize: 13, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }}
-                />
+              <div style={{ display: "flex", gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Start</label>
+                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Eind</label>
+                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
+                </div>
               </div>
-              <div style={{ maxHeight: 180, overflowY: "auto", borderRadius: 12, border: "1px solid var(--planning-border-soft)", background: "var(--app-navy)" }}>
-                {filteredProjects.length === 0 ? (
-                  <div style={{ padding: "12px 14px", fontSize: 12, color: "var(--text-secondary)", fontFamily: "Inter" }}>Geen projecten gevonden</div>
-                ) : filteredProjects.map((p) => {
-                  const active = p.id === modalForm.project_id;
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => setModalForm({ ...modalForm, project_id: p.id })}
-                      style={{
-                        width: "100%",
-                        textAlign: "left",
-                        padding: "10px 14px",
-                        background: active ? "var(--accent-light, rgba(34,197,94,0.1))" : "transparent",
-                        border: "none",
-                        borderBottom: "1px solid var(--planning-border-soft)",
-                        color: "var(--text-primary)",
-                        fontFamily: "Inter",
-                        fontSize: 13,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <span style={{ fontWeight: 700, color: active ? "var(--accent)" : "var(--text-secondary)", minWidth: 56 }}>{p.nummer || "—"}</span>
-                      <span style={{ flex: 1 }}>{p.naam}</span>
-                      {active && <CheckCircle2 size={14} style={{ color: "var(--accent)" }} />}
-                    </button>
-                  );
-                })}
-              </div>
-              {selProj && (() => {
-                const addr = volledigAdres(selProj);
-                return (
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, marginTop: 6, background: "var(--planning-card)", border: "1px solid var(--planning-border-soft)" }}>
-                    <MapPin size={12} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
-                    <span style={{ fontSize: 11, color: addr ? "var(--text-secondary)" : "var(--warn-text)", fontFamily: "Inter" }}>{addr || "⚠ Geen adres ingevuld"}</span>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* Start / Eind */}
-            <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Start</label>
-                <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Eind</label>
-                <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
-              </div>
-            </div>
-
-            <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none", marginBottom: 14 }} />
-
-            {/* Acties */}
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => { setShowModal(false); setProjectSearch(""); }} style={{ flex: 1, height: 52, borderRadius: 14, background: "transparent", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer" }}>
-                Cancel
-              </button>
-              <button onClick={savePlanning} style={{ flex: 2, height: 52, borderRadius: 14, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Manrope", fontWeight: 800, fontSize: 13, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 4px 16px var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                <CheckCircle2 size={18} />
+              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
+              <button onClick={savePlanning} style={{ width: "100%", height: 52, borderRadius: 14, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 4px 16px var(--accent-border)" }}>
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>
+              {editId && (
+                <button onClick={deletePlanning} style={{ width: "100%", height: 48, borderRadius: 14, background: "transparent", border: "1px solid var(--danger-border)", color: "var(--danger)", fontFamily: "Inter", fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer" }}>
+                  Verwijderen
+                </button>
+              )}
             </div>
-            {editId && (
-              <button onClick={deletePlanning} style={{ width: "100%", height: 44, borderRadius: 14, background: "transparent", border: "1px solid var(--danger-border)", color: "var(--danger)", fontFamily: "Inter", fontWeight: 700, fontSize: 12, textTransform: "uppercase", cursor: "pointer", marginTop: 10 }}>
-                Verwijderen
-              </button>
-            )}
           </>
         );
         return (
           <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }} onClick={() => setShowModal(false)}>
-            <div style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.4)" }} />
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
             <div style={{ position: "relative", background: "var(--planning-card)", borderRadius: "40px 40px 0 0", padding: "24px 24px 48px", borderTop: "1px solid var(--planning-border-soft)", maxHeight: "85vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
               {modalBody}
             </div>
