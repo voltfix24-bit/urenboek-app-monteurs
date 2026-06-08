@@ -131,7 +131,7 @@ export function BottomSheet({
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(0,0,0,0.6)",
+          background: "rgba(15,23,42,0.4)",
           backdropFilter: "blur(4px)",
         }}
       />
@@ -161,7 +161,7 @@ export function BottomSheet({
           width: "100%",
           maxWidth: 480,
           marginInline: "auto",
-          boxShadow: "0 -8px 32px rgba(0,0,0,0.5)",
+          boxShadow: "0 -8px 32px rgba(15,23,42,0.12)",
         }}
       >
         {/* Drag handle */}
@@ -200,7 +200,7 @@ export function BottomSheet({
                 style={{
                   fontSize: 18,
                   fontWeight: 700,
-                  color: "#dae6ff",
+                  color: "#1f2937",
                   fontFamily: "Inter",
                   margin: 0,
                   flex: 1,

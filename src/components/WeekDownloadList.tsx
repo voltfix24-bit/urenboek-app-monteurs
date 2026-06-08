@@ -33,7 +33,7 @@ export function WeekDownloadList({ orders, toonNaam = false }: Props) {
   if (loading) {
     return (
       <div className="rounded-2xl p-3.5 text-center text-xs"
-        style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+        style={{ background: "#ffffff", border: "1px solid #e5e7eb", color: "#6b7280" }}>
         Weken laden…
       </div>
     );
@@ -55,25 +55,25 @@ export function WeekDownloadList({ orders, toonNaam = false }: Props) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "#a0abc3" }}>
+      <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "#6b7280" }}>
         Per week downloaden
       </p>
       {groepen.map(g => (
         <div key={g.key} className="rounded-2xl p-3.5 flex items-center justify-between gap-3"
-          style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+          style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
           <div className="min-w-0">
-            <p className="text-sm font-bold" style={{ color: "#dae6ff", fontFamily: "Manrope" }}>
+            <p className="text-sm font-bold" style={{ color: "#1f2937", fontFamily: "Manrope" }}>
               Week {g.week} · {g.jaar}
             </p>
-            <p className="text-[11px]" style={{ color: "#a0abc3" }}>
+            <p className="text-[11px]" style={{ color: "#6b7280" }}>
               {format(parseISO(g.van), "d MMM", { locale: nl })} – {format(parseISO(g.tot), "d MMM", { locale: nl })}
               {" · "}
               {g.totaalUren.toFixed(1).replace(".", ",")} uur
               {" · "}
-              <span style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(g.totaalBedrag)}</span>
+              <span style={{ fontFamily: "DM Mono, monospace", color: "#10b981" }}>{euro(g.totaalBedrag)}</span>
             </p>
             {toonNaam && (
-              <p className="text-[10px] mt-0.5 truncate" style={{ color: "#a0abc3" }}>
+              <p className="text-[10px] mt-0.5 truncate" style={{ color: "#6b7280" }}>
                 {[...new Set(g.orderRegels.map(o => o.order.medewerker_naam || o.order.medewerker_full_name).filter(Boolean))].join(", ")}
               </p>
             )}
@@ -82,10 +82,10 @@ export function WeekDownloadList({ orders, toonNaam = false }: Props) {
             onClick={() => handleDownload(g.key, g.orderRegels)}
             disabled={busyKey === g.key}
             className="shrink-0 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
-            style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}
+            style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#10b981" }}
           >
             {busyKey === g.key ? (
-              <span className="inline-block rounded-full animate-spin" style={{ width: 14, height: 14, border: "2px solid #3fff8b", borderTopColor: "transparent" }} />
+              <span className="inline-block rounded-full animate-spin" style={{ width: 14, height: 14, border: "2px solid #10b981", borderTopColor: "transparent" }} />
             ) : <Download className="h-3.5 w-3.5" />}
             PDF{g.orderRegels.length > 1 ? "'s" : ""}
           </button>

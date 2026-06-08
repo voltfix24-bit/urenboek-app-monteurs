@@ -43,7 +43,7 @@ export default function MijnOrders() {
         <header style={{
           position: 'sticky',
           top: 0, zIndex: 50,
-          background: 'rgba(3,14,32,0.9)',
+          background: '#f9fafb',
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
           padding: '12px 20px',
@@ -57,7 +57,7 @@ export default function MijnOrders() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#3fff8b',
+              color: '#10b981',
               display: 'flex',
               alignItems: 'center',
             }}
@@ -70,7 +70,7 @@ export default function MijnOrders() {
             fontFamily: 'Manrope',
             fontWeight: 800,
             fontSize: 20,
-            color: '#dae6ff',
+            color: '#1f2937',
             flex: 1,
           }}>
             Mijn Orders
@@ -78,15 +78,15 @@ export default function MijnOrders() {
           <div style={{
             width: 36, height: 36,
             borderRadius: '50%',
-            background: '#142640',
-            border: '1px solid rgba(63,255,139,0.3)',
+            background: '#ecfdf5',
+            border: '1px solid #a7f3d0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: 'Manrope',
             fontWeight: 700,
             fontSize: 13,
-            color: '#3fff8b',
+            color: '#10b981',
           }}>
             {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
@@ -95,9 +95,9 @@ export default function MijnOrders() {
         <main style={{ padding: '24px 20px' }}>
           {/* ── SUMMARY CARD ── */}
           <div style={{
-            background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+            background: '#ffffff',
             backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(106,118,140,0.15)',
+            border: '1px solid #e5e7eb',
             borderRadius: 24,
             padding: 24,
             marginBottom: 24,
@@ -109,7 +109,7 @@ export default function MijnOrders() {
               fontFamily: 'Inter',
               textTransform: 'uppercase',
               letterSpacing: '0.2em',
-              color: '#a0abc3',
+              color: '#6b7280',
               marginBottom: 8,
             }}>
               DIT KWARTAAL
@@ -118,7 +118,7 @@ export default function MijnOrders() {
               fontFamily: 'Manrope',
               fontWeight: 800,
               fontSize: 40,
-              color: '#3fff8b',
+              color: '#10b981',
               marginBottom: 16,
             }}>
               {euro(orders.reduce((sum, o) => sum + (Number(o.totaal_excl_btw) || 0), 0))}
@@ -130,13 +130,13 @@ export default function MijnOrders() {
               flexWrap: 'wrap',
             }}>
               {[
-                { color: '#3fff8b', label: 'Betaald', count: orders.filter(o => o.status === 'betaald').length },
-                { color: '#feb300', label: 'In behandeling', count: orders.filter(o => o.status === 'verzonden').length },
-                { color: '#a0abc3', label: 'Nieuw', count: orders.filter(o => o.status === 'nieuw' || o.status === 'concept').length },
+                { color: '#10b981', label: 'Betaald', count: orders.filter(o => o.status === 'betaald').length },
+                { color: '#d97706', label: 'In behandeling', count: orders.filter(o => o.status === 'verzonden').length },
+                { color: '#6b7280', label: 'Nieuw', count: orders.filter(o => o.status === 'nieuw' || o.status === 'concept').length },
               ].map((s) => (
                 <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color }} />
-                  <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>
+                  <span style={{ fontSize: 12, color: '#6b7280', fontFamily: 'Inter' }}>
                     {s.count} {s.label}
                   </span>
                 </div>
@@ -156,7 +156,7 @@ export default function MijnOrders() {
             <div style={{
               textAlign: 'center',
               padding: '60px 20px',
-              color: '#a0abc3',
+              color: '#6b7280',
               fontFamily: 'Inter',
             }}>
               <span className="material-symbols-outlined" style={{ fontSize: 48, marginBottom: 16, display: 'block' }}>

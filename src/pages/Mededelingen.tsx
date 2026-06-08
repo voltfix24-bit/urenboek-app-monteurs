@@ -291,7 +291,7 @@ export default function Mededelingen() {
           <header style={{
             position: 'sticky',
             top: 0, zIndex: 50,
-            background: 'rgba(3,14,32,0.9)',
+            background: '#f9fafb',
             backdropFilter: 'blur(20px)',
             borderBottom: '1px solid rgba(255,255,255,0.07)',
             padding: '12px 20px',
@@ -305,7 +305,7 @@ export default function Mededelingen() {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                color: '#3fff8b',
+                color: '#10b981',
                 display: 'flex',
                 alignItems: 'center',
               }}
@@ -317,14 +317,14 @@ export default function Mededelingen() {
             <div style={{
               width: 40, height: 40,
               borderRadius: '50%',
-              background: '#3fff8b',
+              background: '#10b981',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontFamily: 'Manrope',
               fontWeight: 700,
               fontSize: 14,
-              color: '#005d2c',
+              color: '#047857',
               position: 'relative',
               flexShrink: 0,
             }}>
@@ -334,7 +334,7 @@ export default function Mededelingen() {
                 bottom: 0, right: 0,
                 width: 10, height: 10,
                 borderRadius: '50%',
-                background: '#3fff8b',
+                background: '#10b981',
                 border: '2px solid var(--app-navy)',
               }} />
             </div>
@@ -343,7 +343,7 @@ export default function Mededelingen() {
                 fontFamily: 'Manrope',
                 fontWeight: 800,
                 fontSize: 14,
-                color: '#dae6ff',
+                color: '#1f2937',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
               }}>
@@ -352,7 +352,7 @@ export default function Mededelingen() {
               {activeGesprek.onderwerp && isManager && (
                 <div style={{
                   fontSize: 10,
-                  color: '#a0abc3',
+                  color: '#6b7280',
                   fontFamily: 'Inter',
                 }}>
                   {activeGesprek.onderwerp}
@@ -380,8 +380,8 @@ export default function Mededelingen() {
                     fontFamily: 'Inter',
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
-                    color: '#a0abc3',
-                    background: '#142640',
+                    color: '#6b7280',
+                    background: '#ecfdf5',
                     padding: '4px 12px',
                     borderRadius: 9999,
                   }}>
@@ -407,20 +407,20 @@ export default function Mededelingen() {
                           ? '20px 20px 4px 20px'
                           : '20px 20px 20px 4px',
                         background: b.is_eigen
-                          ? '#3fff8b'
-                          : 'rgba(10,26,48,0.8)',
+                          ? '#10b981'
+                          : '#ffffff',
                         border: b.is_eigen
                           ? 'none'
-                          : '1px solid rgba(106,118,140,0.2)',
+                          : '1px solid #e5e7eb',
                         boxShadow: b.is_eigen
-                          ? '0 0 20px rgba(63,255,139,0.15)'
+                          ? '0 0 20px #ecfdf5'
                           : 'none',
                       }}>
                         <p style={{
                           fontSize: 14,
                           fontFamily: 'Inter',
                           fontWeight: b.is_eigen ? 600 : 400,
-                          color: b.is_eigen ? '#005d2c' : '#dae6ff',
+                          color: b.is_eigen ? '#047857' : '#1f2937',
                           lineHeight: 1.5,
                           margin: 0,
                           whiteSpace: 'pre-wrap',
@@ -437,7 +437,7 @@ export default function Mededelingen() {
                       }}>
                         <span style={{
                           fontSize: 10,
-                          color: '#a0abc3',
+                          color: '#6b7280',
                           fontFamily: 'Inter',
                         }}>
                           {format(new Date(b.created_at), "HH:mm")}
@@ -447,7 +447,7 @@ export default function Mededelingen() {
                             className="material-symbols-outlined"
                             style={{
                               fontSize: 14,
-                              color: b.gelezen_op ? '#3fff8b' : '#a0abc3',
+                              color: b.gelezen_op ? '#10b981' : '#6b7280',
                               fontVariationSettings: "'FILL' 1",
                             }}>
                             {b.gelezen_op ? 'done_all' : 'done'}
@@ -460,7 +460,7 @@ export default function Mededelingen() {
               </div>
             ))}
             {berichten.length === 0 && !chatLoading && (
-              <div style={{ textAlign: 'center', paddingTop: 40, color: '#a0abc3', fontFamily: 'Inter', fontSize: 13 }}>
+              <div style={{ textAlign: 'center', paddingTop: 40, color: '#6b7280', fontFamily: 'Inter', fontSize: 13 }}>
                 Begin het gesprek...
               </div>
             )}
@@ -471,7 +471,7 @@ export default function Mededelingen() {
             position: 'fixed',
             bottom: 72, left: 0, right: 0,
             padding: '12px 16px',
-            background: 'rgba(3,14,32,0.95)',
+            background: '#f9fafb',
             backdropFilter: 'blur(20px)',
             borderTop: '1px solid rgba(255,255,255,0.07)',
             zIndex: 49,
@@ -485,9 +485,9 @@ export default function Mededelingen() {
             }}>
               <div style={{
                 flex: 1,
-                background: '#142640',
+                background: '#ecfdf5',
                 borderRadius: 9999,
-                border: '1px solid rgba(61,72,93,0.5)',
+                border: '1px solid #f3f4f6',
                 display: 'flex',
                 alignItems: 'center',
                 padding: '0 16px',
@@ -506,7 +506,7 @@ export default function Mededelingen() {
                     background: 'none',
                     border: 'none',
                     outline: 'none',
-                    color: '#dae6ff',
+                    color: '#1f2937',
                     fontFamily: 'Inter',
                     fontSize: 14,
                     resize: 'none',
@@ -520,13 +520,13 @@ export default function Mededelingen() {
                 style={{
                   width: 52, height: 52,
                   borderRadius: '50%',
-                  background: '#3fff8b',
+                  background: '#10b981',
                   border: 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(63,255,139,0.3)',
+                  boxShadow: '0 4px 16px #a7f3d0',
                   opacity: !nieuwBericht.trim() || sending ? 0.5 : 1,
                   flexShrink: 0,
                 }}
@@ -535,7 +535,7 @@ export default function Mededelingen() {
                   className="material-symbols-outlined"
                   style={{
                     fontSize: 22,
-                    color: '#005d2c',
+                    color: '#047857',
                     fontVariationSettings: "'FILL' 1",
                   }}>
                   send
@@ -563,7 +563,7 @@ export default function Mededelingen() {
         <header style={{
           position: 'sticky',
           top: 0, zIndex: 50,
-          background: 'rgba(3,14,32,0.9)',
+          background: '#f9fafb',
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
           padding: '12px 20px',
@@ -575,7 +575,7 @@ export default function Mededelingen() {
             fontFamily: 'Manrope',
             fontWeight: 800,
             fontSize: 20,
-            color: '#dae6ff',
+            color: '#1f2937',
           }}>
             Berichten
           </span>
@@ -583,14 +583,14 @@ export default function Mededelingen() {
             <div style={{
               padding: '4px 12px',
               borderRadius: 9999,
-              background: 'rgba(63,255,139,0.15)',
-              border: '1px solid rgba(63,255,139,0.3)',
+              background: '#ecfdf5',
+              border: '1px solid #a7f3d0',
             }}>
               <span style={{
                 fontSize: 11,
                 fontWeight: 700,
                 fontFamily: 'Inter',
-                color: '#3fff8b',
+                color: '#10b981',
               }}>
                 {totalOngelezen} nieuw
               </span>
@@ -604,7 +604,7 @@ export default function Mededelingen() {
             <div style={{
               textAlign: 'center',
               padding: '60px 20px',
-              color: '#a0abc3',
+              color: '#6b7280',
               fontFamily: 'Inter',
             }}>
               <span
@@ -613,7 +613,7 @@ export default function Mededelingen() {
                 chat_bubble_outline
               </span>
               <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Geen gesprekken</p>
-              <p style={{ fontSize: 12, color: '#a0abc3' }}>
+              <p style={{ fontSize: 12, color: '#6b7280' }}>
                 {isManager ? 'Start een gesprek met een medewerker' : 'Start een gesprek met je manager'}
               </p>
             </div>
@@ -627,13 +627,13 @@ export default function Mededelingen() {
                     width: '100%',
                     padding: '16px 20px',
                     borderRadius: 16,
-                    background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                    background: '#ffffff',
                     border: g.ongelezen > 0
-                      ? '1px solid rgba(63,255,139,0.3)'
-                      : '1px solid rgba(106,118,140,0.15)',
+                      ? '1px solid #a7f3d0'
+                      : '1px solid #e5e7eb',
                     borderLeft: g.ongelezen > 0
-                      ? '3px solid #3fff8b'
-                      : '1px solid rgba(106,118,140,0.15)',
+                      ? '3px solid #10b981'
+                      : '1px solid #e5e7eb',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 14,
@@ -644,14 +644,14 @@ export default function Mededelingen() {
                   <div style={{
                     width: 48, height: 48,
                     borderRadius: '50%',
-                    background: g.ongelezen > 0 ? '#3fff8b' : '#142640',
+                    background: g.ongelezen > 0 ? '#10b981' : '#ecfdf5',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontFamily: 'Manrope',
                     fontWeight: 700,
                     fontSize: 14,
-                    color: g.ongelezen > 0 ? '#005d2c' : '#a0abc3',
+                    color: g.ongelezen > 0 ? '#047857' : '#6b7280',
                     flexShrink: 0,
                   }}>
                     {initialen(g.medewerker_naam)}
@@ -661,7 +661,7 @@ export default function Mededelingen() {
                       <span style={{
                         fontSize: 14,
                         fontWeight: g.ongelezen > 0 ? 700 : 500,
-                        color: g.ongelezen > 0 ? '#dae6ff' : '#a0abc3',
+                        color: g.ongelezen > 0 ? '#1f2937' : '#6b7280',
                         fontFamily: 'Inter',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -671,7 +671,7 @@ export default function Mededelingen() {
                       </span>
                       <span style={{
                         fontSize: 10,
-                        color: g.ongelezen > 0 ? '#3fff8b' : '#a0abc3',
+                        color: g.ongelezen > 0 ? '#10b981' : '#6b7280',
                         fontFamily: 'Inter',
                         flexShrink: 0,
                         marginLeft: 8,
@@ -682,7 +682,7 @@ export default function Mededelingen() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{
                         fontSize: 12,
-                        color: '#a0abc3',
+                        color: '#6b7280',
                         fontFamily: 'Inter',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -695,13 +695,13 @@ export default function Mededelingen() {
                         <div style={{
                           width: 20, height: 20,
                           borderRadius: '50%',
-                          background: '#3fff8b',
+                          background: '#10b981',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontSize: 11,
                           fontWeight: 700,
-                          color: '#005d2c',
+                          color: '#047857',
                           fontFamily: 'Inter',
                           flexShrink: 0,
                           marginLeft: 8,
@@ -711,7 +711,7 @@ export default function Mededelingen() {
                       )}
                     </div>
                     {isManager && g.onderwerp && (
-                      <span style={{ fontSize: 10, color: '#a0abc3', fontFamily: 'Inter', marginTop: 2, display: 'block' }}>
+                      <span style={{ fontSize: 10, color: '#6b7280', fontFamily: 'Inter', marginTop: 2, display: 'block' }}>
                         {g.onderwerp}
                       </span>
                     )}
@@ -732,16 +732,16 @@ export default function Mededelingen() {
             zIndex: 40,
             width: 56, height: 56,
             borderRadius: '50%',
-            background: '#3fff8b',
+            background: '#10b981',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            boxShadow: '0 8px 28px rgba(63,255,139,0.35)',
+            boxShadow: '0 8px 28px #a7f3d0',
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 24, color: '#005d2c' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 24, color: '#047857' }}>
             add
           </span>
         </button>
@@ -756,7 +756,7 @@ export default function Mededelingen() {
               display: 'flex',
               alignItems: 'flex-end',
               justifyContent: 'center',
-              background: 'rgba(0,0,0,0.6)',
+              background: 'rgba(15,23,42,0.4)',
               backdropFilter: 'blur(6px)',
             }}
             onClick={() => setShowNieuwGesprek(false)}
@@ -767,7 +767,7 @@ export default function Mededelingen() {
               style={{
                 width: '100%',
                 maxWidth: 480,
-                background: 'rgba(10,26,48,0.97)',
+                background: '#ffffff',
                 backdropFilter: 'blur(24px)',
                 borderRadius: '40px 40px 0 0',
                 borderTop: '1px solid rgba(255,255,255,0.1)',
@@ -786,7 +786,7 @@ export default function Mededelingen() {
                   fontFamily: 'Manrope',
                   fontWeight: 800,
                   fontSize: 22,
-                  color: '#dae6ff',
+                  color: '#1f2937',
                   marginBottom: 24,
                 }}>
                   Nieuw gesprek
@@ -801,7 +801,7 @@ export default function Mededelingen() {
                         fontFamily: 'Inter',
                         textTransform: 'uppercase',
                         letterSpacing: '0.1em',
-                        color: '#a0abc3',
+                        color: '#6b7280',
                         marginBottom: 8,
                         display: 'block',
                       }}>
@@ -814,9 +814,9 @@ export default function Mededelingen() {
                           width: '100%',
                           padding: '12px 16px',
                           borderRadius: 16,
-                          background: '#061327',
+                          background: '#ffffff',
                           border: '1px solid rgba(255,255,255,0.07)',
-                          color: '#dae6ff',
+                          color: '#1f2937',
                           fontFamily: 'Inter',
                           fontSize: 14,
                           outline: 'none',
@@ -835,7 +835,7 @@ export default function Mededelingen() {
                       fontFamily: 'Inter',
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
-                      color: '#a0abc3',
+                      color: '#6b7280',
                       marginBottom: 8,
                       display: 'block',
                     }}>
@@ -849,9 +849,9 @@ export default function Mededelingen() {
                         width: '100%',
                         padding: '12px 16px',
                         borderRadius: 16,
-                        background: '#061327',
+                        background: '#ffffff',
                         border: '1px solid rgba(255,255,255,0.07)',
-                        color: '#dae6ff',
+                        color: '#1f2937',
                         fontFamily: 'Inter',
                         fontSize: 14,
                         outline: 'none',
@@ -867,7 +867,7 @@ export default function Mededelingen() {
                       fontFamily: 'Inter',
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
-                      color: '#a0abc3',
+                      color: '#6b7280',
                       marginBottom: 8,
                       display: 'block',
                     }}>
@@ -882,9 +882,9 @@ export default function Mededelingen() {
                         width: '100%',
                         padding: '12px 16px',
                         borderRadius: 16,
-                        background: '#061327',
+                        background: '#ffffff',
                         border: '1px solid rgba(255,255,255,0.07)',
-                        color: '#dae6ff',
+                        color: '#1f2937',
                         fontFamily: 'Inter',
                         fontSize: 14,
                         outline: 'none',
@@ -901,8 +901,8 @@ export default function Mededelingen() {
                       width: '100%',
                       height: 56,
                       borderRadius: 16,
-                      background: '#3fff8b',
-                      color: '#005d2c',
+                      background: '#10b981',
+                      color: '#047857',
                       fontFamily: 'Manrope',
                       fontWeight: 800,
                       fontSize: 16,
@@ -914,7 +914,7 @@ export default function Mededelingen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 8,
-                      boxShadow: '0 8px 32px rgba(63,255,139,0.2)',
+                      boxShadow: '0 8px 32px #d1fae5',
                       opacity: ((!isManager || !!nieuwMedewerkerId) && !nieuwEersteBericht.trim()) || (isManager && !nieuwMedewerkerId) ? 0.4 : 1,
                     }}
                   >

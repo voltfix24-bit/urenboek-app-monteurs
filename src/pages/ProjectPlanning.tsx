@@ -15,7 +15,7 @@ import { nl } from "date-fns/locale";
 
 // ── Color palette ──
 const COLORS = [
-  { id: "c1", hex: "#3fff8b", name: "TerreVolt" },
+  { id: "c1", hex: "#10b981", name: "TerreVolt" },
   { id: "c2", hex: "#86C232", name: "Subco" },
   { id: "c3", hex: "#F4D03F", name: "Levering" },
   { id: "c4", hex: "#E67E22", name: "Civiel" },
@@ -78,7 +78,7 @@ function getInitials(name: string) {
 
 function contrastText(hex: string) {
   const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
-  return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? "#dae6ff" : "#FFFFFF";
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? "#1f2937" : "#FFFFFF";
 }
 
 export default function ProjectPlanning() {
@@ -499,7 +499,7 @@ export default function ProjectPlanning() {
   if (!project) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}>
-        <p style={{ color: "#a0abc3" }}>Project niet gevonden</p>
+        <p style={{ color: "#6b7280" }}>Project niet gevonden</p>
       </div>
     );
   }
@@ -515,40 +515,40 @@ export default function ProjectPlanning() {
     const datum = weekNr !== undefined ? dateFromWeek(state.year, weekNr, dayIdx) : null;
 
     return (
-      <div className="fixed top-0 right-0 h-full z-50 flex flex-col" style={{ width: 320, background: "rgba(10,26,48,0.7)", borderLeft: "1px solid rgba(106,118,140,0.15)", animation: "slideInRight 0.25s ease" }}>
-        <div className="flex items-center justify-between p-4" style={{ borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
+      <div className="fixed top-0 right-0 h-full z-50 flex flex-col" style={{ width: 320, background: "#ffffff", borderLeft: "1px solid #e5e7eb", animation: "slideInRight 0.25s ease" }}>
+        <div className="flex items-center justify-between p-4" style={{ borderBottom: "1px solid #e5e7eb" }}>
           <div>
-            <p className="text-sm font-bold" style={{ color: "#dae6ff" }}>{state.activities[actIdx] || "Activiteit"}</p>
-            <p className="text-[11px]" style={{ color: "#a0abc3" }}>
+            <p className="text-sm font-bold" style={{ color: "#1f2937" }}>{state.activities[actIdx] || "Activiteit"}</p>
+            <p className="text-[11px]" style={{ color: "#6b7280" }}>
               {datum ? `${DAY_LABELS[dayIdx]} ${format(datum, "d MMM yyyy", { locale: nl })}` : ""}
             </p>
           </div>
-          <button onClick={() => setSelectedCell(null)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ color: "#a0abc3" }}><X className="h-4 w-4" /></button>
+          <button onClick={() => setSelectedCell(null)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ color: "#6b7280" }}><X className="h-4 w-4" /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-5">
           {/* Color picker */}
           <div>
-            <p className="text-[10px] uppercase font-semibold tracking-wider mb-2" style={{ color: "#a0abc3" }}>Type activiteit</p>
+            <p className="text-[10px] uppercase font-semibold tracking-wider mb-2" style={{ color: "#6b7280" }}>Type activiteit</p>
             <div className="grid grid-cols-4 gap-2">
               {COLORS.map(c => (
                 <button key={c.id} title={c.name} onClick={() => setCell(selectedCell, { color: c.hex })}
-                  className="w-7 h-7 rounded-lg transition-all" style={{ background: c.hex, outline: cell?.color === c.hex ? "2px solid #dae6ff" : "none", outlineOffset: 2 }} />
+                  className="w-7 h-7 rounded-lg transition-all" style={{ background: c.hex, outline: cell?.color === c.hex ? "2px solid #1f2937" : "none", outlineOffset: 2 }} />
               ))}
             </div>
           </div>
 
           {/* Medewerker */}
           <div>
-            <p className="text-[10px] uppercase font-semibold tracking-wider mb-2" style={{ color: "#a0abc3" }}>Medewerker koppelen</p>
+            <p className="text-[10px] uppercase font-semibold tracking-wider mb-2" style={{ color: "#6b7280" }}>Medewerker koppelen</p>
             <div className="space-y-1.5">
               {monteurs.map(m => (
                 <button key={m.id} onClick={() => setCell(selectedCell, { medewerker_id: cell?.medewerker_id === m.id ? null : m.id })}
                   className="w-full text-left px-3 py-2 rounded-lg text-xs flex items-center gap-2 transition-all"
-                  style={{ background: cell?.medewerker_id === m.id ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
-                  <span className="w-2 h-2 rounded-full" style={{ background: cell?.medewerker_id === m.id ? "#3fff8b" : "rgba(106,118,140,0.15)" }} />
-                  <span style={{ color: "#dae6ff" }}>{m.full_name}</span>
-                  {m.uurtarief && <span className="ml-auto font-mono text-[10px]" style={{ color: "#a0abc3" }}>€{m.uurtarief}/u</span>}
+                  style={{ background: cell?.medewerker_id === m.id ? "#ecfdf5" : "var(--app-navy)", border: "1px solid #e5e7eb" }}>
+                  <span className="w-2 h-2 rounded-full" style={{ background: cell?.medewerker_id === m.id ? "#10b981" : "#e5e7eb" }} />
+                  <span style={{ color: "#1f2937" }}>{m.full_name}</span>
+                  {m.uurtarief && <span className="ml-auto font-mono text-[10px]" style={{ color: "#6b7280" }}>€{m.uurtarief}/u</span>}
                 </button>
               ))}
             </div>
@@ -556,16 +556,16 @@ export default function ProjectPlanning() {
 
           {/* Note */}
           <div>
-            <p className="text-[10px] uppercase font-semibold tracking-wider mb-2" style={{ color: "#a0abc3" }}>Notitie</p>
+            <p className="text-[10px] uppercase font-semibold tracking-wider mb-2" style={{ color: "#6b7280" }}>Notitie</p>
             <textarea rows={2} value={cell?.note || ""} onChange={e => setCell(selectedCell, { note: e.target.value })}
               placeholder="Optionele opmerking..." className="w-full rounded-lg px-3 py-2 text-xs resize-none"
-              style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+              style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }} />
           </div>
         </div>
 
-        <div className="p-4 space-y-2" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
-          <button onClick={() => setSelectedCell(null)} className="w-full py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: "#3fff8b" }}>Opslaan</button>
-          <button onClick={() => { clearCell(selectedCell); setSelectedCell(null); }} className="w-full py-2 rounded-xl text-xs font-medium" style={{ border: "1px solid rgba(255,113,108,0.3)", color: "#ff716c" }}>Cel leegmaken</button>
+        <div className="p-4 space-y-2" style={{ borderTop: "1px solid #e5e7eb" }}>
+          <button onClick={() => setSelectedCell(null)} className="w-full py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: "#10b981" }}>Opslaan</button>
+          <button onClick={() => { clearCell(selectedCell); setSelectedCell(null); }} className="w-full py-2 rounded-xl text-xs font-medium" style={{ border: "1px solid rgba(255,113,108,0.3)", color: "#dc2626" }}>Cel leegmaken</button>
         </div>
       </div>
     );
@@ -584,37 +584,37 @@ export default function ProjectPlanning() {
   return (
     <div className="min-h-screen" style={{ background: "var(--app-navy)" }}>
       {/* Header */}
-      <header className="sticky top-0 z-40 px-4 py-3 flex items-center gap-3 flex-wrap" style={{ background: "color-mix(in srgb, rgba(10,26,48,0.7) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
-        <button onClick={() => navigate("/projecten")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#102038", color: "#a0abc3" }}>
+      <header className="sticky top-0 z-40 px-4 py-3 flex items-center gap-3 flex-wrap" style={{ background: "color-mix(in srgb, #ffffff 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid #e5e7eb" }}>
+        <button onClick={() => navigate("/projecten")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#ffffff", color: "#6b7280" }}>
           <ArrowLeft className="h-4 w-4" />
         </button>
         <HeaderLogo />
-        <span className="px-2.5 py-1 rounded-lg text-xs font-semibold font-mono" style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b" }}>
+        <span className="px-2.5 py-1 rounded-lg text-xs font-semibold font-mono" style={{ background: "#ecfdf5", color: "#10b981" }}>
           {project.nummer} — {project.naam}
         </span>
 
         <div className="flex-1" />
 
         {/* Save status */}
-        <span className="text-[11px]" style={{ color: saveStatus === "saving" ? "#a0abc3" : saveStatus === "saved" ? "#3fff8b" : "transparent" }}>
+        <span className="text-[11px]" style={{ color: saveStatus === "saving" ? "#6b7280" : saveStatus === "saved" ? "#10b981" : "transparent" }}>
           {saveStatus === "saving" ? "Opslaan..." : saveStatus === "saved" ? "Opgeslagen" : "·"}
         </span>
 
         {/* Status badge */}
-        <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1" style={{ background: isDef ? "rgba(63,255,139,0.1)" : "rgba(254,179,0,0.1)", color: isDef ? "#3fff8b" : "#feb300" }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: isDef ? "#3fff8b" : "#feb300" }} />
+        <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1" style={{ background: isDef ? "#ecfdf5" : "rgba(254,179,0,0.1)", color: isDef ? "#10b981" : "#d97706" }}>
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: isDef ? "#10b981" : "#d97706" }} />
           {isDef ? "Definitief" : "Concept"}
         </span>
 
-        <button onClick={() => setShowTemplates(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+        <button onClick={() => setShowTemplates(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>
           <FileText className="h-3.5 w-3.5 inline mr-1" />Templates
         </button>
-        <button onClick={() => saveState(state)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid #3fff8b", color: "#3fff8b" }}>
+        <button onClick={() => saveState(state)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid #10b981", color: "#10b981" }}>
           <Save className="h-3.5 w-3.5 inline mr-1" />Opslaan
         </button>
 
         {isDef ? (
-          <button onClick={() => setShowConceptDialog(true)} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white flex items-center gap-1" style={{ background: "#3fff8b" }}>
+          <button onClick={() => setShowConceptDialog(true)} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white flex items-center gap-1" style={{ background: "#10b981" }}>
             <Check className="h-3.5 w-3.5" /> Gepubliceerd
           </button>
         ) : (
@@ -626,16 +626,16 @@ export default function ProjectPlanning() {
 
       {/* Info grid */}
       <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 rounded-2xl p-4" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <div className="lg:col-span-2 rounded-2xl p-4" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
           <div className="grid grid-cols-3 gap-3 text-xs">
             <InfoField label="Casenummer" value={project.nummer} readonly />
             <InfoField label="Type MS installatie" value={state.msType} onChange={v => updateState(s => ({ ...s, msType: v }))} />
             <InfoField label="WV TerreVolt" value={state.wvTerrevolt} onChange={v => updateState(s => ({ ...s, wvTerrevolt: v }))} />
             <InfoField label="Stationsnaam" value={project.stationsnaam || ""} readonly />
             <div>
-              <label className="text-[10px] uppercase font-semibold tracking-wider block mb-1" style={{ color: "#a0abc3" }}>Te plaatsen trafo</label>
+              <label className="text-[10px] uppercase font-semibold tracking-wider block mb-1" style={{ color: "#6b7280" }}>Te plaatsen trafo</label>
               <select value={state.trafo} onChange={e => updateState(s => ({ ...s, trafo: e.target.value }))}
-                className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
+                className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }}>
                 {TRAFO_OPTIONS.map(o => <option key={o}>{o}</option>)}
               </select>
             </div>
@@ -643,12 +643,12 @@ export default function ProjectPlanning() {
             <InfoField label="GSU / GEU" value={state.gsuGeu} onChange={v => updateState(s => ({ ...s, gsuGeu: v }))} />
             <InfoField label="Case type" value={project.case_type || ""} readonly />
             <div>
-              <label className="text-[10px] uppercase font-semibold tracking-wider block mb-1" style={{ color: "#a0abc3" }}>Werkplan beschikbaar</label>
+              <label className="text-[10px] uppercase font-semibold tracking-wider block mb-1" style={{ color: "#6b7280" }}>Werkplan beschikbaar</label>
               <div className="flex gap-1.5">
                 {(["MSH", "LSH", "MSR", "LSR"] as const).map(k => (
                   <button key={k} onClick={() => updateState(s => ({ ...s, werkplanToggles: { ...s.werkplanToggles, [k]: !s.werkplanToggles[k] } }))}
                     className="px-2 py-1 rounded-md text-[10px] font-semibold transition-all"
-                    style={{ background: state.werkplanToggles[k] ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)", color: state.werkplanToggles[k] ? "#dae6ff" : "#a0abc3", border: "1px solid rgba(106,118,140,0.15)" }}>
+                    style={{ background: state.werkplanToggles[k] ? "#ecfdf5" : "#ffffff", color: state.werkplanToggles[k] ? "#1f2937" : "#6b7280", border: "1px solid #e5e7eb" }}>
                     {k}
                   </button>
                 ))}
@@ -659,21 +659,21 @@ export default function ProjectPlanning() {
 
         {/* Notes */}
         <div className="rounded-2xl p-4" style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)" }}>
-          <label className="text-xs font-bold block mb-2" style={{ color: "#feb300" }}>Notities</label>
+          <label className="text-xs font-bold block mb-2" style={{ color: "#d97706" }}>Notities</label>
           <textarea value={state.notes} onChange={e => updateState(s => ({ ...s, notes: e.target.value }))}
             placeholder="Aandachtspunten, bijzonderheden..." rows={5}
-            className="w-full bg-transparent text-xs resize-none outline-none italic" style={{ color: "#feb300" }} />
+            className="w-full bg-transparent text-xs resize-none outline-none italic" style={{ color: "#d97706" }} />
         </div>
       </div>
 
       {/* Matrix */}
-      <div className="mx-4 mb-4 rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid rgba(106,118,140,0.15)" }}>
+      <div className="mx-4 mb-4 rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid #e5e7eb" }}>
         {/* Week headers - synced scroll */}
-        <div className="flex" style={{ borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
-          <div className="flex-shrink-0 flex items-center px-3 text-xs font-semibold" style={{ width: SIDEBAR_W, background: "rgba(63,255,139,0.1)", color: "#dae6ff", borderRight: "1px solid rgba(106,118,140,0.15)" }}>
+        <div className="flex" style={{ borderBottom: "1px solid #e5e7eb" }}>
+          <div className="flex-shrink-0 flex items-center px-3 text-xs font-semibold" style={{ width: SIDEBAR_W, background: "#ecfdf5", color: "#1f2937", borderRight: "1px solid #e5e7eb" }}>
             Planning {state.year}
             <select value={state.year} onChange={e => updateState(s => ({ ...s, year: Number(e.target.value) }))}
-              className="ml-1 bg-transparent text-xs font-semibold outline-none" style={{ color: "#3fff8b" }}>
+              className="ml-1 bg-transparent text-xs font-semibold outline-none" style={{ color: "#10b981" }}>
               {[2025, 2026, 2027, 2028, 2029].map(y => <option key={y}>{y}</option>)}
             </select>
           </div>
@@ -681,20 +681,20 @@ export default function ProjectPlanning() {
             <div className="flex" style={{ width: totalW }}>
               {state.weekNrs.map((wn, wi) => (
                 <div key={wi} style={{ width: 5 * CELL_SIZE }}>
-                  <div className="text-center py-1 text-[10px] font-semibold" style={{ background: "rgba(63,255,139,0.1)", color: "#dae6ff", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
+                  <div className="text-center py-1 text-[10px] font-semibold" style={{ background: "#ecfdf5", color: "#1f2937", borderBottom: "1px solid #e5e7eb" }}>
                     Week <input type="number" value={wn} min={1} max={53}
                       onChange={e => updateState(s => {
                         const nrs = [...s.weekNrs];
                         nrs[wi] = Math.max(1, Math.min(53, Number(e.target.value)));
                         return { ...s, weekNrs: nrs };
                       })}
-                      className="w-8 bg-transparent text-center font-bold outline-none" style={{ color: "#3fff8b" }} />
+                      className="w-8 bg-transparent text-center font-bold outline-none" style={{ color: "#10b981" }} />
                   </div>
                   <div className="flex">
                     {DAY_LABELS.map((d, di) => {
                       const date = dateFromWeek(state.year, wn, di);
                       return (
-                        <div key={di} className="text-center py-0.5 text-[8px]" style={{ width: CELL_SIZE, color: "#a0abc3", borderRight: di < 4 ? "1px solid rgba(197,212,178,0.3)" : "none" }}>
+                        <div key={di} className="text-center py-0.5 text-[8px]" style={{ width: CELL_SIZE, color: "#6b7280", borderRight: di < 4 ? "1px solid rgba(197,212,178,0.3)" : "none" }}>
                           {d} {format(date, "d/M")}
                         </div>
                       );
@@ -709,19 +709,19 @@ export default function ProjectPlanning() {
         {/* Body */}
         <div className="flex">
           {/* Activities sidebar */}
-          <div className="flex-shrink-0" style={{ width: SIDEBAR_W, borderRight: "1px solid rgba(106,118,140,0.15)" }}>
-            <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "hsl(120,25%,90%)", color: "#a0abc3", height: 30, display: "flex", alignItems: "center" }}>
+          <div className="flex-shrink-0" style={{ width: SIDEBAR_W, borderRight: "1px solid #e5e7eb" }}>
+            <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "hsl(120,25%,90%)", color: "#6b7280", height: 30, display: "flex", alignItems: "center" }}>
               Activiteiten
             </div>
             {state.activities.map((act, ai) => (
               <div key={ai} draggable onDragStart={() => handleDragStart(ai)} onDragOver={e => handleDragOver(e, ai)} onDrop={() => handleDrop(ai)}
-                className="flex items-center gap-1.5 px-2 group" style={{ height: CELL_SIZE, borderBottom: "1px solid rgba(106,118,140,0.15)", cursor: "grab", opacity: dragIdx === ai ? 0.5 : 1 }}>
-                <GripVertical className="h-3 w-3 shrink-0" style={{ color: "rgba(106,118,140,0.15)" }} />
+                className="flex items-center gap-1.5 px-2 group" style={{ height: CELL_SIZE, borderBottom: "1px solid #e5e7eb", cursor: "grab", opacity: dragIdx === ai ? 0.5 : 1 }}>
+                <GripVertical className="h-3 w-3 shrink-0" style={{ color: "#e5e7eb" }} />
                 <input value={act} onChange={e => updateState(s => {
                   const acts = [...s.activities];
                   acts[ai] = e.target.value;
                   return { ...s, activities: acts };
-                })} className="flex-1 bg-transparent text-[11px] font-medium outline-none min-w-0" style={{ color: "#dae6ff" }} />
+                })} className="flex-1 bg-transparent text-[11px] font-medium outline-none min-w-0" style={{ color: "#1f2937" }} />
                 <button onClick={() => updateState(s => {
                   const acts = s.activities.filter((_, i) => i !== ai);
                   const cells: Record<string, CellData> = {};
@@ -733,19 +733,19 @@ export default function ProjectPlanning() {
                   }
                   return { ...s, activities: acts, cells };
                 })} className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Trash2 className="h-3 w-3" style={{ color: "#ff716c" }} />
+                  <Trash2 className="h-3 w-3" style={{ color: "#dc2626" }} />
                 </button>
               </div>
             ))}
             <button onClick={() => updateState(s => ({ ...s, activities: [...s.activities, ""] }))}
-              className="w-full text-center py-2 text-[11px] font-medium" style={{ color: "#3fff8b", borderBottom: "1px dashed rgba(106,118,140,0.15)" }}>
+              className="w-full text-center py-2 text-[11px] font-medium" style={{ color: "#10b981", borderBottom: "1px dashed #e5e7eb" }}>
               <Plus className="h-3 w-3 inline mr-1" />Activiteit toevoegen
             </button>
           </div>
 
           {/* Grid body */}
           <div ref={bodyScrollRef} className="flex-1 overflow-x-auto" onScroll={() => syncScroll("body")}
-            style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(106,118,140,0.15) rgba(10,26,48,0.7)" }}>
+            style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb #ffffff" }}>
             <div style={{ width: totalW }}>
               {/* Spacer for activity header */}
               <div style={{ height: 30 }} />
@@ -762,7 +762,7 @@ export default function ProjectPlanning() {
                             width: CELL_SIZE, height: CELL_SIZE,
                             background: cell ? cell.color : "transparent",
                             borderRight: "1px solid rgba(197,212,178,0.2)",
-                            borderBottom: "1px solid rgba(106,118,140,0.15)",
+                            borderBottom: "1px solid #e5e7eb",
                             cursor: "pointer",
                           }}
                           onClick={() => {
@@ -776,7 +776,7 @@ export default function ProjectPlanning() {
                         >
                           {monteur && (
                             <span className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold"
-                              style={{ background: "rgba(255,255,255,0.9)", color: cell?.color || "#dae6ff" }}>
+                              style={{ background: "rgba(255,255,255,0.9)", color: cell?.color || "#1f2937" }}>
                               {getInitials(monteur.full_name)}
                             </span>
                           )}
@@ -794,8 +794,8 @@ export default function ProjectPlanning() {
         </div>
 
         {/* Comments strip */}
-        <div className="flex" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
-          <div className="flex-shrink-0 px-3 flex items-center text-[10px] font-semibold uppercase tracking-wider" style={{ width: SIDEBAR_W, color: "#a0abc3", borderRight: "1px solid rgba(106,118,140,0.15)", height: 44 }}>
+        <div className="flex" style={{ borderTop: "1px solid #e5e7eb" }}>
+          <div className="flex-shrink-0 px-3 flex items-center text-[10px] font-semibold uppercase tracking-wider" style={{ width: SIDEBAR_W, color: "#6b7280", borderRight: "1px solid #e5e7eb", height: 44 }}>
             Opmerkingen
           </div>
           <div ref={footerScrollRef} className="flex-1 overflow-x-auto" onScroll={() => syncScroll("footer")} style={{ scrollbarWidth: "none" }}>
@@ -804,7 +804,7 @@ export default function ProjectPlanning() {
                 <div key={wi} style={{ width: 5 * CELL_SIZE }}>
                   <textarea value={state.weekComments[wi] || ""} onChange={e => updateState(s => ({ ...s, weekComments: { ...s.weekComments, [wi]: e.target.value } }))}
                     placeholder={`Opmerking week ${wn}...`}
-                    className="w-full bg-transparent text-[10px] px-2 py-1 resize-none outline-none" style={{ height: 44, color: "#dae6ff", borderRight: "1px solid rgba(106,118,140,0.15)" }} />
+                    className="w-full bg-transparent text-[10px] px-2 py-1 resize-none outline-none" style={{ height: 44, color: "#1f2937", borderRight: "1px solid #e5e7eb" }} />
                 </div>
               ))}
             </div>
@@ -818,7 +818,7 @@ export default function ProjectPlanning() {
           {COLORS.map(c => (
             <div key={c.id} className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-full" style={{ background: c.hex }} />
-              <span className="text-[9px]" style={{ color: "#a0abc3" }}>{c.name}</span>
+              <span className="text-[9px]" style={{ color: "#6b7280" }}>{c.name}</span>
             </div>
           ))}
         </div>
@@ -827,12 +827,12 @@ export default function ProjectPlanning() {
             const lastWn = s.weekNrs[s.weekNrs.length - 1] || 1;
             const nextWn = lastWn >= 52 ? 1 : lastWn + 1;
             return { ...s, weekNrs: [...s.weekNrs, nextWn], numWeeks: s.numWeeks + 1 };
-          })} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid #3fff8b", color: "#3fff8b" }}>
+          })} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1" style={{ border: "1px solid #10b981", color: "#10b981" }}>
             <Plus className="h-3 w-3" /> Week toevoegen
           </button>
           <button disabled={state.numWeeks <= 1} onClick={() => updateState(s => ({
             ...s, weekNrs: s.weekNrs.slice(0, -1), numWeeks: s.numWeeks - 1,
-          }))} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 disabled:opacity-30" style={{ border: "1px solid #a0abc3", color: "#a0abc3" }}>
+          }))} className="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 disabled:opacity-30" style={{ border: "1px solid #6b7280", color: "#6b7280" }}>
             <Minus className="h-3 w-3" /> Week verwijderen
           </button>
         </div>
@@ -841,11 +841,11 @@ export default function ProjectPlanning() {
       {/* Overplanning warnings */}
       {overplanningWarnings.length > 0 && (
         <div className="mx-4 mb-3 rounded-xl p-3 space-y-1" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
-          <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: "#feb300" }}>
+          <p className="text-xs font-bold flex items-center gap-1.5" style={{ color: "#d97706" }}>
             ⚠️ Overplanning gedetecteerd
           </p>
           {overplanningWarnings.map((w, i) => (
-            <p key={i} className="text-[11px]" style={{ color: "#feb300" }}>
+            <p key={i} className="text-[11px]" style={{ color: "#d97706" }}>
               <span className="font-semibold">{w.name}</span> is {w.days} dagen ingepland in week {w.weekNr} (max 5)
             </p>
           ))}
@@ -872,9 +872,9 @@ export default function ProjectPlanning() {
       )}
 
       {planningCostBreakdown.total > 0 && (
-        <div className="mx-4 mb-20 lg:mb-4 rounded-xl overflow-hidden" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }}>
-          <div className="px-4 py-3 flex items-center justify-between gap-2" style={{ borderBottom: "1px solid rgba(63,255,139,0.3)" }}>
-            <span className="text-xs font-medium" style={{ color: "#a0abc3" }}>
+        <div className="mx-4 mb-20 lg:mb-4 rounded-xl overflow-hidden" style={{ background: "#ecfdf5", border: "1px solid #a7f3d0" }}>
+          <div className="px-4 py-3 flex items-center justify-between gap-2" style={{ borderBottom: "1px solid #a7f3d0" }}>
+            <span className="text-xs font-medium" style={{ color: "#6b7280" }}>
               Geschatte kosten op basis van huidige planning
             </span>
             <div className="flex items-center gap-2">
@@ -899,26 +899,26 @@ export default function ProjectPlanning() {
                 className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
                 title="Exporteer als CSV"
               >
-                <Download className="w-3.5 h-3.5" style={{ color: "#3fff8b" }} />
+                <Download className="w-3.5 h-3.5" style={{ color: "#10b981" }} />
               </button>
-              <span className="text-sm font-bold font-mono" style={{ color: "#3fff8b" }}>
+              <span className="text-sm font-bold font-mono" style={{ color: "#10b981" }}>
                 € {planningCostBreakdown.total.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </span>
             </div>
           </div>
           <div className="px-4 py-2 space-y-1">
-            <div className="flex text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>
+            <div className="flex text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>
               <span className="flex-1">Monteur</span>
               <span className="w-16 text-right">Dagen</span>
               <span className="w-20 text-right">Tarief</span>
               <span className="w-24 text-right">Subtotaal</span>
             </div>
             {planningCostBreakdown.rows.map((row, i) => (
-              <div key={i} className="flex items-center text-xs py-1" style={{ borderTop: i > 0 ? "1px solid color-mix(in srgb, rgba(63,255,139,0.3) 50%, transparent)" : "none" }}>
-                <span className="flex-1 font-medium truncate" style={{ color: "#dae6ff" }}>{row.name}</span>
-                <span className="w-16 text-right font-mono" style={{ color: "#a0abc3" }}>{row.days}d</span>
-                <span className="w-20 text-right font-mono" style={{ color: "#a0abc3" }}>€{row.tarief}</span>
-                <span className="w-24 text-right font-mono font-semibold" style={{ color: "#3fff8b" }}>
+              <div key={i} className="flex items-center text-xs py-1" style={{ borderTop: i > 0 ? "1px solid color-mix(in srgb, #a7f3d0 50%, transparent)" : "none" }}>
+                <span className="flex-1 font-medium truncate" style={{ color: "#1f2937" }}>{row.name}</span>
+                <span className="w-16 text-right font-mono" style={{ color: "#6b7280" }}>{row.days}d</span>
+                <span className="w-20 text-right font-mono" style={{ color: "#6b7280" }}>€{row.tarief}</span>
+                <span className="w-24 text-right font-mono font-semibold" style={{ color: "#10b981" }}>
                   € {row.subtotal.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </span>
               </div>
@@ -932,9 +932,9 @@ export default function ProjectPlanning() {
 
       {/* Context menu */}
       {contextMenu && (
-        <div className="fixed z-50 rounded-xl p-3 space-y-3 shadow-lg" style={{ left: contextMenu.x, top: contextMenu.y, background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", width: 200 }}
+        <div className="fixed z-50 rounded-xl p-3 space-y-3 shadow-lg" style={{ left: contextMenu.x, top: contextMenu.y, background: "var(--app-navy)", border: "1px solid #e5e7eb", width: 200 }}
           onMouseDown={e => e.stopPropagation()}>
-          <p className="text-[10px] font-bold" style={{ color: "#dae6ff" }}>
+          <p className="text-[10px] font-bold" style={{ color: "#1f2937" }}>
             {state.activities[Number(contextMenu.key.split("-")[0])] || "Activiteit"} — {DAY_LABELS[Number(contextMenu.key.split("-")[2])]}
           </p>
           <div className="grid grid-cols-4 gap-1.5">
@@ -946,8 +946,8 @@ export default function ProjectPlanning() {
           <textarea placeholder="Notitie..." value={getCell(contextMenu.key)?.note || ""}
             onChange={e => setCell(contextMenu.key, { note: e.target.value })}
             className="w-full rounded-lg px-2 py-1 text-[10px] resize-none" rows={2}
-            style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-          <button onClick={() => { clearCell(contextMenu.key); setContextMenu(null); }} className="w-full text-center text-[10px] font-medium py-1 rounded-lg" style={{ color: "#ff716c", border: "1px solid rgba(255,113,108,0.3)" }}>
+            style={{ background: "#ffffff", border: "1px solid #e5e7eb", color: "#1f2937" }} />
+          <button onClick={() => { clearCell(contextMenu.key); setContextMenu(null); }} className="w-full text-center text-[10px] font-medium py-1 rounded-lg" style={{ color: "#dc2626", border: "1px solid rgba(255,113,108,0.3)" }}>
             Cel leegmaken
           </button>
         </div>
@@ -960,7 +960,7 @@ export default function ProjectPlanning() {
       )}
       {showConceptDialog && (
         <ConfirmDialog title="Terug naar concept?" text="Monteurs kunnen de planning dan niet meer inzien."
-          confirmLabel="Terug naar concept" confirmColor="#ff716c" onCancel={() => setShowConceptDialog(false)} onConfirm={makeConcept} />
+          confirmLabel="Terug naar concept" confirmColor="#dc2626" onCancel={() => setShowConceptDialog(false)} onConfirm={makeConcept} />
       )}
 
       {/* Mobile bottom nav */}
@@ -983,9 +983,9 @@ export default function ProjectPlanning() {
 function InfoField({ label, value, onChange, readonly }: { label: string; value: string; onChange?: (v: string) => void; readonly?: boolean }) {
   return (
     <div>
-      <label className="text-[10px] uppercase font-semibold tracking-wider block mb-1" style={{ color: "#a0abc3" }}>{label}</label>
+      <label className="text-[10px] uppercase font-semibold tracking-wider block mb-1" style={{ color: "#6b7280" }}>{label}</label>
       <input value={value} readOnly={readonly} onChange={e => onChange?.(e.target.value)}
-        className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: readonly ? "#102038" : "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+        className="w-full px-2 py-1.5 rounded-lg text-xs" style={{ background: readonly ? "#ffffff" : "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }} />
     </div>
   );
 }
@@ -1082,73 +1082,73 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
   const selectedTpl = templates.find(t => t.id === selected);
 
   const renderEditCard = (isNew: boolean) => (
-    <div className="p-4 rounded-2xl space-y-3" style={{ background: "rgba(63,255,139,0.1)", border: "1.5px solid rgba(63,255,139,0.3)" }}>
+    <div className="p-4 rounded-2xl space-y-3" style={{ background: "#ecfdf5", border: "1.5px solid #a7f3d0" }}>
       <input ref={isNew ? nameRef : undefined} value={editNaam} onChange={e => setEditNaam(e.target.value)} placeholder="Template naam"
-        className="w-full text-sm font-bold rounded-lg px-3 py-2" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+        className="w-full text-sm font-bold rounded-lg px-3 py-2" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }} />
       <input value={editOmschrijving} onChange={e => setEditOmschrijving(e.target.value)} placeholder="Korte omschrijving"
-        className="w-full text-xs rounded-lg px-3 py-1.5" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }} />
+        className="w-full text-xs rounded-lg px-3 py-1.5" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#6b7280" }} />
       <div>
-        <p className="text-[11px] font-semibold mb-1.5" style={{ color: "#a0abc3" }}>Activiteiten</p>
+        <p className="text-[11px] font-semibold mb-1.5" style={{ color: "#6b7280" }}>Activiteiten</p>
         {editActiviteiten.map((a, i) => (
           <div key={i} className="flex items-center gap-2 mb-1.5"
             draggable onDragStart={() => setDragIdx(i)}
             onDragOver={(e) => { e.preventDefault(); if (dragIdx !== null && dragIdx !== i) { const arr = [...editActiviteiten]; const [m] = arr.splice(dragIdx, 1); arr.splice(i, 0, m); setEditActiviteiten(arr); setDragIdx(i); } }}
             onDragEnd={() => setDragIdx(null)}>
-            <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab" style={{ color: "#a0abc3" }} />
+            <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab" style={{ color: "#6b7280" }} />
             <input value={a} onChange={e => { const arr = [...editActiviteiten]; arr[i] = e.target.value; setEditActiviteiten(arr); }}
-              className="flex-1 text-[13px] rounded-lg px-2.5 py-1.5" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} placeholder="Activiteit naam" />
+              className="flex-1 text-[13px] rounded-lg px-2.5 py-1.5" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }} placeholder="Activiteit naam" />
             <button onClick={() => setEditActiviteiten(editActiviteiten.filter((_, j) => j !== i))}
-              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c" }}>
+              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: "rgba(255,113,108,0.1)", color: "#dc2626" }}>
               <X className="h-3.5 w-3.5" />
             </button>
           </div>
         ))}
         <button onClick={() => setEditActiviteiten([...editActiviteiten, ""])}
-          className="text-xs font-semibold mt-1" style={{ color: "#3fff8b", background: "none", border: "none", cursor: "pointer" }}>
+          className="text-xs font-semibold mt-1" style={{ color: "#10b981", background: "none", border: "none", cursor: "pointer" }}>
           + Activiteit toevoegen
         </button>
       </div>
       <div className="flex gap-2 pt-1">
-        <button onClick={cancelEdit} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
+        <button onClick={cancelEdit} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Annuleren</button>
         {!isNew && editingId && !templates.find(t => t.id === editingId)?.is_default && (
-          <button onClick={() => setDeleteConfirm(editingId)} className="py-1.5 px-3 rounded-lg text-xs" style={{ border: "1px solid #ff716c", color: "#ff716c" }}>
+          <button onClick={() => setDeleteConfirm(editingId)} className="py-1.5 px-3 rounded-lg text-xs" style={{ border: "1px solid #dc2626", color: "#dc2626" }}>
             <Trash2 className="h-3 w-3 inline mr-1" />Verwijderen
           </button>
         )}
-        <button onClick={saveEdit} disabled={saving} className="flex-1 py-1.5 rounded-lg text-xs text-white disabled:opacity-50" style={{ background: "#3fff8b" }}>
+        <button onClick={saveEdit} disabled={saving} className="flex-1 py-1.5 rounded-lg text-xs text-white disabled:opacity-50" style={{ background: "#10b981" }}>
           {saving ? "Opslaan..." : isNew ? "Aanmaken" : "Opslaan"}
         </button>
       </div>
       {!isNew && editingId && templates.find(t => t.id === editingId)?.is_default && (
-        <p className="text-[10px] italic text-right" style={{ color: "#a0abc3" }}>Standaard template</p>
+        <p className="text-[10px] italic text-right" style={{ color: "#6b7280" }}>Standaard template</p>
       )}
     </div>
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-      <div className="rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(15,23,42,0.08)" }}>
+      <div className="rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}>
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Planning templates</h3>
+          <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>Planning templates</h3>
           <div className="flex items-center gap-2">
             {isManager && !manageMode && !editingId && (
               <>
-                <button onClick={startCreate} className="px-2.5 py-1 rounded-lg text-[11px] font-medium" style={{ border: "1px solid #3fff8b", color: "#3fff8b" }}>
+                <button onClick={startCreate} className="px-2.5 py-1 rounded-lg text-[11px] font-medium" style={{ border: "1px solid #10b981", color: "#10b981" }}>
                   <Plus className="h-3 w-3 inline mr-0.5" />Nieuw
                 </button>
-                <button onClick={() => setManageMode(true)} className="px-2.5 py-1 rounded-lg text-[11px] font-medium" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+                <button onClick={() => setManageMode(true)} className="px-2.5 py-1 rounded-lg text-[11px] font-medium" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>
                   <Pencil className="h-3 w-3 inline mr-0.5" />Beheren
                 </button>
               </>
             )}
             {manageMode && (
-              <button onClick={saveOrder} className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-white" style={{ background: "#3fff8b" }}>Klaar</button>
+              <button onClick={saveOrder} className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-white" style={{ background: "#10b981" }}>Klaar</button>
             )}
-            <button onClick={onClose}><X className="h-4 w-4" style={{ color: "#a0abc3" }} /></button>
+            <button onClick={onClose}><X className="h-4 w-4" style={{ color: "#6b7280" }} /></button>
           </div>
         </div>
 
-        {manageMode && <p className="text-[11px]" style={{ color: "#a0abc3" }}>Sleep om volgorde te wijzigen</p>}
+        {manageMode && <p className="text-[11px]" style={{ color: "#6b7280" }}>Sleep om volgorde te wijzigen</p>}
 
         <div className="space-y-3">
           {creatingNew && editingId === "__new__" && renderEditCard(true)}
@@ -1164,15 +1164,15 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
                 onDragEnd={() => setDragIdx(null)}
                 className="relative group">
                 <button onClick={() => !manageMode && !editingId && setSelected(t.id)} className="w-full text-left p-4 rounded-xl transition-all"
-                  style={{ background: selected === t.id ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)", border: selected === t.id ? "1.5px solid #3fff8b" : "1px solid rgba(106,118,140,0.15)", cursor: manageMode ? "grab" : "pointer" }}>
+                  style={{ background: selected === t.id ? "#ecfdf5" : "#ffffff", border: selected === t.id ? "1.5px solid #10b981" : "1px solid #e5e7eb", cursor: manageMode ? "grab" : "pointer" }}>
                   <div className="flex items-start gap-2">
-                    {manageMode && <GripVertical className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "#a0abc3" }} />}
+                    {manageMode && <GripVertical className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "#6b7280" }} />}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold" style={{ color: "#dae6ff" }}>{t.naam}</p>
-                      {t.omschrijving && <p className="text-[11px] mt-0.5" style={{ color: "#a0abc3" }}>{t.omschrijving}</p>}
+                      <p className="text-sm font-bold" style={{ color: "#1f2937" }}>{t.naam}</p>
+                      {t.omschrijving && <p className="text-[11px] mt-0.5" style={{ color: "#6b7280" }}>{t.omschrijving}</p>}
                       <div className="flex flex-wrap gap-1 mt-2">
                         {t.activiteiten.map((a, j) => (
-                          <span key={j} className="px-2 py-0.5 rounded-full text-[9px]" style={{ background: "var(--app-navy)", color: "#a0abc3" }}>{a}</span>
+                          <span key={j} className="px-2 py-0.5 rounded-full text-[9px]" style={{ background: "var(--app-navy)", color: "#6b7280" }}>{a}</span>
                         ))}
                       </div>
                     </div>
@@ -1181,8 +1181,8 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
                 {isManager && !manageMode && !editingId && (
                   <button onClick={() => startEdit(t)}
                     className="absolute top-3 right-3 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
-                    <Pencil className="h-3 w-3" style={{ color: "#a0abc3" }} />
+                    style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}>
+                    <Pencil className="h-3 w-3" style={{ color: "#6b7280" }} />
                   </button>
                 )}
               </div>
@@ -1193,26 +1193,26 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
         {!manageMode && !editingId && (
           confirmLoad && selectedTpl ? (
             <div className="p-3 rounded-xl" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
-              <p className="text-xs font-medium mb-2" style={{ color: "#feb300" }}>Huidige activiteiten worden vervangen. Doorgaan?</p>
+              <p className="text-xs font-medium mb-2" style={{ color: "#d97706" }}>Huidige activiteiten worden vervangen. Doorgaan?</p>
               <div className="flex gap-2">
-                <button onClick={() => setConfirmLoad(false)} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
-                <button onClick={() => onApply(selectedTpl.activiteiten)} className="flex-1 py-1.5 rounded-lg text-xs text-white" style={{ background: "#3fff8b" }}>Laden</button>
+                <button onClick={() => setConfirmLoad(false)} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Annuleren</button>
+                <button onClick={() => onApply(selectedTpl.activiteiten)} className="flex-1 py-1.5 rounded-lg text-xs text-white" style={{ background: "#10b981" }}>Laden</button>
               </div>
             </div>
           ) : (
             <div className="flex gap-2">
-              <button onClick={onClose} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
-              <button disabled={!selected} onClick={() => setConfirmLoad(true)} className="flex-1 py-2 rounded-lg text-xs text-white disabled:opacity-40" style={{ background: "#3fff8b" }}>Template laden</button>
+              <button onClick={onClose} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Annuleren</button>
+              <button disabled={!selected} onClick={() => setConfirmLoad(true)} className="flex-1 py-2 rounded-lg text-xs text-white disabled:opacity-40" style={{ background: "#10b981" }}>Template laden</button>
             </div>
           )
         )}
 
         {deleteConfirm && (
-          <div className="p-3 rounded-xl" style={{ background: "rgba(255,113,108,0.1)", border: "1px solid #ff716c" }}>
-            <p className="text-xs font-medium mb-2" style={{ color: "#ff716c" }}>Template '{templates.find(t => t.id === deleteConfirm)?.naam}' verwijderen? Dit kan niet ongedaan worden gemaakt.</p>
+          <div className="p-3 rounded-xl" style={{ background: "rgba(255,113,108,0.1)", border: "1px solid #dc2626" }}>
+            <p className="text-xs font-medium mb-2" style={{ color: "#dc2626" }}>Template '{templates.find(t => t.id === deleteConfirm)?.naam}' verwijderen? Dit kan niet ongedaan worden gemaakt.</p>
             <div className="flex gap-2">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
-              <button onClick={() => deleteTemplate(deleteConfirm)} className="flex-1 py-1.5 rounded-lg text-xs text-white" style={{ background: "#ff716c" }}>Verwijderen</button>
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-1.5 rounded-lg text-xs" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Annuleren</button>
+              <button onClick={() => deleteTemplate(deleteConfirm)} className="flex-1 py-1.5 rounded-lg text-xs text-white" style={{ background: "#dc2626" }}>Verwijderen</button>
             </div>
           </div>
         )}
@@ -1225,12 +1225,12 @@ function ConfirmDialog({ title, text, confirmLabel, confirmColor, onCancel, onCo
   title: string; text: string; confirmLabel: string; confirmColor: string; onCancel: () => void; onConfirm: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
-        <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>{title}</h3>
-        <p className="text-sm" style={{ color: "#a0abc3" }}>{text}</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(15,23,42,0.08)" }}>
+      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}>
+        <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>{title}</h3>
+        <p className="text-sm" style={{ color: "#6b7280" }}>{text}</p>
         <div className="flex gap-2">
-          <button onClick={onCancel} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
+          <button onClick={onCancel} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Annuleren</button>
           <button onClick={onConfirm} className="flex-1 py-2 rounded-lg text-xs text-white" style={{ background: confirmColor }}>{confirmLabel}</button>
         </div>
       </div>
