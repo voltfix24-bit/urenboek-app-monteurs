@@ -14,7 +14,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { formatDatum } from "@/lib/formatting";
 import { CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
-import { format, startOfMonth, endOfMonth, eachDayOfHanken Groteskval, getDay, addMonths, subMonths, isSameDay, isWithinHanken Groteskval, parseISO, differenceInDays } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO, differenceInDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
@@ -328,7 +328,7 @@ export default function Profiel() {
   // Calendar helpers
   const monthStart = startOfMonth(calMonth);
   const monthEnd = endOfMonth(calMonth);
-  const days = eachDayOfHanken Groteskval({ start: monthStart, end: monthEnd });
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const startPad = getDay(monthStart); // 0=Sun
 
   const getDayStatus = (day: Date): { type: string; status: string } | null => {
@@ -342,7 +342,7 @@ export default function Profiel() {
       try {
         const van = parseISO(b.datum_van);
         const tot = parseISO(b.datum_tot);
-        if (isWithinHanken Groteskval(day, { start: van, end: tot }) || isSameDay(day, van) || isSameDay(day, tot)) {
+        if (isWithinInterval(day, { start: van, end: tot }) || isSameDay(day, van) || isSameDay(day, tot)) {
           return { type: b.type, status: b.status };
         }
       } catch { /* skip */ }
