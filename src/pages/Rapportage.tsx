@@ -9,7 +9,7 @@ import { Download, ChevronLeft, ChevronRight, FileText, Clock, FolderOpen, Users
 import { useNavigate } from "react-router-dom";
 import { format, startOfISOWeek, addDays, getISOWeek, getISOWeekYear, addWeeks } from "date-fns";
 import { nl } from "date-fns/locale";
-import { BottomNav } from "@/components/BottomNav";
+
 import { PageShell } from "@/components/PageShell";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";

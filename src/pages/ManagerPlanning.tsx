@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle, MapPin, Search, CheckCircle2 } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
-import { BottomNav } from "@/components/BottomNav";
+
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { volledigAdres } from "@/lib/utils";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
@@ -939,7 +939,7 @@ export default function ManagerPlanning() {
         }}>
           <Plus size={20} /> Inplannen
         </button>
-        <BottomNav badges={badges} />
+        
       </div>
       </PullToRefresh>
 
