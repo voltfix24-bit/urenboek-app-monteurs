@@ -86,6 +86,9 @@ export default function ManagerPlanning() {
   const [expandedMedewerker, setExpandedMedewerker] = useState<string | null>(null);
   const [planningView, setPlanningView] = useState<'grid' | 'klus'>('grid');
   const [projectSearch, setProjectSearch] = useState("");
+  const [extraIds, setExtraIds] = useState<string[]>([]);
+  const [collegaSearch, setCollegaSearch] = useState("");
+  const [collegaOpen, setCollegaOpen] = useState(false);
 
   const weekNumber = getISOWeek(weekStart);
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
@@ -165,6 +168,9 @@ export default function ManagerPlanning() {
 
   const openAddModal = (medewerker_id: string, datum: string) => {
     const existing = entries.find(e => e.medewerker_id === medewerker_id && e.datum === datum);
+    setExtraIds([]);
+    setCollegaSearch("");
+    setCollegaOpen(false);
     if (existing) {
       setEditId(existing.id);
       setModalForm({ medewerker_id: existing.medewerker_id, project_id: existing.project_id, datum: existing.datum, starttijd: existing.starttijd, eindtijd: existing.eindtijd, notitie: existing.notitie });
@@ -180,22 +186,46 @@ export default function ManagerPlanning() {
     if (editId) {
       const existing = entries.find(e => e.id === editId);
       const updatePayload = { project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any;
+      let groupId = existing?.planning_group_id || null;
       if (existing?.planning_group_id) {
-        // update alle gekoppelde entries
         if (!await mutate(supabase.from("planning").update(updatePayload).eq("planning_group_id", existing.planning_group_id))) return;
-        toast.success("Planning bijgewerkt voor hele ploeg");
       } else {
-        if (!await mutate(supabase.from("planning").update(updatePayload).eq("id", editId))) return;
-        toast.success("Planning bijgewerkt");
+        // Als we extra collega's toevoegen maken we alsnog een group_id aan
+        if (extraIds.length > 0) {
+          groupId = crypto.randomUUID?.() ?? null;
+          if (!await mutate(supabase.from("planning").update({ ...updatePayload, planning_group_id: groupId }).eq("id", editId))) return;
+        } else {
+          if (!await mutate(supabase.from("planning").update(updatePayload).eq("id", editId))) return;
+        }
       }
+      // Voeg extra collega's toe aan deze planning
+      let addedCount = 0;
+      let skippedNames: string[] = [];
+      if (extraIds.length > 0) {
+        const existingForDay = entries.filter(e => e.datum === modalForm.datum);
+        const toAdd = extraIds.filter(pid => !existingForDay.some(e => e.medewerker_id === pid));
+        skippedNames = extraIds.filter(pid => existingForDay.some(e => e.medewerker_id === pid))
+          .map(pid => medewerkers.find(m => m.id === pid)?.full_name).filter(Boolean) as string[];
+        if (toAdd.length > 0) {
+          const rows = toAdd.map(medId => ({
+            medewerker_id: medId, project_id: modalForm.project_id, datum: modalForm.datum,
+            starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie,
+            created_by: myProfileId, planning_group_id: groupId, collega_ids: [],
+          })) as any;
+          if (!await mutate(supabase.from("planning").insert(rows))) return;
+          addedCount = toAdd.length;
+        }
+      }
+      toast.success(addedCount > 0 ? `Planning bijgewerkt, ${addedCount} collega(s) toegevoegd` : (existing?.planning_group_id ? "Planning bijgewerkt voor hele ploeg" : "Planning bijgewerkt"));
+      if (skippedNames.length > 0) toast.info(`Overgeslagen (al ingepland): ${skippedNames.join(", ")}`);
       setShowModal(false); fetchAll();
     } else {
-      // Verzamel ploeg = self + vaste collega's
+      // Verzamel ploeg = self + vaste collega's + extra geselecteerde
       const me = medewerkers.find(m => m.id === modalForm.medewerker_id);
       const partners = (me?.planning_partner_ids || []).filter(pid => medewerkers.some(mm => mm.id === pid));
-      // Filter partners die al planning hebben op deze datum
-      const skipPartners = partners.filter(pid => entries.some(e => e.medewerker_id === pid && e.datum === modalForm.datum));
-      const inGroup = [modalForm.medewerker_id, ...partners.filter(p => !skipPartners.includes(p))];
+      const allCandidates = Array.from(new Set([...partners, ...extraIds])).filter(pid => pid !== modalForm.medewerker_id);
+      const skipPartners = allCandidates.filter(pid => entries.some(e => e.medewerker_id === pid && e.datum === modalForm.datum));
+      const inGroup = [modalForm.medewerker_id, ...allCandidates.filter(p => !skipPartners.includes(p))];
       const groupId = inGroup.length > 1 ? (crypto.randomUUID?.() ?? null) : null;
       const rows = inGroup.map((medId) => ({
         medewerker_id: medId,
@@ -946,6 +976,64 @@ export default function ManagerPlanning() {
               <span style={{ opacity: 0.7 }}>Technician:</span>
               <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{medName(modalForm.medewerker_id) || "—"}</span>
             </p>
+
+            {/* Collega's toevoegen */}
+            {(() => {
+              const candidates = medewerkers.filter(m => m.id !== modalForm.medewerker_id && !extraIds.includes(m.id));
+              const filtered = collegaSearch.trim()
+                ? candidates.filter(m => m.full_name.toLowerCase().includes(collegaSearch.toLowerCase()))
+                : candidates;
+              return (
+                <div style={{ marginBottom: 16, position: "relative" }}>
+                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Collega's toevoegen</label>
+                  <div style={{ position: "relative" }}>
+                    <Plus size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
+                    <input
+                      value={collegaSearch}
+                      onChange={e => { setCollegaSearch(e.target.value); setCollegaOpen(true); }}
+                      onFocus={() => setCollegaOpen(true)}
+                      placeholder="Zoek collega's..."
+                      style={{ width: "100%", padding: "10px 12px 10px 34px", borderRadius: 12, fontSize: 13, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }}
+                    />
+                  </div>
+                  {collegaOpen && filtered.length > 0 && (
+                    <div style={{ marginTop: 6, maxHeight: 160, overflowY: "auto", borderRadius: 12, border: "1px solid var(--planning-border-soft)", background: "var(--app-navy)" }}>
+                      {filtered.slice(0, 30).map(m => {
+                        const conflict = entries.some(e => e.medewerker_id === m.id && e.datum === modalForm.datum);
+                        return (
+                          <button
+                            key={m.id}
+                            onClick={() => { setExtraIds([...extraIds, m.id]); setCollegaSearch(""); setCollegaOpen(false); }}
+                            style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "transparent", border: "none", borderBottom: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                          >
+                            <span>{m.full_name}</span>
+                            {conflict && <span style={{ fontSize: 10, color: "var(--warn-text)" }}>al ingepland</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {extraIds.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                      {extraIds.map(pid => {
+                        const m = medewerkers.find(mm => mm.id === pid);
+                        if (!m) return null;
+                        return (
+                          <span key={pid} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 9999, background: "var(--accent-light, rgba(34,197,94,0.12))", border: "1px solid var(--accent-border)", color: "var(--accent)", fontSize: 12, fontFamily: "Inter", fontWeight: 600 }}>
+                            {m.full_name}
+                            <button onClick={() => setExtraIds(extraIds.filter(x => x !== pid))} style={{ background: "transparent", border: "none", color: "var(--accent)", cursor: "pointer", padding: 0, display: "flex" }}>
+                              <X size={12} />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+
 
             {/* Week selectie */}
             <div style={{ marginBottom: 16 }}>
