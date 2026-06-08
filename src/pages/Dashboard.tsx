@@ -440,7 +440,7 @@ export default function Dashboard() {
                       <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#6b7280" }}>arrow_forward</span>
                     </button>
                   </div>
-                  <div style={{ background: "#000000", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "#ffffff", border: "1px solid #e5e7eb", borderRadius: 16, overflow: "hidden" }}>
                     {projectsWithMarge.map((p: any, i: number) => (
                       <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < projectsWithMarge.length - 1 ? "1px solid #f3f4f6" : "none" }}>
                         <div>
