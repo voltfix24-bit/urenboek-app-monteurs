@@ -1604,7 +1604,7 @@ export default function Planning() {
                     bottom: '100%',
                     height: 56,
                     pointerEvents: 'none',
-                    background: 'linear-gradient(to top, #ffffff, rgba(10,26,48,0))',
+                    background: 'linear-gradient(to top, #ffffff, rgba(255,255,255,0))',
                     opacity: showScrollHint ? 1 : 0,
                     transition: 'opacity 220ms ease',
                   }}
