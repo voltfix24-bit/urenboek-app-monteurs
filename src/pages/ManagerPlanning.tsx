@@ -549,6 +549,7 @@ export default function ManagerPlanning() {
                             boxShadow: heeftEntry ? `0 0 12px ${accent}25` : "none",
                             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                             padding: "4px 4px", lineHeight: 1.1, transition: "transform 0.1s",
+                            minWidth: 0, overflow: "hidden",
                           }}>
                             {verlof ? (
                               <>
@@ -561,10 +562,17 @@ export default function ManagerPlanning() {
                               </>
                             ) : heeftEntry ? (
                               <>
-                                <span style={{ fontSize: 12, fontWeight: 700, fontFamily: "Inter", color: "var(--text-primary)", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%", padding: "0 2px" }}>
+                                <span style={{
+                                  fontSize: 11, fontWeight: 700, fontFamily: "Inter",
+                                  color: "var(--text-primary)", letterSpacing: "-0.01em",
+                                  width: "100%", padding: "0 2px", textAlign: "center",
+                                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                                  overflow: "hidden", overflowWrap: "anywhere", wordBreak: "break-word",
+                                  lineHeight: 1.1,
+                                }}>
                                   {proj?.naam || "—"}
                                 </span>
-                                <span style={{ fontSize: 9, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 3, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
+                                <span style={{ fontSize: 9, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 3, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
                                   {entry?.starttijd?.slice(0, 5)}–{entry?.eindtijd?.slice(0, 5)}
                                 </span>
                               </>
@@ -572,6 +580,7 @@ export default function ManagerPlanning() {
                               <span style={{ fontSize: 22, color: "var(--text-muted)", lineHeight: 1, fontWeight: 300 }}>+</span>
                             )}
                           </div>
+
                         );
                       })}
                     </div>
