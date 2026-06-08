@@ -60,16 +60,19 @@ export function ActiveMedewerkerProvider({ children }: { children: ReactNode }) 
         setLoading(false);
         return;
       }
-      // Laad monteurs onder mij
+      // Laad monteurs onder mij via de veilige view. Direct uit profiles lezen
+      // werkt voor onderaannemers niet betrouwbaar door aangescherpte RLS.
       const { data: monteurs } = await supabase
-        .from("profiles")
+        .from("monteurs_voor_onderaannemer")
         .select("id, full_name")
         .eq("onderaannemer_id", profileId)
         .order("full_name");
       if (cancelled) return;
       const lijst: TeamLid[] = [
         self,
-        ...(monteurs ?? []).map((m) => ({ id: m.id, full_name: m.full_name, is_self: false })),
+        ...(monteurs ?? [])
+          .filter((m): m is { id: string; full_name: string } => !!m.id && !!m.full_name)
+          .map((m) => ({ id: m.id, full_name: m.full_name, is_self: false })),
       ];
       setTeam(lijst);
       const stored = localStorage.getItem(STORAGE_KEY);
