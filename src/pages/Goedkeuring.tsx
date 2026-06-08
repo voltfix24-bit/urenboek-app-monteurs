@@ -540,7 +540,7 @@ export default function Goedkeuring() {
                     {/* Card header */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 12, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--bg-surface-2)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>
                           {initials}
                         </div>
                         <div>
@@ -560,7 +560,7 @@ export default function Goedkeuring() {
                       {group.entries.map((e: any) => {
                         const hasOveruren = overurenIds.has(`${e.medewerker_id}_${e.datum}`);
                         return (
-                          <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(61,72,93,0.15)" }}>
+                          <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--border-soft)" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk", minWidth: 52 }}>{format(new Date(e.datum), "EEE d/M", { locale: nl })}</span>
                               <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", fontFamily: "Hanken Grotesk", padding: "1px 6px", borderRadius: 6, background: "var(--accent-light)" }}>{e.project_nummer}</span>
@@ -633,7 +633,7 @@ export default function Goedkeuring() {
                 <button key={opt} onClick={() => setAfkeurReden(opt)} style={{
                   width: "100%", padding: 16, borderRadius: 16,
                   background: afkeurReden === opt ? "var(--warn-light)" : "var(--bg-surface-2)",
-                  border: afkeurReden === opt ? "1px solid rgba(254,179,0,0.4)" : "1px solid rgba(61,72,93,0.3)",
+                  border: afkeurReden === opt ? "1px solid rgba(254,179,0,0.4)" : "1px solid var(--border)",
                   display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", marginBottom: 8,
                 }}>
                   <span style={{ fontSize: 14, fontFamily: "Hanken Grotesk", fontWeight: 500, color: "var(--text-primary)" }}>{opt}</span>
@@ -645,7 +645,7 @@ export default function Goedkeuring() {
                 onChange={(e) => setAfkeurReden(e.target.value)}
                 placeholder="Toelichting (optioneel)..."
                 rows={3}
-                style={{ width: "100%", marginTop: 8, marginBottom: 16, padding: "12px 16px", borderRadius: 16, border: "1px solid rgba(61,72,93,0.4)", background: "var(--app-navy)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", fontSize: 14, resize: "none", outline: "none", boxSizing: "border-box" }}
+                style={{ width: "100%", marginTop: 8, marginBottom: 16, padding: "12px 16px", borderRadius: 16, border: "1px solid var(--border)", background: "var(--app-navy)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", fontSize: 14, resize: "none", outline: "none", boxSizing: "border-box" }}
               />
               <button onClick={() => { updateStatus(afkeurId, "afgekeurd", afkeurReden); setAfkeurId(null); }} style={{
                 width: "100%", height: 56, borderRadius: 16, background: "var(--warn-text)", border: "none",

@@ -78,7 +78,7 @@ export default function MijnOrders() {
           <div style={{
             width: 36, height: 36,
             borderRadius: '50%',
-            background: '#142640',
+            background: 'var(--bg-surface-2)',
             border: '1px solid var(--accent-border)',
             display: 'flex',
             alignItems: 'center',

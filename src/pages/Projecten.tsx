@@ -239,7 +239,7 @@ export default function Projecten() {
             {/* SEARCH */}
             <div style={{ position: "relative", marginBottom: 16 }}>
               <span className="material-symbols-outlined" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 20, color: "var(--text-muted)" }}>search</span>
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Zoek op naam, adres of ID..." style={{ width: "100%", height: 52, paddingLeft: 44, paddingRight: 16, background: "#000000", border: "none", borderRadius: 14, color: "var(--text-primary)", fontFamily: "Hanken Grotesk", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Zoek op naam, adres of ID..." style={{ width: "100%", height: 52, paddingLeft: 44, paddingRight: 16, background: "var(--bg-surface-2)", border: "none", borderRadius: 14, color: "var(--text-primary)", fontFamily: "Hanken Grotesk", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
             </div>
 
             {/* FILTER CHIPS */}
@@ -253,7 +253,7 @@ export default function Projecten() {
                 <button key={f.key} onClick={() => setStatusFilter(f.key)} style={{
                   padding: "8px 16px", borderRadius: 9999,
                   border: statusFilter === f.key ? "none" : "1px solid var(--planning-border-soft)",
-                  background: statusFilter === f.key ? "var(--accent)" : "#152640",
+                  background: statusFilter === f.key ? "var(--accent)" : "var(--bg-surface-2)",
                   color: statusFilter === f.key ? "var(--accent-dark)" : "var(--text-muted)",
                   fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap",
                 }}>{f.label}</button>
@@ -354,7 +354,7 @@ export default function Projecten() {
                 <div style={{ width: 48, height: 6, borderRadius: 9999, background: "var(--border-strong)", margin: "0 auto 24px" }} />
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
                   <h2 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 24, color: "var(--text-primary)" }}>Nieuw project</h2>
-                  <button onClick={() => setShowAdd(false)} style={{ width: 40, height: 40, borderRadius: "50%", background: "#142640", border: "none", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                  <button onClick={() => setShowAdd(false)} style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--bg-surface-2)", border: "none", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                     <X size={20} />
                   </button>
                 </div>
@@ -389,7 +389,7 @@ export default function Projecten() {
                       <h2 style={{ fontFamily: "DM Sans", fontWeight: 700, fontSize: 20, color: "var(--text-primary)", lineHeight: 1.25, letterSpacing: "-0.025em" }}>{p.naam}</h2>
                       {ogNaam && <p className="text-xs mt-1 flex items-center gap-1" style={{ color: "var(--text-muted)" }}><Building2 className="h-3 w-3" /> {ogNaam}</p>}
                     </div>
-                    <button onClick={() => setSelectedId(null)} style={{ width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "none", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+                    <button onClick={() => setSelectedId(null)} style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--bg-surface-2)", border: "none", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
                       <X size={18} />
                     </button>
                   </div>
@@ -452,7 +452,7 @@ export default function Projecten() {
                   <div style={{ width: 48, height: 6, borderRadius: 9999, background: "var(--border-strong)", margin: "0 auto 16px" }} />
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                     <h2 style={{ fontFamily: "DM Sans", fontWeight: 700, fontSize: 22, color: "var(--text-primary)", letterSpacing: "-0.025em" }}>Project bewerken</h2>
-                    <button onClick={() => { setEditId(null); setForm(emptyForm); }} style={{ width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "none", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                    <button onClick={() => { setEditId(null); setForm(emptyForm); }} style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--bg-surface-2)", border: "none", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                       <X size={18} />
                     </button>
                   </div>

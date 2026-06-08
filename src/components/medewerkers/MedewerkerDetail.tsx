@@ -121,7 +121,7 @@ function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel style={{ background: "#142640", color: "var(--text-muted)", border: "1px solid var(--planning-border-soft)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogCancel style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)", border: "1px solid var(--planning-border-soft)" }}>Annuleren</AlertDialogCancel>
             <AlertDialogAction onClick={onActivate} style={{ background: "var(--accent)", color: "var(--on-accent)" }}>Ja, activeren</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -138,7 +138,7 @@ function VerificatiePanel({ emp, certs, contract, onActivate, onAfwijzen }: {
           </AlertDialogHeader>
           <textarea value={afwijsReden} onChange={e => setAfwijsReden(e.target.value)} placeholder="Reden..." rows={3} className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }} />
           <AlertDialogFooter>
-            <AlertDialogCancel style={{ background: "#142640", color: "var(--text-muted)", border: "1px solid var(--planning-border-soft)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogCancel style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)", border: "1px solid var(--planning-border-soft)" }}>Annuleren</AlertDialogCancel>
             <AlertDialogAction onClick={() => { onAfwijzen(afwijsReden); setShowAfwijzen(false); }} disabled={!afwijsReden.trim()} style={{ background: "var(--danger)", color: "#fff" }}>Afwijzen</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -598,7 +598,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel style={{ background: "#142640", color: "var(--text-muted)", border: "1px solid var(--planning-border-soft)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogCancel style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)", border: "1px solid var(--planning-border-soft)" }}>Annuleren</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => { onDelete?.(emp.user_id, emp.full_name); setShowDeleteConfirm(false); }}
               style={{ background: "var(--danger)", color: "#fff" }}

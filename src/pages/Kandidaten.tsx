@@ -834,7 +834,7 @@ export default function Kandidaten() {
     </PageShell>
 
     <AlertDialog open={!!deleteConfirm} onOpenChange={(o) => !o && setDeleteConfirm(null)}>
-      <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid rgba(61,72,93,0.3)" }}>
+      <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
         <AlertDialogHeader>
           <AlertDialogTitle style={{ color: "var(--danger)" }}>Kandidaat verwijderen</AlertDialogTitle>
           <AlertDialogDescription style={{ color: "var(--text-muted)" }}>
@@ -843,7 +843,7 @@ export default function Kandidaten() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel style={{ background: "#142640", color: "var(--text-muted)", border: "1px solid rgba(61,72,93,0.3)" }}>
+          <AlertDialogCancel style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
             Annuleren
           </AlertDialogCancel>
           <AlertDialogAction onClick={() => deleteConfirm && verwijderKandidaat(deleteConfirm.id)} style={{ background: "var(--danger)", color: "#fff" }}>
