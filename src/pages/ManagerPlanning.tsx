@@ -530,7 +530,8 @@ export default function ManagerPlanning() {
                     </div>
 
                     {/* Day blocks */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, width: "min(720px, 60%)", minWidth: 240 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 8, width: "min(720px, 60%)", minWidth: 240 }}>
+
                       {weekDates.map((date, i) => {
                         const dateStr = format(date, "yyyy-MM-dd");
                         const entry = entries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
