@@ -66,6 +66,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
     --accent-mid:      #6B9E4A;
     --accent-light:    #D4E8C2;
     --accent-border:   #9DC87A;
+    --on-accent:       #ffffff;
     --danger:          #C0392B;
     --danger-light:    #FDECEA;
     --danger-border:   #E8A09A;
@@ -82,6 +83,14 @@ p, h1, h2, h3, span.selectable, input, textarea {
     --info-border:     #7AAADE;
     --info-dark:       #2D6B8A;
     --purple:          #5A4A7C;
+
+    /* Planning-specifiek */
+    --planning-card:        var(--bg-surface);
+    --planning-cell-empty:  var(--bg-surface-2);
+    --planning-button:      var(--bg-surface);
+    --planning-avatar-bg:   var(--accent-light);
+    --planning-border-soft: var(--border);
+
 
     --background: 90 30% 95%;
     --foreground: 100 45% 20%;
