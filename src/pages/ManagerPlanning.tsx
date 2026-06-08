@@ -33,7 +33,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
-const AVATAR_COLORS = ['#3fff8b', '#22c55e', '#6e9bff', '#feb300', '#a78bfa'];
+const AVATAR_COLORS = ['var(--accent)', '#22c55e', '#6e9bff', 'var(--warn-text)', '#a78bfa'];
 
 function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null, weekDateStrings?: string[]): string[] {
   const conflicts: string[] = [];
@@ -64,10 +64,10 @@ function getOverplannedMedewerkers(entries: PlanningEntry[], medewerkers: Medewe
 function getModalStatus(medId: string, dateStr: string, medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], dateObj: Date): { label: string; color: string; bg: string } | null {
   const med = medewerkers.find(m => m.id === medId);
   const verlof = beschikbaarheid.find(b => b.medewerker_id === medId && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
-  if (verlof) return { label: "Op vakantie", color: "#ff716c", bg: "rgba(255,113,108,0.1)" };
+  if (verlof) return { label: "Op vakantie", color: "var(--danger)", bg: "var(--danger-light)" };
   const jsDay = dateObj.getDay();
-  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "Vaste vrije dag", color: "#feb300", bg: "rgba(254,179,0,0.08)" };
-  return { label: "Beschikbaar", color: "#3fff8b", bg: "rgba(63,255,139,0.1)" };
+  if (med?.vaste_vrije_dagen?.includes(jsDay)) return { label: "Vaste vrije dag", color: "var(--warn-text)", bg: "var(--warn-bg)" };
+  return { label: "Beschikbaar", color: "var(--accent)", bg: "var(--accent-light)" };
 }
 
 export default function ManagerPlanning() {
@@ -264,22 +264,22 @@ export default function ManagerPlanning() {
   };
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "var(--text-secondary)" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   const gridContent = (
     <main className="px-4 py-4 space-y-4">
-      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
-        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#102038", color: "#a0abc3" }}>
+      <div className="flex items-center justify-between rounded-2xl p-3" style={{ background: "var(--planning-card)", border: "1px solid var(--planning-border-soft)" }}>
+        <button onClick={() => setWeekStart(p => addWeeks(p, -1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--planning-button)", color: "var(--text-secondary)" }}>
           <ChevronLeft className="h-4 w-4" />
         </button>
         <div className="text-center">
-          <p className="text-lg font-extrabold" style={{ color: "#dae6ff" }}>Week {weekNumber}</p>
-          <p className="text-[11px]" style={{ color: "#a0abc3" }}>
+          <p className="text-lg font-extrabold" style={{ color: "var(--text-primary)" }}>Week {weekNumber}</p>
+          <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
             {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 4), "d MMM", { locale: nl })}
           </p>
         </div>
-        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#102038", color: "#a0abc3" }}>
+        <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--planning-button)", color: "var(--text-secondary)" }}>
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -302,7 +302,7 @@ export default function ManagerPlanning() {
             return (
               <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                 {Array.from(projectDays.entries()).map(([id, { name, days }]) => (
-                  <span key={id} className="shrink-0 px-2.5 py-1 rounded-full whitespace-nowrap" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontSize: 11, fontWeight: 500 }}>
+                  <span key={id} className="shrink-0 px-2.5 py-1 rounded-full whitespace-nowrap" style={{ background: "var(--planning-card)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontSize: 11, fontWeight: 500 }}>
                     {name.length > 12 ? name.slice(0, 12) + "…" : name} · {days}d
                   </span>
                 ))}
@@ -314,20 +314,20 @@ export default function ManagerPlanning() {
             <div className="w-16 lg:w-40 shrink-0" />
             {weekDates.map((d, i) => (
               <div key={i} className="flex-1 text-center min-w-0">
-                <p className="text-[10px] font-semibold whitespace-nowrap" style={{ color: "#a0abc3" }}>{DAGEN[i]}</p>
-                <p className="text-[10px] font-bold tabular-nums whitespace-nowrap" style={{ color: "#dae6ff" }}>{format(d, "d/M")}</p>
+                <p className="text-[10px] font-semibold whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>{DAGEN[i]}</p>
+                <p className="text-[10px] font-bold tabular-nums whitespace-nowrap" style={{ color: "var(--text-primary)" }}>{format(d, "d/M")}</p>
               </div>
             ))}
           </div>
 
 
           {overplanned.length > 0 && (
-            <div className="rounded-xl px-3 py-2.5 flex items-start gap-2" style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)" }}>
-              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "#feb300" }} />
+            <div className="rounded-xl px-3 py-2.5 flex items-start gap-2" style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)" }}>
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--warn-text)" }} />
               <div>
-                <p className="text-xs font-semibold" style={{ color: "#feb300" }}>Overplanning</p>
+                <p className="text-xs font-semibold" style={{ color: "var(--warn-text)" }}>Overplanning</p>
                 {overplanned.map(m => (
-                  <p key={m.id} className="text-[11px]" style={{ color: "#a0abc3" }}>
+                  <p key={m.id} className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
                     {m.name}: {m.days} dagen ingepland
                   </p>
                 ))}
@@ -342,7 +342,7 @@ export default function ManagerPlanning() {
                     <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
                       {med.full_name.charAt(0)}
                     </div>
-                    <span className="text-[10px] lg:text-xs font-medium truncate max-w-[80px] lg:max-w-[120px]" style={{ color: "#dae6ff" }}>{med.full_name}</span>
+                    <span className="text-[10px] lg:text-xs font-medium truncate max-w-[80px] lg:max-w-[120px]" style={{ color: "var(--text-primary)" }}>{med.full_name}</span>
                   </div>
               </div>
               {weekDates.map((d, i) => {
@@ -354,29 +354,29 @@ export default function ManagerPlanning() {
 
                 return (
                   <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] lg:min-h-[64px] flex flex-col items-center justify-center text-center transition-colors active:scale-95 relative" style={{
-                    background: hasConflict && !entry ? "rgba(255,113,108,0.1)" : entry ? (entry.activiteit_kleur ? `${entry.activiteit_kleur}18` : "rgba(63,255,139,0.1)") : "var(--app-navy)",
-                    border: hasConflict ? "1px solid rgba(255,113,108,0.3)" : entry ? `1px solid ${entry.activiteit_kleur || "#3fff8b"}44` : "1px solid #102038",
+                    background: hasConflict && !entry ? "var(--danger-light)" : entry ? (entry.activiteit_kleur ? `${entry.activiteit_kleur}18` : "var(--accent-light)") : "var(--app-navy)",
+                    border: hasConflict ? "1px solid var(--danger-border)" : entry ? `1px solid ${entry.activiteit_kleur || "var(--accent)"}44` : "1px solid var(--planning-button)",
                   }}>
                     {entry ? (
                       <>
-                        <span className="text-[8px] lg:text-[11px] font-bold truncate lg:whitespace-normal w-full" style={{ color: "#dae6ff" }}>
+                        <span className="text-[8px] lg:text-[11px] font-bold truncate lg:whitespace-normal w-full" style={{ color: "var(--text-primary)" }}>
                           <span className="lg:hidden">{proj?.nummer?.slice(-3) || "?"}</span>
                           <span className="hidden lg:inline">{proj?.naam || proj?.nummer || "?"}</span>
                         </span>
                         {entry.activiteit && (
-                          <span className="text-[7px] lg:text-[9px] truncate w-full block" style={{ color: "#a0abc3", marginTop: 1 }}>
+                          <span className="text-[7px] lg:text-[9px] truncate w-full block" style={{ color: "var(--text-secondary)", marginTop: 1 }}>
                             {entry.activiteit}
                           </span>
                         )}
-                        <span className="text-[7px] lg:text-[10px]" style={{ color: "#a0abc3" }}>{entry.starttijd}–{entry.eindtijd}</span>
+                        <span className="text-[7px] lg:text-[10px]" style={{ color: "var(--text-secondary)" }}>{entry.starttijd}–{entry.eindtijd}</span>
                       </>
                     ) : hasConflict ? (
-                      <AlertTriangle className="h-3 w-3" style={{ color: "#ff716c", opacity: 0.6 }} />
+                      <AlertTriangle className="h-3 w-3" style={{ color: "var(--danger)", opacity: 0.6 }} />
                     ) : (
-                      <Plus className="h-3 w-3" style={{ color: "rgba(106,118,140,0.15)" }} />
+                      <Plus className="h-3 w-3" style={{ color: "var(--planning-border-soft)" }} />
                     )}
                     {hasConflict && entry && (
-                      <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "#ff716c" }} />
+                      <AlertTriangle className="h-2.5 w-2.5 mt-0.5" style={{ color: "var(--danger)" }} />
                     )}
                   </button>
                 );
@@ -399,27 +399,27 @@ export default function ManagerPlanning() {
           {/* WEEK SELECTOR */}
           <section style={{ marginBottom: 28, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#3fff8b", marginBottom: 4 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--accent)", marginBottom: 4 }}>
                 TEAM PLANNING
               </p>
-              <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff", lineHeight: 1, marginBottom: 4 }}>
+              <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", lineHeight: 1, marginBottom: 4 }}>
                 Week {weekNumber}
               </h2>
-              <p style={{ fontSize: 12, color: "#a0abc3", fontFamily: "Inter" }}>
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Inter" }}>
                 {format(weekStart, "EEE d MMM", { locale: nl })} t/m {format(addDays(weekStart, 4), "EEE d MMM", { locale: nl })}
               </p>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => setWeekStart(w => addWeeks(w, -1))} style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(255,255,255,0.07)", color: "#dae6ff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <button onClick={() => setWeekStart(w => addWeeks(w, -1))} style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-button)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <ChevronLeft size={20} />
               </button>
-              <button onClick={handleDownloadPdf} title="Download planning PDF" style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <button onClick={handleDownloadPdf} title="Download planning PDF" style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-button)", border: "1px solid var(--accent-border)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 20 }}>picture_as_pdf</span>
               </button>
-              <button onClick={handleDownloadPersoneelsPdf} title="Download persoonlijke planning per monteur" style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <button onClick={handleDownloadPersoneelsPdf} title="Download persoonlijke planning per monteur" style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-button)", border: "1px solid var(--accent-border)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 20 }}>group</span>
               </button>
-              <button onClick={() => setWeekStart(w => addWeeks(w, 1))} style={{ width: 44, height: 44, borderRadius: 12, background: "#102038", border: "1px solid rgba(255,255,255,0.07)", color: "#dae6ff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <button onClick={() => setWeekStart(w => addWeeks(w, 1))} style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-button)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <ChevronRight size={20} />
               </button>
             </div>
@@ -440,14 +440,14 @@ export default function ManagerPlanning() {
                   gap: 6,
                   padding: '8px 16px',
                   borderRadius: 9999,
-                  border: planningView === v.key ? 'none' : '1px solid rgba(255,255,255,0.07)',
-                  background: planningView === v.key ? '#3fff8b' : '#102038',
-                  color: planningView === v.key ? '#005d2c' : '#a0abc3',
+                  border: planningView === v.key ? 'none' : '1px solid var(--planning-border-soft)',
+                  background: planningView === v.key ? 'var(--accent)' : 'var(--planning-button)',
+                  color: planningView === v.key ? 'var(--on-accent)' : 'var(--text-secondary)',
                   fontFamily: 'Inter',
                   fontWeight: 700,
                   fontSize: 13,
                   cursor: 'pointer',
-                  boxShadow: planningView === v.key ? '0 0 12px rgba(63,255,139,0.25)' : 'none',
+                  boxShadow: planningView === v.key ? '0 0 12px var(--accent-border)' : 'none',
                 }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{v.icon}</span>
@@ -459,11 +459,11 @@ export default function ManagerPlanning() {
           {planningView === 'grid' && (<>
           {/* PROJECT FILTER CHIPS */}
           <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none", marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
-            <button style={{ padding: "8px 16px", borderRadius: 9999, background: "#3fff8b", border: "none", color: "#005d2c", fontFamily: "Inter", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 12px rgba(63,255,139,0.3)" }}>
+            <button style={{ padding: "8px 16px", borderRadius: 9999, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Inter", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 12px var(--accent-border)" }}>
               Alle projecten
             </button>
             {projects.slice(0, 3).map(p => (
-              <button key={p.id} style={{ padding: "8px 16px", borderRadius: 9999, background: "#152640", border: "none", color: "#a0abc3", fontFamily: "Inter", fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
+              <button key={p.id} style={{ padding: "8px 16px", borderRadius: 9999, background: "var(--planning-button)", border: "none", color: "var(--text-secondary)", fontFamily: "Inter", fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
                 {p.naam || p.nummer}
               </button>
             ))}
@@ -475,9 +475,9 @@ export default function ManagerPlanning() {
               {weekDates.map((d, i) => {
                 const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
                 return (
-                  <div key={i} style={{ textAlign: "center", lineHeight: 1.2, padding: "4px 2px", borderRadius: 8, background: isToday ? "rgba(63,255,139,0.08)" : "transparent", border: isToday ? "1px solid rgba(63,255,139,0.25)" : "1px solid transparent" }}>
-                    <span style={{ display: "block", fontSize: 11, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.08em", color: isToday ? "#3fff8b" : "#a0abc3" }}>{DAGEN[i]}</span>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 800, fontFamily: "Inter", color: "#dae6ff", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", marginTop: 2 }}>{format(d, "d/M")}</span>
+                  <div key={i} style={{ textAlign: "center", lineHeight: 1.2, padding: "4px 2px", borderRadius: 8, background: isToday ? "var(--accent-light)" : "transparent", border: isToday ? "1px solid var(--accent-border)" : "1px solid transparent" }}>
+                    <span style={{ display: "block", fontSize: 11, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.08em", color: isToday ? "var(--accent)" : "var(--text-secondary)" }}>{DAGEN[i]}</span>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 800, fontFamily: "Inter", color: "var(--text-primary)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", marginTop: 2 }}>{format(d, "d/M")}</span>
                   </div>
                 );
               })}
@@ -486,17 +486,17 @@ export default function ManagerPlanning() {
 
           {/* LOADING */}
           {loading && (
-            <div style={{ textAlign: "center", padding: 40, color: "#a0abc3" }}>Planning laden...</div>
+            <div style={{ textAlign: "center", padding: 40, color: "var(--text-secondary)" }}>Planning laden...</div>
           )}
 
           {/* OVERPLANNING WARNING */}
           {overplanned.length > 0 && (
-            <div style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)", borderRadius: 16, padding: "14px 16px", marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 12 }}>
-              <AlertTriangle size={16} style={{ color: "#feb300", marginTop: 2, flexShrink: 0 }} />
+            <div style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)", borderRadius: 16, padding: "14px 16px", marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <AlertTriangle size={16} style={{ color: "var(--warn-text)", marginTop: 2, flexShrink: 0 }} />
               <div>
-                <p style={{ fontSize: 12, fontWeight: 700, color: "#feb300", fontFamily: "Inter", marginBottom: 4 }}>Overplanning</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--warn-text)", fontFamily: "Inter", marginBottom: 4 }}>Overplanning</p>
                 {overplanned.map(m => (
-                  <p key={m.id} style={{ fontSize: 11, color: "#a0abc3", fontFamily: "Inter" }}>{m.name}: {m.days} dagen ingepland</p>
+                  <p key={m.id} style={{ fontSize: 11, color: "var(--text-secondary)", fontFamily: "Inter" }}>{m.name}: {m.days} dagen ingepland</p>
                 ))}
               </div>
             </div>
@@ -510,20 +510,20 @@ export default function ManagerPlanning() {
                 const isExpanded = expandedMedewerker === med.id;
                 return (
                   <div key={med.id}>
-                  <div style={{ background: "#061327", borderRadius: isExpanded ? "16px 16px 0 0" : 16, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ background: "var(--planning-card)", borderRadius: isExpanded ? "16px 16px 0 0" : 16, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     {/* Avatar + name (clickable to toggle) */}
                     <div
                       onClick={() => setExpandedMedewerker(prev => prev === med.id ? null : med.id)}
                       style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, cursor: "pointer" }}
                     >
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 800, fontSize: 13, color: "#3fff8b", border: "1px solid rgba(63,255,139,0.2)", flexShrink: 0, letterSpacing: "0.02em" }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-avatar-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 800, fontSize: 13, color: "var(--accent)", border: "1px solid var(--accent-border)", flexShrink: 0, letterSpacing: "0.02em" }}>
                         {initials}
                       </div>
                       <div style={{ minWidth: 0 }}>
-                        <p style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 14, color: "#dae6ff", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <p style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 14, color: "var(--text-primary)", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {med.full_name}
                         </p>
-                        <p style={{ fontSize: 10, color: "#a0abc3", fontFamily: "Inter", marginTop: 2, fontWeight: 500 }}>
+                        <p style={{ fontSize: 10, color: "var(--text-secondary)", fontFamily: "Inter", marginTop: 2, fontWeight: 500 }}>
                           {ROLE_LABELS[med.role || ""] || "Medewerker"}
                         </p>
                       </div>
@@ -537,10 +537,10 @@ export default function ManagerPlanning() {
                         const heeftEntry = !!entry;
                         const verlof = beschikbaarheid.find(b => b.medewerker_id === med.id && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
                         const proj = entry ? projMap.get(entry.project_id) : null;
-                        const accent = entry?.activiteit_kleur || "#3fff8b";
-                        const verlofColor = verlof?.type === "ziek" ? "#ff716c" : "#feb300";
-                        const bgColor = verlof ? `${verlofColor}1a` : !heeftEntry ? "rgba(61,72,93,0.18)" : `${accent}1f`;
-                        const borderColor = verlof ? `${verlofColor}55` : !heeftEntry ? "rgba(106,118,140,0.15)" : `${accent}55`;
+                        const accent = entry?.activiteit_kleur || "var(--accent)";
+                        const verlofColor = verlof?.type === "ziek" ? "var(--danger)" : "var(--warn-text)";
+                        const bgColor = verlof ? `${verlofColor}1a` : !heeftEntry ? "var(--planning-cell-empty)" : `${accent}1f`;
+                        const borderColor = verlof ? `${verlofColor}55` : !heeftEntry ? "var(--planning-border-soft)" : `${accent}55`;
                         return (
                           <div key={i} onClick={() => openAddModal(med.id, dateStr)} style={{
                             height: 64, borderRadius: 12, background: bgColor, cursor: "pointer",
@@ -554,13 +554,13 @@ export default function ManagerPlanning() {
                                 <span style={{ fontSize: 10, fontWeight: 800, fontFamily: "Inter", color: verlofColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                                   {verlof.type === "ziek" ? "Ziek" : "Verlof"}
                                 </span>
-                                <span style={{ fontSize: 9, fontWeight: 500, fontFamily: "Inter", color: "#a0abc3", marginTop: 2 }}>
+                                <span style={{ fontSize: 9, fontWeight: 500, fontFamily: "Inter", color: "var(--text-secondary)", marginTop: 2 }}>
                                   Hele dag
                                 </span>
                               </>
                             ) : heeftEntry ? (
                               <>
-                                <span style={{ fontSize: 12, fontWeight: 700, fontFamily: "Inter", color: "#dae6ff", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%", padding: "0 2px" }}>
+                                <span style={{ fontSize: 12, fontWeight: 700, fontFamily: "Inter", color: "var(--text-primary)", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%", padding: "0 2px" }}>
                                   {proj?.naam || "—"}
                                 </span>
                                 <span style={{ fontSize: 9, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 3, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
@@ -568,7 +568,7 @@ export default function ManagerPlanning() {
                                 </span>
                               </>
                             ) : (
-                              <span style={{ fontSize: 22, color: "rgba(160,171,195,0.3)", lineHeight: 1, fontWeight: 300 }}>+</span>
+                              <span style={{ fontSize: 22, color: "var(--text-muted)", lineHeight: 1, fontWeight: 300 }}>+</span>
                             )}
                           </div>
                         );
@@ -581,7 +581,7 @@ export default function ManagerPlanning() {
                       onClick={() => setExpandedMedewerker(prev => prev === med.id ? null : med.id)}
                       style={{
                         fontSize: 18,
-                        color: '#a0abc3',
+                        color: 'var(--text-secondary)',
                         marginLeft: 8,
                         flexShrink: 0,
                         cursor: 'pointer',
@@ -600,7 +600,7 @@ export default function ManagerPlanning() {
                       marginTop: -8,
                       paddingTop: 8,
                       overflow: 'hidden',
-                      border: '1px solid rgba(106,118,140,0.15)',
+                      border: '1px solid var(--planning-border-soft)',
                       borderTop: 'none',
                     }}>
                       {weekDates.map((date, i) => {
@@ -614,14 +614,14 @@ export default function ManagerPlanning() {
                               display: 'flex',
                               alignItems: 'center',
                               padding: '10px 16px',
-                              borderBottom: i < 4 ? '1px solid rgba(61,72,93,0.2)' : 'none',
+                              borderBottom: i < 4 ? '1px solid var(--planning-border-soft)' : 'none',
                               gap: 12,
                               opacity: 0.4,
                             }}>
-                              <span style={{ width: 28, fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: '#a0abc3', textTransform: 'uppercase', flexShrink: 0 }}>
+                              <span style={{ width: 28, fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: 'var(--text-secondary)', textTransform: 'uppercase', flexShrink: 0 }}>
                                 {DAGEN_LBL[i]}
                               </span>
-                              <span style={{ fontSize: 12, fontFamily: 'Inter', color: '#a0abc3', fontStyle: 'italic' }}>
+                              <span style={{ fontSize: 12, fontFamily: 'Inter', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
                                 Niet ingepland
                               </span>
                             </div>
@@ -629,7 +629,7 @@ export default function ManagerPlanning() {
                         }
 
                         return (
-                          <div key={dateStr} style={{ borderBottom: i < 4 ? '1px solid rgba(61,72,93,0.2)' : 'none' }}>
+                          <div key={dateStr} style={{ borderBottom: i < 4 ? '1px solid var(--planning-border-soft)' : 'none' }}>
                             {dayEntries.map((entry, ei) => {
                               const project = projects.find(p => p.id === entry.project_id);
                               const uren = berekenUren(entry.starttijd, entry.eindtijd);
@@ -639,18 +639,18 @@ export default function ManagerPlanning() {
                                   alignItems: 'center',
                                   padding: '10px 16px',
                                   gap: 12,
-                                  borderTop: ei > 0 ? '1px solid rgba(61,72,93,0.1)' : 'none',
+                                  borderTop: ei > 0 ? '1px solid var(--planning-border-soft)' : 'none',
                                 }}>
-                                  <span style={{ width: 28, fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b', textTransform: 'uppercase', flexShrink: 0 }}>
+                                  <span style={{ width: 28, fontSize: 11, fontWeight: 700, fontFamily: 'Inter', color: 'var(--accent)', textTransform: 'uppercase', flexShrink: 0 }}>
                                     {ei === 0 ? DAGEN_LBL[i] : ''}
                                   </span>
-                                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: entry.activiteit_kleur || '#3fff8b', flexShrink: 0 }} />
+                                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: entry.activiteit_kleur || 'var(--accent)', flexShrink: 0 }} />
                                   <span style={{
                                     flex: 1,
                                     fontSize: 13,
                                     fontWeight: 600,
                                     fontFamily: 'Inter',
-                                    color: '#dae6ff',
+                                    color: 'var(--text-primary)',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
@@ -660,11 +660,11 @@ export default function ManagerPlanning() {
                                   <div style={{
                                     padding: '3px 10px',
                                     borderRadius: 9999,
-                                    background: 'rgba(63,255,139,0.1)',
-                                    border: '1px solid rgba(63,255,139,0.25)',
+                                    background: 'var(--accent-light)',
+                                    border: '1px solid var(--accent-border)',
                                     flexShrink: 0,
                                   }}>
-                                    <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: '#3fff8b' }}>
+                                    <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: 'var(--accent)' }}>
                                       {uren}u
                                     </span>
                                   </div>
@@ -681,21 +681,21 @@ export default function ManagerPlanning() {
                         justifyContent: 'flex-end',
                         alignItems: 'center',
                         padding: '10px 16px',
-                        borderTop: '1px solid rgba(61,72,93,0.3)',
+                        borderTop: '1px solid var(--planning-border-soft)',
                         gap: 8,
                       }}>
                         <span style={{
                           fontSize: 11,
                           fontWeight: 600,
                           fontFamily: 'Inter',
-                          color: '#a0abc3',
+                          color: 'var(--text-secondary)',
                           textTransform: 'uppercase',
                           letterSpacing: '0.08em',
                         }}>
                           Week totaal
                         </span>
-                        <div style={{ padding: '4px 12px', borderRadius: 9999, background: '#3fff8b', flexShrink: 0 }}>
-                          <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Manrope', color: '#005d2c' }}>
+                        <div style={{ padding: '4px 12px', borderRadius: 9999, background: 'var(--accent)', flexShrink: 0 }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Manrope', color: 'var(--on-accent)' }}>
                             {entries
                               .filter(e => e.medewerker_id === med.id && weekDateStrings.includes(e.datum))
                               .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0)}u
@@ -719,25 +719,25 @@ export default function ManagerPlanning() {
             const capaciteitPct = maxUren > 0 ? Math.round((totalGeplandUren / maxUren) * 100) : 0;
             const activeProjects = new Set(entries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)).size;
             return (
-            <div style={{ marginTop: 24, background: "#061327", borderRadius: 18, padding: "18px 20px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, border: "1px solid rgba(106,118,140,0.15)" }}>
+            <div style={{ marginTop: 24, background: "var(--planning-card)", borderRadius: 18, padding: "18px 20px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, border: "1px solid var(--planning-border-soft)" }}>
               <div>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 6 }}>Geplande uren</p>
-                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff", fontVariantNumeric: "tabular-nums" }}>
-                  {totalGeplandUren}<span style={{ fontSize: 14, color: "#a0abc3", marginLeft: 2 }}>u</span>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Geplande uren</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
+                  {totalGeplandUren}<span style={{ fontSize: 14, color: "var(--text-secondary)", marginLeft: 2 }}>u</span>
                 </span>
               </div>
-              <div style={{ borderLeft: "1px solid rgba(106,118,140,0.15)", borderRight: "1px solid rgba(106,118,140,0.15)", paddingLeft: 16, paddingRight: 16 }}>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 6 }}>Capaciteit</p>
-                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: capaciteitPct > 100 ? "#ff716c" : "#3fff8b" }}>
+              <div style={{ borderLeft: "1px solid var(--planning-border-soft)", borderRight: "1px solid var(--planning-border-soft)", paddingLeft: 16, paddingRight: 16 }}>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Capaciteit</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: capaciteitPct > 100 ? "var(--danger)" : "var(--accent)" }}>
                   {medewerkers.length > 0 ? `${capaciteitPct}%` : "—"}
                 </span>
-                <div style={{ height: 4, marginTop: 8, background: "#152640", borderRadius: 9999, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, capaciteitPct) : 0}%`, background: capaciteitPct > 100 ? "#ff716c" : "#3fff8b", transition: "width 0.3s" }} />
+                <div style={{ height: 4, marginTop: 8, background: "var(--planning-button)", borderRadius: 9999, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, capaciteitPct) : 0}%`, background: capaciteitPct > 100 ? "var(--danger)" : "var(--accent)", transition: "width 0.3s" }} />
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 6 }}>Actieve projecten</p>
-                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff", fontVariantNumeric: "tabular-nums" }}>{activeProjects}</span>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Actieve projecten</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>{activeProjects}</span>
               </div>
             </div>
             );
@@ -755,11 +755,11 @@ export default function ManagerPlanning() {
                 const DAGEN_LBL = ['Ma','Di','Wo','Do','Vr'];
                 return (
                   <div key={projectId} style={{
-                    background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                    background: 'linear-gradient(135deg, var(--planning-card), var(--planning-card))',
                     backdropFilter: 'blur(12px)',
                     borderRadius: 20,
-                    border: '1px solid rgba(106,118,140,0.15)',
-                    borderLeft: '4px solid #3fff8b',
+                    border: '1px solid var(--planning-border-soft)',
+                    borderLeft: '4px solid var(--accent)',
                     overflow: 'hidden',
                   }}>
                     {/* PROJECT HEADER */}
@@ -768,28 +768,28 @@ export default function ManagerPlanning() {
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      borderBottom: '1px solid rgba(61,72,93,0.3)',
+                      borderBottom: '1px solid var(--planning-border-soft)',
                     }}>
                       <div>
-                        <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', color: '#a0abc3', marginBottom: 2 }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-secondary)', marginBottom: 2 }}>
                           {project?.nummer || '—'}
                         </p>
-                        <h3 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 16, color: '#dae6ff' }}>
+                        <h3 style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 16, color: 'var(--text-primary)' }}>
                           {project?.naam || 'Onbekend project'}
                         </h3>
                         {project?.stad && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: 12, color: '#a0abc3' }}>location_on</span>
-                            <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>{project.stad}</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>location_on</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'Inter' }}>{project.stad}</span>
                           </div>
                         )}
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a0abc3', marginBottom: 4 }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-secondary)', marginBottom: 4 }}>
                           Week totaal
                         </p>
-                        <div style={{ padding: '4px 14px', borderRadius: 9999, background: '#3fff8b', display: 'inline-block' }}>
-                          <span style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 16, color: '#005d2c' }}>
+                        <div style={{ padding: '4px 14px', borderRadius: 9999, background: 'var(--accent)', display: 'inline-block' }}>
+                          <span style={{ fontFamily: 'Manrope', fontWeight: 800, fontSize: 16, color: 'var(--on-accent)' }}>
                             {totalUren}u
                           </span>
                         </div>
@@ -809,15 +809,15 @@ export default function ManagerPlanning() {
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             padding: '8px 20px',
-                            background: 'rgba(0,0,0,0.2)',
+                            background: 'var(--planning-cell-empty)',
                           }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#3fff8b' }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'Inter', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent)' }}>
                               {DAGEN_LBL[di]}{' '}
-                              <span style={{ color: '#a0abc3', fontWeight: 500 }}>
+                              <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>
                                 {format(date, 'd MMM', { locale: nl })}
                               </span>
                             </span>
-                            <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: '#a0abc3' }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Inter', color: 'var(--text-secondary)' }}>
                               {dagTotaal}u totaal
                             </span>
                           </div>
@@ -831,36 +831,36 @@ export default function ManagerPlanning() {
                                 alignItems: 'center',
                                 padding: '12px 20px',
                                 gap: 12,
-                                borderTop: ei > 0 ? '1px solid rgba(61,72,93,0.15)' : 'none',
-                                borderBottom: '1px solid rgba(61,72,93,0.15)',
+                                borderTop: ei > 0 ? '1px solid var(--planning-border-soft)' : 'none',
+                                borderBottom: '1px solid var(--planning-border-soft)',
                               }}>
                                 <div style={{
                                   width: 36,
                                   height: 36,
                                   borderRadius: 10,
-                                  background: '#142640',
+                                  background: 'var(--planning-avatar-bg)',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   fontFamily: 'Manrope',
                                   fontWeight: 700,
                                   fontSize: 11,
-                                  color: '#3fff8b',
+                                  color: 'var(--accent)',
                                   flexShrink: 0,
-                                  border: '1px solid rgba(63,255,139,0.15)',
+                                  border: '1px solid var(--accent-border)',
                                 }}>
                                   {initials}
                                 </div>
-                                <span style={{ flex: 1, fontSize: 14, fontWeight: 600, fontFamily: 'Inter', color: '#dae6ff' }}>
+                                <span style={{ flex: 1, fontSize: 14, fontWeight: 600, fontFamily: 'Inter', color: 'var(--text-primary)' }}>
                                   {monteur?.full_name || 'Onbekend'}
                                 </span>
                                 <div style={{
                                   padding: '4px 12px',
                                   borderRadius: 9999,
-                                  background: 'rgba(63,255,139,0.1)',
-                                  border: '1px solid rgba(63,255,139,0.25)',
+                                  background: 'var(--accent-light)',
+                                  border: '1px solid var(--accent-border)',
                                 }}>
-                                  <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Manrope', color: '#3fff8b' }}>
+                                  <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Manrope', color: 'var(--accent)' }}>
                                     {uren}u
                                   </span>
                                 </div>
@@ -875,7 +875,7 @@ export default function ManagerPlanning() {
               })}
 
               {entries.filter(e => weekDateStrings.includes(e.datum)).length === 0 && (
-                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#a0abc3', fontFamily: 'Inter' }}>
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)', fontFamily: 'Inter' }}>
                   <span className="material-symbols-outlined" style={{ fontSize: 48, display: 'block', marginBottom: 12, opacity: 0.4 }}>
                     calendar_today
                   </span>
@@ -891,10 +891,10 @@ export default function ManagerPlanning() {
         {/* FAB */}
         <button onClick={() => setShowModal(true)} style={{
           position: "fixed", bottom: "calc(96px + env(safe-area-inset-bottom, 34px))", left: "50%", transform: "translateX(-50%)", zIndex: 40,
-          background: "#3fff8b", color: "#005d2c", border: "none", borderRadius: 9999,
+          background: "var(--accent)", color: "var(--on-accent)", border: "none", borderRadius: 9999,
           height: 56, padding: "0 32px", display: "flex", alignItems: "center", gap: 8,
           fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase",
-          letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 8px 24px rgba(63,255,139,0.3)", whiteSpace: "nowrap",
+          letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 8px 24px var(--accent-border)", whiteSpace: "nowrap",
         }}>
           <Plus size={20} /> Inplannen
         </button>
@@ -907,10 +907,10 @@ export default function ManagerPlanning() {
         const modalBody = (
           <>
             <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 20px" }} />
-            <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "#dae6ff", marginBottom: 4 }}>
+            <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "var(--text-primary)", marginBottom: 4 }}>
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
             </h2>
-            <p style={{ fontSize: 12, color: "#a0abc3", fontFamily: "Inter", marginBottom: 16 }}>{modalForm.datum}</p>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Inter", marginBottom: 16 }}>{modalForm.datum}</p>
             {modalStatus && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: modalStatus.bg, border: `1px solid ${modalStatus.color}33`, marginBottom: 12 }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: modalStatus.color, fontFamily: "Inter" }}>{modalStatus.label}</span>
@@ -919,17 +919,17 @@ export default function ManagerPlanning() {
             {modalConflicts.length > 0 && (
               <div style={{ marginBottom: 12 }}>
                 {modalConflicts.map((c, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: "rgba(255,113,108,0.08)", border: "1px solid rgba(255,113,108,0.3)", marginBottom: 6 }}>
-                    <AlertTriangle size={14} style={{ color: "#ff716c", flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, fontWeight: 500, color: "#ff716c", fontFamily: "Inter" }}>Conflict: {c}</span>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: "var(--danger-light)", border: "1px solid var(--danger-border)", marginBottom: 6 }}>
+                    <AlertTriangle size={14} style={{ color: "var(--danger)", flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, fontWeight: 500, color: "var(--danger)", fontFamily: "Inter" }}>Conflict: {c}</span>
                   </div>
                 ))}
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
-                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", display: "block", marginBottom: 6 }}>Project</label>
-                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }}>
+                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Project</label>
+                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }}>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
                 </select>
                 {(() => {
@@ -937,29 +937,29 @@ export default function ManagerPlanning() {
                   if (!selProj) return null;
                   const addr = volledigAdres(selProj);
                   return (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, marginTop: 6, background: "#061327", border: "1px solid rgba(61,72,93,0.2)" }}>
-                      <MapPin size={12} style={{ color: "#a0abc3", flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, color: addr ? "#a0abc3" : "#feb300", fontFamily: "Inter" }}>{addr || "⚠ Geen adres ingevuld"}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, marginTop: 6, background: "var(--planning-card)", border: "1px solid var(--planning-border-soft)" }}>
+                      <MapPin size={12} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
+                      <span style={{ fontSize: 11, color: addr ? "var(--text-secondary)" : "var(--warn-text)", fontFamily: "Inter" }}>{addr || "⚠ Geen adres ingevuld"}</span>
                     </div>
                   );
                 })()}
               </div>
               <div style={{ display: "flex", gap: 12 }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", display: "block", marginBottom: 6 }}>Start</label>
-                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
+                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Start</label>
+                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a0abc3", display: "block", marginBottom: 6 }}>Eind</label>
-                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
+                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Eind</label>
+                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
                 </div>
               </div>
-              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid rgba(61,72,93,0.4)", color: "#dae6ff", fontFamily: "Inter", outline: "none" }} />
-              <button onClick={savePlanning} style={{ width: "100%", height: 52, borderRadius: 14, background: "#3fff8b", border: "none", color: "#005d2c", fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 4px 16px rgba(63,255,139,0.2)" }}>
+              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
+              <button onClick={savePlanning} style={{ width: "100%", height: 52, borderRadius: 14, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 4px 16px var(--accent-border)" }}>
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>
               {editId && (
-                <button onClick={deletePlanning} style={{ width: "100%", height: 48, borderRadius: 14, background: "transparent", border: "1px solid rgba(255,113,108,0.4)", color: "#ff716c", fontFamily: "Inter", fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer" }}>
+                <button onClick={deletePlanning} style={{ width: "100%", height: 48, borderRadius: 14, background: "transparent", border: "1px solid rgba(255,113,108,0.4)", color: "var(--danger)", fontFamily: "Inter", fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer" }}>
                   Verwijderen
                 </button>
               )}
