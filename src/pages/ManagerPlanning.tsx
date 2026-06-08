@@ -18,9 +18,17 @@ import { nl } from "date-fns/locale";
 import { generatePlanningPdf, generatePersoneelsPdf } from "@/lib/planningPdf";
 
 interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; planning_group_id: string | null; }
-interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; planning_partner_ids: string[]; }
+interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; planning_partner_ids: string[]; role?: string | null; }
 interface ProjectInfo { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
 interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_tot: string; type: string; status: string; }
+
+const ROLE_LABELS: Record<string, string> = {
+  monteur: "Monteur",
+  schakelmonteur: "Schakelmonteur",
+  uitvoerder: "Uitvoerder",
+  wv: "Werkvoorbereider",
+  manager: "Manager",
+};
 
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
@@ -87,14 +95,24 @@ export default function ManagerPlanning() {
     setLoading(true);
     const startStr = format(weekStart, "yyyy-MM-dd");
     const endStr = format(addDays(weekStart, 4), "yyyy-MM-dd");
-    const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }] = await Promise.all([
+    const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }, { data: rolesData }] = await Promise.all([
       supabase.from("planning").select("*, activiteit, activiteit_kleur, planning_group_id").gte("datum", startStr).lte("datum", endStr),
       supabase.from("profiles").select("id, full_name, vaste_vrije_dagen, planning_partner_ids").eq("account_status", "active").order("full_name"),
       supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
+      supabase.from("user_roles").select("user_id, role"),
     ]);
+    const profIdToUserId = new Map<string, string>();
+    const profilesWithUser = await supabase.from("profiles").select("id, user_id").eq("account_status", "active");
+    (profilesWithUser.data ?? []).forEach((p: any) => profIdToUserId.set(p.id, p.user_id));
+    const userRoleMap = new Map<string, string>();
+    const rolePriority: Record<string, number> = { manager: 5, uitvoerder: 4, wv: 3, schakelmonteur: 2, monteur: 1 };
+    (rolesData ?? []).forEach((r: any) => {
+      const prev = userRoleMap.get(r.user_id);
+      if (!prev || (rolePriority[r.role] ?? 0) > (rolePriority[prev] ?? 0)) userRoleMap.set(r.user_id, r.role);
+    });
     setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "", activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, planning_group_id: d.planning_group_id || null })));
-    setMedewerkers(((profData ?? []) as any[]).map((p) => ({ ...p, planning_partner_ids: p.planning_partner_ids || [] })) as any);
+    setMedewerkers(((profData ?? []) as any[]).map((p) => ({ ...p, planning_partner_ids: p.planning_partner_ids || [], role: userRoleMap.get(profIdToUserId.get(p.id) || "") || null })) as any);
     setProjects((projData ?? []) as any);
     setBeschikbaarheid((beschData ?? []) as any);
     setLoading(false);
@@ -498,14 +516,16 @@ export default function ManagerPlanning() {
                       onClick={() => setExpandedMedewerker(prev => prev === med.id ? null : med.id)}
                       style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, cursor: "pointer" }}
                     >
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 12, color: "#3fff8b", border: "1px solid rgba(63,255,139,0.15)", flexShrink: 0 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 800, fontSize: 13, color: "#3fff8b", border: "1px solid rgba(63,255,139,0.2)", flexShrink: 0, letterSpacing: "0.02em" }}>
                         {initials}
                       </div>
-                      <div>
-                        <p style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#dae6ff", lineHeight: 1.2 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 14, color: "#dae6ff", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {med.full_name}
                         </p>
-                        <p style={{ fontSize: 9, color: "#a0abc3", fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em" }}>Monteur</p>
+                        <p style={{ fontSize: 10, color: "#a0abc3", fontFamily: "Inter", marginTop: 2, fontWeight: 500 }}>
+                          {ROLE_LABELS[med.role || ""] || "Medewerker"}
+                        </p>
                       </div>
                     </div>
 
@@ -518,29 +538,37 @@ export default function ManagerPlanning() {
                         const verlof = beschikbaarheid.find(b => b.medewerker_id === med.id && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
                         const proj = entry ? projMap.get(entry.project_id) : null;
                         const accent = entry?.activiteit_kleur || "#3fff8b";
-                        const bgColor = verlof ? "#152640" : !heeftEntry ? "rgba(61,72,93,0.25)" : `${accent}22`;
-                        const borderColor = verlof ? "rgba(160,171,195,0.2)" : !heeftEntry ? "rgba(106,118,140,0.18)" : `${accent}66`;
+                        const verlofColor = verlof?.type === "ziek" ? "#ff716c" : "#feb300";
+                        const bgColor = verlof ? `${verlofColor}1a` : !heeftEntry ? "rgba(61,72,93,0.18)" : `${accent}1f`;
+                        const borderColor = verlof ? `${verlofColor}55` : !heeftEntry ? "rgba(106,118,140,0.15)" : `${accent}55`;
                         return (
                           <div key={i} onClick={() => openAddModal(med.id, dateStr)} style={{
-                            height: 48, borderRadius: 10, background: bgColor, cursor: "pointer",
+                            height: 64, borderRadius: 12, background: bgColor, cursor: "pointer",
                             border: `1px solid ${borderColor}`,
-                            boxShadow: heeftEntry ? `0 0 10px ${accent}33` : "none",
+                            boxShadow: heeftEntry ? `0 0 12px ${accent}25` : "none",
                             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                            padding: "2px 3px", lineHeight: 1.05, transition: "transform 0.1s",
+                            padding: "4px 4px", lineHeight: 1.1, transition: "transform 0.1s",
                           }}>
                             {verlof ? (
-                              <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#a0abc3" }}>beach_access</span>
+                              <>
+                                <span style={{ fontSize: 10, fontWeight: 800, fontFamily: "Inter", color: verlofColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                                  {verlof.type === "ziek" ? "Ziek" : "Verlof"}
+                                </span>
+                                <span style={{ fontSize: 9, fontWeight: 500, fontFamily: "Inter", color: "#a0abc3", marginTop: 2 }}>
+                                  Hele dag
+                                </span>
+                              </>
                             ) : heeftEntry ? (
                               <>
-                                <span style={{ fontSize: 11, fontWeight: 800, fontFamily: "Inter", color: "#dae6ff", letterSpacing: "-0.01em" }}>
-                                  {proj?.nummer?.slice(-3) || "•"}
+                                <span style={{ fontSize: 14, fontWeight: 800, fontFamily: "Manrope", color: "#dae6ff", letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}>
+                                  #{proj?.nummer || "—"}
                                 </span>
-                                <span style={{ fontSize: 8, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 1, fontVariantNumeric: "tabular-nums" }}>
-                                  {entry?.starttijd?.slice(0, 5)}
+                                <span style={{ fontSize: 9, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 3, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
+                                  {entry?.starttijd?.slice(0, 5)}–{entry?.eindtijd?.slice(0, 5)}
                                 </span>
                               </>
                             ) : (
-                              <span style={{ fontSize: 18, color: "rgba(160,171,195,0.35)", lineHeight: 1 }}>+</span>
+                              <span style={{ fontSize: 22, color: "rgba(160,171,195,0.3)", lineHeight: 1, fontWeight: 300 }}>+</span>
                             )}
                           </div>
                         );
@@ -689,20 +717,27 @@ export default function ManagerPlanning() {
               .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
             const maxUren = medewerkers.length * 5 * 8;
             const capaciteitPct = maxUren > 0 ? Math.round((totalGeplandUren / maxUren) * 100) : 0;
+            const activeProjects = new Set(entries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)).size;
             return (
-            <div style={{ marginTop: 24, background: "#000000", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", border: "1px solid rgba(61,72,93,0.2)" }}>
+            <div style={{ marginTop: 24, background: "#061327", borderRadius: 18, padding: "18px 20px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, border: "1px solid rgba(106,118,140,0.15)" }}>
               <div>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 4 }}>Capaciteit</p>
-                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: "#3fff8b" }}>
-                  {medewerkers.length > 0 ? `${capaciteitPct}%` : "—"}
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 6 }}>Geplande uren</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff", fontVariantNumeric: "tabular-nums" }}>
+                  {totalGeplandUren}<span style={{ fontSize: 14, color: "#a0abc3", marginLeft: 2 }}>u</span>
                 </span>
               </div>
-              <div style={{ height: 4, width: 80, background: "#152640", borderRadius: 9999, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, capaciteitPct) : 0}%`, background: "#3fff8b" }} />
+              <div style={{ borderLeft: "1px solid rgba(106,118,140,0.15)", borderRight: "1px solid rgba(106,118,140,0.15)", paddingLeft: 16, paddingRight: 16 }}>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 6 }}>Capaciteit</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: capaciteitPct > 100 ? "#ff716c" : "#3fff8b" }}>
+                  {medewerkers.length > 0 ? `${capaciteitPct}%` : "—"}
+                </span>
+                <div style={{ height: 4, marginTop: 8, background: "#152640", borderRadius: 9999, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, capaciteitPct) : 0}%`, background: capaciteitPct > 100 ? "#ff716c" : "#3fff8b", transition: "width 0.3s" }} />
+                </div>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 4 }}>Incidenten</p>
-                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: overplanned.length > 0 ? "#ff716c" : "#3fff8b" }}>{overplanned.length}</span>
+              <div>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 6 }}>Actieve projecten</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff", fontVariantNumeric: "tabular-nums" }}>{activeProjects}</span>
               </div>
             </div>
             );
