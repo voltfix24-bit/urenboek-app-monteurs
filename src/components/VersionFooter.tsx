@@ -15,7 +15,7 @@ export function VersionFooter() {
         fontSize: 9,
         lineHeight: 1,
         letterSpacing: "0.05em",
-        color: "rgba(218,230,255,0.25)",
+        color: "#1f2937",
         pointerEvents: "none",
         userSelect: "none",
       }}

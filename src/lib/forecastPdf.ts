@@ -146,7 +146,7 @@ export async function generateForecastPdf(projectId: string) {
   html, body { padding: 0; margin: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    color: #1a2332;
+    color: #ffffff;
     font-size: 11pt;
     line-height: 1.45;
     background: #fff;
@@ -158,19 +158,19 @@ export async function generateForecastPdf(projectId: string) {
     justify-content: space-between;
     align-items: flex-start;
     padding-bottom: 16px;
-    border-bottom: 2px solid #0a1a30;
+    border-bottom: 2px solid #ffffff;
     margin-bottom: 24px;
   }
   .brand .logo {
     font-size: 22pt;
     font-weight: 800;
     letter-spacing: -0.5px;
-    color: #0a1a30;
+    color: #ffffff;
     margin: 0;
   }
   .brand .tagline {
     font-size: 9pt;
-    color: #6a768c;
+    color: #9ca3af;
     margin-top: 2px;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -182,11 +182,11 @@ export async function generateForecastPdf(projectId: string) {
   .doc-meta h1 {
     font-size: 16pt;
     margin: 0 0 6px 0;
-    color: #0a1a30;
+    color: #ffffff;
     letter-spacing: -0.3px;
   }
-  .doc-meta .meta-line { color: #6a768c; }
-  .doc-meta .meta-line strong { color: #1a2332; }
+  .doc-meta .meta-line { color: #9ca3af; }
+  .doc-meta .meta-line strong { color: #ffffff; }
 
   .info-grid {
     display: grid;
@@ -198,13 +198,13 @@ export async function generateForecastPdf(projectId: string) {
     font-size: 8pt;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    color: #6a768c;
+    color: #9ca3af;
     font-weight: 600;
     margin-bottom: 6px;
   }
   .info-block .value {
     font-size: 11pt;
-    color: #1a2332;
+    color: #ffffff;
     line-height: 1.5;
   }
   .info-block .value strong { display: block; font-size: 12pt; margin-bottom: 2px; }
@@ -213,7 +213,7 @@ export async function generateForecastPdf(projectId: string) {
     font-size: 9pt;
     text-transform: uppercase;
     letter-spacing: 1.4px;
-    color: #6a768c;
+    color: #9ca3af;
     font-weight: 700;
     margin: 0 0 10px 0;
   }
@@ -227,11 +227,11 @@ export async function generateForecastPdf(projectId: string) {
     font-size: 8.5pt;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #6a768c;
+    color: #9ca3af;
     font-weight: 700;
     text-align: left;
     padding: 10px 8px;
-    border-bottom: 1.5px solid #0a1a30;
+    border-bottom: 1.5px solid #ffffff;
     background: #f6f8fb;
   }
   table.lines tbody td {
@@ -243,7 +243,7 @@ export async function generateForecastPdf(projectId: string) {
   table.lines tbody tr:nth-child(even) td { background: #fafbfd; }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   td.code { font-family: "SF Mono", "Menlo", "Consolas", monospace; font-size: 9.5pt; color: #0a4a8a; white-space: nowrap; }
-  td.desc { color: #1a2332; }
+  td.desc { color: #ffffff; }
 
   .totals {
     margin-top: 18px;
@@ -257,10 +257,10 @@ export async function generateForecastPdf(projectId: string) {
     padding: 8px 12px;
     font-size: 11pt;
   }
-  .totals .row.sub { border-top: 1px solid #e5e9f0; color: #1a2332; }
-  .totals .row.btw { color: #6a768c; font-size: 10pt; }
+  .totals .row.sub { border-top: 1px solid #e5e9f0; color: #ffffff; }
+  .totals .row.btw { color: #9ca3af; font-size: 10pt; }
   .totals .row.grand {
-    background: #0a1a30;
+    background: #ffffff;
     color: #fff;
     font-weight: 700;
     font-size: 13pt;
@@ -272,7 +272,7 @@ export async function generateForecastPdf(projectId: string) {
     margin-top: 36px;
     padding: 16px 18px;
     background: #f6f8fb;
-    border-left: 3px solid #0a1a30;
+    border-left: 3px solid #ffffff;
     border-radius: 4px;
     font-size: 9.5pt;
     color: #4a5568;
@@ -281,7 +281,7 @@ export async function generateForecastPdf(projectId: string) {
     font-size: 8pt;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    color: #0a1a30;
+    color: #ffffff;
     font-weight: 700;
     margin-bottom: 6px;
   }
@@ -295,7 +295,7 @@ export async function generateForecastPdf(projectId: string) {
     display: flex;
     justify-content: space-between;
     font-size: 8.5pt;
-    color: #6a768c;
+    color: #9ca3af;
   }
 
   @media print {

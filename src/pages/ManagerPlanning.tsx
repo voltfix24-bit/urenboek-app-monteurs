@@ -33,7 +33,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
-const AVATAR_COLORS = ['var(--accent)', 'var(--accent)', '#6e9bff', 'var(--warn-text)', '#a78bfa'];
+const AVATAR_COLORS = ['var(--accent)', 'var(--accent)', '#2563eb', 'var(--warn-text)', '#a78bfa'];
 
 function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null, weekDateStrings?: string[]): string[] {
   const conflicts: string[] = [];
@@ -1199,7 +1199,7 @@ export default function ManagerPlanning() {
         );
         return (
           <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }} onClick={() => setShowModal(false)}>
-            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
+            <div style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.4)" }} />
             <div style={{ position: "relative", background: "var(--planning-card)", borderRadius: "40px 40px 0 0", padding: "24px 24px 48px", borderTop: "1px solid var(--planning-border-soft)", maxHeight: "85vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
               {modalBody}
             </div>

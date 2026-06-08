@@ -5,7 +5,7 @@ const roleLabels: Record<string, string> = {
   monteur: "Monteur", schakelmonteur: "Schakelmonteur",
   uitvoerder: "Uitvoerder", wv: "WV", manager: "Manager"
 };
-const AVATAR_COLORS = ['#3fff8b', '#22c55e', '#6e9bff', '#feb300', '#a78bfa'];
+const AVATAR_COLORS = ['#10b981', '#22c55e', '#2563eb', '#d97706', '#a78bfa'];
 
 interface Employee {
   id: string; user_id: string; full_name: string; role: string;
@@ -21,18 +21,18 @@ interface Employee {
 
 function StatusBadge({ emp }: { emp: Employee }) {
   if (emp.account_status === "onboarding") {
-    return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "rgba(254,179,0,0.1)", color: "#feb300", border: "1px solid rgba(254,179,0,0.3)" }}>⚠ Verificatie nodig</span>;
+    return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "rgba(254,179,0,0.1)", color: "#d97706", border: "1px solid rgba(254,179,0,0.3)" }}>⚠ Verificatie nodig</span>;
   }
   if (emp.account_status === "invited") {
-    return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "rgba(254,179,0,0.08)", color: "#feb300" }}>📧 Uitgenodigd</span>;
+    return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "rgba(254,179,0,0.08)", color: "#d97706" }}>📧 Uitgenodigd</span>;
   }
   if (emp.account_status === "inactive") {
-    return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "rgba(255,113,108,0.1)", color: "#ff716c" }}>🔴 Inactief</span>;
+    return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "rgba(255,113,108,0.1)", color: "#dc2626" }}>🔴 Inactief</span>;
   }
   if (emp.account_status === "active" && !emp.activated_at) {
-    return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "#102038", color: "#a0abc3" }}>Nog niet ingelogd</span>;
+    return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "#ffffff", color: "#6b7280" }}>Nog niet ingelogd</span>;
   }
-  return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b" }}>🟢 Actief</span>;
+  return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "#ecfdf5", color: "#10b981" }}>🟢 Actief</span>;
 }
 
 export { StatusBadge, roleLabels, AVATAR_COLORS };
@@ -49,8 +49,8 @@ export function MedewerkerKaart({ emp, idx, isSelected, onSelect }: Props) {
   return (
     <div className="rounded-2xl p-3.5 transition-all cursor-pointer" onClick={onSelect}
       style={{
-        background: isSelected ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
-        border: isSelected ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
+        background: isSelected ? "#ecfdf5" : "#ffffff",
+        border: isSelected ? "1px solid #a7f3d0" : "1px solid #e5e7eb",
         opacity: emp.account_status === "inactive" ? 0.6 : 1,
       }}>
       <div className="flex items-center gap-2.5">
@@ -58,13 +58,13 @@ export function MedewerkerKaart({ emp, idx, isSelected, onSelect }: Props) {
           {emp.full_name.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate" style={{ color: "#dae6ff" }}>{emp.full_name}</p>
+          <p className="text-sm font-medium truncate" style={{ color: "#1f2937" }}>{emp.full_name}</p>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-[11px] capitalize" style={{ color: "#a0abc3" }}>{roleLabels[emp.role] || emp.role}</span>
+            <span className="text-[11px] capitalize" style={{ color: "#6b7280" }}>{roleLabels[emp.role] || emp.role}</span>
             <StatusBadge emp={emp} />
           </div>
         </div>
-        <ChevronRight className="h-4 w-4 shrink-0" style={{ color: "#a0abc3" }} />
+        <ChevronRight className="h-4 w-4 shrink-0" style={{ color: "#6b7280" }} />
       </div>
     </div>
   );

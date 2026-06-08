@@ -46,7 +46,7 @@ export default function ZiekMelden() {
     return (
       <div style={{
         minHeight: "100vh",
-        background: "#080f15",
+        background: "#f9fafb",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -64,7 +64,7 @@ export default function ZiekMelden() {
           width: 400,
           height: 400,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(63,255,139,0.15), transparent 70%)",
+          background: "radial-gradient(circle, #ecfdf5, transparent 70%)",
           pointerEvents: "none",
         }} />
 
@@ -73,18 +73,18 @@ export default function ZiekMelden() {
           width: 96,
           height: 96,
           borderRadius: "50%",
-          background: "linear-gradient(135deg, #3fff8b, #13ea79)",
+          background: "linear-gradient(135deg, #10b981, #34d399)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           marginBottom: 28,
-          boxShadow: "0 20px 60px rgba(63,255,139,0.4)",
+          boxShadow: "0 20px 60px #6ee7b7",
           position: "relative",
           zIndex: 1,
         }}>
           <span className="material-symbols-outlined" style={{
             fontSize: 56,
-            color: "#005d2c",
+            color: "#047857",
             fontVariationSettings: "'FILL' 1",
           }}>
             check_circle
@@ -96,7 +96,7 @@ export default function ZiekMelden() {
           fontFamily: "Manrope",
           fontWeight: 800,
           fontSize: 32,
-          color: "#dae6ff",
+          color: "#1f2937",
           marginBottom: 12,
           textAlign: "center",
           position: "relative",
@@ -107,7 +107,7 @@ export default function ZiekMelden() {
         <p style={{
           fontFamily: "Inter",
           fontSize: 14,
-          color: "#a0abc3",
+          color: "#6b7280",
           textAlign: "center",
           maxWidth: 320,
           lineHeight: 1.5,
@@ -135,14 +135,14 @@ export default function ZiekMelden() {
               width: "100%",
               padding: "18px 0",
               borderRadius: 16,
-              background: "linear-gradient(135deg, #3fff8b, #13ea79)",
+              background: "linear-gradient(135deg, #10b981, #34d399)",
               border: "none",
-              color: "#005d2c",
+              color: "#047857",
               fontFamily: "Manrope",
               fontWeight: 800,
               fontSize: 16,
               cursor: "pointer",
-              boxShadow: "0 12px 40px rgba(63,255,139,0.2)",
+              boxShadow: "0 12px 40px #d1fae5",
             }}>
             Terug naar overzicht
           </button>
@@ -152,9 +152,9 @@ export default function ZiekMelden() {
               width: "100%",
               padding: "18px 0",
               borderRadius: 16,
-              background: "#172129",
-              border: "1px solid rgba(66,73,80,0.15)",
-              color: "#3fff8b",
+              background: "#ffffff",
+              border: "1px solid #e5e7eb",
+              color: "#10b981",
               fontFamily: "Manrope",
               fontWeight: 800,
               fontSize: 16,
@@ -175,14 +175,14 @@ export default function ZiekMelden() {
           zIndex: 1,
         }}>
           <div style={{
-            background: "#0c141b",
+            background: "#f9fafb",
             borderRadius: 14,
             padding: "14px 16px",
           }}>
             <p style={{
               fontSize: 9,
               fontWeight: 700,
-              color: "#424950",
+              color: "#4b5563",
               fontFamily: "Inter",
               textTransform: "uppercase",
               letterSpacing: "0.15em",
@@ -194,21 +194,21 @@ export default function ZiekMelden() {
               fontFamily: "Manrope",
               fontWeight: 800,
               fontSize: 14,
-              color: "#3fff8b",
+              color: "#10b981",
               letterSpacing: "0.05em",
             }}>
               AFGEMELD
             </p>
           </div>
           <div style={{
-            background: "#0c141b",
+            background: "#f9fafb",
             borderRadius: 14,
             padding: "14px 16px",
           }}>
             <p style={{
               fontSize: 9,
               fontWeight: 700,
-              color: "#424950",
+              color: "#4b5563",
               fontFamily: "Inter",
               textTransform: "uppercase",
               letterSpacing: "0.15em",
@@ -220,7 +220,7 @@ export default function ZiekMelden() {
               fontFamily: "Manrope",
               fontWeight: 800,
               fontSize: 14,
-              color: "#dae6ff",
+              color: "#1f2937",
               letterSpacing: "0.05em",
             }}>
               VANDAAG, {tijdstip}
@@ -237,7 +237,7 @@ export default function ZiekMelden() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "#080f15",
+      background: "#f9fafb",
       paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 96px)",
     }}>
       {/* Header with back button */}
@@ -255,7 +255,7 @@ export default function ZiekMelden() {
             borderRadius: "50%",
             background: "#1d2730",
             border: "none",
-            color: "#3fff8b",
+            color: "#10b981",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -269,7 +269,7 @@ export default function ZiekMelden() {
           fontFamily: "Manrope",
           fontWeight: 800,
           fontSize: 22,
-          color: "#dae6ff",
+          color: "#1f2937",
         }}>
           Ziek melden
         </h1>
@@ -283,7 +283,7 @@ export default function ZiekMelden() {
       }}>
         {/* Stap 1 — Bel */}
         <section style={{
-          background: "#172129",
+          background: "#ffffff",
           borderRadius: 20,
           padding: 20,
           border: "1px solid rgba(255,113,108,0.2)",
@@ -301,7 +301,7 @@ export default function ZiekMelden() {
             }}>
               <span className="material-symbols-outlined" style={{
                 fontSize: 22,
-                color: "#ff716c",
+                color: "#dc2626",
                 fontVariationSettings: "'FILL' 1",
               }}>
                 error
@@ -312,7 +312,7 @@ export default function ZiekMelden() {
                 fontFamily: "Manrope",
                 fontWeight: 700,
                 fontSize: 15,
-                color: "#dae6ff",
+                color: "#1f2937",
                 marginBottom: 4,
               }}>
                 Stap 1: Bel je leidinggevende
@@ -320,7 +320,7 @@ export default function ZiekMelden() {
               <p style={{
                 fontFamily: "Inter",
                 fontSize: 12,
-                color: "#a0abc3",
+                color: "#6b7280",
                 lineHeight: 1.5,
               }}>
                 Volgens de afspraak bel je eerst. Heb je al gebeld? Dan kun je hieronder je ziekmelding invullen.
@@ -337,7 +337,7 @@ export default function ZiekMelden() {
               width: "100%",
               padding: "14px 0",
               borderRadius: 14,
-              background: "linear-gradient(135deg, #ff716c, #e8463f)",
+              background: "linear-gradient(135deg, #dc2626, #e8463f)",
               color: "#fff",
               fontFamily: "Manrope",
               fontWeight: 800,
@@ -357,7 +357,7 @@ export default function ZiekMelden() {
 
         {/* Stap 2 — Formulier */}
         <section style={{
-          background: "#172129",
+          background: "#ffffff",
           borderRadius: 20,
           padding: 20,
         }}>
@@ -366,7 +366,7 @@ export default function ZiekMelden() {
               width: 44,
               height: 44,
               borderRadius: 12,
-              background: "rgba(63,255,139,0.12)",
+              background: "#ecfdf5",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -374,7 +374,7 @@ export default function ZiekMelden() {
             }}>
               <span className="material-symbols-outlined" style={{
                 fontSize: 22,
-                color: "#3fff8b",
+                color: "#10b981",
                 fontVariationSettings: "'FILL' 1",
               }}>
                 medical_services
@@ -385,7 +385,7 @@ export default function ZiekMelden() {
                 fontFamily: "Manrope",
                 fontWeight: 700,
                 fontSize: 15,
-                color: "#dae6ff",
+                color: "#1f2937",
                 marginBottom: 4,
               }}>
                 Stap 2: Vul je ziekmelding in
@@ -393,7 +393,7 @@ export default function ZiekMelden() {
               <p style={{
                 fontFamily: "Inter",
                 fontSize: 12,
-                color: "#a0abc3",
+                color: "#6b7280",
                 lineHeight: 1.5,
               }}>
                 Deze melding gaat direct naar de planning en je leidinggevende.
@@ -405,7 +405,7 @@ export default function ZiekMelden() {
           <p style={{
             fontSize: 10,
             fontWeight: 700,
-            color: "#424950",
+            color: "#4b5563",
             fontFamily: "Inter",
             textTransform: "uppercase",
             letterSpacing: "0.15em",
@@ -415,7 +415,7 @@ export default function ZiekMelden() {
           </p>
           <div style={{
             position: "relative",
-            background: "#0c141b",
+            background: "#f9fafb",
             borderRadius: 12,
             padding: "14px 44px 14px 16px",
             marginBottom: 18,
@@ -423,7 +423,7 @@ export default function ZiekMelden() {
             <span style={{
               fontFamily: "Inter",
               fontSize: 13,
-              color: "#3fff8b",
+              color: "#10b981",
               fontWeight: 700,
             }}>
               Vandaag, {vandaagLabel}
@@ -434,7 +434,7 @@ export default function ZiekMelden() {
               top: "50%",
               transform: "translateY(-50%)",
               fontSize: 18,
-              color: "#3fff8b",
+              color: "#10b981",
             }}>
               calendar_month
             </span>
@@ -444,7 +444,7 @@ export default function ZiekMelden() {
           <p style={{
             fontSize: 10,
             fontWeight: 700,
-            color: "#424950",
+            color: "#4b5563",
             fontFamily: "Inter",
             textTransform: "uppercase",
             letterSpacing: "0.15em",
@@ -460,11 +460,11 @@ export default function ZiekMelden() {
               onChange={(e) => setDatumTerug(e.target.value)}
               style={{
                 width: "100%",
-                background: "#0c141b",
+                background: "#f9fafb",
                 border: "none",
                 borderRadius: 12,
                 padding: "14px 44px 14px 16px",
-                color: datumTerug ? "#dae6ff" : "#424950",
+                color: datumTerug ? "#1f2937" : "#4b5563",
                 fontFamily: "Inter",
                 fontSize: 13,
                 outline: "none",
@@ -478,7 +478,7 @@ export default function ZiekMelden() {
               top: "50%",
               transform: "translateY(-50%)",
               fontSize: 18,
-              color: "#3fff8b",
+              color: "#10b981",
               pointerEvents: "none",
             }}>
               event_upcoming
@@ -489,7 +489,7 @@ export default function ZiekMelden() {
           <p style={{
             fontSize: 10,
             fontWeight: 700,
-            color: "#424950",
+            color: "#4b5563",
             fontFamily: "Inter",
             textTransform: "uppercase",
             letterSpacing: "0.15em",
@@ -504,11 +504,11 @@ export default function ZiekMelden() {
             rows={4}
             style={{
               width: "100%",
-              background: "#0c141b",
+              background: "#f9fafb",
               border: "none",
               borderRadius: 12,
               padding: "14px",
-              color: "#dae6ff",
+              color: "#1f2937",
               fontFamily: "Inter",
               fontSize: 13,
               resize: "none",
@@ -528,18 +528,18 @@ export default function ZiekMelden() {
           <div style={{
             flex: 1,
             height: 1,
-            background: "linear-gradient(to right, transparent, rgba(66,73,80,0.3), transparent)",
+            background: "linear-gradient(to right, transparent, #e5e7eb, transparent)",
           }} />
           <div style={{
             width: 6,
             height: 6,
             borderRadius: "50%",
-            background: "rgba(63,255,139,0.3)",
+            background: "#a7f3d0",
           }} />
           <div style={{
             flex: 1,
             height: 1,
-            background: "linear-gradient(to left, transparent, rgba(66,73,80,0.3), transparent)",
+            background: "linear-gradient(to left, transparent, #e5e7eb, transparent)",
           }} />
         </div>
 
@@ -551,9 +551,9 @@ export default function ZiekMelden() {
             width: "100%",
             padding: "20px 0",
             borderRadius: 20,
-            background: "linear-gradient(135deg, #3fff8b, #13ea79)",
+            background: "linear-gradient(135deg, #10b981, #34d399)",
             border: "none",
-            color: "#005d2c",
+            color: "#047857",
             fontFamily: "Manrope",
             fontWeight: 800,
             fontSize: 17,
@@ -562,7 +562,7 @@ export default function ZiekMelden() {
             alignItems: "center",
             justifyContent: "center",
             gap: 10,
-            boxShadow: "0 12px 40px rgba(63,255,139,0.2)",
+            boxShadow: "0 12px 40px #d1fae5",
             opacity: sending ? 0.7 : 1,
           }}>
           <span className="material-symbols-outlined" style={{
@@ -578,7 +578,7 @@ export default function ZiekMelden() {
           textAlign: "center",
           fontSize: 9,
           fontWeight: 700,
-          color: "#424950",
+          color: "#4b5563",
           fontFamily: "Inter",
           textTransform: "uppercase",
           letterSpacing: "0.2em",

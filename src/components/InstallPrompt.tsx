@@ -141,13 +141,13 @@ export function InstallPrompt() {
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md rounded-t-3xl p-5 pb-7"
         style={{
-          background: "#0a1a30",
-          border: "1px solid rgba(106,118,140,0.18)",
+          background: "#ffffff",
+          border: "1px solid #e5e7eb",
           borderBottom: "none",
         }}
       >
         <div className="flex justify-center mb-3">
-          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.18)" }} />
+          <div className="w-10 h-1 rounded-full" style={{ background: "#e5e7eb" }} />
         </div>
 
         <div className="flex items-start gap-3 mb-4">
@@ -163,7 +163,7 @@ export function InstallPrompt() {
             <h2 className="text-base font-bold" style={{ color: "#f5f7fa" }}>
               Installeer TerreVolt
             </h2>
-            <p className="text-xs mt-0.5" style={{ color: "#a0abc3" }}>
+            <p className="text-xs mt-0.5" style={{ color: "#6b7280" }}>
               Werkt sneller en voelt als een echte app op je beginscherm.
             </p>
           </div>
@@ -171,7 +171,7 @@ export function InstallPrompt() {
             onClick={() => dismiss(true)}
             aria-label="Sluiten"
             className="p-1 rounded-full"
-            style={{ color: "#a0abc3" }}
+            style={{ color: "#6b7280" }}
           >
             <X size={18} />
           </button>
@@ -179,9 +179,9 @@ export function InstallPrompt() {
 
         <div
           className="rounded-2xl p-3 mb-4 space-y-2"
-          style={{ background: "rgba(63,255,139,0.06)", border: "1px solid rgba(63,255,139,0.18)" }}
+          style={{ background: "#ecfdf5", border: "1px solid #ecfdf5" }}
         >
-          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#3fff8b" }}>
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#10b981" }}>
             Wat krijg je?
           </p>
           <Benefit icon="🚀" title="Sneller opstarten" text="Direct vanaf je beginscherm, zonder eerst een browser te openen." />
@@ -193,23 +193,23 @@ export function InstallPrompt() {
           <div className="space-y-3">
             <div
               className="rounded-2xl p-4 space-y-3"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(106,118,140,0.15)" }}
+              style={{ background: "#e5e7eb", border: "1px solid #e5e7eb" }}
             >
               <Step
                 num={1}
-                icon={<Share size={18} style={{ color: "#3fff8b" }} />}
+                icon={<Share size={18} style={{ color: "#10b981" }} />}
                 text={
                   <>
-                    Tik op de <span style={{ color: "#3fff8b", fontWeight: 600 }}>Deel</span>‑knop onderin Safari
+                    Tik op de <span style={{ color: "#10b981", fontWeight: 600 }}>Deel</span>‑knop onderin Safari
                   </>
                 }
               />
               <Step
                 num={2}
-                icon={<Plus size={18} style={{ color: "#3fff8b" }} />}
+                icon={<Plus size={18} style={{ color: "#10b981" }} />}
                 text={
                   <>
-                    Kies <span style={{ color: "#3fff8b", fontWeight: 600 }}>Zet op beginscherm</span>
+                    Kies <span style={{ color: "#10b981", fontWeight: 600 }}>Zet op beginscherm</span>
                   </>
                 }
               />
@@ -222,7 +222,7 @@ export function InstallPrompt() {
             <button
               onClick={() => dismiss(true)}
               className="w-full text-xs font-medium py-2"
-              style={{ color: "#a0abc3" }}
+              style={{ color: "#6b7280" }}
             >
               Niet meer tonen
             </button>
@@ -241,23 +241,23 @@ export function InstallPrompt() {
             ) : (
               <div
                 className="rounded-2xl p-4 space-y-3"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(106,118,140,0.15)" }}
+                style={{ background: "#e5e7eb", border: "1px solid #e5e7eb" }}
               >
                 <Step
                   num={1}
-                  icon={<span style={{ fontSize: 18, color: "#3fff8b" }}>⋮</span>}
+                  icon={<span style={{ fontSize: 18, color: "#10b981" }}>⋮</span>}
                   text={
                     <>
-                      Tik op het <span style={{ color: "#3fff8b", fontWeight: 600 }}>menu (⋮)</span> rechtsboven in Chrome
+                      Tik op het <span style={{ color: "#10b981", fontWeight: 600 }}>menu (⋮)</span> rechtsboven in Chrome
                     </>
                   }
                 />
                 <Step
                   num={2}
-                  icon={<Plus size={18} style={{ color: "#3fff8b" }} />}
+                  icon={<Plus size={18} style={{ color: "#10b981" }} />}
                   text={
                     <>
-                      Kies <span style={{ color: "#3fff8b", fontWeight: 600 }}>App installeren</span> of <span style={{ color: "#3fff8b", fontWeight: 600 }}>Toevoegen aan startscherm</span>
+                      Kies <span style={{ color: "#10b981", fontWeight: 600 }}>App installeren</span> of <span style={{ color: "#10b981", fontWeight: 600 }}>Toevoegen aan startscherm</span>
                     </>
                   }
                 />
@@ -271,7 +271,7 @@ export function InstallPrompt() {
             <button
               onClick={() => dismiss(true)}
               className="w-full text-xs font-medium py-2"
-              style={{ color: "#a0abc3" }}
+              style={{ color: "#6b7280" }}
             >
               Niet meer tonen
             </button>
@@ -280,14 +280,14 @@ export function InstallPrompt() {
           <div className="space-y-3">
             <div
               className="rounded-2xl p-4 space-y-3"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(106,118,140,0.15)" }}
+              style={{ background: "#e5e7eb", border: "1px solid #e5e7eb" }}
             >
               <Step
                 num={1}
-                icon={<Download size={18} style={{ color: "#3fff8b" }} />}
+                icon={<Download size={18} style={{ color: "#10b981" }} />}
                 text={
                   <>
-                    Klik in Chrome of Edge op het <span style={{ color: "#3fff8b", fontWeight: 600 }}>installeer‑icoon</span> in de adresbalk
+                    Klik in Chrome of Edge op het <span style={{ color: "#10b981", fontWeight: 600 }}>installeer‑icoon</span> in de adresbalk
                   </>
                 }
               />
@@ -300,7 +300,7 @@ export function InstallPrompt() {
             <button
               onClick={() => dismiss(true)}
               className="w-full text-xs font-medium py-2"
-              style={{ color: "#a0abc3" }}
+              style={{ color: "#6b7280" }}
             >
               Sluiten
             </button>
@@ -316,7 +316,7 @@ function Step({ num, icon, text }: { num: number; icon: React.ReactNode; text: R
     <div className="flex items-center gap-3">
       <div
         className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-        style={{ background: "rgba(63,255,139,0.12)", color: "#3fff8b" }}
+        style={{ background: "#ecfdf5", color: "#10b981" }}
       >
         {num}
       </div>
@@ -334,7 +334,7 @@ function Benefit({ icon, title, text }: { icon: string; title: string; text: str
       <span style={{ fontSize: 16, lineHeight: "20px" }}>{icon}</span>
       <div className="flex-1">
         <p className="text-xs font-semibold" style={{ color: "#e6ebf5" }}>{title}</p>
-        <p className="text-[11px] leading-snug" style={{ color: "#a0abc3" }}>{text}</p>
+        <p className="text-[11px] leading-snug" style={{ color: "#6b7280" }}>{text}</p>
       </div>
     </div>
   );
