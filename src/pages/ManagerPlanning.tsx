@@ -86,6 +86,9 @@ export default function ManagerPlanning() {
   const [expandedMedewerker, setExpandedMedewerker] = useState<string | null>(null);
   const [planningView, setPlanningView] = useState<'grid' | 'klus'>('grid');
   const [projectSearch, setProjectSearch] = useState("");
+  const [extraIds, setExtraIds] = useState<string[]>([]);
+  const [collegaSearch, setCollegaSearch] = useState("");
+  const [collegaOpen, setCollegaOpen] = useState(false);
 
   const weekNumber = getISOWeek(weekStart);
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
