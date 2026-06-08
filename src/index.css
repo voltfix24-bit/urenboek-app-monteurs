@@ -276,6 +276,15 @@ p, h1, h2, h3, span.selectable, input, textarea {
   --info-border:     rgba(99,102,241,0.3);
   --info-dark:       #818cf8;
   --purple:          #a78bfa;
+  --on-accent:       #005d2c;
+
+  --app-navy:             #030e20;
+  --planning-card:        #061327;
+  --planning-cell-empty:  rgba(61,72,93,0.18);
+  --planning-button:      #102038;
+  --planning-avatar-bg:   #142640;
+  --planning-border-soft: rgba(106,118,140,0.15);
+
 
   --background: 222 47% 4%;
   --foreground: 210 20% 89%;
