@@ -54,12 +54,13 @@ export function useMedewerkers(options: UseMedewerkersOptions = {}) {
       return;
     }
 
-    const rolMap = new Map((rollen ?? []).map((r) => [r.user_id, r.role]));
+    const rolMap = new Map((rollen ?? []).map((r: any) => [r.user_id, r.role]));
 
-    let result = (profielen ?? []).map((p) => ({
+    let result = ((profielen ?? []) as any[]).map((p) => ({
       ...p,
       role: rolMap.get(p.user_id) || "monteur",
     })) as ProfielMetRol[];
+
 
     if (!inclusiefManagers) {
       result = result.filter((m) => m.role !== "manager");

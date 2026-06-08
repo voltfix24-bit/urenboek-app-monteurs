@@ -26,7 +26,7 @@ interface BeschikbaarheidItem { id: string; type: string; datum_van: string; dat
 
 const CERT_COLORS: Record<string, string> = { VCA: "var(--accent)", NEN3140: "var(--info)", rijbewijs_BE: "var(--warn-text)", overig: "#a78bfa" };
 const DAGEN_LABEL = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"];
-const AVATAR_COLORS = ['var(--accent)', '#22c55e', 'var(--info)', 'var(--warn-text)', '#a78bfa'];
+const AVATAR_COLORS = ['var(--accent)', 'var(--info)', 'var(--warn-text)', 'var(--purple)', 'var(--accent-dark)'];
 
 const TYPE_COLORS: Record<string, { bg: string; border: string; dot: string }> = {
   vakantie: { bg: "var(--warn-light)", border: "var(--warn-border)", dot: "var(--warn-text)" },
