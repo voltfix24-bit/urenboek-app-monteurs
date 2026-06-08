@@ -32,7 +32,7 @@ const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
 const PLANNING_ROW_GRID_COLUMNS = "minmax(220px, 1fr) minmax(240px, 720px) 26px";
 const PLANNING_DAY_GRID_COLUMNS = "repeat(5, minmax(0, 1fr))";
-const AVATAR_COLORS = ['var(--accent)', 'var(--accent)', 'var(--info)', 'var(--warn-text)', '#a78bfa'];
+const AVATAR_COLORS = ['var(--accent)', 'var(--info)', 'var(--warn-text)', 'var(--purple)', 'var(--accent-dark)'];
 
 function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null, weekDateStrings?: string[]): string[] {
   const conflicts: string[] = [];
