@@ -168,6 +168,9 @@ export default function ManagerPlanning() {
 
   const openAddModal = (medewerker_id: string, datum: string) => {
     const existing = entries.find(e => e.medewerker_id === medewerker_id && e.datum === datum);
+    setExtraIds([]);
+    setCollegaSearch("");
+    setCollegaOpen(false);
     if (existing) {
       setEditId(existing.id);
       setModalForm({ medewerker_id: existing.medewerker_id, project_id: existing.project_id, datum: existing.datum, starttijd: existing.starttijd, eindtijd: existing.eindtijd, notitie: existing.notitie });
