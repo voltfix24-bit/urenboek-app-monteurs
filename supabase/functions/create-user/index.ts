@@ -5,9 +5,22 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const allowedRoles = new Set(["monteur", "schakelmonteur", "uitvoerder", "wv", "manager"]);
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidPassword(password: unknown): password is string {
+  return typeof password === "string" && password.length >= 8 && password.length <= 200;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Methode niet toegestaan" }), {
+      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -61,14 +74,21 @@ Deno.serve(async (req) => {
     } = await req.json();
 
 
-    if (!email || !fullName || !role) {
+    if (
+      typeof email !== "string" ||
+      !emailRegex.test(email) ||
+      typeof fullName !== "string" ||
+      fullName.trim().length < 2 ||
+      typeof role !== "string" ||
+      !allowedRoles.has(role)
+    ) {
       return new Response(JSON.stringify({ error: "Email, naam en rol zijn verplicht" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (!invite_only && !password) {
-      return new Response(JSON.stringify({ error: "Wachtwoord is verplicht" }), {
+    if (!invite_only && !isValidPassword(password)) {
+      return new Response(JSON.stringify({ error: "Wachtwoord moet 8-200 tekens zijn" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -96,8 +116,9 @@ Deno.serve(async (req) => {
         });
       }
 
+      const normalizedEmail = email.trim().toLowerCase();
       const existingUser = existingUserData.users.find((u: any) =>
-        u.email?.toLowerCase() === email.toLowerCase(),
+        u.email?.toLowerCase() === normalizedEmail,
       );
 
       if (existingUser) {
@@ -119,7 +140,7 @@ Deno.serve(async (req) => {
         newUser = updatedUser;
       } else {
         const { data, error: createError } = await adminClient.auth.admin.createUser({
-          email, password, email_confirm: true,
+          email: normalizedEmail, password, email_confirm: true,
           user_metadata: { full_name: fullName },
         });
         if (createError) {
@@ -175,7 +196,9 @@ Deno.serve(async (req) => {
 
 
     // Assign role
-    await adminClient.from("user_roles").insert({ user_id: newUser.user.id, role });
+    await adminClient
+      .from("user_roles")
+      .upsert({ user_id: newUser.user.id, role }, { onConflict: "user_id,role" });
 
     // Add certificates if provided
     if (certificaten && Array.isArray(certificaten) && certificaten.length > 0) {

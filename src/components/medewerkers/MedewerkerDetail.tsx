@@ -11,6 +11,7 @@ import { formatDatum } from "@/lib/formatting";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
+import { generateTemporaryPassword } from "@/lib/passwords";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -160,10 +161,7 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
   const [pwResult, setPwResult] = useState<{ pw: string; email: string } | null>(null);
 
   function genPw() {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-    let r = "";
-    for (let i = 0; i < 10; i++) r += chars.charAt(Math.floor(Math.random() * chars.length));
-    setNewPw(r);
+    setNewPw(generateTemporaryPassword());
     setShowNewPw(true);
   }
 

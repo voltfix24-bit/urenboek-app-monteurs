@@ -7,6 +7,27 @@ interface UseMedewerkersOptions {
   alleenActief?: boolean;
 }
 
+const MEDEWERKER_FIELDS = [
+  "id",
+  "user_id",
+  "full_name",
+  "telefoon",
+  "adres",
+  "rijbewijs",
+  "vaste_vrije_dagen",
+  "uurtarief",
+  "account_status",
+  "invited_at",
+  "activated_at",
+  "noodcontact_naam",
+  "noodcontact_tel",
+  "contract_einddatum",
+  "kvk_nummer",
+  "btw_nummer",
+  "iban",
+  "bedrijfsnaam",
+].join(", ");
+
 export function useMedewerkers(options: UseMedewerkersOptions = {}) {
   const { inclusiefManagers = true, alleenActief = false } = options;
 
@@ -20,7 +41,7 @@ export function useMedewerkers(options: UseMedewerkersOptions = {}) {
 
     const { data: profielen, error: pErr } = await supabase
       .from("profiles")
-      .select("*")
+      .select(MEDEWERKER_FIELDS)
       .order("full_name");
 
     const { data: rollen, error: rErr } = await supabase
