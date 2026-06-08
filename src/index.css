@@ -297,6 +297,67 @@ p, h1, h2, h3, span.selectable, input, textarea {
   --sidebar-ring: 142 70% 45%;
 }
 
+/* Emerald Light theme — alleen kleuren, lettertypes blijven DM Sans/DM Mono */
+[data-theme="emerald"] {
+  --bg-base:         #f8f9ff;
+  --bg-surface:      #eff4ff;
+  --bg-surface-2:    #e6eeff;
+  --border:          #d9e3f6;
+  --border-strong:   #bbcabf;
+  --text-primary:    #121c2a;
+  --text-secondary:  #3c4a42;
+  --text-muted:      #6c7a71;
+  --accent:          #006c49;
+  --accent-dark:     #00422b;
+  --accent-mid:      #10b981;
+  --accent-light:    #adedd3;
+  --accent-border:   #95d3ba;
+  --danger:          #ba1a1a;
+  --danger-light:    #ffdad6;
+  --danger-border:   #ffb3af;
+  --success:         #006c49;
+  --success-light:   #adedd3;
+  --success-border:  #95d3ba;
+  --warn-bg:         #fff4d6;
+  --warn-text:       #8b6914;
+  --warn-border:     #e8d070;
+  --warn-light:      #fff8e0;
+  --warn-dot:        #d4a017;
+  --info:            #2b6954;
+  --info-light:      #dee9fc;
+  --info-border:     #bbcabf;
+  --info-dark:       #0b513d;
+  --purple:          #a43a3a;
+
+  --background: 228 100% 98%;
+  --foreground: 213 39% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 213 39% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 213 39% 12%;
+  --primary: 156 100% 21%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 156 60% 81%;
+  --secondary-foreground: 156 41% 31%;
+  --muted: 222 60% 95%;
+  --muted-foreground: 152 8% 30%;
+  --accent-hsl: 156 100% 21%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 76% 41%;
+  --destructive-foreground: 0 0% 100%;
+  --border-hsl: 222 60% 91%;
+  --input: 222 60% 91%;
+  --ring: 156 100% 21%;
+  --sidebar-background: 228 100% 98%;
+  --sidebar-foreground: 213 39% 12%;
+  --sidebar-primary: 156 100% 21%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 156 60% 81%;
+  --sidebar-accent-foreground: 156 41% 31%;
+  --sidebar-border: 222 60% 91%;
+  --sidebar-ring: 156 100% 21%;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
