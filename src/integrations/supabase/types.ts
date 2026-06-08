@@ -95,6 +95,13 @@ export type Database = {
             foreignKeyName: "bedrijfsgegevens_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bedrijfsgegevens_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -149,6 +156,13 @@ export type Database = {
             foreignKeyName: "beschikbaarheid_behandeld_door_fkey"
             columns: ["behandeld_door"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beschikbaarheid_behandeld_door_fkey"
+            columns: ["behandeld_door"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -157,6 +171,13 @@ export type Database = {
             columns: ["behandeld_door"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beschikbaarheid_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
             referencedColumns: ["id"]
           },
           {
@@ -217,6 +238,13 @@ export type Database = {
             foreignKeyName: "certificaten_medewerker_id_fkey"
             columns: ["medewerker_id"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificaten_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -255,6 +283,13 @@ export type Database = {
           inhoud?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "chat_berichten_afzender_id_fkey"
+            columns: ["afzender_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chat_berichten_afzender_id_fkey"
             columns: ["afzender_id"]
@@ -441,6 +476,13 @@ export type Database = {
             foreignKeyName: "contracten_aangemaakt_door_fkey"
             columns: ["aangemaakt_door"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracten_aangemaakt_door_fkey"
+            columns: ["aangemaakt_door"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -462,6 +504,13 @@ export type Database = {
             foreignKeyName: "contracten_og_profiel_id_fkey"
             columns: ["og_profiel_id"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracten_og_profiel_id_fkey"
+            columns: ["og_profiel_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -470,6 +519,13 @@ export type Database = {
             columns: ["og_profiel_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracten_profiel_id_fkey"
+            columns: ["profiel_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
             referencedColumns: ["id"]
           },
           {
@@ -549,6 +605,13 @@ export type Database = {
             foreignKeyName: "forecast_regels_medewerker_id_fkey"
             columns: ["medewerker_id"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecast_regels_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -587,6 +650,13 @@ export type Database = {
           onderwerp?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "gesprekken_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "gesprekken_medewerker_id_fkey"
             columns: ["medewerker_id"]
@@ -741,6 +811,13 @@ export type Database = {
             foreignKeyName: "inkooporders_aangemaakt_door_fkey"
             columns: ["aangemaakt_door"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporders_aangemaakt_door_fkey"
+            columns: ["aangemaakt_door"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -749,6 +826,13 @@ export type Database = {
             columns: ["aangemaakt_door"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporders_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
             referencedColumns: ["id"]
           },
           {
@@ -878,6 +962,13 @@ export type Database = {
             foreignKeyName: "kandidaten_aangemaakt_door_fkey"
             columns: ["aangemaakt_door"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kandidaten_aangemaakt_door_fkey"
+            columns: ["aangemaakt_door"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -886,6 +977,13 @@ export type Database = {
             columns: ["aangemaakt_door"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kandidaten_profiel_id_fkey"
+            columns: ["profiel_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
             referencedColumns: ["id"]
           },
           {
@@ -931,6 +1029,13 @@ export type Database = {
             foreignKeyName: "manager_handtekeningen_profiel_id_fkey"
             columns: ["profiel_id"]
             isOneToOne: true
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manager_handtekeningen_profiel_id_fkey"
+            columns: ["profiel_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -968,6 +1073,13 @@ export type Database = {
             columns: ["mededeling_id"]
             isOneToOne: false
             referencedRelation: "mededelingen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mededeling_leesstatus_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
             referencedColumns: ["id"]
           },
           {
@@ -1018,6 +1130,13 @@ export type Database = {
           verzonden_door?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "mededelingen_ontvanger_id_fkey"
+            columns: ["ontvanger_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "mededelingen_ontvanger_id_fkey"
             columns: ["ontvanger_id"]
@@ -1112,6 +1231,13 @@ export type Database = {
             foreignKeyName: "overuren_meldingen_behandeld_door_fkey"
             columns: ["behandeld_door"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overuren_meldingen_behandeld_door_fkey"
+            columns: ["behandeld_door"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1120,6 +1246,13 @@ export type Database = {
             columns: ["behandeld_door"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overuren_meldingen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
             referencedColumns: ["id"]
           },
           {
@@ -1192,6 +1325,13 @@ export type Database = {
             foreignKeyName: "planning_medewerker_id_fkey"
             columns: ["medewerker_id"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1260,6 +1400,13 @@ export type Database = {
           volgorde?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "planning_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "planning_templates_created_by_fkey"
             columns: ["created_by"]
@@ -1381,6 +1528,13 @@ export type Database = {
             foreignKeyName: "profiles_geverifieerd_door_fkey"
             columns: ["geverifieerd_door"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_geverifieerd_door_fkey"
+            columns: ["geverifieerd_door"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1389,6 +1543,13 @@ export type Database = {
             columns: ["geverifieerd_door"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_onderaannemer_id_fkey"
+            columns: ["onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
             referencedColumns: ["id"]
           },
           {
@@ -1504,6 +1665,13 @@ export type Database = {
             foreignKeyName: "project_planning_matrix_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_planning_matrix_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1539,6 +1707,13 @@ export type Database = {
           project_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "project_planning_status_definitief_door_fkey"
+            columns: ["definitief_door"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_planning_status_definitief_door_fkey"
             columns: ["definitief_door"]
@@ -1668,6 +1843,13 @@ export type Database = {
             foreignKeyName: "projects_status_gewijzigd_door_fkey"
             columns: ["status_gewijzigd_door"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_status_gewijzigd_door_fkey"
+            columns: ["status_gewijzigd_door"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1776,6 +1958,13 @@ export type Database = {
             foreignKeyName: "spec_code_tarieven_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spec_code_tarieven_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1875,6 +2064,13 @@ export type Database = {
             foreignKeyName: "uren_boekingen_approved_by_fkey"
             columns: ["approved_by"]
             isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uren_boekingen_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1883,6 +2079,13 @@ export type Database = {
             columns: ["approved_by"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uren_boekingen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
             referencedColumns: ["id"]
           },
           {
@@ -1942,6 +2145,91 @@ export type Database = {
       }
     }
     Views: {
+      monteurs_voor_onderaannemer: {
+        Row: {
+          account_status: string | null
+          activated_at: string | null
+          adres: string | null
+          avatar_url: string | null
+          bedrijfsnaam: string | null
+          contract_einddatum: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          invited_at: string | null
+          is_onderaannemer: boolean | null
+          onboarding_voltooid: boolean | null
+          onboarding_voltooid_op: string | null
+          onderaannemer_id: string | null
+          telefoon: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          account_status?: string | null
+          activated_at?: string | null
+          adres?: string | null
+          avatar_url?: string | null
+          bedrijfsnaam?: string | null
+          contract_einddatum?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          invited_at?: string | null
+          is_onderaannemer?: boolean | null
+          onboarding_voltooid?: boolean | null
+          onboarding_voltooid_op?: string | null
+          onderaannemer_id?: string | null
+          telefoon?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          account_status?: string | null
+          activated_at?: string | null
+          adres?: string | null
+          avatar_url?: string | null
+          bedrijfsnaam?: string | null
+          contract_einddatum?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          invited_at?: string | null
+          is_onderaannemer?: boolean | null
+          onboarding_voltooid?: boolean | null
+          onboarding_voltooid_op?: string | null
+          onderaannemer_id?: string | null
+          telefoon?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_onderaannemer_id_fkey"
+            columns: ["onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_onderaannemer_id_fkey"
+            columns: ["onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_onderaannemer_id_fkey"
+            columns: ["onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles_public: {
         Row: {
           full_name: string | null
