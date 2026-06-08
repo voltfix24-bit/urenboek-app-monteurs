@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { cachePlanning, getCachedPlanning } from "@/lib/offlineQueue";
 import { mutate } from "@/lib/supabaseHelpers";
 import { ListSkeleton, PlanningCardSkeleton } from "@/components/ui/Skeletons";
-
+import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { useActiveMedewerker } from "@/hooks/useActiveMedewerker";
 import { MonteurSwitcher } from "@/components/MonteurSwitcher";
@@ -354,10 +354,10 @@ export default function Planning() {
   };
 
   const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-    concept: { bg: "#ffffff", text: "#6b7280", label: "Nog niet ingediend" },
-    ingediend: { bg: "rgba(254,179,0,0.1)", text: "#d97706", label: "Wacht op akkoord" },
-    goedgekeurd: { bg: "#ecfdf5", text: "#10b981", label: "Goedgekeurd ✓" },
-    afgekeurd: { bg: "rgba(255,113,108,0.1)", text: "#dc2626", label: "Niet goedgekeurd" },
+    concept: { bg: "#102038", text: "#a0abc3", label: "Nog niet ingediend" },
+    ingediend: { bg: "rgba(254,179,0,0.1)", text: "#feb300", label: "Wacht op akkoord" },
+    goedgekeurd: { bg: "rgba(63,255,139,0.1)", text: "#3fff8b", label: "Goedgekeurd ✓" },
+    afgekeurd: { bg: "rgba(255,113,108,0.1)", text: "#ff716c", label: "Niet goedgekeurd" },
   };
 
   const definitiefItems = items.filter(it => it.is_definitief);
@@ -366,22 +366,22 @@ export default function Planning() {
   if (profileData?.account_status === 'onboarding') {
     return (
       <PageShell>
-        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, #ffffff 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid #e5e7eb" }}>
+        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, rgba(10,26,48,0.7) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
           <div className="px-4 py-3 flex items-center gap-2.5">
             <HeaderLogo />
-            <span className="text-base font-bold tracking-tight" style={{ color: "#1f2937" }}>Planning</span>
+            <span className="text-base font-bold tracking-tight" style={{ color: "#dae6ff" }}>Planning</span>
           </div>
         </header>
         <div style={{ padding: "48px 20px", textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
-          <h2 className="text-lg font-bold" style={{ color: "#1f2937", marginBottom: 8 }}>Account nog niet actief</h2>
-          <p className="text-sm" style={{ color: "#6b7280", lineHeight: 1.6, marginBottom: 20 }}>
+          <h2 className="text-lg font-bold" style={{ color: "#dae6ff", marginBottom: 8 }}>Account nog niet actief</h2>
+          <p className="text-sm" style={{ color: "#a0abc3", lineHeight: 1.6, marginBottom: 20 }}>
             Je kunt je planning bekijken zodra je account door een manager is geverifieerd.
           </p>
           <button
             onClick={() => navigate("/onboarding-welkom")}
             className="px-5 py-2.5 rounded-xl text-sm font-semibold"
-            style={{ background: "#10b981", color: "#fff", border: "none", cursor: "pointer" }}
+            style={{ background: "#3fff8b", color: "#fff", border: "none", cursor: "pointer" }}
           >
             Naar onboarding →
           </button>
@@ -411,21 +411,21 @@ export default function Planning() {
                   fontFamily: 'Inter',
                   textTransform: 'uppercase',
                   letterSpacing: '0.2em',
-                  color: '#10b981', marginBottom: 4,
+                  color: '#3fff8b', marginBottom: 4,
                 }}>
                   {isOnderaannemer && activeLid && !activeLid.is_self ? `Planning · ${activeLid.full_name}` : 'Jouw planning'}
                 </p>
                 <h2 style={{
                   fontFamily: 'Manrope',
                   fontWeight: 800, fontSize: 28,
-                  color: '#1f2937', lineHeight: 1,
+                  color: '#dae6ff', lineHeight: 1,
                   letterSpacing: '-0.5px',
                   marginBottom: 5,
                 }}>
                   Week {weekNumber}
                 </h2>
                 <p style={{
-                  fontSize: 12, color: '#6b7280',
+                  fontSize: 12, color: '#a0abc3',
                   fontFamily: 'Inter',
                 }}>
                   {format(weekStart, 'EEE d MMM', { locale: nl })}
@@ -439,9 +439,9 @@ export default function Planning() {
                   style={{
                     width: 40, height: 40,
                     borderRadius: 12,
-                    background: '#ffffff',
-                    border: '1px solid #e5e7eb',
-                    color: '#1f2937',
+                    background: '#0d1f38',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    color: '#dae6ff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -458,9 +458,9 @@ export default function Planning() {
                   style={{
                     width: 40, height: 40,
                     borderRadius: 12,
-                    background: '#ffffff',
-                    border: '1px solid #e5e7eb',
-                    color: '#1f2937',
+                    background: '#0d1f38',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    color: '#dae6ff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -485,15 +485,15 @@ export default function Planning() {
                 const isToday = ds === today;
                 const hasItems = items.some(it => it.datum === ds);
                 const barColor =
-                  isToday ? '#10b981'
-                  : hasItems ? '#d97706'
-                  : '#e5e7eb';
+                  isToday ? '#3fff8b'
+                  : hasItems ? '#feb300'
+                  : 'rgba(255,255,255,0.07)';
                 return (
                   <div key={i} style={{ flex: 1 }}>
                     <div style={{
                       height: 3, borderRadius: 2,
                       background: isToday
-                        ? `linear-gradient(90deg, #10b981 50%, #e5e7eb 50%)`
+                        ? `linear-gradient(90deg, #3fff8b 50%, rgba(255,255,255,0.07) 50%)`
                         : barColor,
                       marginBottom: 6,
                     }} />
@@ -501,7 +501,7 @@ export default function Planning() {
                       fontSize: 9.5,
                       fontFamily: 'Inter',
                       fontWeight: isToday ? 700 : 400,
-                      color: isToday ? '#10b981' : '#6b7280',
+                      color: isToday ? '#3fff8b' : '#54617A',
                       letterSpacing: '0.5px',
                       textTransform: 'uppercase',
                     }}>
@@ -515,7 +515,7 @@ export default function Planning() {
 
             {/* LOADING */}
             {loading && (
-              <div style={{ textAlign: 'center', padding: 40, color: '#6b7280', fontFamily: 'Inter' }}>Planning laden...</div>
+              <div style={{ textAlign: 'center', padding: 40, color: '#a0abc3', fontFamily: 'Inter' }}>Planning laden...</div>
             )}
 
             {/* PLANNING LIST */}
@@ -551,7 +551,7 @@ export default function Planning() {
                           fontWeight: 600,
                           fontFamily: 'Inter',
                           textTransform: 'uppercase',
-                          color: isToday ? '#10b981' : '#6b7280',
+                          color: isToday ? '#3fff8b' : '#54617A',
                           marginBottom: 2,
                         }}>
                           {DOW}
@@ -560,7 +560,7 @@ export default function Planning() {
                           fontFamily: 'Manrope',
                           fontSize: 26,
                           fontWeight: 700,
-                          color: isToday ? '#10b981' : '#1f2937',
+                          color: isToday ? '#3fff8b' : '#dae6ff',
                           lineHeight: 1,
                           letterSpacing: '-0.5px',
                         }}>
@@ -571,7 +571,7 @@ export default function Planning() {
                             className="material-symbols-outlined"
                             style={{
                               fontSize: 8,
-                              color: '#10b981',
+                              color: '#3fff8b',
                               marginTop: 4,
                               display: 'block',
                               fontVariationSettings: "'FILL' 1",
@@ -587,8 +587,8 @@ export default function Planning() {
                         {beschItem && (
                           <div style={{
                             borderRadius: 12,
-                            border: '1px solid #e5e7eb',
-                            background: '#ffffff',
+                            border: '1px solid rgba(255,255,255,0.07)',
+                            background: '#0d1f38',
                             padding: '14px 16px',
                             display: 'flex',
                             alignItems: 'center',
@@ -599,14 +599,14 @@ export default function Planning() {
                               className="material-symbols-outlined"
                               style={{
                                 fontSize: 20,
-                                color: '#6b7280',
+                                color: '#a0abc3',
                                 fontVariationSettings: "'wght' 300",
                               }}>
                               beach_access
                             </span>
                             <span style={{
                               fontSize: 13,
-                              color: '#6b7280',
+                              color: '#a0abc3',
                               fontFamily: 'Inter',
                               fontStyle: 'italic',
                             }}>
@@ -619,7 +619,7 @@ export default function Planning() {
                         {isEmpty && (
                           <div style={{
                             borderRadius: 12,
-                            border: '1px dashed #e5e7eb',
+                            border: '1px dashed rgba(255,255,255,0.07)',
                             padding: '14px 16px',
                             display: 'flex',
                             alignItems: 'center',
@@ -630,14 +630,14 @@ export default function Planning() {
                               className="material-symbols-outlined"
                               style={{
                                 fontSize: 18,
-                                color: '#6b7280',
+                                color: '#a0abc3',
                                 fontVariationSettings: "'wght' 300",
                               }}>
                               event_busy
                             </span>
                             <span style={{
                               fontSize: 12,
-                              color: '#6b7280',
+                              color: '#a0abc3',
                               fontFamily: 'Inter',
                             }}>
                               Geen werk gepland
@@ -649,10 +649,10 @@ export default function Planning() {
                         {!beschItem && dayItems.length > 0 && (
                           <div style={{
                             borderRadius: 12,
-                            border: `1px solid ${isToday ? '#d1fae5' : '#e5e7eb'}`,
-                            background: '#ffffff',
+                            border: `1px solid ${isToday ? 'rgba(63,255,139,0.25)' : 'rgba(255,255,255,0.07)'}`,
+                            background: '#0d1f38',
                             overflow: 'hidden',
-                            boxShadow: isToday ? 'inset 3px 0 0 #10b981' : 'none',
+                            boxShadow: isToday ? 'inset 3px 0 0 #3fff8b' : 'none',
                           }}>
                             {dayItems.map((item, idx) => {
                               const boeking = existingBoekingen.get(`${dateStr}|${item.project_id}`);
@@ -669,10 +669,10 @@ export default function Planning() {
                               const klikbaar = (!isGeboekt && item.is_definitief) || isBewerkbaar;
                               // Kleurschema per status van de boeking
                               const boekingKleur = !isGeboekt ? null : (
-                                boeking!.status === "goedgekeurd" ? { bg: "#ecfdf5", border: "#d1fae5", fg: "#10b981", icon: "check_circle", fill: true } :
-                                boeking!.status === "afgekeurd"   ? { bg: "rgba(255,113,108,0.1)", border: "rgba(255,113,108,0.25)", fg: "#dc2626", icon: "error", fill: true } :
-                                boeking!.status === "ingediend"   ? { bg: "rgba(254,179,0,0.1)",  border: "rgba(254,179,0,0.25)",  fg: "#d97706", icon: "schedule", fill: false } :
-                                                                    { bg: "#ffffff",                border: "#e5e7eb", fg: "#6b7280", icon: "edit_note", fill: false }
+                                boeking!.status === "goedgekeurd" ? { bg: "rgba(63,255,139,0.1)", border: "rgba(63,255,139,0.25)", fg: "#3fff8b", icon: "check_circle", fill: true } :
+                                boeking!.status === "afgekeurd"   ? { bg: "rgba(255,113,108,0.1)", border: "rgba(255,113,108,0.25)", fg: "#ff716c", icon: "error", fill: true } :
+                                boeking!.status === "ingediend"   ? { bg: "rgba(254,179,0,0.1)",  border: "rgba(254,179,0,0.25)",  fg: "#feb300", icon: "schedule", fill: false } :
+                                                                    { bg: "#102038",                border: "rgba(255,255,255,0.08)", fg: "#a0abc3", icon: "edit_note", fill: false }
                               );
 
                               return (
@@ -709,14 +709,14 @@ export default function Planning() {
                                             marginBottom: 6,
                                             background: item.activiteit_kleur
                                               ? `${item.activiteit_kleur}22`
-                                              : '#ecfdf5',
-                                            border: `1px solid ${item.activiteit_kleur || '#10b981'}44`,
+                                              : 'rgba(63,255,139,0.1)',
+                                            border: `1px solid ${item.activiteit_kleur || '#3fff8b'}44`,
                                           }}>
                                             <span
                                               className="material-symbols-outlined"
                                               style={{
                                                 fontSize: 8,
-                                                color: item.activiteit_kleur || '#10b981',
+                                                color: item.activiteit_kleur || '#3fff8b',
                                                 fontVariationSettings: "'FILL' 1",
                                               }}>
                                               fiber_manual_record
@@ -725,7 +725,7 @@ export default function Planning() {
                                               fontSize: 10,
                                               fontWeight: 600,
                                               fontFamily: 'Inter',
-                                              color: item.activiteit_kleur || '#10b981',
+                                              color: item.activiteit_kleur || '#3fff8b',
                                             }}>
                                               {item.activiteit}
                                             </span>
@@ -735,7 +735,7 @@ export default function Planning() {
                                           fontSize: 15,
                                           fontWeight: 700,
                                           fontFamily: 'Manrope',
-                                          color: '#1f2937',
+                                          color: '#dae6ff',
                                           marginBottom: 2,
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
@@ -745,7 +745,7 @@ export default function Planning() {
                                         </div>
                                         <div style={{
                                           fontSize: 11,
-                                          color: '#6b7280',
+                                          color: '#a0abc3',
                                           fontFamily: 'Inter',
                                         }}>
                                           #{item.project_nummer}
@@ -835,7 +835,7 @@ export default function Planning() {
                                           gap: 4,
                                           padding: '4px 10px',
                                           borderRadius: 9999,
-                                          background: isToday ? '#d97706' : 'rgba(254,179,0,0.1)',
+                                          background: isToday ? '#feb300' : 'rgba(254,179,0,0.1)',
                                           border: isToday ? 'none' : '1px solid rgba(254,179,0,0.25)',
                                           flexShrink: 0,
                                         }}>
@@ -843,7 +843,7 @@ export default function Planning() {
                                             className="material-symbols-outlined"
                                             style={{
                                               fontSize: 13,
-                                              color: isToday ? '#92400e' : '#d97706',
+                                              color: isToday ? '#523700' : '#feb300',
                                               fontVariationSettings: "'wght' 300",
                                             }}>
                                             pending
@@ -852,7 +852,7 @@ export default function Planning() {
                                             fontSize: 11,
                                             fontWeight: 700,
                                             fontFamily: 'Inter',
-                                            color: isToday ? '#92400e' : '#d97706',
+                                            color: isToday ? '#523700' : '#feb300',
                                           }}>
                                             Boeken
                                           </span>
@@ -864,15 +864,15 @@ export default function Planning() {
                                           gap: 4,
                                           padding: '4px 10px',
                                           borderRadius: 9999,
-                                          background: '#e5e7eb',
-                                          border: '1px solid #e5e7eb',
+                                          background: 'rgba(255,255,255,0.04)',
+                                          border: '1px solid rgba(255,255,255,0.08)',
                                           flexShrink: 0,
                                         }}>
                                           <span
                                             className="material-symbols-outlined"
                                             style={{
                                               fontSize: 13,
-                                              color: '#6b7280',
+                                              color: '#a0abc3',
                                               fontVariationSettings: "'wght' 300",
                                             }}>
                                             lock
@@ -881,7 +881,7 @@ export default function Planning() {
                                             fontSize: 11,
                                             fontWeight: 700,
                                             fontFamily: 'Inter',
-                                            color: '#6b7280',
+                                            color: '#a0abc3',
                                           }}>
                                             Concept
                                           </span>
@@ -910,14 +910,14 @@ export default function Planning() {
                                           className="material-symbols-outlined"
                                           style={{
                                             fontSize: 14,
-                                            color: '#6b7280',
+                                            color: '#54617A',
                                             fontVariationSettings: "'wght' 300",
                                           }}>
                                           schedule
                                         </span>
                                         <span style={{
                                           fontSize: 12,
-                                          color: '#6b7280',
+                                          color: '#a0abc3',
                                           fontFamily: 'Inter',
                                         }}>
                                           {item.starttijd}–{item.eindtijd}
@@ -933,14 +933,14 @@ export default function Planning() {
                                             className="material-symbols-outlined"
                                             style={{
                                               fontSize: 14,
-                                              color: '#6b7280',
+                                              color: '#54617A',
                                               fontVariationSettings: "'wght' 300",
                                             }}>
                                             location_on
                                           </span>
                                           <span style={{
                                             fontSize: 12,
-                                            color: '#6b7280',
+                                            color: '#a0abc3',
                                             fontFamily: 'Inter',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
@@ -964,14 +964,14 @@ export default function Planning() {
                                           className="material-symbols-outlined"
                                           style={{
                                             fontSize: 14,
-                                            color: '#6b7280',
+                                            color: '#54617A',
                                             fontVariationSettings: "'wght' 300",
                                           }}>
                                           group
                                         </span>
                                         <span style={{
                                           fontSize: 11,
-                                          color: '#6b7280',
+                                          color: '#a0abc3',
                                           fontFamily: 'Inter',
                                         }}>
                                           {item.collega_ids!
@@ -997,7 +997,7 @@ export default function Planning() {
                                           className="material-symbols-outlined"
                                           style={{
                                             fontSize: 14,
-                                            color: '#d97706',
+                                            color: '#feb300',
                                             fontVariationSettings: "'wght' 300",
                                             flexShrink: 0,
                                             marginTop: 1,
@@ -1006,7 +1006,7 @@ export default function Planning() {
                                         </span>
                                         <span style={{
                                           fontSize: 11,
-                                          color: '#d97706',
+                                          color: '#feb300',
                                           fontFamily: 'Inter',
                                           lineHeight: 1.4,
                                         }}>
@@ -1031,7 +1031,7 @@ export default function Planning() {
                                           className="material-symbols-outlined"
                                           style={{
                                             fontSize: 14,
-                                            color: '#d97706',
+                                            color: '#feb300',
                                             fontVariationSettings: "'wght' 300",
                                             flexShrink: 0,
                                             marginTop: 1,
@@ -1040,7 +1040,7 @@ export default function Planning() {
                                         </span>
                                         <span style={{
                                           fontSize: 11,
-                                          color: '#d97706',
+                                          color: '#feb300',
                                           fontFamily: 'Inter',
                                           lineHeight: 1.4,
                                         }}>
@@ -1061,9 +1061,9 @@ export default function Planning() {
                                           width: '100%',
                                           padding: '9px 12px',
                                           borderRadius: 10,
-                                          background: '#ecfdf5',
-                                          border: '1px solid #ecfdf5',
-                                          color: '#10b981',
+                                          background: 'rgba(63,255,139,0.06)',
+                                          border: '1px solid rgba(63,255,139,0.15)',
+                                          color: '#3fff8b',
                                           fontSize: 12,
                                           fontWeight: 600,
                                           fontFamily: 'Inter',
@@ -1088,7 +1088,7 @@ export default function Planning() {
                                   {!isLast && (
                                     <div style={{
                                       height: 1,
-                                      background: '#f3f4f6',
+                                      background: 'rgba(61,72,93,0.5)',
                                       margin: '0 16px',
                                     }} />
                                   )}
@@ -1112,7 +1112,7 @@ export default function Planning() {
                       className="material-symbols-outlined"
                       style={{
                         fontSize: 48,
-                        color: '#6b7280',
+                        color: '#a0abc3',
                         marginBottom: 12,
                         display: 'block',
                         fontVariationSettings: "'wght' 300",
@@ -1123,14 +1123,14 @@ export default function Planning() {
                       fontSize: 15,
                       fontWeight: 700,
                       fontFamily: 'Manrope',
-                      color: '#1f2937',
+                      color: '#dae6ff',
                       marginBottom: 6,
                     }}>
                       Geen bevestigde planning
                     </p>
                     <p style={{
                       fontSize: 13,
-                      color: '#6b7280',
+                      color: '#a0abc3',
                       fontFamily: 'Inter',
                       lineHeight: 1.6,
                     }}>
@@ -1143,6 +1143,7 @@ export default function Planning() {
           </main>
         </PullToRefresh>
 
+        <BottomNav badges={badges} />
 
         {/* UREN MODAL */}
         {showUrenModal && modalItem && (
@@ -1153,7 +1154,7 @@ export default function Planning() {
               display: 'flex',
               alignItems: 'flex-end',
               justifyContent: 'center',
-              background: 'rgba(15,23,42,0.4)',
+              background: 'rgba(0,0,0,0.6)',
               backdropFilter: 'blur(6px)',
             }}
             onClick={() => setShowUrenModal(false)}>
@@ -1162,10 +1163,10 @@ export default function Planning() {
               style={{
                 width: '100%',
                 maxWidth: 480,
-                background: '#ffffff',
+                background: 'rgba(10,26,48,0.97)',
                 backdropFilter: 'blur(24px)',
                 borderRadius: '32px 32px 0 0',
-                borderTop: '1px solid #e5e7eb',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
                 maxHeight: maxModalHeight,
                 display: 'flex',
                 flexDirection: 'column',
@@ -1176,10 +1177,10 @@ export default function Planning() {
               {/* Sticky top: handle + titel + sluit (altijd zichtbaar, blijft niet weg-scrollen) */}
               <div style={{
                 flexShrink: 0,
-                background: '#ffffff',
+                background: 'rgba(10,26,48,0.97)',
                 borderTopLeftRadius: 32,
                 borderTopRightRadius: 32,
-                borderBottom: '1px solid #e5e7eb',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
               }}>
                 {/* Handle */}
                 <div style={{
@@ -1190,7 +1191,7 @@ export default function Planning() {
                   <div style={{
                     width: 48, height: 4,
                     borderRadius: 9999,
-                    background: '#e5e7eb',
+                    background: 'rgba(255,255,255,0.15)',
                   }} />
                 </div>
 
@@ -1207,7 +1208,7 @@ export default function Planning() {
                       fontFamily: 'Manrope',
                       fontWeight: 800,
                       fontSize: 20,
-                      color: '#1f2937',
+                      color: '#dae6ff',
                       lineHeight: 1.15,
                       marginBottom: 4,
                     }}>
@@ -1215,7 +1216,7 @@ export default function Planning() {
                     </h2>
                     <p style={{
                       fontSize: 12,
-                      color: '#6b7280',
+                      color: '#a0abc3',
                       fontFamily: 'Inter',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
@@ -1243,11 +1244,11 @@ export default function Planning() {
                             background:
                               editingBoekingStatus === 'ingediend' ? 'rgba(254,179,0,0.18)'
                               : editingBoekingStatus === 'afgekeurd' ? 'rgba(255,113,108,0.18)'
-                              : '#e5e7eb',
+                              : 'rgba(255,255,255,0.08)',
                             color:
-                              editingBoekingStatus === 'ingediend' ? '#d97706'
-                              : editingBoekingStatus === 'afgekeurd' ? '#dc2626'
-                              : '#6b7280',
+                              editingBoekingStatus === 'ingediend' ? '#feb300'
+                              : editingBoekingStatus === 'afgekeurd' ? '#ff716c'
+                              : '#a0abc3',
                           }}>
                             {editingBoekingStatus}
                           </span>
@@ -1262,9 +1263,9 @@ export default function Planning() {
                       flexShrink: 0,
                       width: 44, height: 44,
                       borderRadius: '50%',
-                      background: '#e5e7eb',
-                      border: '1px solid #e5e7eb',
-                      color: '#1f2937',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      color: '#dae6ff',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -1297,15 +1298,15 @@ export default function Planning() {
                 <div style={{
                   padding: '12px 14px',
                   borderRadius: 14,
-                  background: '#ffffff',
-                  border: '1px solid #e5e7eb',
+                  background: '#061327',
+                  border: '1px solid rgba(255,255,255,0.07)',
                   marginBottom: 20,
                 }}>
                   <p style={{
                     fontSize: 15,
                     fontWeight: 700,
                     fontFamily: 'Manrope',
-                    color: '#1f2937',
+                    color: '#dae6ff',
                     marginBottom: 4,
                   }}>
                     {modalItem.project_naam}
@@ -1319,14 +1320,14 @@ export default function Planning() {
                       className="material-symbols-outlined"
                       style={{
                         fontSize: 13,
-                        color: '#6b7280',
+                        color: '#54617A',
                         fontVariationSettings: "'wght' 300",
                       }}>
                       schedule
                     </span>
                     <p style={{
                       fontSize: 12,
-                      color: '#6b7280',
+                      color: '#a0abc3',
                       fontFamily: 'Inter',
                     }}>
                       {format(
@@ -1349,7 +1350,7 @@ export default function Planning() {
                   fontFamily: 'Inter',
                   textTransform: 'uppercase',
                   letterSpacing: '0.15em',
-                  color: '#6b7280',
+                  color: '#54617A',
                   marginBottom: 10,
                 }}>
                   Werkzaamheden
@@ -1359,7 +1360,7 @@ export default function Planning() {
                   gap: 8,
                   marginBottom: 24,
                   padding: 4,
-                  background: '#ffffff',
+                  background: '#061327',
                   borderRadius: 14,
                 }}>
                   {['schakelen', 'monteren'].map(w => (
@@ -1371,9 +1372,9 @@ export default function Planning() {
                         borderRadius: 10,
                         border: 'none',
                         background: urenForm.werkzaamheden === w
-                          ? 'linear-gradient(135deg, #10b981, #34d399)'
+                          ? 'linear-gradient(135deg,#3fff8b,#13ea79)'
                           : 'transparent',
-                        color: urenForm.werkzaamheden === w ? '#047857' : '#6b7280',
+                        color: urenForm.werkzaamheden === w ? '#005d2c' : '#a0abc3',
                         fontFamily: 'Inter',
                         fontWeight: 700,
                         fontSize: 13,
@@ -1393,7 +1394,7 @@ export default function Planning() {
                   fontFamily: 'Inter',
                   textTransform: 'uppercase',
                   letterSpacing: '0.15em',
-                  color: '#6b7280',
+                  color: '#54617A',
                   marginBottom: 12,
                   textAlign: 'center',
                 }}>
@@ -1411,9 +1412,9 @@ export default function Planning() {
                     style={{
                       width: 48, height: 48,
                       borderRadius: '50%',
-                      background: '#ecfdf5',
+                      background: '#142640',
                       border: '1px solid rgba(255,113,108,0.25)',
-                      color: '#1f2937',
+                      color: '#dae6ff',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -1430,7 +1431,7 @@ export default function Planning() {
                       fontFamily: 'Manrope',
                       fontWeight: 800,
                       fontSize: 52,
-                      color: '#1f2937',
+                      color: '#dae6ff',
                       lineHeight: 1,
                       letterSpacing: '-1px',
                     }}>
@@ -1440,7 +1441,7 @@ export default function Planning() {
                       fontSize: 10,
                       fontWeight: 700,
                       fontFamily: 'Inter',
-                      color: '#10b981',
+                      color: '#3fff8b',
                       letterSpacing: '0.25em',
                       textTransform: 'uppercase',
                       marginTop: 4,
@@ -1453,9 +1454,9 @@ export default function Planning() {
                     style={{
                       width: 48, height: 48,
                       borderRadius: '50%',
-                      background: '#ecfdf5',
-                      border: '1px solid #a7f3d0',
-                      color: '#10b981',
+                      background: 'rgba(63,255,139,0.15)',
+                      border: '1px solid rgba(63,255,139,0.3)',
+                      color: '#3fff8b',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -1486,12 +1487,12 @@ export default function Planning() {
                           padding: '7px 14px',
                           borderRadius: 9999,
                           border: active
-                            ? '1px solid #6ee7b7'
-                            : '1px solid #e5e7eb',
+                            ? '1px solid rgba(63,255,139,0.4)'
+                            : '1px solid rgba(255,255,255,0.07)',
                           background: active
-                            ? '#ecfdf5'
-                            : '#ffffff',
-                          color: active ? '#10b981' : '#6b7280',
+                            ? 'rgba(63,255,139,0.1)'
+                            : '#061327',
+                          color: active ? '#3fff8b' : '#a0abc3',
                           fontFamily: 'Manrope',
                           fontWeight: 700,
                           fontSize: 13,
@@ -1527,7 +1528,7 @@ export default function Planning() {
                           className="material-symbols-outlined"
                           style={{
                             fontSize: 18,
-                            color: '#d97706',
+                            color: '#feb300',
                             fontVariationSettings: "'wght' 300",
                           }}>
                           warning
@@ -1536,14 +1537,14 @@ export default function Planning() {
                           fontSize: 12,
                           fontWeight: 700,
                           fontFamily: 'Inter',
-                          color: '#d97706',
+                          color: '#feb300',
                         }}>
                           Afwijking ({isMore ? '+' : ''}{delta.toFixed(1)}u — gepland {planned}u)
                         </span>
                       </div>
                       <p style={{
                         fontSize: 11,
-                        color: '#6b7280',
+                        color: '#a0abc3',
                         fontFamily: 'Inter',
                         marginBottom: 8,
                         lineHeight: 1.4,
@@ -1562,9 +1563,9 @@ export default function Planning() {
                           width: '100%',
                           padding: 10,
                           borderRadius: 10,
-                          background: '#ffffff',
+                          background: '#061327',
                           border: '1px solid rgba(254,179,0,0.25)',
-                          color: '#1f2937',
+                          color: '#dae6ff',
                           fontFamily: 'Inter',
                           fontSize: 13,
                           resize: 'none',
@@ -1573,7 +1574,7 @@ export default function Planning() {
                       />
                       <div style={{
                         fontSize: 10,
-                        color: '#6b7280',
+                        color: '#54617A',
                         fontFamily: 'Inter',
                         marginTop: 4,
                         textAlign: 'right',
@@ -1589,8 +1590,8 @@ export default function Planning() {
               <div style={{
                 flexShrink: 0,
                 padding: `14px 24px ${Math.round(footerOffset + 18)}px`,
-                borderTop: '1px solid #e5e7eb',
-                background: '#ffffff',
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                background: 'rgba(10,26,48,0.97)',
                 position: 'relative',
               }}>
                 {/* Scroll hint — fade + chevron when more content below */}
@@ -1603,7 +1604,7 @@ export default function Planning() {
                     bottom: '100%',
                     height: 56,
                     pointerEvents: 'none',
-                    background: 'linear-gradient(to top, #ffffff, rgba(255,255,255,0))',
+                    background: 'linear-gradient(to top, rgba(10,26,48,0.97), rgba(10,26,48,0))',
                     opacity: showScrollHint ? 1 : 0,
                     transition: 'opacity 220ms ease',
                   }}
@@ -1623,14 +1624,14 @@ export default function Planning() {
                     width: 30,
                     height: 30,
                     borderRadius: 9999,
-                    background: '#ffffff',
-                    border: '1px solid #a7f3d0',
-                    color: '#10b981',
+                    background: 'rgba(10,26,48,0.92)',
+                    border: '1px solid rgba(63,255,139,0.35)',
+                    color: '#3fff8b',
                     display: showScrollHint ? 'flex' : 'none',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(15,23,42,0.08)',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
                     animation: 'planningScrollHintBounce 1.6s ease-in-out infinite',
                     padding: 0,
                   }}>
@@ -1648,8 +1649,8 @@ export default function Planning() {
                       height: 52,
                       borderRadius: 14,
                       background: 'transparent',
-                      border: '1px solid #e5e7eb',
-                      color: '#1f2937',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      color: '#dae6ff',
                       fontFamily: 'Manrope',
                       fontWeight: 700,
                       fontSize: 13,
@@ -1674,9 +1675,9 @@ export default function Planning() {
                       flex: 1,
                       height: 52,
                       borderRadius: 14,
-                      background: 'linear-gradient(135deg, #10b981, #34d399)',
+                      background: 'linear-gradient(135deg,#3fff8b,#13ea79)',
                       border: 'none',
-                      color: '#047857',
+                      color: '#005d2c',
                       fontFamily: 'Manrope',
                       fontWeight: 800,
                       fontSize: 13,
@@ -1687,7 +1688,7 @@ export default function Planning() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 8,
-                      boxShadow: '0 8px 32px #d1fae5',
+                      boxShadow: '0 8px 32px rgba(63,255,139,0.2)',
                     }}>
                     <span
                       className="material-symbols-outlined"

@@ -4,9 +4,7 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { ROUTE_ACCESS } from "@/lib/routeAccess";
-import type { RolPermissies } from "@/lib/permissions";
+import { AuthProvider, useAuth, type RolPermissies } from "@/hooks/useAuth";
 import { ProfileProvider } from "@/hooks/useProfile";
 import { ActiveMedewerkerProvider } from "@/hooks/useActiveMedewerker";
 import { NavBadgesProvider } from "@/hooks/useNavBadges";
@@ -15,6 +13,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { UpdatePrompt } from "@/components/UpdatePrompt";
 import { VersionFooter } from "@/components/VersionFooter";
+import { ROUTE_ACCESS } from "@/lib/routeAccess";
 
 // Critical pages — loaded eagerly
 // Index removed: monteur landing now redirects to /planning

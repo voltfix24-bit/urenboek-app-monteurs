@@ -135,11 +135,11 @@ export default function ContractAanmaken() {
         <div className="space-y-1">
           <p className="text-xs font-semibold">Ondertekeningslink:</p>
           <div className="flex items-center gap-2">
-            <code className="text-[10px] break-all flex-1" style={{ color: "#10b981" }}>{ondertekeningsLink}</code>
+            <code className="text-[10px] break-all flex-1" style={{ color: "#3fff8b" }}>{ondertekeningsLink}</code>
             <button
               onClick={() => { navigator.clipboard.writeText(ondertekeningsLink); toast.success("Link gekopieerd ✓"); }}
               className="shrink-0 px-2 py-1 rounded text-[10px] font-medium"
-              style={{ background: "#10b981", color: "#fff" }}>
+              style={{ background: "#3fff8b", color: "#fff" }}>
               Kopieer
             </button>
           </div>
@@ -155,29 +155,29 @@ export default function ContractAanmaken() {
   }
 
   if (loading) return <PageShell><Spinner /></PageShell>;
-  if (!kandidaat) return <PageShell><p style={{ color: "#6b7280" }}>Kandidaat niet gevonden</p></PageShell>;
+  if (!kandidaat) return <PageShell><p style={{ color: "#a0abc3" }}>Kandidaat niet gevonden</p></PageShell>;
 
   return (
     <PageShell>
       {/* Progress */}
       <div className="flex gap-1 mb-6">
         {[1, 2, 3].map(s => (
-          <div key={s} className="flex-1 h-1 rounded-full" style={{ background: stap >= s ? "#10b981" : "#ffffff" }} />
+          <div key={s} className="flex-1 h-1 rounded-full" style={{ background: stap >= s ? "#3fff8b" : "#102038" }} />
         ))}
       </div>
 
       {stap === 1 && (
         <div className="space-y-6">
           {/* Opdrachtgever */}
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <SectieHeader>TerreVolt BV (Opdrachtgever)</SectieHeader>
             <ReadonlyField label="Bedrijfsnaam" value={bedrijf?.bedrijfsnaam || "TerreVolt B.V."} />
             <ReadonlyField label="Adres" value={`${bedrijf?.straat || ""}, ${bedrijf?.postcode || ""} ${bedrijf?.stad || ""}`} />
             <ReadonlyField label="KVK" value={bedrijf?.kvk_nummer || ""} />
             <div>
-              <label className="text-[11px] font-medium" style={{ color: "#6b7280" }}>Vertegenwoordigd door</label>
+              <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Vertegenwoordigd door</label>
               <select value={ogVertegenwoordiger} onChange={e => setOgVertegenwoordiger(e.target.value)}
-                className="w-full mt-1 rounded-lg p-2.5 text-sm" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }}>
+                className="w-full mt-1 rounded-lg p-2.5 text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }}>
                 {managers.map(m => (
                   <option key={m.id} value={m.full_name}>
                     {m.full_name} {m.heeft_handtekening ? "✓" : ""}
@@ -189,7 +189,7 @@ export default function ContractAanmaken() {
           </div>
 
           {/* Opdrachtnemer */}
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <SectieHeader>Opdrachtnemer</SectieHeader>
             <Input placeholder="Volledige naam" value={otNaam} onChange={e => setOtNaam(e.target.value)} />
             <Input placeholder="Handelsnaam (optioneel)" value={otHandelsnaam} onChange={e => setOtHandelsnaam(e.target.value)} />
@@ -202,7 +202,7 @@ export default function ContractAanmaken() {
             <Input placeholder="BTW-nummer (optioneel)" value={otBtw} onChange={e => setOtBtw(e.target.value)} />
           </div>
 
-          <button onClick={() => setStap(2)} className="w-full py-3 rounded-xl text-sm font-semibold" style={{ background: "#10b981", color: "#fff" }}>
+          <button onClick={() => setStap(2)} className="w-full py-3 rounded-xl text-sm font-semibold" style={{ background: "#3fff8b", color: "#fff" }}>
             Volgende →
           </button>
         </div>
@@ -210,25 +210,25 @@ export default function ContractAanmaken() {
 
       {stap === 2 && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <SectieHeader>Contractdetails</SectieHeader>
             <div>
-              <label className="text-[11px] font-medium" style={{ color: "#6b7280" }}>Uurtarief (€/uur)</label>
+              <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Uurtarief (€/uur)</label>
               <Input type="number" value={uurtarief} onChange={e => setUurtarief(e.target.value)} className="mt-1" />
             </div>
             <div>
-              <label className="text-[11px] font-medium" style={{ color: "#6b7280" }}>Ingangsdatum</label>
+              <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Ingangsdatum</label>
               <Input type="date" value={startdatum} onChange={e => setStartdatum(e.target.value)} className="mt-1" />
             </div>
             <ReadonlyField label="Einddatum" value={einddatum ? `${formatDatum(einddatum)} (12 maanden)` : ""} />
             <div>
-              <label className="text-[11px] font-medium" style={{ color: "#6b7280" }}>Ondertekeningsplaats</label>
+              <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Ondertekeningsplaats</label>
               <Input value={plaats} onChange={e => setPlaats(e.target.value)} className="mt-1" />
             </div>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setStap(1)} className="flex-1 py-3 rounded-xl text-sm" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>← Vorige</button>
-            <button onClick={() => setStap(3)} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: "#10b981", color: "#fff" }}>Volgende →</button>
+            <button onClick={() => setStap(1)} className="flex-1 py-3 rounded-xl text-sm" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>← Vorige</button>
+            <button onClick={() => setStap(3)} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: "#3fff8b", color: "#fff" }}>Volgende →</button>
           </div>
         </div>
       )}
@@ -236,53 +236,53 @@ export default function ContractAanmaken() {
       {stap === 3 && (
         <div className="space-y-4">
           {/* Snel aanpassen vlak voor versturen */}
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <div className="flex items-center justify-between">
               <SectieHeader>Snel aanpassen</SectieHeader>
               <button
                 onClick={() => setStap(1)}
                 className="text-[10px] font-medium px-2 py-1 rounded mb-1"
-                style={{ color: "#2563eb", border: "1px solid rgba(110,155,255,0.3)" }}>
+                style={{ color: "#6e9bff", border: "1px solid rgba(110,155,255,0.3)" }}>
                 Volledig bewerken
               </button>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[11px] font-medium" style={{ color: "#6b7280" }}>Uurtarief (€)</label>
+                <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Uurtarief (€)</label>
                 <Input type="number" value={uurtarief} onChange={e => setUurtarief(e.target.value)} className="mt-1" />
               </div>
               <div>
-                <label className="text-[11px] font-medium" style={{ color: "#6b7280" }}>Ingangsdatum</label>
+                <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Ingangsdatum</label>
                 <Input type="date" value={startdatum} onChange={e => setStartdatum(e.target.value)} className="mt-1" />
               </div>
             </div>
             <div>
-              <label className="text-[11px] font-medium" style={{ color: "#6b7280" }}>Naam opdrachtnemer</label>
+              <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Naam opdrachtnemer</label>
               <Input value={otNaam} onChange={e => setOtNaam(e.target.value)} className="mt-1" />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[11px] font-medium" style={{ color: "#6b7280" }}>KVK opdrachtnemer</label>
+                <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>KVK opdrachtnemer</label>
                 <Input value={otKvk} onChange={e => setOtKvk(e.target.value)} className="mt-1" />
               </div>
               <div>
-                <label className="text-[11px] font-medium" style={{ color: "#6b7280" }}>Plaats ondertekening</label>
+                <label className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>Plaats ondertekening</label>
                 <Input value={plaats} onChange={e => setPlaats(e.target.value)} className="mt-1" />
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
             <SectieHeader>Contract preview</SectieHeader>
-            <div className="max-h-[400px] overflow-y-auto pr-2 space-y-3 text-xs" style={{ color: "#6b7280" }}>
+            <div className="max-h-[400px] overflow-y-auto pr-2 space-y-3 text-xs" style={{ color: "#a0abc3" }}>
               <p><strong>Opdrachtgever:</strong> {contractData.og_naam}, {contractData.og_adres}</p>
               <p><strong>Opdrachtnemer:</strong> {contractData.ot_handelsnaam || contractData.ot_naam}, {contractData.ot_adres}</p>
               <p><strong>Uurtarief:</strong> €{contractData.uurtarief.toFixed(2)}/uur excl. btw</p>
               <p><strong>Looptijd:</strong> {contractData.startdatum} — {contractData.einddatum}</p>
-              <hr style={{ borderColor: "#e5e7eb" }} />
+              <hr style={{ borderColor: "rgba(106,118,140,0.15)" }} />
               {ALLE_ARTIKELEN.map((a, i) => (
                 <div key={i}>
-                  <p className="font-semibold text-[11px]" style={{ color: "#1f2937" }}>{a.split('\n')[0]}</p>
+                  <p className="font-semibold text-[11px]" style={{ color: "#dae6ff" }}>{a.split('\n')[0]}</p>
                   <p className="mt-1 whitespace-pre-line">{a.split('\n').slice(1).join('\n').trim().slice(0, 200)}...</p>
                 </div>
               ))}
@@ -290,16 +290,16 @@ export default function ContractAanmaken() {
           </div>
 
           <div className="rounded-xl p-3" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
-            <p className="text-xs" style={{ color: "#6b7280" }}>
+            <p className="text-xs" style={{ color: "#a0abc3" }}>
               ℹ Na het versturen ontvangt {kandidaat.voornaam} een ondertekeningslink (geldig 7 dagen).
             </p>
           </div>
 
           <div className="flex gap-2">
-            <button onClick={() => setStap(2)} className="flex-1 py-3 rounded-xl text-sm" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>← Vorige</button>
+            <button onClick={() => setStap(2)} className="flex-1 py-3 rounded-xl text-sm" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>← Vorige</button>
             <button onClick={versturen} disabled={saving}
               className="flex-1 py-3 rounded-xl text-sm font-semibold"
-              style={{ background: "#10b981", color: "#fff", opacity: saving ? 0.6 : 1 }}>
+              style={{ background: "#3fff8b", color: "#fff", opacity: saving ? 0.6 : 1 }}>
               {saving ? "Versturen..." : "Contract versturen →"}
             </button>
           </div>
@@ -311,7 +311,7 @@ export default function ContractAanmaken() {
 
 function SectieHeader({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-bold uppercase tracking-wider pb-1.5 mb-1" style={{ color: "#6b7280", borderBottom: "1px solid #e5e7eb" }}>
+    <p className="text-[11px] font-bold uppercase tracking-wider pb-1.5 mb-1" style={{ color: "#a0abc3", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
       {children}
     </p>
   );
@@ -320,8 +320,8 @@ function SectieHeader({ children }: { children: React.ReactNode }) {
 function ReadonlyField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[11px] font-medium" style={{ color: "#6b7280" }}>{label}</p>
-      <p className="text-sm" style={{ color: "#1f2937" }}>{value || "—"}</p>
+      <p className="text-[11px] font-medium" style={{ color: "#a0abc3" }}>{label}</p>
+      <p className="text-sm" style={{ color: "#dae6ff" }}>{value || "—"}</p>
     </div>
   );
 }
