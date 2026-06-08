@@ -8,7 +8,7 @@ import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle, MapPin, Search, CheckCircle2 } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
