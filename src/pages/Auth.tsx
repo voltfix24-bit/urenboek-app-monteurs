@@ -253,7 +253,7 @@ function RealLoginForm() {
             <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#6b7280", display: "block", marginBottom: 8 }}>E-mailadres</label>
             <div style={{ position: "relative" }}>
               <span className="material-symbols-outlined" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 20, color: "#6b7280" }}>alternate_email</span>
-              <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="naam@terrevolt.nl" style={{ width: "100%", height: 56, paddingLeft: 48, paddingRight: 16, background: "#000000", border: "none", borderRadius: 14, color: "#1f2937", fontFamily: "Inter", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
+              <input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="naam@terrevolt.nl" style={{ width: "100%", height: 56, paddingLeft: 48, paddingRight: 16, background: "#ffffff", border: "none", borderRadius: 14, color: "#1f2937", fontFamily: "Inter", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
             </div>
           </div>
 
@@ -311,7 +311,7 @@ function RealLoginForm() {
             <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#6b7280", display: "block", marginBottom: 8 }}>E-mail of Gebruikersnaam</label>
             <div style={{ position: "relative" }}>
               <span className="material-symbols-outlined" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 20, color: "#6b7280" }}>person</span>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="naam@terrevolt.nl" required style={{ width: "100%", height: 56, paddingLeft: 48, paddingRight: 16, background: "#000000", border: "none", borderRadius: 14, color: "#1f2937", fontFamily: "Inter", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="naam@terrevolt.nl" required style={{ width: "100%", height: 56, paddingLeft: 48, paddingRight: 16, background: "#ffffff", border: "none", borderRadius: 14, color: "#1f2937", fontFamily: "Inter", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
             </div>
           </div>
 
@@ -320,7 +320,7 @@ function RealLoginForm() {
             <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "#6b7280", display: "block", marginBottom: 8 }}>Wachtwoord</label>
             <div style={{ position: "relative" }}>
               <span className="material-symbols-outlined" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 20, color: "#6b7280" }}>lock</span>
-              <input type={password ? "password" : "text"} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••••••" required minLength={6} style={{ width: "100%", height: 56, paddingLeft: 48, paddingRight: 48, background: "#000000", border: "none", borderRadius: 14, color: "#1f2937", fontFamily: "Inter", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
+              <input type={password ? "password" : "text"} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••••••" required minLength={6} style={{ width: "100%", height: 56, paddingLeft: 48, paddingRight: 48, background: "#ffffff", border: "none", borderRadius: 14, color: "#1f2937", fontFamily: "Inter", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
             </div>
           </div>
 

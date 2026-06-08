@@ -332,7 +332,7 @@ export default function Dashboard() {
                       <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#6b7280" }}>arrow_forward</span>
                     </button>
                   </div>
-                  <div style={{ background: "#000000", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "#ffffff", borderRadius: 16, overflow: "hidden" }}>
                     {pendingEntries.slice(0, 5).map((e: any, i: number) => (
                       <div key={e.id} style={{
                         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -377,7 +377,7 @@ export default function Dashboard() {
                   <span style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#6b7280", display: "block", marginBottom: 12 }}>
                     VERLOFAANVRAGEN
                   </span>
-                  <div style={{ background: "#000000", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "#ffffff", borderRadius: 16, overflow: "hidden" }}>
                     {verlofAanvragen.map((v: any, i: number) => (
                       <div key={v.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < verlofAanvragen.length - 1 ? "1px solid #f3f4f6" : "none" }}>
                         <div>
@@ -411,7 +411,7 @@ export default function Dashboard() {
                       <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#6b7280" }}>arrow_forward</span>
                     </button>
                   </div>
-                  <div style={{ background: "#000000", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "#ffffff", borderRadius: 16, overflow: "hidden" }}>
                     {overurenMeldingen.map((m: any, i: number) => (
                       <div key={m.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < overurenMeldingen.length - 1 ? "1px solid #f3f4f6" : "none" }}>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
@@ -508,7 +508,7 @@ export default function Dashboard() {
                   <span style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#d97706", display: "block", marginBottom: 12 }}>
                     CERTIFICATEN VERLOPEN
                   </span>
-                  <div style={{ background: "#000000", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "#ffffff", borderRadius: 16, overflow: "hidden" }}>
                     {expiringCerts.map((c: any, i: number) => {
                       const expired = new Date(c.vervaldatum) < new Date();
                       return (

@@ -579,7 +579,7 @@ export default function Goedkeuring() {
 
                     {/* Progress bar */}
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ height: 6, background: "#000", borderRadius: 9999, overflow: "hidden", marginBottom: 6 }}>
+                      <div style={{ height: 6, background: "#f3f4f6", borderRadius: 9999, overflow: "hidden", marginBottom: 6 }}>
                         <div style={{ height: "100%", width: `${pct}%`, background: isGoedgekeurd ? "#10b981" : pct < 100 ? "#d97706" : "#10b981", borderRadius: 9999 }} />
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between" }}>

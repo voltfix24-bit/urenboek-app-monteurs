@@ -239,7 +239,7 @@ export default function Projecten() {
             {/* SEARCH */}
             <div style={{ position: "relative", marginBottom: 16 }}>
               <span className="material-symbols-outlined" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 20, color: "#6b7280" }}>search</span>
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Zoek op naam, adres of ID..." style={{ width: "100%", height: 52, paddingLeft: 44, paddingRight: 16, background: "#000000", border: "none", borderRadius: 14, color: "#1f2937", fontFamily: "Inter", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Zoek op naam, adres of ID..." style={{ width: "100%", height: 52, paddingLeft: 44, paddingRight: 16, background: "#ffffff", border: "none", borderRadius: 14, color: "#1f2937", fontFamily: "Inter", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
             </div>
 
             {/* FILTER CHIPS */}
@@ -314,7 +314,7 @@ export default function Projecten() {
                                   {margeMap.get(project.id)?.marge ? `${Math.round(margeMap.get(project.id)!.marge)}%` : "—"}
                                 </span>
                               </div>
-                              <div style={{ height: 4, background: "#000", borderRadius: 9999, overflow: "hidden" }}>
+                              <div style={{ height: 4, background: "#f3f4f6", borderRadius: 9999, overflow: "hidden" }}>
                                 <div style={{ height: "100%", width: `${Math.min(100, margeMap.get(project.id)?.marge || 0)}%`, background: "#10b981", borderRadius: 9999, boxShadow: "0 0 8px #6ee7b7" }} />
                               </div>
                             </div>
