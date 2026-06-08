@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
 /* ─── Native app feel (mobile) ─────────────────────────── */
 html, body {
@@ -51,78 +51,82 @@ p, h1, h2, h3, span.selectable, input, textarea {
 
 @layer base {
   :root {
-    /* ─── TerreVolt Emerald Light theme — single source of truth ─── */
-    --app-navy:        #f9fafb;   /* page/app background (token name kept for backwards compat) */
-    --bg-base:         #f9fafb;
+    /* ─── Centrale TerreVolt navy (gebruikt door loading, modals, success, footer, etc.) ─── */
+    --app-navy:        #f8f9ff;
+    --bg-base:         #f8f9ff;
     --bg-surface:      #ffffff;
-    --bg-surface-2:    #f3f4f6;
+    --bg-surface-2:    #eff4ff;
     --border:          #e5e7eb;
     --border-strong:   #d1d5db;
-    --text-primary:    #1f2937;
-    --text-secondary:  #6b7280;
-    --text-muted:      #9ca3af;
-
-    /* Primary emerald */
+    --text-primary:    #121c2a;
+    --text-secondary:  #3c4a42;
+    --text-muted:      #6c7a71;
     --accent:          #10b981;
-    --accent-dark:     #059669;
-    --accent-mid:      #34d399;
+    --accent-dark:     #006c49;
+    --accent-mid:      #4edea3;
     --accent-light:    #ecfdf5;
-    --accent-border:   #a7f3d0;
+    --accent-border:   #95d3ba;
     --on-accent:       #ffffff;
-
-    /* Status colors */
-    --danger:          #dc2626;
-    --danger-light:    #fef2f2;
-    --danger-border:   #fecaca;
-    --success:         #10b981;
+    --danger:          #ba1a1a;
+    --danger-light:    #ffdad6;
+    --danger-border:   #ffb3af;
+    --success:         #006c49;
     --success-light:   #ecfdf5;
-    --success-border:  #a7f3d0;
-    --warn-bg:         #fffbeb;
-    --warn-text:       #d97706;
-    --warn-border:     #fde68a;
-    --warn-light:      #fef3c7;
-    --warn-dot:        #f59e0b;
-    --info:            #2563eb;
-    --info-light:      #eff6ff;
-    --info-border:     #bfdbfe;
-    --info-dark:       #1d4ed8;
-    --purple:          #7c3aed;
+    --success-border:  #95d3ba;
+    --warn-bg:         #fff4d6;
+    --warn-text:       #8b6914;
+    --warn-border:     #e8d070;
+    --warn-light:      #fff8e0;
+    --warn-dot:        #d4a017;
+    --info:            #2b6954;
+    --info-light:      #dee9fc;
+    --info-border:     #bbcabf;
+    --info-dark:       #0b513d;
+    --purple:          #a43a3a;
 
     /* Planning-specifiek */
-    --planning-card:        var(--bg-surface);
-    --planning-cell-empty:  var(--bg-surface-2);
-    --planning-button:      var(--bg-surface);
-    --planning-avatar-bg:   var(--accent-light);
-    --planning-border-soft: var(--border);
+    --planning-card:        #ffffff;
+    --planning-cell-empty:  #eff4ff;
+    --planning-button:      #e6eeff;
+    --planning-avatar-bg:   #adedd3;
+    --planning-border-soft: #d9e3f6;
 
-    /* shadcn HSL tokens — afgestemd op emerald light */
-    --background: 210 20% 98%;
-    --foreground: 220 13% 18%;
+    --sidebar-shell-bg:        #1f2937;
+    --sidebar-shell-fg:        #eaf1ff;
+    --sidebar-shell-muted:     #a7b0bd;
+    --sidebar-shell-border:    rgba(234,241,255,0.12);
+    --sidebar-shell-active-bg: #10b981;
+    --sidebar-shell-active-fg: #ffffff;
+    --sidebar-shell-subtle-bg: rgba(16,185,129,0.14);
+
+
+    --background: 228 100% 98%;
+    --foreground: 213 39% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 220 13% 18%;
+    --card-foreground: 213 39% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 18%;
+    --popover-foreground: 213 39% 12%;
     --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 13% 18%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --secondary: 156 60% 81%;
+    --secondary-foreground: 156 41% 31%;
+    --muted: 222 60% 95%;
+    --muted-foreground: 152 8% 30%;
     --accent-hsl: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --destructive: 0 76% 41%;
     --destructive-foreground: 0 0% 100%;
     --border-hsl: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 160 84% 39%;
     --radius: 0.75rem;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 13% 18%;
+    --sidebar-background: 217 25% 17%;
+    --sidebar-foreground: 218 100% 96%;
     --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 96%;
-    --sidebar-accent-foreground: 220 13% 18%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-accent: 160 84% 39%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 19% 27%;
     --sidebar-ring: 160 84% 39%;
   }
 }
@@ -150,7 +154,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
   }
 
   /* Media en SVG nooit groter dan hun container */
@@ -166,7 +170,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
     font-weight: 700;
     letter-spacing: -0.025em;
   }
@@ -322,23 +326,23 @@ p, h1, h2, h3, span.selectable, input, textarea {
 /* Emerald Light theme — alleen kleuren, lettertypes blijven DM Sans/DM Mono */
 [data-theme="emerald"] {
   --bg-base:         #f8f9ff;
-  --bg-surface:      #eff4ff;
+  --bg-surface:      #ffffff;
   --bg-surface-2:    #e6eeff;
-  --border:          #d9e3f6;
-  --border-strong:   #bbcabf;
+  --border:          #e5e7eb;
+  --border-strong:   #d1d5db;
   --text-primary:    #121c2a;
   --text-secondary:  #3c4a42;
   --text-muted:      #6c7a71;
-  --accent:          #006c49;
-  --accent-dark:     #00422b;
-  --accent-mid:      #10b981;
-  --accent-light:    #adedd3;
+  --accent:          #10b981;
+  --accent-dark:     #006c49;
+  --accent-mid:      #4edea3;
+  --accent-light:    #ecfdf5;
   --accent-border:   #95d3ba;
   --danger:          #ba1a1a;
   --danger-light:    #ffdad6;
   --danger-border:   #ffb3af;
   --success:         #006c49;
-  --success-light:   #adedd3;
+  --success-light:   #ecfdf5;
   --success-border:  #95d3ba;
   --warn-bg:         #fff4d6;
   --warn-text:       #8b6914;
@@ -359,6 +363,14 @@ p, h1, h2, h3, span.selectable, input, textarea {
   --planning-avatar-bg:   #adedd3;
   --planning-border-soft: #d9e3f6;
 
+  --sidebar-shell-bg:        #1f2937;
+  --sidebar-shell-fg:        #eaf1ff;
+  --sidebar-shell-muted:     #a7b0bd;
+  --sidebar-shell-border:    rgba(234,241,255,0.12);
+  --sidebar-shell-active-bg: #10b981;
+  --sidebar-shell-active-fg: #ffffff;
+  --sidebar-shell-subtle-bg: rgba(16,185,129,0.14);
+
 
   --background: 228 100% 98%;
   --foreground: 213 39% 12%;
@@ -366,27 +378,27 @@ p, h1, h2, h3, span.selectable, input, textarea {
   --card-foreground: 213 39% 12%;
   --popover: 0 0% 100%;
   --popover-foreground: 213 39% 12%;
-  --primary: 156 100% 21%;
+  --primary: 160 84% 39%;
   --primary-foreground: 0 0% 100%;
   --secondary: 156 60% 81%;
   --secondary-foreground: 156 41% 31%;
   --muted: 222 60% 95%;
   --muted-foreground: 152 8% 30%;
-  --accent-hsl: 156 100% 21%;
+  --accent-hsl: 160 84% 39%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 76% 41%;
   --destructive-foreground: 0 0% 100%;
-  --border-hsl: 222 60% 91%;
-  --input: 222 60% 91%;
-  --ring: 156 100% 21%;
-  --sidebar-background: 228 100% 98%;
-  --sidebar-foreground: 213 39% 12%;
-  --sidebar-primary: 156 100% 21%;
+  --border-hsl: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 160 84% 39%;
+  --sidebar-background: 217 25% 17%;
+  --sidebar-foreground: 218 100% 96%;
+  --sidebar-primary: 160 84% 39%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 156 60% 81%;
-  --sidebar-accent-foreground: 156 41% 31%;
-  --sidebar-border: 222 60% 91%;
-  --sidebar-ring: 156 100% 21%;
+  --sidebar-accent: 160 84% 39%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 217 19% 27%;
+  --sidebar-ring: 160 84% 39%;
 }
 
 @keyframes fadeIn {
@@ -413,4 +425,3 @@ p, h1, h2, h3, span.selectable, input, textarea {
   0%, 100% { transform: translateX(-50%) translateY(0); }
   50% { transform: translateX(-50%) translateY(3px); }
 }
-

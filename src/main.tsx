@@ -3,13 +3,13 @@ import App from "./App.tsx";
 import "./index.css";
 
 // Theme initialization — ondersteunt: "dark" (default), "emerald" (licht), "system"
-const saved = localStorage.getItem("terrevolt_theme") || "dark";
+const saved = localStorage.getItem("terrevolt_theme") || "emerald";
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 let themeToApply: string | null = null;
 if (saved === "emerald") themeToApply = "emerald";
 else if (saved === "dark") themeToApply = "dark";
 else if (saved === "system") themeToApply = prefersDark ? "dark" : "emerald";
-else themeToApply = "dark";
+else themeToApply = "emerald";
 document.documentElement.dataset.theme = themeToApply;
 
 // PWA: prevent service worker issues in preview/iframe
