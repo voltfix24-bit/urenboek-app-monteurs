@@ -33,7 +33,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
-const AVATAR_COLORS = ['var(--accent)', '#22c55e', '#6e9bff', 'var(--warn-text)', '#a78bfa'];
+const AVATAR_COLORS = ['var(--accent)', 'var(--accent)', '#6e9bff', 'var(--warn-text)', '#a78bfa'];
 
 function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null, weekDateStrings?: string[]): string[] {
   const conflicts: string[] = [];
@@ -906,7 +906,7 @@ export default function ManagerPlanning() {
       {showModal && (() => {
         const modalBody = (
           <>
-            <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 20px" }} />
+            <div style={{ width: 48, height: 6, borderRadius: 9999, background: "var(--planning-border-soft)", margin: "0 auto 20px" }} />
             <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "var(--text-primary)", marginBottom: 4 }}>
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
             </h2>
@@ -959,7 +959,7 @@ export default function ManagerPlanning() {
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>
               {editId && (
-                <button onClick={deletePlanning} style={{ width: "100%", height: 48, borderRadius: 14, background: "transparent", border: "1px solid rgba(255,113,108,0.4)", color: "var(--danger)", fontFamily: "Inter", fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer" }}>
+                <button onClick={deletePlanning} style={{ width: "100%", height: 48, borderRadius: 14, background: "transparent", border: "1px solid var(--danger-border)", color: "var(--danger)", fontFamily: "Inter", fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer" }}>
                   Verwijderen
                 </button>
               )}
@@ -969,7 +969,7 @@ export default function ManagerPlanning() {
         return (
           <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }} onClick={() => setShowModal(false)}>
             <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
-            <div style={{ position: "relative", background: "#0a1a30", borderRadius: "40px 40px 0 0", padding: "24px 24px 48px", borderTop: "1px solid rgba(255,255,255,0.1)", maxHeight: "85vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+            <div style={{ position: "relative", background: "var(--planning-card)", borderRadius: "40px 40px 0 0", padding: "24px 24px 48px", borderTop: "1px solid var(--planning-border-soft)", maxHeight: "85vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
               {modalBody}
             </div>
           </div>
