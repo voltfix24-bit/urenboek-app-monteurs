@@ -453,7 +453,7 @@ export default function ManagerPlanning() {
 
           {/* DAY HEADERS */}
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10, paddingRight: 4 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, width: 240 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, width: "min(720px, 60%)", minWidth: 240 }}>
               {weekDates.map((d, i) => {
                 const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
                 return (
@@ -510,7 +510,7 @@ export default function ManagerPlanning() {
                     </div>
 
                     {/* Day blocks */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, width: 240 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, width: "min(720px, 60%)", minWidth: 240 }}>
                       {weekDates.map((date, i) => {
                         const dateStr = format(date, "yyyy-MM-dd");
                         const entry = entries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
