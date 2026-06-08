@@ -516,14 +516,16 @@ export default function ManagerPlanning() {
                       onClick={() => setExpandedMedewerker(prev => prev === med.id ? null : med.id)}
                       style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, cursor: "pointer" }}
                     >
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 12, color: "#3fff8b", border: "1px solid rgba(63,255,139,0.15)", flexShrink: 0 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 800, fontSize: 13, color: "#3fff8b", border: "1px solid rgba(63,255,139,0.2)", flexShrink: 0, letterSpacing: "0.02em" }}>
                         {initials}
                       </div>
-                      <div>
-                        <p style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#dae6ff", lineHeight: 1.2 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 14, color: "#dae6ff", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {med.full_name}
                         </p>
-                        <p style={{ fontSize: 9, color: "#a0abc3", fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em" }}>Monteur</p>
+                        <p style={{ fontSize: 10, color: "#a0abc3", fontFamily: "Inter", marginTop: 2, fontWeight: 500 }}>
+                          {ROLE_LABELS[med.role || ""] || "Medewerker"}
+                        </p>
                       </div>
                     </div>
 
@@ -536,29 +538,37 @@ export default function ManagerPlanning() {
                         const verlof = beschikbaarheid.find(b => b.medewerker_id === med.id && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
                         const proj = entry ? projMap.get(entry.project_id) : null;
                         const accent = entry?.activiteit_kleur || "#3fff8b";
-                        const bgColor = verlof ? "#152640" : !heeftEntry ? "rgba(61,72,93,0.25)" : `${accent}22`;
-                        const borderColor = verlof ? "rgba(160,171,195,0.2)" : !heeftEntry ? "rgba(106,118,140,0.18)" : `${accent}66`;
+                        const verlofColor = verlof?.type === "ziek" ? "#ff716c" : "#feb300";
+                        const bgColor = verlof ? `${verlofColor}1a` : !heeftEntry ? "rgba(61,72,93,0.18)" : `${accent}1f`;
+                        const borderColor = verlof ? `${verlofColor}55` : !heeftEntry ? "rgba(106,118,140,0.15)" : `${accent}55`;
                         return (
                           <div key={i} onClick={() => openAddModal(med.id, dateStr)} style={{
-                            height: 48, borderRadius: 10, background: bgColor, cursor: "pointer",
+                            height: 64, borderRadius: 12, background: bgColor, cursor: "pointer",
                             border: `1px solid ${borderColor}`,
-                            boxShadow: heeftEntry ? `0 0 10px ${accent}33` : "none",
+                            boxShadow: heeftEntry ? `0 0 12px ${accent}25` : "none",
                             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                            padding: "2px 3px", lineHeight: 1.05, transition: "transform 0.1s",
+                            padding: "4px 4px", lineHeight: 1.1, transition: "transform 0.1s",
                           }}>
                             {verlof ? (
-                              <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#a0abc3" }}>beach_access</span>
+                              <>
+                                <span style={{ fontSize: 10, fontWeight: 800, fontFamily: "Inter", color: verlofColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                                  {verlof.type === "ziek" ? "Ziek" : "Verlof"}
+                                </span>
+                                <span style={{ fontSize: 9, fontWeight: 500, fontFamily: "Inter", color: "#a0abc3", marginTop: 2 }}>
+                                  Hele dag
+                                </span>
+                              </>
                             ) : heeftEntry ? (
                               <>
-                                <span style={{ fontSize: 11, fontWeight: 800, fontFamily: "Inter", color: "#dae6ff", letterSpacing: "-0.01em" }}>
-                                  {proj?.nummer?.slice(-3) || "•"}
+                                <span style={{ fontSize: 14, fontWeight: 800, fontFamily: "Manrope", color: "#dae6ff", letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}>
+                                  #{proj?.nummer || "—"}
                                 </span>
-                                <span style={{ fontSize: 8, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 1, fontVariantNumeric: "tabular-nums" }}>
-                                  {entry?.starttijd?.slice(0, 5)}
+                                <span style={{ fontSize: 9, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 3, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
+                                  {entry?.starttijd?.slice(0, 5)}–{entry?.eindtijd?.slice(0, 5)}
                                 </span>
                               </>
                             ) : (
-                              <span style={{ fontSize: 18, color: "rgba(160,171,195,0.35)", lineHeight: 1 }}>+</span>
+                              <span style={{ fontSize: 22, color: "rgba(160,171,195,0.3)", lineHeight: 1, fontWeight: 300 }}>+</span>
                             )}
                           </div>
                         );
