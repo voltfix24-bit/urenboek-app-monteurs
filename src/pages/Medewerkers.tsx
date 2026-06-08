@@ -368,7 +368,7 @@ export default function Medewerkers() {
                   return (
                     <div key={emp.user_id} onClick={() => selectEmployee(emp)} style={{ background: "var(--bg-surface)", borderRadius: 14, borderLeft: "4px solid var(--accent)", padding: 16, cursor: "pointer" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 12, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 14, color: "var(--text-primary)", flexShrink: 0 }}>{initials}</div>
+                        <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 14, color: "#fff", flexShrink: 0 }}>{initials}</div>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: 15, fontWeight: 700, fontFamily: "Hanken Grotesk", color: "var(--text-primary)", marginBottom: 2 }}>{emp.full_name}</p>
                           <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.08em" }}>Manager</p>
@@ -397,7 +397,7 @@ export default function Medewerkers() {
                   return (
                     <div key={emp.user_id} onClick={() => selectEmployee(emp)} style={{ background: "var(--bg-surface)", borderRadius: 14, borderLeft: `4px solid ${statusColor}`, padding: 16, cursor: "pointer", opacity: isInactief ? 0.6 : 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 12, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 14, color: "var(--text-primary)", flexShrink: 0 }}>{initials}</div>
+                        <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 14, color: "#fff", flexShrink: 0 }}>{initials}</div>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontSize: 15, fontWeight: 700, fontFamily: "Hanken Grotesk", color: "var(--text-primary)", marginBottom: 2 }}>{emp.full_name}</p>
                           <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.08em" }}>{roleLabels[emp.role] || emp.role}</p>
