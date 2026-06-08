@@ -20,6 +20,7 @@ interface Onderaannemer {
   iban: string | null;
   uurtarief: number | null;
   account_status: string;
+  planning_partner_ids: string[];
 }
 
 interface Monteur {
@@ -31,7 +32,9 @@ interface Monteur {
   onderaannemer_id: string | null;
   account_status: string;
   role?: string;
+  planning_partner_ids: string[];
 }
+
 
 const ROLES = [
   { value: "monteur", label: "Monteur" },
@@ -83,6 +86,12 @@ export default function Onderaannemers() {
   const [editRole, setEditRole] = useState("monteur");
   const [editSaving, setEditSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Vaste planning-collega's
+  const [partnerEditId, setPartnerEditId] = useState<string | null>(null);
+  const [partnerSel, setPartnerSel] = useState<Set<string>>(new Set());
+  const [partnerSaving, setPartnerSaving] = useState(false);
+
 
   // Wachtwoord reset voor onderaannemer (account delen)
   const [pwResetting, setPwResetting] = useState(false);
@@ -204,7 +213,7 @@ export default function Onderaannemers() {
     setLoading(true);
     const { data: profielen } = await supabase
       .from("profiles")
-      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,kvk_nummer,iban,uurtarief,account_status,is_onderaannemer,onderaannemer_id")
+      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,kvk_nummer,iban,uurtarief,account_status,is_onderaannemer,onderaannemer_id,planning_partner_ids")
       .order("full_name");
     const { data: rollen } = await supabase.from("user_roles").select("user_id,role");
     const rolMap = new Map((rollen || []).map((r) => [r.user_id, r.role]));
@@ -212,10 +221,11 @@ export default function Onderaannemers() {
     const oa: Onderaannemer[] = [];
     const mt: Monteur[] = [];
     (profielen || []).forEach((p: any) => {
+      const ppi = (p.planning_partner_ids as string[] | null) || [];
       if (p.is_onderaannemer) {
-        oa.push(p);
+        oa.push({ ...p, planning_partner_ids: ppi });
       } else if (p.onderaannemer_id) {
-        mt.push({ ...p, role: rolMap.get(p.user_id) });
+        mt.push({ ...p, role: rolMap.get(p.user_id), planning_partner_ids: ppi });
       }
     });
     setOnderaannemers(oa);
@@ -224,6 +234,7 @@ export default function Onderaannemers() {
     setSelected((prev) => prev ? oa.find((o) => o.id === prev.id) ?? null : null);
     setLoading(false);
   };
+
 
   useEffect(() => { load(); }, []);
 
