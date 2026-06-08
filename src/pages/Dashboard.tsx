@@ -300,7 +300,7 @@ export default function Dashboard() {
                       return (
                         <div key={m.id} style={{ background: "var(--bg-surface)", borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: 8, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 11, color: "var(--text-primary)" }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 11, color: "#fff" }}>
                               {initials}
                             </div>
                             <div>
@@ -332,12 +332,12 @@ export default function Dashboard() {
                       <span className="material-symbols-outlined" style={{ fontSize: 20, color: "var(--text-muted)" }}>arrow_forward</span>
                     </button>
                   </div>
-                  <div style={{ background: "#000000", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "var(--bg-surface)", borderRadius: 16, overflow: "hidden" }}>
                     {pendingEntries.slice(0, 5).map((e: any, i: number) => (
                       <div key={e.id} style={{
                         display: "flex", alignItems: "center", justifyContent: "space-between",
                         padding: "14px 16px",
-                        borderBottom: i < Math.min(pendingEntries.length, 5) - 1 ? "1px solid rgba(61,72,93,0.2)" : "none",
+                        borderBottom: i < Math.min(pendingEntries.length, 5) - 1 ? "1px solid var(--border-soft)" : "none",
                       }}>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
                           <span className="material-symbols-outlined" style={{ fontSize: 20, color: "var(--warn-text)", marginTop: 1, fontVariationSettings: "'FILL' 1" }}>schedule</span>
@@ -377,9 +377,9 @@ export default function Dashboard() {
                   <span style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-muted)", display: "block", marginBottom: 12 }}>
                     VERLOFAANVRAGEN
                   </span>
-                  <div style={{ background: "#000000", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "var(--bg-surface)", borderRadius: 16, overflow: "hidden" }}>
                     {verlofAanvragen.map((v: any, i: number) => (
-                      <div key={v.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < verlofAanvragen.length - 1 ? "1px solid rgba(61,72,93,0.2)" : "none" }}>
+                      <div key={v.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < verlofAanvragen.length - 1 ? "1px solid var(--border-soft)" : "none" }}>
                         <div>
                           <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", fontFamily: "Hanken Grotesk", marginBottom: 2 }}>{v.naam}</p>
                           <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk", textTransform: "capitalize" }}>
@@ -411,9 +411,9 @@ export default function Dashboard() {
                       <span className="material-symbols-outlined" style={{ fontSize: 20, color: "var(--text-muted)" }}>arrow_forward</span>
                     </button>
                   </div>
-                  <div style={{ background: "#000000", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "var(--bg-surface)", borderRadius: 16, overflow: "hidden" }}>
                     {overurenMeldingen.map((m: any, i: number) => (
-                      <div key={m.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < overurenMeldingen.length - 1 ? "1px solid rgba(61,72,93,0.2)" : "none" }}>
+                      <div key={m.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < overurenMeldingen.length - 1 ? "1px solid var(--border-soft)" : "none" }}>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
                           <span className="material-symbols-outlined" style={{ fontSize: 20, color: "var(--danger)", marginTop: 1, fontVariationSettings: "'FILL' 1" }}>warning</span>
                           <div>
@@ -440,9 +440,9 @@ export default function Dashboard() {
                       <span className="material-symbols-outlined" style={{ fontSize: 20, color: "var(--text-muted)" }}>arrow_forward</span>
                     </button>
                   </div>
-                  <div style={{ background: "#000000", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "var(--bg-surface)", borderRadius: 16, overflow: "hidden" }}>
                     {projectsWithMarge.map((p: any, i: number) => (
-                      <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < projectsWithMarge.length - 1 ? "1px solid rgba(61,72,93,0.2)" : "none" }}>
+                      <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < projectsWithMarge.length - 1 ? "1px solid var(--border-soft)" : "none" }}>
                         <div>
                           <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", fontFamily: "Hanken Grotesk", marginBottom: 2 }}>{p.naam}</p>
                           <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>
@@ -481,7 +481,7 @@ export default function Dashboard() {
                       return (
                         <div key={m.id} onClick={() => navigate(`/inkooporders?medewerker=${m.id}`)} style={{ background: "var(--bg-surface)", borderRadius: 12, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: 8, background: "#142640", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 11, color: "var(--text-primary)" }}>{initials}</div>
+                            <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 11, color: "#fff" }}>{initials}</div>
                             <div>
                               <span style={{ fontSize: 14, fontWeight: 700, fontFamily: "Hanken Grotesk", color: "var(--text-primary)", display: "block" }}>{m.naam}</span>
                               <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>{m.aantal} boekingen · {m.uren}u</span>
@@ -508,11 +508,11 @@ export default function Dashboard() {
                   <span style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--warn-text)", display: "block", marginBottom: 12 }}>
                     CERTIFICATEN VERLOPEN
                   </span>
-                  <div style={{ background: "#000000", borderRadius: 16, overflow: "hidden" }}>
+                  <div style={{ background: "var(--bg-surface)", borderRadius: 16, overflow: "hidden" }}>
                     {expiringCerts.map((c: any, i: number) => {
                       const expired = new Date(c.vervaldatum) < new Date();
                       return (
-                        <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < expiringCerts.length - 1 ? "1px solid rgba(61,72,93,0.2)" : "none" }}>
+                        <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: i < expiringCerts.length - 1 ? "1px solid var(--border-soft)" : "none" }}>
                           <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
                             <span className="material-symbols-outlined" style={{ fontSize: 20, color: expired ? "var(--danger)" : "var(--warn-text)", marginTop: 1, fontVariationSettings: "'FILL' 1" }}>verified_user</span>
                             <div>
