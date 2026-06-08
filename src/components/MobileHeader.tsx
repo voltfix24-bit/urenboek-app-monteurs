@@ -89,7 +89,7 @@ export function MobileHeader({ showBrand = true, title, actions, initials }: Mob
           aria-label={`Profiel openen — ${profileLabel}`}
           title={profileLabel}
           style={{
-            width: 36, height: 36, borderRadius: "50%", background: "#142640",
+            width: 36, height: 36, borderRadius: "50%", background: "var(--bg-surface-2)",
             border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center",
             fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, color: "var(--accent)",
             cursor: "pointer", padding: 0,

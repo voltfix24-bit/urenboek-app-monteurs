@@ -439,7 +439,7 @@ export default function Planning() {
                   style={{
                     width: 40, height: 40,
                     borderRadius: 12,
-                    background: '#0d1f38',
+                    background: 'var(--bg-surface-2)',
                     border: '1px solid var(--planning-border-soft)',
                     color: 'var(--text-primary)',
                     display: 'flex',
@@ -458,7 +458,7 @@ export default function Planning() {
                   style={{
                     width: 40, height: 40,
                     borderRadius: 12,
-                    background: '#0d1f38',
+                    background: 'var(--bg-surface-2)',
                     border: '1px solid var(--planning-border-soft)',
                     color: 'var(--text-primary)',
                     display: 'flex',
@@ -588,7 +588,7 @@ export default function Planning() {
                           <div style={{
                             borderRadius: 12,
                             border: '1px solid var(--planning-border-soft)',
-                            background: '#0d1f38',
+                            background: 'var(--bg-surface-2)',
                             padding: '14px 16px',
                             display: 'flex',
                             alignItems: 'center',
@@ -650,7 +650,7 @@ export default function Planning() {
                           <div style={{
                             borderRadius: 12,
                             border: `1px solid ${isToday ? 'color-mix(in srgb, var(--accent) 25%, transparent)' : 'var(--planning-border-soft)'}`,
-                            background: '#0d1f38',
+                            background: 'var(--bg-surface-2)',
                             overflow: 'hidden',
                             boxShadow: isToday ? 'inset 3px 0 0 var(--accent)' : 'none',
                           }}>
@@ -1412,7 +1412,7 @@ export default function Planning() {
                     style={{
                       width: 48, height: 48,
                       borderRadius: '50%',
-                      background: '#142640',
+                      background: 'var(--bg-surface-2)',
                       border: '1px solid rgba(255,113,108,0.25)',
                       color: 'var(--text-primary)',
                       display: 'flex',

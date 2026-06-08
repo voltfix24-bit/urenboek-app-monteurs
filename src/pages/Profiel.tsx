@@ -355,7 +355,7 @@ export default function Profiel() {
   return (
     <PageShell>
       <div style={{
-        background: '#030e20',
+        background: 'var(--bg-base)',
         minHeight: '100dvh',
         paddingBottom: 'calc(env(safe-area-inset-bottom,34px) + 100px)',
       }}>
@@ -435,7 +435,7 @@ export default function Profiel() {
               <div style={{
                 width: 96, height: 96,
                 borderRadius: '50%',
-                background: '#0d1f38',
+                background: 'var(--bg-surface-2)',
                 border: '2px solid var(--accent-border)',
                 display: 'flex',
                 alignItems: 'center',

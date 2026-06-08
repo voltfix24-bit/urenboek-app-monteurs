@@ -381,7 +381,7 @@ export default function Mededelingen() {
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
                     color: 'var(--text-muted)',
-                    background: '#142640',
+                    background: 'var(--bg-surface-2)',
                     padding: '4px 12px',
                     borderRadius: 9999,
                   }}>
@@ -485,7 +485,7 @@ export default function Mededelingen() {
             }}>
               <div style={{
                 flex: 1,
-                background: '#142640',
+                background: 'var(--bg-surface-2)',
                 borderRadius: 9999,
                 border: '1px solid rgba(61,72,93,0.5)',
                 display: 'flex',
@@ -644,7 +644,7 @@ export default function Mededelingen() {
                   <div style={{
                     width: 48, height: 48,
                     borderRadius: '50%',
-                    background: g.ongelezen > 0 ? 'var(--accent)' : '#142640',
+                    background: g.ongelezen > 0 ? 'var(--accent)' : 'var(--bg-surface-2)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

@@ -196,7 +196,7 @@ export default function Medewerkers() {
             <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 18, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               {selectedEmployee.full_name}
             </span>
-            <div style={{ marginLeft: 'auto', width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, color: "var(--accent)" }}>
+            <div style={{ marginLeft: 'auto', width: 36, height: 36, borderRadius: "50%", background: "var(--bg-surface-2)", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, color: "var(--accent)" }}>
               {profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'}
             </div>
           </header>
@@ -230,7 +230,7 @@ export default function Medewerkers() {
         </div>
       </PageShell>
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid rgba(61,72,93,0.3)" }}>
+        <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2" style={{ color: "var(--warn-text)" }}>
               <AlertTriangle className="h-5 w-5" /> Uitzonderingsgeval bevestigen
@@ -243,7 +243,7 @@ export default function Medewerkers() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel style={{ background: "#142640", color: "var(--text-muted)", border: "1px solid rgba(61,72,93,0.3)" }}>Annuleren</AlertDialogCancel>
+            <AlertDialogCancel style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>Annuleren</AlertDialogCancel>
             <AlertDialogAction onClick={doCreate} style={{ background: "var(--warn-text)", color: "#000" }}>Ja, toch aanmaken</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -267,7 +267,7 @@ export default function Medewerkers() {
             <button onClick={() => { setShowAdd(!showAdd); if (showAdd) resetForm(); }} style={{ width: 36, height: 36, borderRadius: "50%", background: showAdd ? "rgba(255,113,108,0.15)" : "var(--accent-light)", border: showAdd ? "1px solid var(--danger-border)" : "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAdd ? "var(--danger)" : "var(--accent)" }}>
               {showAdd ? <X size={18} /> : <Plus size={18} />}
             </button>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#142640", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, color: "var(--accent)" }}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--bg-surface-2)", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, color: "var(--accent)" }}>
               {profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'}
             </div>
           </div>
@@ -327,7 +327,7 @@ export default function Medewerkers() {
               </div>
               <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
                 {createdUsers.map((u, i) => (
-                  <div key={i} style={{ padding: 12, borderRadius: 12, background: "var(--app-navy)", border: "1px solid rgba(61,72,93,0.3)" }}>
+                  <div key={i} style={{ padding: 12, borderRadius: 12, background: "var(--app-navy)", border: "1px solid var(--border)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                       <div>
                         <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", fontFamily: "Hanken Grotesk" }}>{u.fullName}</p>
@@ -336,7 +336,7 @@ export default function Medewerkers() {
                       {u.inviteOnly ? (
                         <span style={{ fontSize: 10, fontWeight: 700, color: "var(--warn-text)", background: "var(--warn-light)", padding: "3px 8px", borderRadius: 9999 }}>📧 Uitgenodigd</span>
                       ) : (
-                        <button onClick={() => copyCredentials(u)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 10px", borderRadius: 8, background: "var(--bg-surface-2)", border: "1px solid rgba(61,72,93,0.3)", color: "var(--text-muted)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                        <button onClick={() => copyCredentials(u)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 10px", borderRadius: 8, background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-muted)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
                           <Copy size={12} /> Kopieer
                         </button>
                       )}
@@ -344,7 +344,7 @@ export default function Medewerkers() {
                     {!u.inviteOnly && u.password && (
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
                         <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Wachtwoord:</span>
-                        <code style={{ fontSize: 11, padding: "2px 6px", borderRadius: 6, background: "var(--bg-surface-2)", border: "1px solid rgba(61,72,93,0.3)", color: "var(--text-primary)", fontFamily: "monospace" }}>
+                        <code style={{ fontSize: 11, padding: "2px 6px", borderRadius: 6, background: "var(--bg-surface-2)", border: "1px solid var(--border)", color: "var(--text-primary)", fontFamily: "monospace" }}>
                           {showPasswords[i] ? u.password : "••••••••••"}
                         </code>
                         <button style={{ color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", display: "flex" }} onClick={() => setShowPasswords(prev => ({ ...prev, [i]: !prev[i] }))}>
@@ -426,7 +426,7 @@ export default function Medewerkers() {
 
           {/* SUMMARY BAR */}
           <div style={{ position: "fixed", bottom: 72, left: 20, right: 20, zIndex: 40 }}>
-            <div style={{ background: "rgba(21,38,64,0.9)", backdropFilter: "blur(12px)", borderRadius: 9999, padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(61,72,93,0.3)" }}>
+            <div style={{ background: "var(--bg-surface)", backdropFilter: "blur(12px)", borderRadius: 9999, padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid var(--border)" }}>
               <div style={{ display: "flex", gap: 16 }}>
                 {[
                   { color: "var(--accent)", label: `${employees.filter(e => e.account_status === "active").length} actief` },
@@ -446,7 +446,7 @@ export default function Medewerkers() {
     </PageShell>
 
     <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-      <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid rgba(61,72,93,0.3)" }}>
+      <AlertDialogContent style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2" style={{ color: "var(--warn-text)" }}>
             <AlertTriangle className="h-5 w-5" /> Uitzonderingsgeval bevestigen
@@ -459,7 +459,7 @@ export default function Medewerkers() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel style={{ background: "#142640", color: "var(--text-muted)", border: "1px solid rgba(61,72,93,0.3)" }}>Annuleren</AlertDialogCancel>
+          <AlertDialogCancel style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>Annuleren</AlertDialogCancel>
           <AlertDialogAction onClick={doCreate} style={{ background: "var(--warn-text)", color: "#000" }}>Ja, toch aanmaken</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
