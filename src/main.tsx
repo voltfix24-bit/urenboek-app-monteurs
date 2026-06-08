@@ -2,15 +2,15 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Theme initialization
-const saved = localStorage.getItem("terrevolt_theme") || "light";
+// Theme initialization — ondersteunt: "dark" (default), "emerald" (licht), "system"
+const saved = localStorage.getItem("terrevolt_theme") || "dark";
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-const isDark = saved === "dark" || (saved === "system" && prefersDark);
-if (isDark) {
-  document.documentElement.dataset.theme = "dark";
-} else {
-  delete document.documentElement.dataset.theme;
-}
+let themeToApply: string | null = null;
+if (saved === "emerald") themeToApply = "emerald";
+else if (saved === "dark") themeToApply = "dark";
+else if (saved === "system") themeToApply = prefersDark ? "dark" : "emerald";
+else themeToApply = "dark";
+document.documentElement.dataset.theme = themeToApply;
 
 // PWA: prevent service worker issues in preview/iframe
 const isInIframe = (() => {
