@@ -320,12 +320,12 @@ export default function ManagerPlanning() {
           {medewerkers.map((med, mi) => (
             <div key={med.id} className="flex gap-1 items-stretch">
               <div className="w-16 lg:w-40 shrink-0 flex items-center">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
-                    {med.full_name.charAt(0)}
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
+                      {med.full_name.charAt(0)}
+                    </div>
+                    <span className="text-[10px] lg:text-xs font-medium truncate max-w-[80px] lg:max-w-[120px]" style={{ color: "#dae6ff" }}>{med.full_name}</span>
                   </div>
-                  <span className="text-[10px] lg:text-xs font-medium truncate max-w-[44px] lg:max-w-[120px]" style={{ color: "#dae6ff" }}>{med.full_name.split(" ")[0]}<span className="hidden lg:inline"> {med.full_name.split(" ").slice(1).join(" ")}</span></span>
-                </div>
               </div>
               {weekDates.map((d, i) => {
                 const dateStr = format(d, "yyyy-MM-dd");
@@ -500,7 +500,7 @@ export default function ManagerPlanning() {
                       </div>
                       <div>
                         <p style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#dae6ff", lineHeight: 1.2 }}>
-                          {med.full_name?.split(" ")[0]} {med.full_name?.split(" ").slice(-1)[0]?.[0]}.
+                          {med.full_name}
                         </p>
                         <p style={{ fontSize: 9, color: "#a0abc3", fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em" }}>Monteur</p>
                       </div>
