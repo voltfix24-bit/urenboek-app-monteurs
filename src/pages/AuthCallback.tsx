@@ -92,10 +92,10 @@ export default function AuthCallback() {
       <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "var(--app-navy)" }}>
         <div className="w-full text-center" style={{ maxWidth: 440 }}>
           <img src={terrevoltLogo} alt="TerreVolt BV" className="h-12 mx-auto mb-4" />
-          <div className="rounded-2xl p-6 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
-            <p className="text-sm font-semibold" style={{ color: "#ff716c" }}>Link verlopen of ongeldig</p>
-            <p className="text-xs" style={{ color: "#a0abc3" }}>Vraag je manager om een nieuwe uitnodiging.</p>
-            <button onClick={() => navigate("/login")} className="text-xs font-semibold" style={{ color: "#3fff8b" }}>
+          <div className="rounded-2xl p-6 space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
+            <p className="text-sm font-semibold" style={{ color: "var(--danger)" }}>Link verlopen of ongeldig</p>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>Vraag je manager om een nieuwe uitnodiging.</p>
+            <button onClick={() => navigate("/login")} className="text-xs font-semibold" style={{ color: "var(--accent)" }}>
               Terug naar inloggen
             </button>
           </div>
@@ -107,7 +107,7 @@ export default function AuthCallback() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: "var(--app-navy)" }}>
       <Spinner />
-      <p className="text-sm mt-4" style={{ color: "#a0abc3" }}>Account activeren...</p>
+      <p className="text-sm mt-4" style={{ color: "var(--text-muted)" }}>Account activeren...</p>
     </div>
   );
 }

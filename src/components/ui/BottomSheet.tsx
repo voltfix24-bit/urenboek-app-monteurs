@@ -148,7 +148,7 @@ export function BottomSheet({
           background: "var(--app-navy)",
           borderTopLeftRadius: topRadius,
           borderTopRightRadius: topRadius,
-          borderTop: "1px solid rgba(255,255,255,0.1)",
+          borderTop: "1px solid var(--planning-border-soft)",
           maxHeight: `${maxHeightVh}vh`,
           overflowY: "auto",
           padding: padded ? "0 24px" : 0,
@@ -178,7 +178,7 @@ export function BottomSheet({
               width: 48,
               height: 6,
               borderRadius: 9999,
-              background: "rgba(255,255,255,0.2)",
+              background: "var(--border-strong)",
             }}
           />
         </div>
@@ -200,8 +200,8 @@ export function BottomSheet({
                 style={{
                   fontSize: 18,
                   fontWeight: 700,
-                  color: "#dae6ff",
-                  fontFamily: "Inter",
+                  color: "var(--text-primary)",
+                  fontFamily: "Hanken Grotesk",
                   margin: 0,
                   flex: 1,
                   minWidth: 0,

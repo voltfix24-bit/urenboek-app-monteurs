@@ -53,7 +53,7 @@ export function WeekSummary({
                     style={{
                       height: `${maxHours > 0 ? (hoursByDay[i] / maxHours) * 100 : 0}%`,
                       minHeight: hoursByDay[i] > 0 ? "6px" : "0",
-                      background: !isWeekend && hoursByDay[i] > 0 ? 'linear-gradient(135deg, #3fff8b, #22c55e)' : undefined,
+                      background: !isWeekend && hoursByDay[i] > 0 ? 'linear-gradient(135deg, var(--accent), #22c55e)' : undefined,
                     }}
                   />
                 </div>
@@ -86,7 +86,7 @@ export function WeekSummary({
                         className="h-full rounded-full transition-all duration-500 ease-out"
                         style={{
                           width: `${totalHours > 0 ? (hours / totalHours) * 100 : 0}%`,
-                          background: 'linear-gradient(135deg, #3fff8b, #22c55e)',
+                          background: 'linear-gradient(135deg, var(--accent), #22c55e)',
                         }}
                       />
                     </div>

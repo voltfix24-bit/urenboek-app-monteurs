@@ -15,7 +15,7 @@ export const emptyForm: FormState = {
   vergoed_methode: "",
 };
 
-const selectStyle = { background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
+const selectStyle = { background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" };
 
 interface Props {
   form: FormState;
@@ -40,7 +40,7 @@ export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, er
 
   return (
     <>
-      <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Projectgegevens</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Projectgegevens</p>
       <div className="grid grid-cols-2 gap-2">
         <FormField label="Casenummer" error={errors.nummer} required>
           <ValidatedInput value={form.nummer} onChange={e => update("nummer", e.target.value)} placeholder="Casenummer bijv. 0311927" error={errors.nummer} />
@@ -52,7 +52,7 @@ export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, er
       <FormField label="Stationsnaam">
         <ValidatedInput value={form.stationsnaam} onChange={e => update("stationsnaam", e.target.value)} placeholder="Stationsnaam bijv. KOPPOELLN" />
       </FormField>
-      <p className="text-[11px] font-semibold uppercase tracking-wider mt-2" style={{ color: "#a0abc3" }}>Adres werklocatie *</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wider mt-2" style={{ color: "var(--text-muted)" }}>Adres werklocatie *</p>
       <FormField label="Straat + huisnummer" error={errors.straat} required>
         <ValidatedInput value={form.straat} onChange={e => update("straat", e.target.value)} placeholder="Burgemeester Fletzlaan 12" error={errors.straat} />
       </FormField>
@@ -86,7 +86,7 @@ export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, er
       </div>
 
       {/* Vergoedingsmethode */}
-      <p className="text-[11px] font-semibold uppercase tracking-wider mt-2" style={{ color: "#a0abc3" }}>Vergoedingsmethode</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wider mt-2" style={{ color: "var(--text-muted)" }}>Vergoedingsmethode</p>
       <div className="grid grid-cols-3 gap-2">
         {methodeOptions.map(o => {
           const active = form.vergoed_methode === o.key;
@@ -97,22 +97,22 @@ export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, er
               onClick={() => update('vergoed_methode', o.key)}
               className="p-3 rounded-xl text-center space-y-1 transition-colors"
               style={{
-                background: active ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
-                border: active ? "1.5px solid rgba(63,255,139,0.3)" : "1.5px solid rgba(106,118,140,0.15)",
+                background: active ? "var(--accent-light)" : "var(--bg-surface)",
+                border: active ? "1.5px solid var(--accent-border)" : "1.5px solid var(--planning-border-soft)",
                 cursor: "pointer",
               }}
             >
-              <o.Icon className="h-4 w-4 mx-auto" style={{ color: active ? "#3fff8b" : "#a0abc3" }} />
-              <p className="text-[11px] font-semibold" style={{ color: active ? "#3fff8b" : "#dae6ff" }}>{o.label}</p>
-              <p className="text-[9px]" style={{ color: "#a0abc3" }}>{o.desc}</p>
+              <o.Icon className="h-4 w-4 mx-auto" style={{ color: active ? "var(--accent)" : "var(--text-muted)" }} />
+              <p className="text-[11px] font-semibold" style={{ color: active ? "var(--accent)" : "var(--text-primary)" }}>{o.label}</p>
+              <p className="text-[9px]" style={{ color: "var(--text-muted)" }}>{o.desc}</p>
             </button>
           );
         })}
       </div>
 
       {isManager && (
-        <div className="rounded-xl p-3 space-y-2 mt-1" style={{ background: "rgba(254,179,0,0.08)", border: "1px solid rgba(254,179,0,0.3)" }}>
-          <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "#feb300" }}>
+        <div className="rounded-xl p-3 space-y-2 mt-1" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+          <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
             <Lock className="h-3 w-3" /> Contactpersoon (alleen zichtbaar voor managers)
           </p>
           <FormField label="Naam contactpersoon">

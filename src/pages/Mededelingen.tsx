@@ -291,9 +291,9 @@ export default function Mededelingen() {
           <header style={{
             position: 'sticky',
             top: 0, zIndex: 50,
-            background: 'rgba(3,14,32,0.9)',
+            background: 'color-mix(in srgb, var(--bg-surface) 94%, transparent)',
             backdropFilter: 'blur(20px)',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
+            borderBottom: '1px solid var(--planning-border-soft)',
             padding: '12px 20px',
             display: 'flex',
             alignItems: 'center',
@@ -305,7 +305,7 @@ export default function Mededelingen() {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                color: '#3fff8b',
+                color: 'var(--accent)',
                 display: 'flex',
                 alignItems: 'center',
               }}
@@ -317,14 +317,14 @@ export default function Mededelingen() {
             <div style={{
               width: 40, height: 40,
               borderRadius: '50%',
-              background: '#3fff8b',
+              background: 'var(--accent)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontFamily: 'Manrope',
+              fontFamily: 'Hanken Grotesk',
               fontWeight: 700,
               fontSize: 14,
-              color: '#005d2c',
+              color: 'var(--accent-dark)',
               position: 'relative',
               flexShrink: 0,
             }}>
@@ -334,16 +334,16 @@ export default function Mededelingen() {
                 bottom: 0, right: 0,
                 width: 10, height: 10,
                 borderRadius: '50%',
-                background: '#3fff8b',
+                background: 'var(--accent)',
                 border: '2px solid var(--app-navy)',
               }} />
             </div>
             <div>
               <div style={{
-                fontFamily: 'Manrope',
+                fontFamily: 'Hanken Grotesk',
                 fontWeight: 800,
                 fontSize: 14,
-                color: '#dae6ff',
+                color: 'var(--text-primary)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
               }}>
@@ -352,8 +352,8 @@ export default function Mededelingen() {
               {activeGesprek.onderwerp && isManager && (
                 <div style={{
                   fontSize: 10,
-                  color: '#a0abc3',
-                  fontFamily: 'Inter',
+                  color: 'var(--text-muted)',
+                  fontFamily: 'Hanken Grotesk',
                 }}>
                   {activeGesprek.onderwerp}
                 </div>
@@ -377,10 +377,10 @@ export default function Mededelingen() {
                   <span style={{
                     fontSize: 10,
                     fontWeight: 700,
-                    fontFamily: 'Inter',
+                    fontFamily: 'Hanken Grotesk',
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
-                    color: '#a0abc3',
+                    color: 'var(--text-muted)',
                     background: '#142640',
                     padding: '4px 12px',
                     borderRadius: 9999,
@@ -407,20 +407,20 @@ export default function Mededelingen() {
                           ? '20px 20px 4px 20px'
                           : '20px 20px 20px 4px',
                         background: b.is_eigen
-                          ? '#3fff8b'
-                          : 'rgba(10,26,48,0.8)',
+                          ? 'var(--accent)'
+                          : 'var(--bg-surface)',
                         border: b.is_eigen
                           ? 'none'
-                          : '1px solid rgba(106,118,140,0.2)',
+                          : '1px solid var(--planning-border-soft)',
                         boxShadow: b.is_eigen
-                          ? '0 0 20px rgba(63,255,139,0.15)'
+                          ? '0 0 20px var(--accent-light)'
                           : 'none',
                       }}>
                         <p style={{
                           fontSize: 14,
-                          fontFamily: 'Inter',
+                          fontFamily: 'Hanken Grotesk',
                           fontWeight: b.is_eigen ? 600 : 400,
-                          color: b.is_eigen ? '#005d2c' : '#dae6ff',
+                          color: b.is_eigen ? 'var(--accent-dark)' : 'var(--text-primary)',
                           lineHeight: 1.5,
                           margin: 0,
                           whiteSpace: 'pre-wrap',
@@ -437,8 +437,8 @@ export default function Mededelingen() {
                       }}>
                         <span style={{
                           fontSize: 10,
-                          color: '#a0abc3',
-                          fontFamily: 'Inter',
+                          color: 'var(--text-muted)',
+                          fontFamily: 'Hanken Grotesk',
                         }}>
                           {format(new Date(b.created_at), "HH:mm")}
                         </span>
@@ -447,7 +447,7 @@ export default function Mededelingen() {
                             className="material-symbols-outlined"
                             style={{
                               fontSize: 14,
-                              color: b.gelezen_op ? '#3fff8b' : '#a0abc3',
+                              color: b.gelezen_op ? 'var(--accent)' : 'var(--text-muted)',
                               fontVariationSettings: "'FILL' 1",
                             }}>
                             {b.gelezen_op ? 'done_all' : 'done'}
@@ -460,7 +460,7 @@ export default function Mededelingen() {
               </div>
             ))}
             {berichten.length === 0 && !chatLoading && (
-              <div style={{ textAlign: 'center', paddingTop: 40, color: '#a0abc3', fontFamily: 'Inter', fontSize: 13 }}>
+              <div style={{ textAlign: 'center', paddingTop: 40, color: 'var(--text-muted)', fontFamily: 'Hanken Grotesk', fontSize: 13 }}>
                 Begin het gesprek...
               </div>
             )}
@@ -471,9 +471,9 @@ export default function Mededelingen() {
             position: 'fixed',
             bottom: 72, left: 0, right: 0,
             padding: '12px 16px',
-            background: 'rgba(3,14,32,0.95)',
+            background: 'color-mix(in srgb, var(--bg-surface) 96%, transparent)',
             backdropFilter: 'blur(20px)',
-            borderTop: '1px solid rgba(255,255,255,0.07)',
+            borderTop: '1px solid var(--planning-border-soft)',
             zIndex: 49,
           }}>
             <div style={{
@@ -506,8 +506,8 @@ export default function Mededelingen() {
                     background: 'none',
                     border: 'none',
                     outline: 'none',
-                    color: '#dae6ff',
-                    fontFamily: 'Inter',
+                    color: 'var(--text-primary)',
+                    fontFamily: 'Hanken Grotesk',
                     fontSize: 14,
                     resize: 'none',
                     maxHeight: 80,
@@ -520,13 +520,13 @@ export default function Mededelingen() {
                 style={{
                   width: 52, height: 52,
                   borderRadius: '50%',
-                  background: '#3fff8b',
+                  background: 'var(--accent)',
                   border: 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(63,255,139,0.3)',
+                  boxShadow: '0 4px 16px var(--accent-border)',
                   opacity: !nieuwBericht.trim() || sending ? 0.5 : 1,
                   flexShrink: 0,
                 }}
@@ -535,7 +535,7 @@ export default function Mededelingen() {
                   className="material-symbols-outlined"
                   style={{
                     fontSize: 22,
-                    color: '#005d2c',
+                    color: 'var(--accent-dark)',
                     fontVariationSettings: "'FILL' 1",
                   }}>
                   send
@@ -563,19 +563,19 @@ export default function Mededelingen() {
         <header style={{
           position: 'sticky',
           top: 0, zIndex: 50,
-          background: 'rgba(3,14,32,0.9)',
+          background: 'color-mix(in srgb, var(--bg-surface) 94%, transparent)',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid var(--planning-border-soft)',
           padding: '12px 20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
           <span style={{
-            fontFamily: 'Manrope',
+            fontFamily: 'Hanken Grotesk',
             fontWeight: 800,
             fontSize: 20,
-            color: '#dae6ff',
+            color: 'var(--text-primary)',
           }}>
             Berichten
           </span>
@@ -583,14 +583,14 @@ export default function Mededelingen() {
             <div style={{
               padding: '4px 12px',
               borderRadius: 9999,
-              background: 'rgba(63,255,139,0.15)',
-              border: '1px solid rgba(63,255,139,0.3)',
+              background: 'var(--accent-light)',
+              border: '1px solid var(--accent-border)',
             }}>
               <span style={{
                 fontSize: 11,
                 fontWeight: 700,
-                fontFamily: 'Inter',
-                color: '#3fff8b',
+                fontFamily: 'Hanken Grotesk',
+                color: 'var(--accent)',
               }}>
                 {totalOngelezen} nieuw
               </span>
@@ -604,8 +604,8 @@ export default function Mededelingen() {
             <div style={{
               textAlign: 'center',
               padding: '60px 20px',
-              color: '#a0abc3',
-              fontFamily: 'Inter',
+              color: 'var(--text-muted)',
+              fontFamily: 'Hanken Grotesk',
             }}>
               <span
                 className="material-symbols-outlined"
@@ -613,7 +613,7 @@ export default function Mededelingen() {
                 chat_bubble_outline
               </span>
               <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Geen gesprekken</p>
-              <p style={{ fontSize: 12, color: '#a0abc3' }}>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                 {isManager ? 'Start een gesprek met een medewerker' : 'Start een gesprek met je manager'}
               </p>
             </div>
@@ -627,13 +627,13 @@ export default function Mededelingen() {
                     width: '100%',
                     padding: '16px 20px',
                     borderRadius: 16,
-                    background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+                    background: 'var(--bg-surface)',
                     border: g.ongelezen > 0
-                      ? '1px solid rgba(63,255,139,0.3)'
-                      : '1px solid rgba(106,118,140,0.15)',
+                      ? '1px solid var(--accent-border)'
+                      : '1px solid var(--planning-border-soft)',
                     borderLeft: g.ongelezen > 0
-                      ? '3px solid #3fff8b'
-                      : '1px solid rgba(106,118,140,0.15)',
+                      ? '3px solid var(--accent)'
+                      : '1px solid var(--planning-border-soft)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 14,
@@ -644,14 +644,14 @@ export default function Mededelingen() {
                   <div style={{
                     width: 48, height: 48,
                     borderRadius: '50%',
-                    background: g.ongelezen > 0 ? '#3fff8b' : '#142640',
+                    background: g.ongelezen > 0 ? 'var(--accent)' : '#142640',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontFamily: 'Manrope',
+                    fontFamily: 'Hanken Grotesk',
                     fontWeight: 700,
                     fontSize: 14,
-                    color: g.ongelezen > 0 ? '#005d2c' : '#a0abc3',
+                    color: g.ongelezen > 0 ? 'var(--accent-dark)' : 'var(--text-muted)',
                     flexShrink: 0,
                   }}>
                     {initialen(g.medewerker_naam)}
@@ -661,8 +661,8 @@ export default function Mededelingen() {
                       <span style={{
                         fontSize: 14,
                         fontWeight: g.ongelezen > 0 ? 700 : 500,
-                        color: g.ongelezen > 0 ? '#dae6ff' : '#a0abc3',
-                        fontFamily: 'Inter',
+                        color: g.ongelezen > 0 ? 'var(--text-primary)' : 'var(--text-muted)',
+                        fontFamily: 'Hanken Grotesk',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -671,8 +671,8 @@ export default function Mededelingen() {
                       </span>
                       <span style={{
                         fontSize: 10,
-                        color: g.ongelezen > 0 ? '#3fff8b' : '#a0abc3',
-                        fontFamily: 'Inter',
+                        color: g.ongelezen > 0 ? 'var(--accent)' : 'var(--text-muted)',
+                        fontFamily: 'Hanken Grotesk',
                         flexShrink: 0,
                         marginLeft: 8,
                       }}>
@@ -682,8 +682,8 @@ export default function Mededelingen() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{
                         fontSize: 12,
-                        color: '#a0abc3',
-                        fontFamily: 'Inter',
+                        color: 'var(--text-muted)',
+                        fontFamily: 'Hanken Grotesk',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -695,14 +695,14 @@ export default function Mededelingen() {
                         <div style={{
                           width: 20, height: 20,
                           borderRadius: '50%',
-                          background: '#3fff8b',
+                          background: 'var(--accent)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontSize: 11,
                           fontWeight: 700,
-                          color: '#005d2c',
-                          fontFamily: 'Inter',
+                          color: 'var(--accent-dark)',
+                          fontFamily: 'Hanken Grotesk',
                           flexShrink: 0,
                           marginLeft: 8,
                         }}>
@@ -711,7 +711,7 @@ export default function Mededelingen() {
                       )}
                     </div>
                     {isManager && g.onderwerp && (
-                      <span style={{ fontSize: 10, color: '#a0abc3', fontFamily: 'Inter', marginTop: 2, display: 'block' }}>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'Hanken Grotesk', marginTop: 2, display: 'block' }}>
                         {g.onderwerp}
                       </span>
                     )}
@@ -732,16 +732,16 @@ export default function Mededelingen() {
             zIndex: 40,
             width: 56, height: 56,
             borderRadius: '50%',
-            background: '#3fff8b',
+            background: 'var(--accent)',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            boxShadow: '0 8px 28px rgba(63,255,139,0.35)',
+            boxShadow: '0 8px 28px color-mix(in srgb, var(--accent) 35%, transparent)',
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 24, color: '#005d2c' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 24, color: 'var(--accent-dark)' }}>
             add
           </span>
         </button>
@@ -767,10 +767,10 @@ export default function Mededelingen() {
               style={{
                 width: '100%',
                 maxWidth: 480,
-                background: 'rgba(10,26,48,0.97)',
+                background: 'var(--bg-surface)',
                 backdropFilter: 'blur(24px)',
                 borderRadius: '40px 40px 0 0',
-                borderTop: '1px solid rgba(255,255,255,0.1)',
+                borderTop: '1px solid var(--planning-border-soft)',
                 maxHeight: '85vh',
                 overflowY: 'auto',
                 paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 24px)",
@@ -778,15 +778,15 @@ export default function Mededelingen() {
             >
               {/* Handle */}
               <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
-                <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
+                <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'var(--border-strong)' }} />
               </div>
 
               <div style={{ padding: '16px 24px 24px' }}>
                 <h2 style={{
-                  fontFamily: 'Manrope',
+                  fontFamily: 'Hanken Grotesk',
                   fontWeight: 800,
                   fontSize: 22,
-                  color: '#dae6ff',
+                  color: 'var(--text-primary)',
                   marginBottom: 24,
                 }}>
                   Nieuw gesprek
@@ -798,10 +798,10 @@ export default function Mededelingen() {
                       <label style={{
                         fontSize: 10,
                         fontWeight: 700,
-                        fontFamily: 'Inter',
+                        fontFamily: 'Hanken Grotesk',
                         textTransform: 'uppercase',
                         letterSpacing: '0.1em',
-                        color: '#a0abc3',
+                        color: 'var(--text-muted)',
                         marginBottom: 8,
                         display: 'block',
                       }}>
@@ -814,10 +814,10 @@ export default function Mededelingen() {
                           width: '100%',
                           padding: '12px 16px',
                           borderRadius: 16,
-                          background: '#061327',
-                          border: '1px solid rgba(255,255,255,0.07)',
-                          color: '#dae6ff',
-                          fontFamily: 'Inter',
+                          background: 'var(--bg-surface)',
+                          border: '1px solid var(--planning-border-soft)',
+                          color: 'var(--text-primary)',
+                          fontFamily: 'Hanken Grotesk',
                           fontSize: 14,
                           outline: 'none',
                         }}
@@ -832,10 +832,10 @@ export default function Mededelingen() {
                     <label style={{
                       fontSize: 10,
                       fontWeight: 700,
-                      fontFamily: 'Inter',
+                      fontFamily: 'Hanken Grotesk',
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
-                      color: '#a0abc3',
+                      color: 'var(--text-muted)',
                       marginBottom: 8,
                       display: 'block',
                     }}>
@@ -849,10 +849,10 @@ export default function Mededelingen() {
                         width: '100%',
                         padding: '12px 16px',
                         borderRadius: 16,
-                        background: '#061327',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        color: '#dae6ff',
-                        fontFamily: 'Inter',
+                        background: 'var(--bg-surface)',
+                        border: '1px solid var(--planning-border-soft)',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'Hanken Grotesk',
                         fontSize: 14,
                         outline: 'none',
                         boxSizing: 'border-box',
@@ -864,10 +864,10 @@ export default function Mededelingen() {
                     <label style={{
                       fontSize: 10,
                       fontWeight: 700,
-                      fontFamily: 'Inter',
+                      fontFamily: 'Hanken Grotesk',
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
-                      color: '#a0abc3',
+                      color: 'var(--text-muted)',
                       marginBottom: 8,
                       display: 'block',
                     }}>
@@ -882,10 +882,10 @@ export default function Mededelingen() {
                         width: '100%',
                         padding: '12px 16px',
                         borderRadius: 16,
-                        background: '#061327',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        color: '#dae6ff',
-                        fontFamily: 'Inter',
+                        background: 'var(--bg-surface)',
+                        border: '1px solid var(--planning-border-soft)',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'Hanken Grotesk',
                         fontSize: 14,
                         outline: 'none',
                         resize: 'none',
@@ -901,9 +901,9 @@ export default function Mededelingen() {
                       width: '100%',
                       height: 56,
                       borderRadius: 16,
-                      background: '#3fff8b',
-                      color: '#005d2c',
-                      fontFamily: 'Manrope',
+                      background: 'var(--accent)',
+                      color: 'var(--accent-dark)',
+                      fontFamily: 'Hanken Grotesk',
                       fontWeight: 800,
                       fontSize: 16,
                       textTransform: 'uppercase',
@@ -914,7 +914,7 @@ export default function Mededelingen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 8,
-                      boxShadow: '0 8px 32px rgba(63,255,139,0.2)',
+                      boxShadow: '0 8px 32px var(--accent-border)',
                       opacity: ((!isManager || !!nieuwMedewerkerId) && !nieuwEersteBericht.trim()) || (isManager && !nieuwMedewerkerId) ? 0.4 : 1,
                     }}
                   >

@@ -43,9 +43,9 @@ export default function MijnOrders() {
         <header style={{
           position: 'sticky',
           top: 0, zIndex: 50,
-          background: 'rgba(3,14,32,0.9)',
+          background: 'color-mix(in srgb, var(--bg-surface) 94%, transparent)',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid var(--planning-border-soft)',
           padding: '12px 20px',
           display: 'flex',
           alignItems: 'center',
@@ -57,7 +57,7 @@ export default function MijnOrders() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#3fff8b',
+              color: 'var(--accent)',
               display: 'flex',
               alignItems: 'center',
             }}
@@ -67,10 +67,10 @@ export default function MijnOrders() {
             </span>
           </button>
           <span style={{
-            fontFamily: 'Manrope',
+            fontFamily: 'Hanken Grotesk',
             fontWeight: 800,
             fontSize: 20,
-            color: '#dae6ff',
+            color: 'var(--text-primary)',
             flex: 1,
           }}>
             Mijn Orders
@@ -79,14 +79,14 @@ export default function MijnOrders() {
             width: 36, height: 36,
             borderRadius: '50%',
             background: '#142640',
-            border: '1px solid rgba(63,255,139,0.3)',
+            border: '1px solid var(--accent-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontFamily: 'Manrope',
+            fontFamily: 'Hanken Grotesk',
             fontWeight: 700,
             fontSize: 13,
-            color: '#3fff8b',
+            color: 'var(--accent)',
           }}>
             {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
@@ -95,9 +95,9 @@ export default function MijnOrders() {
         <main style={{ padding: '24px 20px' }}>
           {/* ── SUMMARY CARD ── */}
           <div style={{
-            background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))',
+            background: 'var(--bg-surface)',
             backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(106,118,140,0.15)',
+            border: '1px solid var(--planning-border-soft)',
             borderRadius: 24,
             padding: 24,
             marginBottom: 24,
@@ -106,19 +106,19 @@ export default function MijnOrders() {
             <p style={{
               fontSize: 10,
               fontWeight: 700,
-              fontFamily: 'Inter',
+              fontFamily: 'Hanken Grotesk',
               textTransform: 'uppercase',
               letterSpacing: '0.2em',
-              color: '#a0abc3',
+              color: 'var(--text-muted)',
               marginBottom: 8,
             }}>
               DIT KWARTAAL
             </p>
             <div style={{
-              fontFamily: 'Manrope',
+              fontFamily: 'Hanken Grotesk',
               fontWeight: 800,
               fontSize: 40,
-              color: '#3fff8b',
+              color: 'var(--accent)',
               marginBottom: 16,
             }}>
               {euro(orders.reduce((sum, o) => sum + (Number(o.totaal_excl_btw) || 0), 0))}
@@ -130,13 +130,13 @@ export default function MijnOrders() {
               flexWrap: 'wrap',
             }}>
               {[
-                { color: '#3fff8b', label: 'Betaald', count: orders.filter(o => o.status === 'betaald').length },
-                { color: '#feb300', label: 'In behandeling', count: orders.filter(o => o.status === 'verzonden').length },
-                { color: '#a0abc3', label: 'Nieuw', count: orders.filter(o => o.status === 'nieuw' || o.status === 'concept').length },
+                { color: 'var(--accent)', label: 'Betaald', count: orders.filter(o => o.status === 'betaald').length },
+                { color: 'var(--warn-text)', label: 'In behandeling', count: orders.filter(o => o.status === 'verzonden').length },
+                { color: 'var(--text-muted)', label: 'Nieuw', count: orders.filter(o => o.status === 'nieuw' || o.status === 'concept').length },
               ].map((s) => (
                 <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color }} />
-                  <span style={{ fontSize: 12, color: '#a0abc3', fontFamily: 'Inter' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'Hanken Grotesk' }}>
                     {s.count} {s.label}
                   </span>
                 </div>
@@ -156,8 +156,8 @@ export default function MijnOrders() {
             <div style={{
               textAlign: 'center',
               padding: '60px 20px',
-              color: '#a0abc3',
-              fontFamily: 'Inter',
+              color: 'var(--text-muted)',
+              fontFamily: 'Hanken Grotesk',
             }}>
               <span className="material-symbols-outlined" style={{ fontSize: 48, marginBottom: 16, display: 'block' }}>
                 receipt_long

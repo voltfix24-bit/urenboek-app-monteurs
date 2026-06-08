@@ -62,7 +62,7 @@ export function BottomNav({ badges }: BottomNavProps) {
         width: "100%",
         maxWidth: 430,
         height: `calc(72px + env(safe-area-inset-bottom, 34px))`,
-        background: "rgba(255,255,255,0.94)",
+        background: "color-mix(in srgb, var(--bg-surface) 94%, transparent)",
         backdropFilter: "blur(20px)",
         borderTop: "1px solid var(--border)",
         borderRadius: "24px 24px 0 0",
@@ -115,7 +115,7 @@ export function BottomNav({ badges }: BottomNavProps) {
                     minWidth: 16,
                     height: 16,
                     borderRadius: 9999,
-                    background: "#ff716c",
+                    background: "var(--danger)",
                     border: "2px solid var(--app-navy)",
                     fontSize: 9,
                     fontWeight: 700,
@@ -138,7 +138,7 @@ export function BottomNav({ badges }: BottomNavProps) {
                     width: 8,
                     height: 8,
                     borderRadius: 9999,
-                    background: "#ff716c",
+                    background: "var(--danger)",
                     border: "2px solid var(--app-navy)",
                   }}
                 />
@@ -148,7 +148,7 @@ export function BottomNav({ badges }: BottomNavProps) {
               style={{
                 fontSize: 9,
                 fontWeight: active ? 700 : 600,
-                fontFamily: "Inter",
+                fontFamily: "Hanken Grotesk",
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
                 color: active ? "var(--accent)" : "var(--text-muted)",

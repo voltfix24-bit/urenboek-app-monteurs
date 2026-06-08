@@ -33,7 +33,7 @@ export function WeekDownloadList({ orders, toonNaam = false }: Props) {
   if (loading) {
     return (
       <div className="rounded-2xl p-3.5 text-center text-xs"
-        style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+        style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>
         Weken laden…
       </div>
     );
@@ -55,25 +55,25 @@ export function WeekDownloadList({ orders, toonNaam = false }: Props) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "#a0abc3" }}>
+      <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>
         Per week downloaden
       </p>
       {groepen.map(g => (
         <div key={g.key} className="rounded-2xl p-3.5 flex items-center justify-between gap-3"
-          style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+          style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
           <div className="min-w-0">
-            <p className="text-sm font-bold" style={{ color: "#dae6ff", fontFamily: "Manrope" }}>
+            <p className="text-sm font-bold" style={{ color: "var(--text-primary)", fontFamily: "Hanken Grotesk" }}>
               Week {g.week} · {g.jaar}
             </p>
-            <p className="text-[11px]" style={{ color: "#a0abc3" }}>
+            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
               {format(parseISO(g.van), "d MMM", { locale: nl })} – {format(parseISO(g.tot), "d MMM", { locale: nl })}
               {" · "}
               {g.totaalUren.toFixed(1).replace(".", ",")} uur
               {" · "}
-              <span style={{ fontFamily: "DM Mono, monospace", color: "#3fff8b" }}>{euro(g.totaalBedrag)}</span>
+              <span style={{ fontFamily: "DM Mono, monospace", color: "var(--accent)" }}>{euro(g.totaalBedrag)}</span>
             </p>
             {toonNaam && (
-              <p className="text-[10px] mt-0.5 truncate" style={{ color: "#a0abc3" }}>
+              <p className="text-[10px] mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>
                 {[...new Set(g.orderRegels.map(o => o.order.medewerker_naam || o.order.medewerker_full_name).filter(Boolean))].join(", ")}
               </p>
             )}
@@ -82,10 +82,10 @@ export function WeekDownloadList({ orders, toonNaam = false }: Props) {
             onClick={() => handleDownload(g.key, g.orderRegels)}
             disabled={busyKey === g.key}
             className="shrink-0 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
-            style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}
+            style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)" }}
           >
             {busyKey === g.key ? (
-              <span className="inline-block rounded-full animate-spin" style={{ width: 14, height: 14, border: "2px solid #3fff8b", borderTopColor: "transparent" }} />
+              <span className="inline-block rounded-full animate-spin" style={{ width: 14, height: 14, border: "2px solid var(--accent)", borderTopColor: "transparent" }} />
             ) : <Download className="h-3.5 w-3.5" />}
             PDF{g.orderRegels.length > 1 ? "'s" : ""}
           </button>

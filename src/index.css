@@ -66,7 +66,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
     --accent-mid:      #4edea3;
     --accent-light:    #ecfdf5;
     --accent-border:   #95d3ba;
-    --on-accent:       #ffffff;
+    --on-accent:       #052e22;
     --danger:          #ba1a1a;
     --danger-light:    #ffdad6;
     --danger-border:   #ffb3af;
@@ -113,9 +113,11 @@ p, h1, h2, h3, span.selectable, input, textarea {
     --muted: 222 60% 95%;
     --muted-foreground: 152 8% 30%;
     --accent-hsl: 160 84% 39%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 160 81% 10%;
     --destructive: 0 76% 41%;
     --destructive-foreground: 0 0% 100%;
+    --success-foreground: 0 0% 100%;
+    --warning-foreground: 42 84% 31%;
     --border-hsl: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 160 84% 39%;
@@ -222,16 +224,14 @@ p, h1, h2, h3, span.selectable, input, textarea {
   }
 
   .glass-card {
-    background: linear-gradient(135deg,
-      rgba(10,26,48,0.7),
-      rgba(6,19,39,0.8));
+    background: var(--bg-surface);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(106,118,140,0.15);
+    border: 1px solid var(--planning-border-soft);
     border-radius: 16px;
   }
 
   .glow-green {
-    box-shadow: 0 0 15px rgba(63,255,139,0.3);
+    box-shadow: 0 0 15px color-mix(in srgb, var(--accent) 28%, transparent);
   }
 
   .glow-amber {
@@ -310,6 +310,8 @@ p, h1, h2, h3, span.selectable, input, textarea {
   --accent-foreground: 0 0% 100%;
   --destructive: 4 63% 46%;
   --destructive-foreground: 0 0% 100%;
+  --success-foreground: 0 0% 100%;
+  --warning-foreground: 45 96% 53%;
   --border-hsl: 222 47% 15%;
   --input: 222 47% 15%;
   --ring: 142 70% 45%;
@@ -354,7 +356,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
   --info-border:     #bbcabf;
   --info-dark:       #0b513d;
   --purple:          #a43a3a;
-  --on-accent:       #ffffff;
+  --on-accent:       #052e22;
 
   --app-navy:             #f8f9ff;
   --planning-card:        #ffffff;
@@ -385,9 +387,11 @@ p, h1, h2, h3, span.selectable, input, textarea {
   --muted: 222 60% 95%;
   --muted-foreground: 152 8% 30%;
   --accent-hsl: 160 84% 39%;
-  --accent-foreground: 0 0% 100%;
+  --accent-foreground: 160 81% 10%;
   --destructive: 0 76% 41%;
   --destructive-foreground: 0 0% 100%;
+  --success-foreground: 0 0% 100%;
+  --warning-foreground: 42 84% 31%;
   --border-hsl: 220 13% 91%;
   --input: 220 13% 91%;
   --ring: 160 84% 39%;
