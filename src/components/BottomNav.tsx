@@ -62,19 +62,17 @@ export function BottomNav({ badges }: BottomNavProps) {
         width: "100%",
         maxWidth: 430,
         height: `calc(72px + env(safe-area-inset-bottom, 34px))`,
-        background: "rgba(3,14,32,0.9)",
+        background: "#f9fafb",
         backdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(255,255,255,0.05)",
+        borderTop: "1px solid #e5e7eb",
         borderRadius: "24px 24px 0 0",
-        boxShadow: "0 -4px 24px rgba(0,0,0,0.4)",
+        boxShadow: "0 -4px 24px rgba(15,23,42,0.08)",
         paddingBottom: "env(safe-area-inset-bottom, 34px)",
         paddingLeft: "env(safe-area-inset-left)",
         paddingRight: "env(safe-area-inset-right)",
         zIndex: 50,
-        display: "flex",
-        alignItems: "center",
       }}
-      className="lg:hidden"
+      className="lg:hidden flex items-center"
     >
       {tabs.map((t) => {
         const active = isActive(t.key);
@@ -93,9 +91,9 @@ export function BottomNav({ badges }: BottomNavProps) {
               padding: "6px 4px",
               border: "none",
               cursor: "pointer",
-              background: active ? "rgba(63,255,139,0.15)" : "transparent",
+              background: active ? "#ecfdf5" : "transparent",
               borderRadius: active ? 16 : 0,
-              boxShadow: active ? "0 0 15px rgba(63,255,139,0.2)" : "none",
+              boxShadow: active ? "0 0 15px #d1fae5" : "none",
               transition: "all 0.15s",
               position: "relative",
             }}
@@ -104,7 +102,7 @@ export function BottomNav({ badges }: BottomNavProps) {
               <Icon
                 size={active ? 22 : 20}
                 style={{
-                  color: active ? "#3fff8b" : "rgba(218,230,255,0.5)",
+                  color: active ? "#10b981" : "#1f2937",
                   transition: "all 0.15s",
                 }}
               />
@@ -117,7 +115,7 @@ export function BottomNav({ badges }: BottomNavProps) {
                     minWidth: 16,
                     height: 16,
                     borderRadius: 9999,
-                    background: "#ff716c",
+                    background: "#dc2626",
                     border: "2px solid var(--app-navy)",
                     fontSize: 9,
                     fontWeight: 700,
@@ -140,7 +138,7 @@ export function BottomNav({ badges }: BottomNavProps) {
                     width: 8,
                     height: 8,
                     borderRadius: 9999,
-                    background: "#ff716c",
+                    background: "#dc2626",
                     border: "2px solid var(--app-navy)",
                   }}
                 />
@@ -153,7 +151,7 @@ export function BottomNav({ badges }: BottomNavProps) {
                 fontFamily: "Inter",
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
-                color: active ? "#3fff8b" : "rgba(218,230,255,0.5)",
+                color: active ? "#10b981" : "#1f2937",
               }}
             >
               {t.label}

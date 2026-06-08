@@ -40,7 +40,7 @@ export function HandtekeningCanvas({ onSave, bestaande, readonly = false, hoogte
       img.src = bestaande;
     }
 
-    ctx.strokeStyle = '#1a1a2e';
+    ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -60,7 +60,7 @@ export function HandtekeningCanvas({ onSave, bestaande, readonly = false, hoogte
     if (isEmpty) {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.offsetWidth, hoogte);
-      ctx.strokeStyle = '#1a1a2e';
+      ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2.5;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -116,7 +116,7 @@ export function HandtekeningCanvas({ onSave, bestaande, readonly = false, hoogte
 
   return (
     <div className="space-y-2">
-      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(106,118,140,0.15)', background: '#fff' }}>
+      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #e5e7eb', background: '#fff' }}>
         <canvas
           ref={canvasRef}
           style={{ width: '100%', height: hoogte, touchAction: 'none', cursor: readonly ? 'default' : 'crosshair' }}
@@ -131,10 +131,10 @@ export function HandtekeningCanvas({ onSave, bestaande, readonly = false, hoogte
       </div>
       {!readonly && (
         <div className="flex gap-2">
-          <button onClick={wissen} className="flex-1 py-2 rounded-lg text-xs font-medium" style={{ border: '1px solid rgba(106,118,140,0.15)', color: '#a0abc3', background: 'rgba(10,26,48,0.7)' }}>
+          <button onClick={wissen} className="flex-1 py-2 rounded-lg text-xs font-medium" style={{ border: '1px solid #e5e7eb', color: '#6b7280', background: '#ffffff' }}>
             ✕ Wissen
           </button>
-          <button onClick={opslaan} className="flex-1 py-2 rounded-lg text-xs font-medium" style={{ background: isEmpty ? '#102038' : '#3fff8b', color: isEmpty ? '#a0abc3' : '#fff', border: 'none', opacity: isEmpty ? 0.5 : 1 }} disabled={isEmpty}>
+          <button onClick={opslaan} className="flex-1 py-2 rounded-lg text-xs font-medium" style={{ background: isEmpty ? '#ffffff' : '#10b981', color: isEmpty ? '#6b7280' : '#fff', border: 'none', opacity: isEmpty ? 0.5 : 1 }} disabled={isEmpty}>
             ✓ Handtekening gebruiken
           </button>
         </div>

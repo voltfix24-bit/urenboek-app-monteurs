@@ -25,11 +25,11 @@ interface Props {
 }
 
 function vervaldatumStatus(verval: string | null) {
-  if (!verval) return { label: "Geen vervaldatum", color: "#a0abc3" };
+  if (!verval) return { label: "Geen vervaldatum", color: "#6b7280" };
   const diff = differenceInDays(parseISO(verval), new Date());
-  if (diff < 0) return { label: "✕ Verlopen", color: "#ff716c" };
-  if (diff <= 30) return { label: "⚠ Verloopt binnenkort", color: "#feb300" };
-  return { label: "Geldig", color: "#3fff8b" };
+  if (diff < 0) return { label: "✕ Verlopen", color: "#dc2626" };
+  if (diff <= 30) return { label: "⚠ Verloopt binnenkort", color: "#d97706" };
+  return { label: "Geldig", color: "#10b981" };
 }
 
 export default function CertificatenOverzicht({ certificaten, toonToevoegen, medewerker_id, onRefresh }: Props) {
@@ -65,8 +65,8 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
 
   if (showForm && medewerker_id) {
     return (
-      <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
-        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Certificaten beheren</p>
+      <div className="rounded-2xl p-4 space-y-3" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>Certificaten beheren</p>
         <CertificatenForm
           medewerker_id={medewerker_id}
           initialType={initialType}
@@ -115,26 +115,26 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
   const heeftVerlopen = waarschuwingen.some(w => w.dagen < 0);
   const stripBg = heeftVerlopen ? "rgba(255,113,108,0.08)" : "rgba(254,179,0,0.08)";
   const stripBorder = heeftVerlopen ? "rgba(255,113,108,0.4)" : "rgba(254,179,0,0.4)";
-  const stripColor = heeftVerlopen ? "#ff716c" : "#feb300";
+  const stripColor = heeftVerlopen ? "#dc2626" : "#d97706";
 
   return (
-    <div className="rounded-2xl p-4 space-y-3" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Certificaten</p>
+          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>Certificaten</p>
           <span
             className="px-1.5 py-0.5 rounded-full text-[10px] font-bold"
             style={{
-              background: ontbreekt === 0 ? "rgba(63,255,139,0.12)" : "rgba(254,179,0,0.12)",
-              color: ontbreekt === 0 ? "#3fff8b" : "#feb300",
-              border: `1px solid ${ontbreekt === 0 ? "rgba(63,255,139,0.3)" : "rgba(254,179,0,0.3)"}`,
+              background: ontbreekt === 0 ? "#ecfdf5" : "rgba(254,179,0,0.12)",
+              color: ontbreekt === 0 ? "#10b981" : "#d97706",
+              border: `1px solid ${ontbreekt === 0 ? "#a7f3d0" : "rgba(254,179,0,0.3)"}`,
             }}
           >
             {aanwezig}/{totaal}
           </span>
         </div>
         {toonToevoegen && medewerker_id && (
-          <button onClick={() => openForm()} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "#3fff8b" }}>
+          <button onClick={() => openForm()} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "#10b981" }}>
             <Pencil className="h-3 w-3" /> Bewerken
           </button>
         )}
@@ -166,10 +166,10 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                       "aria-label": `${w.label} verlengen`,
                     } : {})}
                     className={`w-full flex items-center justify-between gap-2 text-[11px] ${toonToevoegen && medewerker_id ? "hover:brightness-125 active:scale-[0.99] transition" : ""}`}
-                    style={{ color: "#dae6ff", textAlign: "left" }}
+                    style={{ color: "#1f2937", textAlign: "left" }}
                   >
                     <span className="font-semibold truncate">{w.label}</span>
-                    <span className="shrink-0 font-bold" style={{ color: w.dagen < 0 ? "#ff716c" : "#feb300" }}>
+                    <span className="shrink-0 font-bold" style={{ color: w.dagen < 0 ? "#dc2626" : "#d97706" }}>
                       {w.dagen < 0
                         ? `${Math.abs(w.dagen)} dgn verlopen`
                         : w.dagen === 0
@@ -180,7 +180,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                 );
               })}
               {waarschuwingen.length > 4 && (
-                <li className="text-[11px]" style={{ color: "#a0abc3" }}>
+                <li className="text-[11px]" style={{ color: "#6b7280" }}>
                   +{waarschuwingen.length - 4} meer…
                 </li>
               )}
@@ -190,9 +190,9 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                 onClick={() => openForm()}
                 className="mt-1 px-2.5 py-1 rounded-lg text-[10px] font-bold"
                 style={{
-                  background: "rgba(63,255,139,0.1)",
-                  border: "1px solid rgba(63,255,139,0.3)",
-                  color: "#3fff8b",
+                  background: "#ecfdf5",
+                  border: "1px solid #a7f3d0",
+                  color: "#10b981",
                 }}
               >
                 Verlengen / nieuwe upload
@@ -228,11 +228,11 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                 }}
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold mb-0.5 flex items-center gap-1.5" style={{ color: "#dae6ff" }}>
-                    <span style={{ color: "#feb300", fontSize: 14, lineHeight: 1 }}>○</span>
+                  <p className="text-sm font-semibold mb-0.5 flex items-center gap-1.5" style={{ color: "#1f2937" }}>
+                    <span style={{ color: "#d97706", fontSize: 14, lineHeight: 1 }}>○</span>
                     {cfg.kortLabel || cfg.label}
                   </p>
-                  <p className="text-[11px]" style={{ color: "#feb300", fontWeight: 600 }}>
+                  <p className="text-[11px]" style={{ color: "#d97706", fontWeight: 600 }}>
                     Ontbreekt — tik om toe te voegen
                   </p>
                 </div>
@@ -240,9 +240,9 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                   <span
                     className="px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap shrink-0"
                     style={{
-                      background: "rgba(63,255,139,0.1)",
-                      border: "1px solid rgba(63,255,139,0.3)",
-                      color: "#3fff8b",
+                      background: "#ecfdf5",
+                      border: "1px solid #a7f3d0",
+                      color: "#10b981",
                     }}
                   >
                     + Toevoegen
@@ -271,12 +271,12 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
               type="button"
               onClick={() => setDetailType(cfg.type)}
               className="w-full text-left p-3 rounded-xl transition-colors hover:brightness-110 active:scale-[0.99]"
-              style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}
+              style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}
               aria-label={`${cfg.kortLabel || cfg.label} — details bekijken`}
             >
               <div className="flex items-center justify-between gap-2 mb-1">
-                <p className="text-sm font-semibold flex items-center gap-1.5" style={{ color: "#dae6ff" }}>
-                  <span style={{ color: "#3fff8b", fontSize: 14, lineHeight: 1 }}>●</span>
+                <p className="text-sm font-semibold flex items-center gap-1.5" style={{ color: "#1f2937" }}>
+                  <span style={{ color: "#10b981", fontSize: 14, lineHeight: 1 }}>●</span>
                   {cfg.kortLabel || cfg.label}
                 </p>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -284,16 +284,16 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                     <span
                       className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap"
                       style={{
-                        background: "rgba(63,255,139,0.1)",
-                        color: "#3fff8b",
-                        border: "1px solid rgba(63,255,139,0.3)",
+                        background: "#ecfdf5",
+                        color: "#10b981",
+                        border: "1px solid #a7f3d0",
                       }}
                       title={`${items.length} registraties`}
                     >
                       {items.length}×
                     </span>
                   )}
-                  <ChevronRight className="h-4 w-4" style={{ color: "#a0abc3" }} />
+                  <ChevronRight className="h-4 w-4" style={{ color: "#6b7280" }} />
                 </div>
               </div>
 
@@ -301,7 +301,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                 <div className="flex flex-wrap gap-1 mb-1">
                   {items.map(c => c.subtype && (
                     <span key={c.id} className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                      style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>
+                      style={{ background: "#ecfdf5", color: "#10b981", border: "1px solid #a7f3d0" }}>
                       {c.subtype}
                     </span>
                   ))}
@@ -312,7 +312,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                 <div className="flex flex-wrap gap-1 mb-1">
                   {primaryItem.ggi_gebieden.map(g => (
                     <span key={g} className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                      style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>
+                      style={{ background: "#ecfdf5", color: "#10b981", border: "1px solid #a7f3d0" }}>
                       {cfg.gebieden?.find(gb => gb.code === g)?.label || g}
                     </span>
                   ))}
@@ -321,7 +321,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
 
               {cfg.type === "POORT" && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                  style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b" }}>
+                  style={{ background: "#ecfdf5", color: "#10b981" }}>
                   ✓ Behaald
                 </span>
               )}
@@ -330,7 +330,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                 const status = vervaldatumStatus(primaryItem.vervaldatum);
                 return (
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <span className="text-[11px]" style={{ color: "#a0abc3" }}>
+                    <span className="text-[11px]" style={{ color: "#6b7280" }}>
                       {meerdereVervaldata ? "Eerst verlopen: " : "Geldig tot: "}
                       {format(parseISO(primaryItem.vervaldatum!), "d MMM yyyy", { locale: nl })}
                     </span>
@@ -342,12 +342,12 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
               {/* File indicator */}
               <div className="mt-1.5">
                 {hasFile ? (
-                  <span className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "#3fff8b" }}>
+                  <span className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "#10b981" }}>
                     <Paperclip className="h-3 w-3" />
                     {meerdereUploads ? `${items.filter(c => c.bestand_url).length} bewijzen` : "Bewijs aanwezig"}
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 text-[11px]" style={{ color: "#feb300" }}>
+                  <span className="flex items-center gap-1 text-[11px]" style={{ color: "#d97706" }}>
                     <Paperclip className="h-3 w-3" /> Geen bewijs geüpload
                   </span>
                 )}
@@ -393,7 +393,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
             {cfg && (
               <div className="space-y-3 pb-2">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs" style={{ color: "#a0abc3" }}>
+                  <p className="text-xs" style={{ color: "#6b7280" }}>
                     {items.length} {items.length === 1 ? "registratie" : "registraties"} —
                     {" "}{items.filter(i => i.bestand_url).length} met bewijs
                   </p>
@@ -402,7 +402,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                       role="tablist"
                       aria-label="Sorteren"
                       className="flex p-0.5 rounded-lg"
-                      style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.2)" }}
+                      style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
                     >
                       {([
                         { key: "datum", label: "Datum" },
@@ -417,8 +417,8 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                             onClick={() => setDetailSort(opt.key)}
                             className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition"
                             style={{
-                              background: active ? "#3fff8b" : "transparent",
-                              color: active ? "#003d1f" : "#a0abc3",
+                              background: active ? "#10b981" : "transparent",
+                              color: active ? "#047857" : "#6b7280",
                               letterSpacing: "0.08em",
                             }}
                           >
@@ -462,15 +462,15 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                         key={item.id}
                         className="p-3 rounded-xl"
                         style={{
-                          background: isVerlopen ? "rgba(255,113,108,0.06)" : "rgba(10,26,48,0.7)",
+                          background: isVerlopen ? "rgba(255,113,108,0.06)" : "#ffffff",
                           border: `1px solid ${
                             isVerlopen
                               ? "rgba(255,113,108,0.45)"
                               : isActueel
-                                ? "rgba(63,255,139,0.45)"
+                                ? "#6ee7b7"
                                 : idx === 0 && item.vervaldatum
                                   ? `${status.color}55`
-                                  : "rgba(106,118,140,0.15)"
+                                  : "#e5e7eb"
                           }`,
                         }}
                       >
@@ -484,7 +484,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                                 aria-label="Verlopen bewijs openen"
                                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider hover:brightness-110 active:scale-[0.97] transition cursor-pointer"
                                 style={{
-                                  background: "#ff716c",
+                                  background: "#dc2626",
                                   color: "#3a0805",
                                   letterSpacing: "0.08em",
                                   border: "none",
@@ -501,8 +501,8 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                                 aria-label="Actueel bewijs openen"
                                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider hover:brightness-110 active:scale-[0.97] transition cursor-pointer"
                                 style={{
-                                  background: "#3fff8b",
-                                  color: "#003d1f",
+                                  background: "#10b981",
+                                  color: "#047857",
                                   letterSpacing: "0.08em",
                                   border: "none",
                                 }}
@@ -516,14 +516,14 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
 
                         <div className="flex items-start justify-between gap-2 mb-1.5">
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>
+                            <p className="text-sm font-semibold" style={{ color: "#1f2937" }}>
                               {item.subtype || item.naam || (cfg.kortLabel || cfg.label)}
                             </p>
                             {gebiedLabels && gebiedLabels.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {gebiedLabels.map((g, i) => (
                                   <span key={i} className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
-                                    style={{ background: "rgba(63,255,139,0.1)", color: "#3fff8b", border: "1px solid rgba(63,255,139,0.3)" }}>
+                                    style={{ background: "#ecfdf5", color: "#10b981", border: "1px solid #a7f3d0" }}>
                                     {g}
                                   </span>
                                 ))}
@@ -543,8 +543,8 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                         </div>
 
                         {item.vervaldatum && (
-                          <p className="text-[11px]" style={{ color: "#a0abc3" }}>
-                            Geldig tot: <span style={{ color: "#dae6ff", fontWeight: 600 }}>
+                          <p className="text-[11px]" style={{ color: "#6b7280" }}>
+                            Geldig tot: <span style={{ color: "#1f2937", fontWeight: 600 }}>
                               {format(parseISO(item.vervaldatum), "d MMMM yyyy", { locale: nl })}
                             </span>
                           </p>
@@ -556,15 +556,15 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                               onClick={() => openFile(item.bestand_url!)}
                               className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg"
                               style={{
-                                background: isVerlopen ? "rgba(255,113,108,0.1)" : "rgba(63,255,139,0.1)",
-                                color: isVerlopen ? "#ff716c" : "#3fff8b",
-                                border: `1px solid ${isVerlopen ? "rgba(255,113,108,0.3)" : "rgba(63,255,139,0.3)"}`,
+                                background: isVerlopen ? "rgba(255,113,108,0.1)" : "#ecfdf5",
+                                color: isVerlopen ? "#dc2626" : "#10b981",
+                                border: `1px solid ${isVerlopen ? "rgba(255,113,108,0.3)" : "#a7f3d0"}`,
                               }}
                             >
                               <ExternalLink className="h-3 w-3" /> Bewijs openen
                             </button>
                           ) : (
-                            <span className="flex items-center gap-1 text-[11px]" style={{ color: "#feb300" }}>
+                            <span className="flex items-center gap-1 text-[11px]" style={{ color: "#d97706" }}>
                               <Paperclip className="h-3 w-3" /> Geen bewijs geüpload
                             </span>
                           )}
@@ -579,9 +579,9 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                     onClick={() => { setDetailType(null); openForm(cfg.type); }}
                     className="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold"
                     style={{
-                      background: "rgba(63,255,139,0.1)",
-                      color: "#3fff8b",
-                      border: "1px solid rgba(63,255,139,0.3)",
+                      background: "#ecfdf5",
+                      color: "#10b981",
+                      border: "1px solid #a7f3d0",
                     }}
                   >
                     Bewerken / nieuwe upload toevoegen

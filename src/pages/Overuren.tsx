@@ -30,9 +30,9 @@ interface Melding {
 }
 
 const TYPE_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
-  dag_overschrijding: { label: "Dag > 8u", bg: "rgba(254,179,0,0.08)", color: "#feb300" },
-  week_overschrijding: { label: "Week > 40u", bg: "rgba(110,155,255,0.1)", color: "#6e9bff" },
-  meer_dan_ingepland: { label: "Meer dan ingepland", bg: "rgba(255,113,108,0.1)", color: "#ff716c" },
+  dag_overschrijding: { label: "Dag > 8u", bg: "rgba(254,179,0,0.08)", color: "#d97706" },
+  week_overschrijding: { label: "Week > 40u", bg: "rgba(110,155,255,0.1)", color: "#2563eb" },
+  meer_dan_ingepland: { label: "Meer dan ingepland", bg: "rgba(255,113,108,0.1)", color: "#dc2626" },
 };
 
 export default function Overuren() {
@@ -89,7 +89,7 @@ export default function Overuren() {
   };
 
   if (!isManager) {
-    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p></div>;
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "#6b7280" }}>Alleen managers hebben toegang.</p></div>;
   }
 
   const openCount = meldingen.filter(m => m.status === "open").length;
@@ -97,7 +97,7 @@ export default function Overuren() {
   const mainContent = (
     <main className="px-4 py-4 space-y-4">
       <div>
-        <p className="text-xs" style={{ color: "#a0abc3" }}>
+        <p className="text-xs" style={{ color: "#6b7280" }}>
           {filter === "open" ? `${meldingen.length} open meldingen` : `${meldingen.length} meldingen`}
         </p>
       </div>
@@ -105,9 +105,9 @@ export default function Overuren() {
       <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
         {([["open", "Open"], ["goedgekeurd", "Goedgekeurd"], ["afgekeurd", "Afgekeurd"], ["alle", "Alle"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setFilter(k)} className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors" style={{
-            background: filter === k ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
-            border: filter === k ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)",
-            color: filter === k ? "#3fff8b" : "#a0abc3",
+            background: filter === k ? "#ecfdf5" : "#ffffff",
+            border: filter === k ? "1px solid #a7f3d0" : "1px solid #e5e7eb",
+            color: filter === k ? "#10b981" : "#6b7280",
           }}>
             {l}
           </button>
@@ -125,17 +125,17 @@ export default function Overuren() {
             const isDone = m.status !== "open";
             return (
               <div key={m.id} className="rounded-2xl p-4 space-y-3 transition-opacity" style={{
-                background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)",
+                background: "#ffffff", border: "1px solid #e5e7eb",
                 opacity: isDone ? 0.7 : 1,
               }}>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#3fff8b", color: "#fff" }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#10b981", color: "#fff" }}>
                     {m.full_name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>{m.full_name}</p>
+                    <p className="text-sm font-semibold" style={{ color: "#1f2937" }}>{m.full_name}</p>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      <span className="text-[11px]" style={{ color: "#a0abc3" }}>
+                      <span className="text-[11px]" style={{ color: "#6b7280" }}>
                         {format(new Date(m.datum), "d MMMM yyyy", { locale: nl })}
                       </span>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: tc.bg, color: tc.color }}>
@@ -147,43 +147,43 @@ export default function Overuren() {
 
                 <div className="flex gap-4">
                   <div>
-                    <span className="text-[10px] block" style={{ color: "#a0abc3" }}>Geboekt</span>
+                    <span className="text-[10px] block" style={{ color: "#6b7280" }}>Geboekt</span>
                     <span className="text-sm font-bold" style={{
                       fontFamily: "DM Mono, monospace",
-                      color: m.geboekte_uren > m.limiet_uren ? "#ff716c" : "#dae6ff",
+                      color: m.geboekte_uren > m.limiet_uren ? "#dc2626" : "#1f2937",
                     }}>{m.geboekte_uren}u</span>
                   </div>
                   <div>
-                    <span className="text-[10px] block" style={{ color: "#a0abc3" }}>Limiet</span>
-                    <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "#a0abc3" }}>{m.limiet_uren}u</span>
+                    <span className="text-[10px] block" style={{ color: "#6b7280" }}>Limiet</span>
+                    <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "#6b7280" }}>{m.limiet_uren}u</span>
                   </div>
                   {m.type === "meer_dan_ingepland" && m.ingeplande_uren != null && (
                     <div>
-                      <span className="text-[10px] block" style={{ color: "#a0abc3" }}>Ingepland</span>
-                      <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "#a0abc3" }}>{m.ingeplande_uren}u</span>
+                      <span className="text-[10px] block" style={{ color: "#6b7280" }}>Ingepland</span>
+                      <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "#6b7280" }}>{m.ingeplande_uren}u</span>
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <span className="text-[10px]" style={{ color: "#a0abc3" }}>Toelichting monteur:</span>
+                  <span className="text-[10px]" style={{ color: "#6b7280" }}>Toelichting monteur:</span>
                   {m.toelichting ? (
-                    <p className="text-xs mt-0.5" style={{ color: "#dae6ff" }}>"{m.toelichting}"</p>
+                    <p className="text-xs mt-0.5" style={{ color: "#1f2937" }}>"{m.toelichting}"</p>
                   ) : (
-                    <p className="text-xs italic mt-0.5" style={{ color: "#a0abc3" }}>Geen toelichting ontvangen</p>
+                    <p className="text-xs italic mt-0.5" style={{ color: "#6b7280" }}>Geen toelichting ontvangen</p>
                   )}
                 </div>
 
                 {isDone ? (
                   <div className="space-y-1">
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{
-                      background: m.status === "goedgekeurd" ? "rgba(63,255,139,0.1)" : "rgba(255,113,108,0.1)",
-                      color: m.status === "goedgekeurd" ? "#3fff8b" : "#ff716c",
+                      background: m.status === "goedgekeurd" ? "#ecfdf5" : "rgba(255,113,108,0.1)",
+                      color: m.status === "goedgekeurd" ? "#10b981" : "#dc2626",
                     }}>
                       {m.status === "goedgekeurd" ? "✓ Goedgekeurd" : "✕ Afgekeurd"}
                     </span>
                     {m.behandeld_op && (
-                      <p className="text-[10px]" style={{ color: "#a0abc3" }}>
+                      <p className="text-[10px]" style={{ color: "#6b7280" }}>
                         Behandeld op {format(new Date(m.behandeld_op), "d MMM yyyy", { locale: nl })}
                         {m.behandeld_naam && ` door ${m.behandeld_naam}`}
                       </p>
@@ -192,12 +192,12 @@ export default function Overuren() {
                 ) : (
                   <div className="flex gap-2">
                     <button onClick={() => handleAction(m.id, "goedgekeurd")} className="flex-1 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
-                      background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b",
+                      background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#10b981",
                     }}>
                       ✓ Goedkeuren
                     </button>
                     <button onClick={() => handleAction(m.id, "afgekeurd")} className="flex-1 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
-                      background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.3)", color: "#ff716c",
+                      background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.3)", color: "#dc2626",
                     }}>
                       ✕ Afwijzen
                     </button>
@@ -213,16 +213,16 @@ export default function Overuren() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, rgba(10,26,48,0.7) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
+      <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, #ffffff 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid #e5e7eb" }}>
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <HeaderLogo />
-            <span className="text-base font-bold tracking-tight" style={{ color: "#dae6ff" }}>Overuren meldingen</span>
+            <span className="text-base font-bold tracking-tight" style={{ color: "#1f2937" }}>Overuren meldingen</span>
           </div>
           {filter === "open" && meldingen.length > 0 && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
-              <span className="text-lg font-extrabold" style={{ color: "#feb300" }}>{meldingen.length}</span>
-              <span className="text-[10px] font-semibold" style={{ color: "#a0abc3" }}>open</span>
+              <span className="text-lg font-extrabold" style={{ color: "#d97706" }}>{meldingen.length}</span>
+              <span className="text-[10px] font-semibold" style={{ color: "#6b7280" }}>open</span>
             </div>
           )}
         </div>

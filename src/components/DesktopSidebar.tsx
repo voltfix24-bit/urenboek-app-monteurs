@@ -127,30 +127,30 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
 
   return (
     <>
-      <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-40" style={{ width: 240, background: "rgba(10,26,48,0.7)", borderRight: "1px solid rgba(106,118,140,0.15)" }}>
+      <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-40" style={{ width: 240, background: "#ffffff", borderRight: "1px solid #e5e7eb" }}>
         <div className="px-5 py-5">
           <button onClick={() => navigate(permissies.zietDashboard ? "/dashboard" : "/")} className="focus:outline-none">
             <img src={terrevoltLogo} alt="TerreVolt" className="h-8" />
           </button>
           <div className="mt-2">
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "rgba(63,255,139,0.1)", color: "#dae6ff" }}>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "#ecfdf5", color: "#1f2937" }}>
               {rolLabel}
             </span>
           </div>
         </div>
 
         {/* Search button */}
-        <button onClick={() => setShowSearch(true)} className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+        <button onClick={() => setShowSearch(true)} className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#6b7280" }}>
           <Search className="h-4 w-4" />
           <span className="text-xs">Zoeken...</span>
-          <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "#102038", color: "#a0abc3" }}>⌘K</span>
+          <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "#ffffff", color: "#6b7280" }}>⌘K</span>
         </button>
 
         <nav className="flex-1 px-3 overflow-y-auto">
           {zichtbareGroepen.map((groep, gi) => (
             <div key={groep.label}>
-              {gi > 0 && <div className="my-1.5" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }} />}
-              <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5 mt-1" style={{ color: "#a0abc3" }}>
+              {gi > 0 && <div className="my-1.5" style={{ borderTop: "1px solid #e5e7eb" }} />}
+              <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5 mt-1" style={{ color: "#6b7280" }}>
                 {groep.label}
               </p>
               {groep.items.map(item => {
@@ -162,8 +162,8 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
                   <button key={item.path} onClick={() => navigate(item.path)}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors text-left"
                     style={{
-                      background: active ? "rgba(63,255,139,0.1)" : "transparent",
-                      color: active ? "#dae6ff" : "#a0abc3",
+                      background: active ? "#ecfdf5" : "transparent",
+                      color: active ? "#1f2937" : "#6b7280",
                       fontWeight: active ? 600 : 400,
                     }}>
                     <span className="relative shrink-0">
@@ -182,14 +182,14 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
         {/* Beheer section */}
         {permissies.zietBeheer && (
           <div className="px-3 pb-2">
-            <div className="mb-1 mt-1" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }} />
-            <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5" style={{ color: "#a0abc3" }}>Instellingen</p>
+            <div className="mb-1 mt-1" style={{ borderTop: "1px solid #e5e7eb" }} />
+            <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5" style={{ color: "#6b7280" }}>Instellingen</p>
             {BEHEER_ITEMS.map(item => (
               <button key={item.path} onClick={() => navigate(item.path)}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-colors text-left"
                 style={{
-                  background: isActive(item.path) ? "rgba(63,255,139,0.1)" : "transparent",
-                  color: isActive(item.path) ? "#dae6ff" : "#a0abc3",
+                  background: isActive(item.path) ? "#ecfdf5" : "transparent",
+                  color: isActive(item.path) ? "#1f2937" : "#6b7280",
                 }}>
                 <item.icon style={{ width: 14, height: 14 }} />
                 <span>{item.label}</span>
@@ -198,21 +198,21 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
           </div>
         )}
 
-        <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
+        <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid #e5e7eb" }}>
           <button
             onClick={() => navigate("/profiel")}
             className="w-full flex items-center gap-2.5 px-1 py-1 rounded-lg transition-colors hover:bg-white/5 text-left"
             title="Naar profiel"
           >
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#3fff8b", color: "#fff" }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#10b981", color: "#fff" }}>
               {displayName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium truncate" style={{ color: "#dae6ff" }}>{displayName}</p>
-              <p className="text-[10px] truncate" style={{ color: "#a0abc3" }}>Mijn profiel</p>
+              <p className="text-xs font-medium truncate" style={{ color: "#1f2937" }}>{displayName}</p>
+              <p className="text-[10px] truncate" style={{ color: "#6b7280" }}>Mijn profiel</p>
             </div>
           </button>
-          <button onClick={signOut} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium" style={{ border: "1px solid rgba(255,113,108,0.3)", color: "#ff716c", background: "rgba(255,113,108,0.1)" }}>
+          <button onClick={signOut} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium" style={{ border: "1px solid rgba(255,113,108,0.3)", color: "#dc2626", background: "rgba(255,113,108,0.1)" }}>
             <LogOut className="h-3.5 w-3.5" /> Uitloggen
           </button>
         </div>

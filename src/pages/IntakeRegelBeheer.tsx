@@ -17,10 +17,10 @@ import { euroDecimals as euro } from "@/lib/formatting";
 const TRIGGER_TYPES = ["altijd", "case_type", "antwoord", "rmu_velden_gt"];
 const TRIGGER_VELDEN = ["rmu_vervangen", "rmu_velden", "trafo_situatie", "ls_rek", "ls_stroken", "ls_kabels", "vereffeningsleiding", "aardweerstand", "ggi", "boren", "dichtzetten", "traanplaat", "revisie", "wv", "wv_io", "ims_ombouw", "trafokabel", "zekeringen", "ls_moffen", "ls_eindsluitingen", "huisaansluitingen", "ls_kast_verwijderen", "ls_kast_aansluiten", "ov_kast", "ov_meter", "kabeldeel_vrijschakelen", "vp_uren", "avp_uren", "vop_uren", "case_type"];
 const TRIGGER_BADGES: Record<string, { bg: string; color: string }> = {
-  altijd: { bg: "#102038", color: "#a0abc3" },
-  case_type: { bg: "rgba(110,155,255,0.1)", color: "#6e9bff" },
-  antwoord: { bg: "rgba(63,255,139,0.1)", color: "#3fff8b" },
-  rmu_velden_gt: { bg: "rgba(254,179,0,0.1)", color: "#feb300" },
+  altijd: { bg: "#ffffff", color: "#6b7280" },
+  case_type: { bg: "rgba(110,155,255,0.1)", color: "#2563eb" },
+  antwoord: { bg: "#ecfdf5", color: "#10b981" },
+  rmu_velden_gt: { bg: "rgba(254,179,0,0.1)", color: "#d97706" },
 };
 
 const emptyRegel: Partial<IntakeRegel> = {
@@ -270,7 +270,7 @@ export default function IntakeRegelBeheer() {
     return regelConditieTekst(fakeRegel);
   }
 
-  const inputStyle = { background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
+  const inputStyle = { background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" };
 
   const handleSituatieChange = (idx: number) => {
     const opt = SITUATIE_OPTIES[idx];
@@ -285,11 +285,11 @@ export default function IntakeRegelBeheer() {
 
   // ─── Simple edit form ───
   const renderSimpleEditForm = () => (
-    <div className="mx-6 lg:mx-10 mb-4 rounded-[14px] p-5 space-y-4" style={{ background: "rgba(63,255,139,0.1)", border: "1.5px solid rgba(63,255,139,0.3)" }}>
-      <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>{isNew ? "Nieuwe regel" : "Regel bewerken"}</p>
+    <div className="mx-6 lg:mx-10 mb-4 rounded-[14px] p-5 space-y-4" style={{ background: "#ecfdf5", border: "1.5px solid #a7f3d0" }}>
+      <p className="text-sm font-semibold" style={{ color: "#1f2937" }}>{isNew ? "Nieuwe regel" : "Regel bewerken"}</p>
 
       <div>
-        <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#a0abc3" }}>Wanneer:</label>
+        <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#6b7280" }}>Wanneer:</label>
         <select value={findSituatieIndex(editForm)} onChange={e => handleSituatieChange(Number(e.target.value))} className="w-full px-3 py-2 rounded-xl text-sm" style={inputStyle}>
           <option value={-1}>Kies een situatie...</option>
           {SITUATIE_OPTIES.map((o, i) => "disabled" in o
@@ -300,7 +300,7 @@ export default function IntakeRegelBeheer() {
       </div>
 
       <div>
-        <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#a0abc3" }}>Dan voeg toe:</label>
+        <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#6b7280" }}>Dan voeg toe:</label>
         <select value={editForm.spec_code} onChange={e => {
           const spec = SPEC_CODES.find(s => s.code === e.target.value);
           setEditForm(f => ({ ...f, spec_code: e.target.value, label: spec?.omschrijving || f.label || "" }));
@@ -312,12 +312,12 @@ export default function IntakeRegelBeheer() {
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#a0abc3" }}>Aantal:</label>
+          <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#6b7280" }}>Aantal:</label>
           <input type="number" value={editForm.standaard_aantal} onChange={e => setEditForm(f => ({ ...f, standaard_aantal: Number(e.target.value) }))} className="w-full px-3 py-2 rounded-xl text-sm text-center" style={inputStyle} />
         </div>
         <div className="flex items-end">
-          <label className="flex items-center gap-2 text-sm pb-2" style={{ color: "#dae6ff" }}>
-            <input type="checkbox" checked={editForm.aanpasbaar} onChange={e => setEditForm(f => ({ ...f, aanpasbaar: e.target.checked }))} style={{ accentColor: "#3fff8b" }} />
+          <label className="flex items-center gap-2 text-sm pb-2" style={{ color: "#1f2937" }}>
+            <input type="checkbox" checked={editForm.aanpasbaar} onChange={e => setEditForm(f => ({ ...f, aanpasbaar: e.target.checked }))} style={{ accentColor: "#10b981" }} />
             Aanpasbaar in wizard
           </label>
         </div>
@@ -326,10 +326,10 @@ export default function IntakeRegelBeheer() {
       {editForm.aanpasbaar && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#a0abc3" }}>Min – Max:</label>
+            <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#6b7280" }}>Min – Max:</label>
             <div className="flex items-center gap-2">
               <input type="number" value={editForm.min_aantal} onChange={e => setEditForm(f => ({ ...f, min_aantal: Number(e.target.value) }))} className="w-full px-3 py-2 rounded-xl text-sm text-center" style={inputStyle} />
-              <span style={{ color: "#a0abc3" }}>–</span>
+              <span style={{ color: "#6b7280" }}>–</span>
               <input type="number" value={editForm.max_aantal} onChange={e => setEditForm(f => ({ ...f, max_aantal: Number(e.target.value) }))} className="w-full px-3 py-2 rounded-xl text-sm text-center" style={inputStyle} />
             </div>
           </div>
@@ -338,50 +338,50 @@ export default function IntakeRegelBeheer() {
       )}
 
       <div>
-        <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#a0abc3" }}>Vervangt code (optioneel):</label>
+        <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#6b7280" }}>Vervangt code (optioneel):</label>
         <select value={editForm.sluit_uit_code || ""} onChange={e => setEditForm(f => ({ ...f, sluit_uit_code: e.target.value || null }))} className="w-full px-3 py-2 rounded-xl text-sm" style={inputStyle}>
           <option value="">Geen</option>
           {SPEC_CODES.map(s => <option key={s.code} value={s.code}>{s.code} — {s.omschrijving}</option>)}
         </select>
-        <p className="text-[10px] mt-1 italic" style={{ color: "#a0abc3" }}>Als deze code actief is, wordt de andere verwijderd</p>
+        <p className="text-[10px] mt-1 italic" style={{ color: "#6b7280" }}>Als deze code actief is, wordt de andere verwijderd</p>
       </div>
 
       <div>
-        <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#a0abc3" }}>Waarschuwing (optioneel):</label>
+        <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "#6b7280" }}>Waarschuwing (optioneel):</label>
         <textarea value={editForm.waarschuwing || ""} onChange={e => setEditForm(f => ({ ...f, waarschuwing: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-xl text-sm resize-none" style={inputStyle} placeholder="Toon een waarschuwing in de wizard als deze regel getriggerd wordt" />
       </div>
 
       <div className="flex gap-2 pt-1">
-        <button onClick={() => setEditId(null)} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
-        <button onClick={saveEdit} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>{isNew ? "Toevoegen" : "Opslaan"}</button>
+        <button onClick={() => setEditId(null)} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Annuleren</button>
+        <button onClick={saveEdit} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #10b981, #047857)" }}>{isNew ? "Toevoegen" : "Opslaan"}</button>
       </div>
     </div>
   );
 
   // ─── Advanced edit form (original) ───
   const renderAdvancedEditForm = () => (
-    <div className="mx-6 lg:mx-10 mb-4 rounded-[14px] p-4 space-y-3" style={{ background: "rgba(63,255,139,0.1)", border: "1.5px solid rgba(63,255,139,0.3)" }}>
-      <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>{isNew ? "Nieuwe regel" : "Regel bewerken"}</p>
+    <div className="mx-6 lg:mx-10 mb-4 rounded-[14px] p-4 space-y-3" style={{ background: "#ecfdf5", border: "1.5px solid #a7f3d0" }}>
+      <p className="text-sm font-semibold" style={{ color: "#1f2937" }}>{isNew ? "Nieuwe regel" : "Regel bewerken"}</p>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <div>
-          <label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Trigger type</label>
+          <label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Trigger type</label>
           <select value={editForm.trigger_type} onChange={e => setEditForm(f => ({ ...f, trigger_type: e.target.value }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle}>
             {TRIGGER_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <div>
-          <label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Trigger veld</label>
+          <label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Trigger veld</label>
           <select value={editForm.trigger_veld || ""} onChange={e => setEditForm(f => ({ ...f, trigger_veld: e.target.value }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle}>
             <option value="">—</option>
             {TRIGGER_VELDEN.map(v => <option key={v} value={v}>{v}</option>)}
           </select>
         </div>
         <div>
-          <label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Trigger waarde</label>
+          <label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Trigger waarde</label>
           <input value={editForm.trigger_waarde || ""} onChange={e => setEditForm(f => ({ ...f, trigger_waarde: e.target.value }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle} placeholder="bijv. ja, nieuw, 3" />
         </div>
         <div>
-          <label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Spec code</label>
+          <label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Spec code</label>
           <select value={editForm.spec_code} onChange={e => {
             const spec = SPEC_CODES.find(s => s.code === e.target.value);
             setEditForm(f => ({ ...f, spec_code: e.target.value, label: spec?.omschrijving || f.label || "" }));
@@ -393,29 +393,29 @@ export default function IntakeRegelBeheer() {
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <div>
-          <label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Label</label>
+          <label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Label</label>
           <input value={editForm.label} onChange={e => setEditForm(f => ({ ...f, label: e.target.value }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle} />
         </div>
         <div className="grid grid-cols-3 gap-1">
-          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Aantal</label><input type="number" value={editForm.standaard_aantal} onChange={e => setEditForm(f => ({ ...f, standaard_aantal: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
-          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Min</label><input type="number" value={editForm.min_aantal} onChange={e => setEditForm(f => ({ ...f, min_aantal: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
-          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Max</label><input type="number" value={editForm.max_aantal} onChange={e => setEditForm(f => ({ ...f, max_aantal: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
+          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Aantal</label><input type="number" value={editForm.standaard_aantal} onChange={e => setEditForm(f => ({ ...f, standaard_aantal: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
+          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Min</label><input type="number" value={editForm.min_aantal} onChange={e => setEditForm(f => ({ ...f, min_aantal: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
+          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Max</label><input type="number" value={editForm.max_aantal} onChange={e => setEditForm(f => ({ ...f, max_aantal: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
         </div>
-        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Volgorde</label><input type="number" value={editForm.volgorde} onChange={e => setEditForm(f => ({ ...f, volgorde: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
-        <label className="flex items-center gap-2 text-xs mt-4" style={{ color: "#dae6ff" }}><input type="checkbox" checked={editForm.aanpasbaar} onChange={e => setEditForm(f => ({ ...f, aanpasbaar: e.target.checked }))} style={{ accentColor: "#3fff8b" }} /> Aanpasbaar</label>
+        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Volgorde</label><input type="number" value={editForm.volgorde} onChange={e => setEditForm(f => ({ ...f, volgorde: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
+        <label className="flex items-center gap-2 text-xs mt-4" style={{ color: "#1f2937" }}><input type="checkbox" checked={editForm.aanpasbaar} onChange={e => setEditForm(f => ({ ...f, aanpasbaar: e.target.checked }))} style={{ accentColor: "#10b981" }} /> Aanpasbaar</label>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Waarschuwing</label><textarea value={editForm.waarschuwing || ""} onChange={e => setEditForm(f => ({ ...f, waarschuwing: e.target.value }))} rows={2} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 resize-none" style={inputStyle} /></div>
-        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Hint</label><input value={editForm.hint || ""} onChange={e => setEditForm(f => ({ ...f, hint: e.target.value }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle} /></div>
+        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Waarschuwing</label><textarea value={editForm.waarschuwing || ""} onChange={e => setEditForm(f => ({ ...f, waarschuwing: e.target.value }))} rows={2} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 resize-none" style={inputStyle} /></div>
+        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Hint</label><input value={editForm.hint || ""} onChange={e => setEditForm(f => ({ ...f, hint: e.target.value }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle} /></div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
-        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Sluit uit code</label><select value={editForm.sluit_uit_code || ""} onChange={e => setEditForm(f => ({ ...f, sluit_uit_code: e.target.value || null }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle}><option value="">Geen</option>{SPEC_CODES.map(s => <option key={s.code} value={s.code}>{s.code}</option>)}</select></div>
-        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Sluit uit reden</label><input value={editForm.sluit_uit_reden || ""} onChange={e => setEditForm(f => ({ ...f, sluit_uit_reden: e.target.value }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle} /></div>
-        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Vereist code</label><select value={editForm.vereist_code || ""} onChange={e => setEditForm(f => ({ ...f, vereist_code: e.target.value || null }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle}><option value="">Geen</option>{SPEC_CODES.map(s => <option key={s.code} value={s.code}>{s.code}</option>)}</select></div>
+        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Sluit uit code</label><select value={editForm.sluit_uit_code || ""} onChange={e => setEditForm(f => ({ ...f, sluit_uit_code: e.target.value || null }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle}><option value="">Geen</option>{SPEC_CODES.map(s => <option key={s.code} value={s.code}>{s.code}</option>)}</select></div>
+        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Sluit uit reden</label><input value={editForm.sluit_uit_reden || ""} onChange={e => setEditForm(f => ({ ...f, sluit_uit_reden: e.target.value }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle} /></div>
+        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Vereist code</label><select value={editForm.vereist_code || ""} onChange={e => setEditForm(f => ({ ...f, vereist_code: e.target.value || null }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle}><option value="">Geen</option>{SPEC_CODES.map(s => <option key={s.code} value={s.code}>{s.code}</option>)}</select></div>
       </div>
       <div className="flex gap-2 pt-1">
-        <button onClick={() => setEditId(null)} className="flex-1 py-2 rounded-xl text-xs font-medium" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Annuleren</button>
-        <button onClick={saveEdit} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>{isNew ? "Toevoegen" : "Opslaan"}</button>
+        <button onClick={() => setEditId(null)} className="flex-1 py-2 rounded-xl text-xs font-medium" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Annuleren</button>
+        <button onClick={saveEdit} className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #10b981, #047857)" }}>{isNew ? "Toevoegen" : "Opslaan"}</button>
       </div>
     </div>
   );
@@ -425,58 +425,58 @@ export default function IntakeRegelBeheer() {
       <DesktopSidebar badges={badges} />
       <div className="lg:ml-[240px] min-h-screen" style={{ background: "var(--app-navy)" }}>
         <header className="flex items-center gap-3 px-6 lg:px-10 pt-6 pb-4">
-          <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-lg flex items-center justify-center lg:hidden" style={{ background: "#102038" }}><ArrowLeft className="h-4 w-4" style={{ color: "#a0abc3" }} /></button>
+          <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-lg flex items-center justify-center lg:hidden" style={{ background: "#ffffff" }}><ArrowLeft className="h-4 w-4" style={{ color: "#6b7280" }} /></button>
           <div className="flex-1">
-            <h1 className="text-lg font-bold" style={{ color: "#dae6ff" }}>Intake regelmotor</h1>
-            <p className="text-xs" style={{ color: "#a0abc3" }}>Beheer de automatische forecast logica</p>
+            <h1 className="text-lg font-bold" style={{ color: "#1f2937" }}>Intake regelmotor</h1>
+            <p className="text-xs" style={{ color: "#6b7280" }}>Beheer de automatische forecast logica</p>
           </div>
           {/* View toggle */}
-          <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid rgba(106,118,140,0.15)" }}>
+          <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid #e5e7eb" }}>
             <button onClick={() => setViewMode("simple")} className="px-3 py-1.5 text-xs font-medium flex items-center gap-1.5" style={{
-              background: viewMode === "simple" ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
-              color: viewMode === "simple" ? "#3fff8b" : "#a0abc3",
-              borderRight: "1px solid rgba(106,118,140,0.15)",
+              background: viewMode === "simple" ? "#ecfdf5" : "#ffffff",
+              color: viewMode === "simple" ? "#10b981" : "#6b7280",
+              borderRight: "1px solid #e5e7eb",
             }}><LayoutList className="h-3.5 w-3.5" /> Eenvoudig</button>
             <button onClick={() => setViewMode("advanced")} className="px-3 py-1.5 text-xs font-medium flex items-center gap-1.5" style={{
-              background: viewMode === "advanced" ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
-              color: viewMode === "advanced" ? "#3fff8b" : "#a0abc3",
+              background: viewMode === "advanced" ? "#ecfdf5" : "#ffffff",
+              color: viewMode === "advanced" ? "#10b981" : "#6b7280",
             }}><Settings className="h-3.5 w-3.5" /> Geavanceerd</button>
           </div>
-          <button onClick={() => setShowSim(!showSim)} className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
+          <button onClick={() => setShowSim(!showSim)} className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>
             <FlaskConical className="h-3.5 w-3.5" /> Testen
           </button>
-          <button onClick={startNew} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
+          <button onClick={startNew} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, #10b981, #047857)" }}>
             <Plus className="h-3.5 w-3.5" /> Nieuwe regel
           </button>
         </header>
 
         {/* ─── Simulator ─── */}
         {showSim && (
-          <div className="mx-6 lg:mx-10 mb-4 rounded-[14px] p-4 space-y-4" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
-            <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>🧪 Scenario testen</p>
+          <div className="mx-6 lg:mx-10 mb-4 rounded-[14px] p-4 space-y-4" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+            <p className="text-sm font-semibold" style={{ color: "#1f2937" }}>🧪 Scenario testen</p>
             <div className="space-y-3">
               <div>
-                <p className="text-xs font-medium mb-1.5" style={{ color: "#a0abc3" }}>Wat voor case?</p>
+                <p className="text-xs font-medium mb-1.5" style={{ color: "#6b7280" }}>Wat voor case?</p>
                 <div className="flex gap-2 flex-wrap">
                   {["NSA-case", "Compactstation", "Provisorium", "Overig"].map(ct => (
                     <button key={ct} onClick={() => setSimCaseType(ct === "Overig" ? "" : ct)} className="px-3 py-2 rounded-xl text-xs font-medium" style={{
-                      background: (ct === "Overig" ? !simCaseType : simCaseType === ct) ? "rgba(63,255,139,0.1)" : "var(--app-navy)",
-                      border: `1.5px solid ${(ct === "Overig" ? !simCaseType : simCaseType === ct) ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`,
-                      color: "#dae6ff",
+                      background: (ct === "Overig" ? !simCaseType : simCaseType === ct) ? "#ecfdf5" : "var(--app-navy)",
+                      border: `1.5px solid ${(ct === "Overig" ? !simCaseType : simCaseType === ct) ? "#a7f3d0" : "#e5e7eb"}`,
+                      color: "#1f2937",
                     }}>{ct}</button>
                   ))}
                 </div>
               </div>
               <div>
-                <p className="text-xs font-medium mb-1.5" style={{ color: "#a0abc3" }}>RMU vervangen?</p>
+                <p className="text-xs font-medium mb-1.5" style={{ color: "#6b7280" }}>RMU vervangen?</p>
                 <div className="flex gap-2">
-                  <button onClick={() => setSimRmu(true)} className="px-4 py-2 rounded-xl text-xs font-medium" style={{ background: simRmu ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1.5px solid ${simRmu ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>Ja</button>
-                  <button onClick={() => setSimRmu(false)} className="px-4 py-2 rounded-xl text-xs font-medium" style={{ background: !simRmu ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1.5px solid ${!simRmu ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>Nee</button>
+                  <button onClick={() => setSimRmu(true)} className="px-4 py-2 rounded-xl text-xs font-medium" style={{ background: simRmu ? "#ecfdf5" : "var(--app-navy)", border: `1.5px solid ${simRmu ? "#a7f3d0" : "#e5e7eb"}`, color: "#1f2937" }}>Ja</button>
+                  <button onClick={() => setSimRmu(false)} className="px-4 py-2 rounded-xl text-xs font-medium" style={{ background: !simRmu ? "#ecfdf5" : "var(--app-navy)", border: `1.5px solid ${!simRmu ? "#a7f3d0" : "#e5e7eb"}`, color: "#1f2937" }}>Nee</button>
                   {simRmu && (
                     <div className="flex items-center gap-2 ml-2">
-                      <span className="text-xs" style={{ color: "#a0abc3" }}>Velden:</span>
+                      <span className="text-xs" style={{ color: "#6b7280" }}>Velden:</span>
                       {[3, 4, 5, 6].map(v => (
-                        <button key={v} onClick={() => setSimVelden(v)} className="w-8 h-8 rounded-lg text-xs font-bold" style={{ background: simVelden === v ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1.5px solid ${simVelden === v ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>{v}</button>
+                        <button key={v} onClick={() => setSimVelden(v)} className="w-8 h-8 rounded-lg text-xs font-bold" style={{ background: simVelden === v ? "#ecfdf5" : "var(--app-navy)", border: `1.5px solid ${simVelden === v ? "#a7f3d0" : "#e5e7eb"}`, color: "#1f2937" }}>{v}</button>
                       ))}
                     </div>
                   )}
@@ -484,51 +484,51 @@ export default function IntakeRegelBeheer() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-xs font-medium mb-1.5" style={{ color: "#a0abc3" }}>Trafo?</p>
+                  <p className="text-xs font-medium mb-1.5" style={{ color: "#6b7280" }}>Trafo?</p>
                   <div className="flex gap-1.5 flex-wrap">
                     {([["Nieuw", "nieuw"], ["Draaien", "draaien"], ["Vrijschakelen", "vrijschakelen"], ["Geen", "geen"]] as const).map(([l, v]) => (
-                      <button key={v} onClick={() => setSimTrafo(v)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium" style={{ background: simTrafo === v ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1px solid ${simTrafo === v ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>{l}</button>
+                      <button key={v} onClick={() => setSimTrafo(v)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium" style={{ background: simTrafo === v ? "#ecfdf5" : "var(--app-navy)", border: `1px solid ${simTrafo === v ? "#a7f3d0" : "#e5e7eb"}`, color: "#1f2937" }}>{l}</button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-medium mb-1.5" style={{ color: "#a0abc3" }}>LS-rek?</p>
+                  <p className="text-xs font-medium mb-1.5" style={{ color: "#6b7280" }}>LS-rek?</p>
                   <div className="flex gap-1.5 flex-wrap">
                     {([["≤630kVA", "klein"], [">630kVA", "groot"], ["Uitbreiden", "uitbreiden"], ["Geen", "geen"]] as const).map(([l, v]) => (
-                      <button key={v} onClick={() => setSimLsRek(v)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium" style={{ background: simLsRek === v ? "rgba(63,255,139,0.1)" : "var(--app-navy)", border: `1px solid ${simLsRek === v ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`, color: "#dae6ff" }}>{l}</button>
+                      <button key={v} onClick={() => setSimLsRek(v)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium" style={{ background: simLsRek === v ? "#ecfdf5" : "var(--app-navy)", border: `1px solid ${simLsRek === v ? "#a7f3d0" : "#e5e7eb"}`, color: "#1f2937" }}>{l}</button>
                     ))}
                   </div>
                 </div>
               </div>
-              <button onClick={runSimulation} className="px-5 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>Berekenen →</button>
+              <button onClick={runSimulation} className="px-5 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #10b981, #047857)" }}>Berekenen →</button>
             </div>
 
             {simResult.length > 0 && (
-              <div className="rounded-[14px] overflow-hidden" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
-                <div className="grid grid-cols-12 gap-1 px-3.5 py-2" style={{ background: "#102038" }}>
-                  <span className="col-span-2 text-[10px] uppercase font-semibold" style={{ color: "#a0abc3" }}>Code</span>
-                  <span className="col-span-4 text-[10px] uppercase font-semibold" style={{ color: "#a0abc3" }}>Omschrijving</span>
-                  <span className="col-span-1 text-[10px] uppercase font-semibold text-center" style={{ color: "#a0abc3" }}>Aantal</span>
-                  <span className="col-span-2 text-[10px] uppercase font-semibold text-right" style={{ color: "#a0abc3" }}>Tarief</span>
-                  <span className="col-span-3 text-[10px] uppercase font-semibold text-right" style={{ color: "#a0abc3" }}>Totaal</span>
+              <div className="rounded-[14px] overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+                <div className="grid grid-cols-12 gap-1 px-3.5 py-2" style={{ background: "#ffffff" }}>
+                  <span className="col-span-2 text-[10px] uppercase font-semibold" style={{ color: "#6b7280" }}>Code</span>
+                  <span className="col-span-4 text-[10px] uppercase font-semibold" style={{ color: "#6b7280" }}>Omschrijving</span>
+                  <span className="col-span-1 text-[10px] uppercase font-semibold text-center" style={{ color: "#6b7280" }}>Aantal</span>
+                  <span className="col-span-2 text-[10px] uppercase font-semibold text-right" style={{ color: "#6b7280" }}>Tarief</span>
+                  <span className="col-span-3 text-[10px] uppercase font-semibold text-right" style={{ color: "#6b7280" }}>Totaal</span>
                 </div>
                 {simResult.map((r, i) => (
-                  <div key={i} style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
+                  <div key={i} style={{ borderTop: "1px solid #e5e7eb" }}>
                     <div className="grid grid-cols-12 gap-1 px-3.5 py-2 items-center">
-                      <span className="col-span-2 text-xs font-bold" style={{ color: "#3fff8b", fontFamily: "DM Mono, monospace" }}>{r.spec_code}</span>
-                      <span className="col-span-4 text-xs" style={{ color: "#dae6ff" }}>{r.label}</span>
-                      <span className="col-span-1 text-xs text-center font-bold" style={{ color: "#dae6ff", fontFamily: "DM Mono, monospace" }}>{r.aantal}×</span>
-                      <span className="col-span-2 text-xs text-right" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>{euro(r.tarief)}</span>
-                      <span className="col-span-3 text-xs text-right font-bold" style={{ color: "#3fff8b", fontFamily: "DM Mono, monospace" }}>{euro(r.tarief * r.aantal)}</span>
+                      <span className="col-span-2 text-xs font-bold" style={{ color: "#10b981", fontFamily: "DM Mono, monospace" }}>{r.spec_code}</span>
+                      <span className="col-span-4 text-xs" style={{ color: "#1f2937" }}>{r.label}</span>
+                      <span className="col-span-1 text-xs text-center font-bold" style={{ color: "#1f2937", fontFamily: "DM Mono, monospace" }}>{r.aantal}×</span>
+                      <span className="col-span-2 text-xs text-right" style={{ color: "#6b7280", fontFamily: "DM Mono, monospace" }}>{euro(r.tarief)}</span>
+                      <span className="col-span-3 text-xs text-right font-bold" style={{ color: "#10b981", fontFamily: "DM Mono, monospace" }}>{euro(r.tarief * r.aantal)}</span>
                     </div>
                     {resultTriggerLabel(r) && (
-                      <p className="px-3.5 pb-2 -mt-1 text-[10px] italic" style={{ color: "#a0abc3" }}>Toegevoegd door: {resultTriggerLabel(r)}</p>
+                      <p className="px-3.5 pb-2 -mt-1 text-[10px] italic" style={{ color: "#6b7280" }}>Toegevoegd door: {resultTriggerLabel(r)}</p>
                     )}
                   </div>
                 ))}
-                <div className="px-3.5 py-3 text-right" style={{ borderTop: "2px solid rgba(63,255,139,0.3)" }}>
-                  <span className="text-xs uppercase tracking-wider" style={{ color: "#a0abc3" }}>Totaal omzet </span>
-                  <span className="text-base font-bold ml-2" style={{ color: "#3fff8b", fontFamily: "DM Mono, monospace" }}>{euro(simResult.reduce((s, r) => s + r.tarief * r.aantal, 0))}</span>
+                <div className="px-3.5 py-3 text-right" style={{ borderTop: "2px solid #a7f3d0" }}>
+                  <span className="text-xs uppercase tracking-wider" style={{ color: "#6b7280" }}>Totaal omzet </span>
+                  <span className="text-base font-bold ml-2" style={{ color: "#10b981", fontFamily: "DM Mono, monospace" }}>{euro(simResult.reduce((s, r) => s + r.tarief * r.aantal, 0))}</span>
                 </div>
               </div>
             )}
@@ -546,36 +546,36 @@ export default function IntakeRegelBeheer() {
             ) : grouped.map(([cat, catRegels]) => {
               const isOpen = openCats.has(cat);
               return (
-                <div key={cat} className="rounded-[14px] overflow-hidden" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
-                  <button onClick={() => setOpenCats(prev => { const n = new Set(prev); if (n.has(cat)) n.delete(cat); else n.add(cat); return n; })} className="w-full flex items-center justify-between px-4 py-2.5" style={{ background: "#102038" }}>
-                    <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#a0abc3", letterSpacing: "0.5px" }}>{cat}</span>
+                <div key={cat} className="rounded-[14px] overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+                  <button onClick={() => setOpenCats(prev => { const n = new Set(prev); if (n.has(cat)) n.delete(cat); else n.add(cat); return n; })} className="w-full flex items-center justify-between px-4 py-2.5" style={{ background: "#ffffff" }}>
+                    <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#6b7280", letterSpacing: "0.5px" }}>{cat}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px]" style={{ color: "#a0abc3" }}>{catRegels.length} regels</span>
-                      {isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} />}
+                      <span className="text-[10px]" style={{ color: "#6b7280" }}>{catRegels.length} regels</span>
+                      {isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "#6b7280" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "#6b7280" }} />}
                     </div>
                   </button>
                   {isOpen && catRegels.map(r => (
-                    <div key={r.id} className="flex items-start gap-3 px-4 py-3" style={{ borderTop: "1px solid rgba(106,118,140,0.15)", opacity: r.actief ? 1 : 0.5, background: r.actief ? undefined : "var(--app-navy)" }}>
+                    <div key={r.id} className="flex items-start gap-3 px-4 py-3" style={{ borderTop: "1px solid #e5e7eb", opacity: r.actief ? 1 : 0.5, background: r.actief ? undefined : "var(--app-navy)" }}>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs" style={{ color: "#a0abc3" }}>{regelConditieTekst(r)}</p>
-                        <p className="text-sm font-medium mt-0.5" style={{ color: "#dae6ff" }}>
-                          → {r.label} <span style={{ color: "#3fff8b", fontFamily: "DM Mono, monospace", fontSize: 12 }}>{r.spec_code}</span>
-                          <span className="ml-1 text-xs" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>({r.standaard_aantal}×)</span>
+                        <p className="text-xs" style={{ color: "#6b7280" }}>{regelConditieTekst(r)}</p>
+                        <p className="text-sm font-medium mt-0.5" style={{ color: "#1f2937" }}>
+                          → {r.label} <span style={{ color: "#10b981", fontFamily: "DM Mono, monospace", fontSize: 12 }}>{r.spec_code}</span>
+                          <span className="ml-1 text-xs" style={{ color: "#6b7280", fontFamily: "DM Mono, monospace" }}>({r.standaard_aantal}×)</span>
                         </p>
                         {r.sluit_uit_code && (
-                          <p className="text-[11px] mt-0.5" style={{ color: "#a0abc3" }}>vervangt {r.sluit_uit_code}{r.sluit_uit_reden ? ` — ${r.sluit_uit_reden}` : ""}</p>
+                          <p className="text-[11px] mt-0.5" style={{ color: "#6b7280" }}>vervangt {r.sluit_uit_code}{r.sluit_uit_reden ? ` — ${r.sluit_uit_reden}` : ""}</p>
                         )}
                         {r.waarschuwing && (
-                          <p className="text-[11px] mt-0.5 flex items-center gap-1" style={{ color: "#feb300" }}>
+                          <p className="text-[11px] mt-0.5 flex items-center gap-1" style={{ color: "#d97706" }}>
                             <AlertTriangle className="h-3 w-3 shrink-0" /> {r.waarschuwing}
                           </p>
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0 pt-1">
-                        <button onClick={() => startEdit(r)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
-                          <Pencil className="h-3 w-3" style={{ color: "#a0abc3" }} />
+                        <button onClick={() => startEdit(r)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}>
+                          <Pencil className="h-3 w-3" style={{ color: "#6b7280" }} />
                         </button>
-                        <button onClick={() => toggleActief(r)} className="w-10 h-5 rounded-full relative" style={{ background: r.actief ? "#3fff8b" : "#102038" }}>
+                        <button onClick={() => toggleActief(r)} className="w-10 h-5 rounded-full relative" style={{ background: r.actief ? "#10b981" : "#ffffff" }}>
                           <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform" style={{ left: r.actief ? 22 : 2 }} />
                         </button>
                       </div>
@@ -593,57 +593,57 @@ export default function IntakeRegelBeheer() {
             <div className="flex items-center gap-2 px-6 lg:px-10 mb-3 flex-wrap">
               {(["alle", "actief", "inactief"] as const).map(f => (
                 <button key={f} onClick={() => setFilterActief(f)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{
-                  background: filterActief === f ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
-                  border: filterActief === f ? "1px solid #3fff8b" : "1px solid rgba(106,118,140,0.15)",
-                  color: filterActief === f ? "#3fff8b" : "#a0abc3",
+                  background: filterActief === f ? "#ecfdf5" : "#ffffff",
+                  border: filterActief === f ? "1px solid #10b981" : "1px solid #e5e7eb",
+                  color: filterActief === f ? "#10b981" : "#6b7280",
                 }}>{f.charAt(0).toUpperCase() + f.slice(1)}</button>
               ))}
-              <span className="text-[10px] uppercase tracking-wider ml-2" style={{ color: "#a0abc3" }}>Type:</span>
+              <span className="text-[10px] uppercase tracking-wider ml-2" style={{ color: "#6b7280" }}>Type:</span>
               {["alle", ...TRIGGER_TYPES].map(t => (
                 <button key={t} onClick={() => setFilterType(t)} className="px-2.5 py-1 rounded-lg text-[11px] font-medium" style={{
-                  background: filterType === t ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
-                  border: filterType === t ? "1px solid #3fff8b" : "1px solid rgba(106,118,140,0.15)",
-                  color: filterType === t ? "#3fff8b" : "#a0abc3",
+                  background: filterType === t ? "#ecfdf5" : "#ffffff",
+                  border: filterType === t ? "1px solid #10b981" : "1px solid #e5e7eb",
+                  color: filterType === t ? "#10b981" : "#6b7280",
                 }}>{t}</button>
               ))}
-              <span className="text-xs ml-auto" style={{ color: "#a0abc3" }}>{filtered.length} regels</span>
+              <span className="text-xs ml-auto" style={{ color: "#6b7280" }}>{filtered.length} regels</span>
             </div>
 
-            <div className="mx-6 lg:mx-10 pb-24 rounded-[14px] overflow-hidden" style={{ border: "1px solid rgba(106,118,140,0.15)" }}>
-              <div className="grid grid-cols-12 gap-1 px-3.5 py-2" style={{ background: "#102038" }}>
-                <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px]" style={{ color: "#a0abc3" }}>Trigger</span>
-                <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px]" style={{ color: "#a0abc3" }}>Waarde</span>
-                <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px]" style={{ color: "#a0abc3" }}>Spec code</span>
-                <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px]" style={{ color: "#a0abc3" }}>Label</span>
-                <span className="col-span-1 text-[10px] uppercase font-semibold tracking-[0.5px] text-center" style={{ color: "#a0abc3" }}>Aantal</span>
-                <span className="col-span-1 text-[10px] uppercase font-semibold tracking-[0.5px] text-center" style={{ color: "#a0abc3" }}>Actief</span>
-                <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px] text-right" style={{ color: "#a0abc3" }}>Acties</span>
+            <div className="mx-6 lg:mx-10 pb-24 rounded-[14px] overflow-hidden" style={{ border: "1px solid #e5e7eb" }}>
+              <div className="grid grid-cols-12 gap-1 px-3.5 py-2" style={{ background: "#ffffff" }}>
+                <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px]" style={{ color: "#6b7280" }}>Trigger</span>
+                <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px]" style={{ color: "#6b7280" }}>Waarde</span>
+                <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px]" style={{ color: "#6b7280" }}>Spec code</span>
+                <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px]" style={{ color: "#6b7280" }}>Label</span>
+                <span className="col-span-1 text-[10px] uppercase font-semibold tracking-[0.5px] text-center" style={{ color: "#6b7280" }}>Aantal</span>
+                <span className="col-span-1 text-[10px] uppercase font-semibold tracking-[0.5px] text-center" style={{ color: "#6b7280" }}>Actief</span>
+                <span className="col-span-2 text-[10px] uppercase font-semibold tracking-[0.5px] text-right" style={{ color: "#6b7280" }}>Acties</span>
               </div>
               {loading ? (
                 <Spinner size="sm" padding="py-8" />
               ) : filtered.length === 0 ? (
-                <div className="py-8 text-center text-xs" style={{ color: "#a0abc3" }}>Geen regels gevonden</div>
+                <div className="py-8 text-center text-xs" style={{ color: "#6b7280" }}>Geen regels gevonden</div>
               ) : filtered.map(r => (
-                <div key={r.id} className="grid grid-cols-12 gap-1 px-3.5 py-2.5 items-center group" style={{ borderTop: "1px solid rgba(106,118,140,0.15)", background: "rgba(10,26,48,0.7)", opacity: r.actief ? 1 : 0.5 }}>
+                <div key={r.id} className="grid grid-cols-12 gap-1 px-3.5 py-2.5 items-center group" style={{ borderTop: "1px solid #e5e7eb", background: "#ffffff", opacity: r.actief ? 1 : 0.5 }}>
                   <span className="col-span-2"><span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={TRIGGER_BADGES[r.trigger_type] || TRIGGER_BADGES.altijd}>{r.trigger_type}</span></span>
-                  <span className="col-span-2 text-xs truncate" style={{ color: "#dae6ff" }}>{r.trigger_veld && <span className="font-medium">{r.trigger_veld}</span>}{r.trigger_waarde && <span style={{ color: "#a0abc3" }}> = {r.trigger_waarde}</span>}</span>
-                  <span className="col-span-2 text-xs font-mono font-semibold" style={{ color: "#3fff8b" }}>{r.spec_code}</span>
-                  <span className="col-span-2 text-xs truncate" style={{ color: "#dae6ff" }}>{r.label}</span>
-                  <span className="col-span-1 text-xs text-center font-mono font-bold" style={{ color: "#dae6ff" }}>{r.standaard_aantal}</span>
+                  <span className="col-span-2 text-xs truncate" style={{ color: "#1f2937" }}>{r.trigger_veld && <span className="font-medium">{r.trigger_veld}</span>}{r.trigger_waarde && <span style={{ color: "#6b7280" }}> = {r.trigger_waarde}</span>}</span>
+                  <span className="col-span-2 text-xs font-mono font-semibold" style={{ color: "#10b981" }}>{r.spec_code}</span>
+                  <span className="col-span-2 text-xs truncate" style={{ color: "#1f2937" }}>{r.label}</span>
+                  <span className="col-span-1 text-xs text-center font-mono font-bold" style={{ color: "#1f2937" }}>{r.standaard_aantal}</span>
                   <span className="col-span-1 flex justify-center">
-                    <button onClick={() => toggleActief(r)} className="w-8 h-5 rounded-full relative" style={{ background: r.actief ? "#3fff8b" : "#102038" }}>
+                    <button onClick={() => toggleActief(r)} className="w-8 h-5 rounded-full relative" style={{ background: r.actief ? "#10b981" : "#ffffff" }}>
                       <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform" style={{ left: r.actief ? 16 : 2 }} />
                     </button>
                   </span>
                   <div className="col-span-2 flex items-center justify-end gap-1">
-                    <button onClick={() => startEdit(r)} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}><Pencil className="h-3 w-3" style={{ color: "#a0abc3" }} /></button>
+                    <button onClick={() => startEdit(r)} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}><Pencil className="h-3 w-3" style={{ color: "#6b7280" }} /></button>
                     {confirmDeleteId === r.id ? (
                       <div className="flex gap-1">
-                        <button onClick={() => setConfirmDeleteId(null)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}><X className="h-3 w-3" style={{ color: "#a0abc3" }} /></button>
-                        <button onClick={() => deleteRegel(r.id)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#ff716c", color: "#fff" }}><Check className="h-3 w-3" /></button>
+                        <button onClick={() => setConfirmDeleteId(null)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}><X className="h-3 w-3" style={{ color: "#6b7280" }} /></button>
+                        <button onClick={() => deleteRegel(r.id)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#dc2626", color: "#fff" }}><Check className="h-3 w-3" /></button>
                       </div>
                     ) : (
-                      <button onClick={() => setConfirmDeleteId(r.id)} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.3)" }}><Trash2 className="h-3 w-3" style={{ color: "#ff716c" }} /></button>
+                      <button onClick={() => setConfirmDeleteId(r.id)} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.3)" }}><Trash2 className="h-3 w-3" style={{ color: "#dc2626" }} /></button>
                     )}
                   </div>
                 </div>

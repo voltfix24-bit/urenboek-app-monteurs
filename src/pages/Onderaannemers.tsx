@@ -290,6 +290,8 @@ export default function Onderaannemers() {
 
   const monteursVoor = (oaId: string) => monteurs.filter((m) => m.onderaannemer_id === oaId);
 
+  const genPw = () => generateTemporaryPassword();
+
   const resetOaForm = () => {
     setOaVoornaam(""); setOaAchternaam(""); setOaEmail(""); setOaTel("");
     setOaBedrijf(""); setOaKvk(""); setOaIban(""); setOaUurtarief(""); setOaPw("");
@@ -385,7 +387,7 @@ export default function Onderaannemers() {
   if (!isManager) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}>
-        <p style={{ color: "#a0abc3" }}>Alleen managers hebben toegang.</p>
+        <p style={{ color: "#6b7280" }}>Alleen managers hebben toegang.</p>
       </div>
     );
   }
@@ -396,33 +398,33 @@ export default function Onderaannemers() {
     return (
       <PageShell>
         <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)" }}>
-          <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-            <button onClick={() => { setSelected(null); setShowAddMonteur(false); setLastCreatedMonteur(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#3fff8b", display: "flex" }}>
+          <header style={{ position: "sticky", top: 0, zIndex: 50, background: "#f9fafb", backdropFilter: "blur(20px)", borderBottom: "1px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={() => { setSelected(null); setShowAddMonteur(false); setLastCreatedMonteur(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#10b981", display: "flex" }}>
               <ArrowLeft size={24} />
             </button>
-            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               {selected.full_name}
             </span>
           </header>
 
           <main style={{ padding: "24px 20px" }}>
             {/* Hero */}
-            <div style={{ background: "linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))", borderRadius: 24, padding: "28px 20px", marginBottom: 20, border: "1px solid rgba(106,118,140,0.15)", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 64, height: 64, borderRadius: 18, background: "#3fff8b", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Building2 size={28} color="#005d2c" />
+            <div style={{ background: "#ffffff", borderRadius: 24, padding: "28px 20px", marginBottom: 20, border: "1px solid #e5e7eb", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 18, background: "#10b981", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Building2 size={28} color="#047857" />
               </div>
-              <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 22, color: "#dae6ff" }}>{selected.bedrijfsnaam || selected.full_name}</h2>
-              {selected.bedrijfsnaam && <p style={{ fontSize: 13, color: "#a0abc3" }}>{selected.full_name}</p>}
-              <div style={{ padding: "4px 14px", borderRadius: 9999, background: "rgba(63,255,139,0.15)", border: "1px solid rgba(63,255,139,0.3)" }}>
-                <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "Inter", color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Onderaannemer</span>
+              <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 22, color: "#1f2937" }}>{selected.bedrijfsnaam || selected.full_name}</h2>
+              {selected.bedrijfsnaam && <p style={{ fontSize: 13, color: "#6b7280" }}>{selected.full_name}</p>}
+              <div style={{ padding: "4px 14px", borderRadius: 9999, background: "#ecfdf5", border: "1px solid #a7f3d0" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "Inter", color: "#10b981", textTransform: "uppercase", letterSpacing: "0.05em" }}>Onderaannemer</span>
               </div>
             </div>
 
             {/* Inloggegevens / wachtwoord reset */}
-            <div style={{ background: "#0a1a30", borderRadius: 16, padding: 18, marginBottom: 20, border: "1px solid rgba(106,118,140,0.15)" }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#6a768c", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Inloggegevens</p>
-              <p style={{ fontSize: 12, color: "#a0abc3", marginBottom: 12, lineHeight: 1.5 }}>
-                Deze onderaannemer ziet na inloggen de planning en uren van de monteurs onder hem. {selected.email ? <>Huidige login: <b style={{ color: "#dae6ff" }}>{selected.email}</b>.</> : "Deze onderaannemer heeft nog geen login."}
+            <div style={{ background: "#ffffff", borderRadius: 16, padding: 18, marginBottom: 20, border: "1px solid #e5e7eb" }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Inloggegevens</p>
+              <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12, lineHeight: 1.5 }}>
+                Deze onderaannemer ziet na inloggen de planning en uren van de monteurs onder hem. {selected.email ? <>Huidige login: <b style={{ color: "#1f2937" }}>{selected.email}</b>.</> : "Deze onderaannemer heeft nog geen login."}
               </p>
               {selected.email ? (
                 <button
@@ -460,16 +462,16 @@ export default function Onderaannemers() {
 
 
             {/* Contact info */}
-            <div style={{ background: "#0a1a30", borderRadius: 16, padding: 18, marginBottom: 20, border: "1px solid rgba(106,118,140,0.15)" }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#6a768c", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>Bedrijfsgegevens</p>
+            <div style={{ background: "#ffffff", borderRadius: 16, padding: 18, marginBottom: 20, border: "1px solid #e5e7eb" }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>Bedrijfsgegevens</p>
               <Row label="E-mail" value={selected.email || "—"} icon={<Mail size={14} />} />
               <Row label="Telefoon" value={selected.telefoon || "—"} icon={<Phone size={14} />} />
               <Row label="KvK" value={selected.kvk_nummer || "—"} />
               <Row label="IBAN" value={selected.iban || "—"} />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid rgba(106,118,140,0.1)" }}>
-                <span style={{ fontSize: 12, color: "#6a768c" }}>Uurtarief</span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid #e5e7eb" }}>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>Uurtarief</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 13, color: "#a0abc3" }}>€</span>
+                  <span style={{ fontSize: 13, color: "#6b7280" }}>€</span>
                   <input
                     type="number"
                     step="0.01"
@@ -487,25 +489,25 @@ export default function Onderaannemers() {
                       load();
                     }}
                     placeholder="—"
-                    style={{ width: 90, textAlign: "right", background: "#061327", border: "1px solid rgba(106,118,140,0.25)", borderRadius: 8, padding: "6px 8px", color: "#dae6ff", fontFamily: "DM Mono, monospace", fontSize: 13 }}
+                    style={{ width: 90, textAlign: "right", background: "#ffffff", border: "1px solid #e5e7eb", borderRadius: 8, padding: "6px 8px", color: "#1f2937", fontFamily: "DM Mono, monospace", fontSize: 13 }}
                   />
-                  <span style={{ fontSize: 11, color: "#6a768c" }}>/uur</span>
+                  <span style={{ fontSize: 11, color: "#9ca3af" }}>/uur</span>
                 </div>
               </div>
             </div>
 
             {/* Monteurs eronder */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", letterSpacing: "0.2em", textTransform: "uppercase" }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#10b981", letterSpacing: "0.2em", textTransform: "uppercase" }}>
                 Monteurs onder deze onderaannemer ({mList.length})
               </p>
-              <button onClick={() => { setShowAddMonteur(!showAddMonteur); if (showAddMonteur) resetMonteurForm(); }} style={{ width: 32, height: 32, borderRadius: "50%", background: showAddMonteur ? "rgba(255,113,108,0.15)" : "rgba(63,255,139,0.15)", border: showAddMonteur ? "1px solid rgba(255,113,108,0.3)" : "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAddMonteur ? "#ff716c" : "#3fff8b" }}>
+              <button onClick={() => { setShowAddMonteur(!showAddMonteur); if (showAddMonteur) resetMonteurForm(); }} style={{ width: 32, height: 32, borderRadius: "50%", background: showAddMonteur ? "rgba(255,113,108,0.15)" : "#ecfdf5", border: showAddMonteur ? "1px solid rgba(255,113,108,0.3)" : "1px solid #a7f3d0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAddMonteur ? "#dc2626" : "#10b981" }}>
                 {showAddMonteur ? <X size={16} /> : <Plus size={16} />}
               </button>
             </div>
 
             {showAddMonteur && (
-              <form onSubmit={handleAddMonteur} style={{ background: "#0a1a30", borderRadius: 16, padding: 16, marginBottom: 16, border: "1px solid rgba(63,255,139,0.2)", display: "flex", flexDirection: "column", gap: 10 }}>
+              <form onSubmit={handleAddMonteur} style={{ background: "#ffffff", borderRadius: 16, padding: 16, marginBottom: 16, border: "1px solid #d1fae5", display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <Input placeholder="Voornaam" value={mVoornaam} onChange={setMVoornaam} />
                   <Input placeholder="Achternaam" value={mAchternaam} onChange={setMAchternaam} />
@@ -520,7 +522,7 @@ export default function Onderaannemers() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {mList.length === 0 && !showAddMonteur && (
-                <div style={{ padding: 24, textAlign: "center", color: "#6a768c", background: "#0a1a30", borderRadius: 16, border: "1px dashed rgba(106,118,140,0.3)" }}>
+                <div style={{ padding: 24, textAlign: "center", color: "#9ca3af", background: "#ffffff", borderRadius: 16, border: "1px dashed #e5e7eb" }}>
                   Nog geen monteurs onder deze onderaannemer
                 </div>
               )}
@@ -528,8 +530,8 @@ export default function Onderaannemers() {
                 const isEditing = editId === m.id;
                 if (isEditing) {
                   return (
-                    <div key={m.id} style={{ background: "#0a1a30", borderRadius: 14, padding: 14, border: "1px solid rgba(63,255,139,0.3)", display: "flex", flexDirection: "column", gap: 10 }}>
-                      <p style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.15em" }}>Monteur bewerken</p>
+                    <div key={m.id} style={{ background: "#ffffff", borderRadius: 14, padding: 14, border: "1px solid #a7f3d0", display: "flex", flexDirection: "column", gap: 10 }}>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.15em" }}>Monteur bewerken</p>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                         <Input placeholder="Voornaam" value={editVoornaam} onChange={setEditVoornaam} />
                         <Input placeholder="Achternaam" value={editAchternaam} onChange={setEditAchternaam} />
@@ -540,7 +542,7 @@ export default function Onderaannemers() {
                       </select>
                       <div style={{ display: "flex", gap: 8 }}>
                         <button type="button" onClick={cancelEdit} style={secondaryBtn}>Annuleren</button>
-                        <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} style={{ ...secondaryBtn, color: "#ff716c", border: "1px solid rgba(255,113,108,0.3)", background: "rgba(255,113,108,0.1)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                        <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} style={{ ...secondaryBtn, color: "#dc2626", border: "1px solid rgba(255,113,108,0.3)", background: "rgba(255,113,108,0.1)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                           <Trash2 size={14} /> {deletingId === m.id ? "Bezig…" : "Verwijderen"}
                         </button>
                         <button type="button" onClick={() => saveEdit(m)} disabled={editSaving} style={{ ...primaryBtn, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
@@ -559,49 +561,49 @@ export default function Onderaannemers() {
                   .map((pid) => teamForPartner.find((t) => t.id === pid)?.full_name)
                   .filter(Boolean) as string[];
                 return (
-                  <div key={m.id} style={{ background: "#0a1a30", borderRadius: 14, padding: 14, border: "1px solid rgba(106,118,140,0.15)", display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div key={m.id} style={{ background: "#ffffff", borderRadius: 14, padding: 14, border: "1px solid #e5e7eb", display: "flex", flexDirection: "column", gap: 10 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(63,255,139,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, color: "#3fff8b", fontSize: 13 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#ecfdf5", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, color: "#10b981", fontSize: 13 }}>
                         {m.full_name.split(" ").map(n => n[0]).slice(0, 2).join("")}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontWeight: 700, color: "#dae6ff", fontSize: 14 }}>{m.full_name}</p>
-                        <p style={{ fontSize: 12, color: "#6a768c" }}>{m.email || m.telefoon || "—"}</p>
+                        <p style={{ fontWeight: 700, color: "#1f2937", fontSize: 14 }}>{m.full_name}</p>
+                        <p style={{ fontSize: 12, color: "#9ca3af" }}>{m.email || m.telefoon || "—"}</p>
                       </div>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.1em" }}>{m.role || "monteur"}</span>
-                      <button type="button" onClick={() => isPartnerEdit ? setPartnerEditId(null) : startPartnerEdit(m)} title="Vaste collega's" style={{ width: 32, height: 32, borderRadius: 10, background: isPartnerEdit ? "rgba(63,255,139,0.2)" : "rgba(106,118,140,0.15)", border: isPartnerEdit ? "1px solid rgba(63,255,139,0.4)" : "1px solid rgba(106,118,140,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: isPartnerEdit ? "#3fff8b" : "#a0abc3" }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.1em" }}>{m.role || "monteur"}</span>
+                      <button type="button" onClick={() => isPartnerEdit ? setPartnerEditId(null) : startPartnerEdit(m)} title="Vaste collega's" style={{ width: 32, height: 32, borderRadius: 10, background: isPartnerEdit ? "#d1fae5" : "#e5e7eb", border: isPartnerEdit ? "1px solid #6ee7b7" : "1px solid #e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: isPartnerEdit ? "#10b981" : "#6b7280" }}>
                         <Users size={14} />
                       </button>
-                      <button type="button" onClick={() => startEdit(m)} title="Bewerken" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(106,118,140,0.15)", border: "1px solid rgba(106,118,140,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#a0abc3" }}>
+                      <button type="button" onClick={() => startEdit(m)} title="Bewerken" style={{ width: 32, height: 32, borderRadius: 10, background: "#e5e7eb", border: "1px solid #e5e7eb", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#6b7280" }}>
                         <Pencil size={14} />
                       </button>
-                      <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} title="Verwijderen" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#ff716c", opacity: deletingId === m.id ? 0.5 : 1 }}>
+                      <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} title="Verwijderen" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#dc2626", opacity: deletingId === m.id ? 0.5 : 1 }}>
                         <Trash2 size={14} />
                       </button>
                     </div>
 
                     {!isPartnerEdit && partnerNamen.length > 0 && (
-                      <p style={{ fontSize: 11, color: "#a0abc3", fontStyle: "italic", paddingLeft: 4 }}>
-                        Plant automatisch mee met: <span style={{ color: "#3fff8b", fontWeight: 700 }}>{partnerNamen.join(", ")}</span>
+                      <p style={{ fontSize: 11, color: "#6b7280", fontStyle: "italic", paddingLeft: 4 }}>
+                        Plant automatisch mee met: <span style={{ color: "#10b981", fontWeight: 700 }}>{partnerNamen.join(", ")}</span>
                       </p>
                     )}
 
                     {isPartnerEdit && (
-                      <div style={{ background: "#061327", borderRadius: 12, padding: 12, border: "1px solid rgba(63,255,139,0.25)", display: "flex", flexDirection: "column", gap: 8 }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.15em" }}>Vaste planning-collega's</p>
-                        <p style={{ fontSize: 11, color: "#a0abc3", lineHeight: 1.4 }}>
+                      <div style={{ background: "#ffffff", borderRadius: 12, padding: 12, border: "1px solid #d1fae5", display: "flex", flexDirection: "column", gap: 8 }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.15em" }}>Vaste planning-collega's</p>
+                        <p style={{ fontSize: 11, color: "#6b7280", lineHeight: 1.4 }}>
                           Selecteer met wie deze monteur altijd samen wordt ingepland. Bij het maken, wijzigen of verwijderen van een planning gaan alle gekoppelde monteurs mee.
                         </p>
                         {teamForPartner.length === 0 ? (
-                          <p style={{ fontSize: 11, color: "#6a768c", fontStyle: "italic" }}>Geen andere teamleden beschikbaar.</p>
+                          <p style={{ fontSize: 11, color: "#9ca3af", fontStyle: "italic" }}>Geen andere teamleden beschikbaar.</p>
                         ) : (
                           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                             {teamForPartner.map((t) => {
                               const checked = partnerSel.has(t.id);
                               return (
-                                <label key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8, background: checked ? "rgba(63,255,139,0.1)" : "#0a1a30", border: checked ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", cursor: "pointer" }}>
-                                  <input type="checkbox" checked={checked} onChange={() => togglePartnerSel(t.id)} style={{ width: 16, height: 16, accentColor: "#3fff8b" }} />
-                                  <span style={{ fontSize: 13, color: "#dae6ff", fontWeight: checked ? 700 : 500 }}>{t.full_name}</span>
+                                <label key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8, background: checked ? "#ecfdf5" : "#ffffff", border: checked ? "1px solid #a7f3d0" : "1px solid #e5e7eb", cursor: "pointer" }}>
+                                  <input type="checkbox" checked={checked} onChange={() => togglePartnerSel(t.id)} style={{ width: 16, height: 16, accentColor: "#10b981" }} />
+                                  <span style={{ fontSize: 13, color: "#1f2937", fontWeight: checked ? 700 : 500 }}>{t.full_name}</span>
                                 </label>
                               );
                             })}
@@ -628,25 +630,25 @@ export default function Onderaannemers() {
   return (
     <PageShell>
       <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
-        <header style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <header style={{ position: "sticky", top: 0, zIndex: 50, background: "#f9fafb", backdropFilter: "blur(20px)", borderBottom: "1px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Building2 size={20} color="#3fff8b" />
-            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", letterSpacing: "0.1em", textTransform: "uppercase" }}>ONDERAANNEMERS</span>
+            <Building2 size={20} color="#10b981" />
+            <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#10b981", letterSpacing: "0.1em", textTransform: "uppercase" }}>ONDERAANNEMERS</span>
           </div>
-          <button onClick={() => { setShowAddOA(!showAddOA); if (showAddOA) resetOaForm(); }} style={{ width: 36, height: 36, borderRadius: "50%", background: showAddOA ? "rgba(255,113,108,0.15)" : "rgba(63,255,139,0.15)", border: showAddOA ? "1px solid rgba(255,113,108,0.3)" : "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAddOA ? "#ff716c" : "#3fff8b" }}>
+          <button onClick={() => { setShowAddOA(!showAddOA); if (showAddOA) resetOaForm(); }} style={{ width: 36, height: 36, borderRadius: "50%", background: showAddOA ? "rgba(255,113,108,0.15)" : "#ecfdf5", border: showAddOA ? "1px solid rgba(255,113,108,0.3)" : "1px solid #a7f3d0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAddOA ? "#dc2626" : "#10b981" }}>
             {showAddOA ? <X size={18} /> : <Plus size={18} />}
           </button>
         </header>
 
         <main style={{ padding: "24px 20px" }}>
           <section style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 4 }}>Partnerbedrijven</p>
-            <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff" }}>{onderaannemers.length} onderaannemers</h2>
+            <p style={{ fontSize: 10, fontWeight: 700, color: "#10b981", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 4 }}>Partnerbedrijven</p>
+            <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#1f2937" }}>{onderaannemers.length} onderaannemers</h2>
           </section>
 
           {showAddOA && (
-            <form onSubmit={handleAddOA} style={{ background: "#0a1a30", borderRadius: 16, padding: 16, marginBottom: 20, border: "1px solid rgba(63,255,139,0.2)", display: "flex", flexDirection: "column", gap: 10 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 4 }}>Nieuwe onderaannemer</p>
+            <form onSubmit={handleAddOA} style={{ background: "#ffffff", borderRadius: 16, padding: 16, marginBottom: 20, border: "1px solid #d1fae5", display: "flex", flexDirection: "column", gap: 10 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 4 }}>Nieuwe onderaannemer</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 <Input placeholder="Voornaam contact" value={oaVoornaam} onChange={setOaVoornaam} />
                 <Input placeholder="Achternaam contact" value={oaAchternaam} onChange={setOaAchternaam} />
@@ -675,9 +677,9 @@ export default function Onderaannemers() {
           )}
 
           {loading ? (
-            <p style={{ color: "#6a768c", textAlign: "center", padding: 40 }}>Laden…</p>
+            <p style={{ color: "#9ca3af", textAlign: "center", padding: 40 }}>Laden…</p>
           ) : onderaannemers.length === 0 ? (
-            <div style={{ padding: 40, textAlign: "center", color: "#6a768c", background: "#0a1a30", borderRadius: 16, border: "1px dashed rgba(106,118,140,0.3)" }}>
+            <div style={{ padding: 40, textAlign: "center", color: "#9ca3af", background: "#ffffff", borderRadius: 16, border: "1px dashed #e5e7eb" }}>
               <Building2 size={32} style={{ margin: "0 auto 12px", opacity: 0.5 }} />
               <p>Nog geen onderaannemers. Klik op + om er één toe te voegen.</p>
             </div>
@@ -686,25 +688,25 @@ export default function Onderaannemers() {
               {onderaannemers.map((oa) => {
                 const count = monteursVoor(oa.id).length;
                 return (
-                  <button key={oa.id} onClick={() => setSelected(oa)} style={{ width: "100%", textAlign: "left", background: "#0a1a30", borderRadius: 16, padding: 16, border: "1px solid rgba(106,118,140,0.15)", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(63,255,139,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#3fff8b" }}>
+                  <button key={oa.id} onClick={() => setSelected(oa)} style={{ width: "100%", textAlign: "left", background: "#ffffff", borderRadius: 16, padding: 16, border: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: "#ecfdf5", display: "flex", alignItems: "center", justifyContent: "center", color: "#10b981" }}>
                       <Building2 size={22} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontWeight: 800, color: "#dae6ff", fontFamily: "Manrope", fontSize: 15 }}>
+                      <p style={{ fontWeight: 800, color: "#1f2937", fontFamily: "Manrope", fontSize: 15 }}>
                         {oa.bedrijfsnaam || oa.full_name}
                       </p>
-                      <p style={{ fontSize: 12, color: "#a0abc3", marginTop: 2 }}>
+                      <p style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
                         {oa.bedrijfsnaam ? oa.full_name : (oa.email || "—")}
                       </p>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
-                        <Users size={12} color="#3fff8b" />
-                        <span style={{ fontSize: 11, fontWeight: 700, color: "#3fff8b", letterSpacing: "0.05em" }}>
+                        <Users size={12} color="#10b981" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#10b981", letterSpacing: "0.05em" }}>
                           {count} {count === 1 ? "monteur" : "monteurs"}
                         </span>
                       </div>
                     </div>
-                    <ChevronRight size={20} color="#6a768c" />
+                    <ChevronRight size={20} color="#9ca3af" />
                   </button>
                 );
               })}
@@ -718,23 +720,23 @@ export default function Onderaannemers() {
 
 // ---------------- helpers ----------------
 const inputStyle: React.CSSProperties = {
-  width: "100%", background: "#102038", border: "1px solid rgba(106,118,140,0.3)",
-  borderRadius: 10, padding: "10px 12px", color: "#dae6ff", fontSize: 14, fontFamily: "Inter", outline: "none",
+  width: "100%", background: "#ffffff", border: "1px solid #e5e7eb",
+  borderRadius: 10, padding: "10px 12px", color: "#1f2937", fontSize: 14, fontFamily: "Inter", outline: "none",
 };
 const selectStyle: React.CSSProperties = { ...inputStyle, cursor: "pointer" };
 const primaryBtn: React.CSSProperties = {
-  flex: 1, height: 42, borderRadius: 10, background: "#3fff8b", color: "#003a18",
+  flex: 1, height: 42, borderRadius: 10, background: "#10b981", color: "#003a18",
   border: "none", fontWeight: 800, fontFamily: "Inter", fontSize: 13, textTransform: "uppercase",
   letterSpacing: "0.08em", cursor: "pointer",
 };
 const secondaryBtn: React.CSSProperties = {
   height: 42, padding: "0 14px", borderRadius: 10, background: "transparent",
-  border: "1px solid rgba(63,255,139,0.4)", color: "#3fff8b", fontWeight: 700, fontFamily: "Inter",
+  border: "1px solid #6ee7b7", color: "#10b981", fontWeight: 700, fontFamily: "Inter",
   fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", cursor: "pointer",
 };
 const iconBtn: React.CSSProperties = {
   position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
-  background: "none", border: "none", color: "#a0abc3", cursor: "pointer", display: "flex",
+  background: "none", border: "none", color: "#6b7280", cursor: "pointer", display: "flex",
 };
 
 function Input({ value, onChange, placeholder, type = "text" }: { value: string; onChange: (v: string) => void; placeholder: string; type?: string }) {
@@ -743,22 +745,22 @@ function Input({ value, onChange, placeholder, type = "text" }: { value: string;
 
 function Row({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid rgba(106,118,140,0.1)" }}>
-      <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#6a768c", fontFamily: "Inter" }}>{icon}{label}</span>
-      <span style={{ fontSize: 13, color: "#dae6ff", fontFamily: "Inter", fontWeight: 600 }}>{value}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid #e5e7eb" }}>
+      <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#9ca3af", fontFamily: "Inter" }}>{icon}{label}</span>
+      <span style={{ fontSize: 13, color: "#1f2937", fontFamily: "Inter", fontWeight: 600 }}>{value}</span>
     </div>
   );
 }
 
 function CredsCard({ email, pw, onCopy, onClose }: { email: string; pw: string; onCopy: () => void; onClose: () => void }) {
   return (
-    <div style={{ background: "#102038", borderRadius: 14, padding: 14, marginBottom: 16, border: "1px solid rgba(63,255,139,0.3)" }}>
+    <div style={{ background: "#ffffff", borderRadius: 14, padding: 14, marginBottom: 16, border: "1px solid #a7f3d0" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.15em" }}>Inloggegevens aangemaakt</p>
-        <button onClick={onClose} style={{ background: "none", border: "none", color: "#6a768c", cursor: "pointer" }}><X size={16} /></button>
+        <p style={{ fontSize: 11, fontWeight: 700, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.15em" }}>Inloggegevens aangemaakt</p>
+        <button onClick={onClose} style={{ background: "none", border: "none", color: "#9ca3af", cursor: "pointer" }}><X size={16} /></button>
       </div>
-      <p style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: "#dae6ff", background: "#0a1a30", padding: 8, borderRadius: 8, marginBottom: 6 }}>Gebruikersnaam: {email}</p>
-      <p style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: "#dae6ff", background: "#0a1a30", padding: 8, borderRadius: 8, marginBottom: 8 }}>Wachtwoord: {pw}</p>
+      <p style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: "#1f2937", background: "#ffffff", padding: 8, borderRadius: 8, marginBottom: 6 }}>Gebruikersnaam: {email}</p>
+      <p style={{ fontFamily: "DM Mono, monospace", fontSize: 12, color: "#1f2937", background: "#ffffff", padding: 8, borderRadius: 8, marginBottom: 8 }}>Wachtwoord: {pw}</p>
       <button onClick={onCopy} style={{ ...secondaryBtn, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
         <Copy size={14} /> Kopieer
       </button>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
 /* ─── Native app feel (mobile) ─────────────────────────── */
 html, body {
@@ -9,14 +9,15 @@ html, body {
   min-height: 100dvh;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  background-color: var(--app-navy);
+  background-color: var(--bg-base);
+  font-size: 17px;
 }
 
 #root {
   height: 100%;
   min-height: 100dvh;
   overflow-x: hidden;
-  background-color: var(--app-navy);
+  background-color: var(--bg-base);
 }
 
 * {
@@ -51,75 +52,74 @@ p, h1, h2, h3, span.selectable, input, textarea {
 
 @layer base {
   :root {
-    /* ─── Centrale TerreVolt navy (gebruikt door loading, modals, success, footer, etc.) ─── */
-    --app-navy:        #030e20;
-    --bg-base:         #F5F7F0;
-    --bg-surface:      #EBF0E4;
-    --bg-surface-2:    #DFE8D6;
-    --border:          #C5D4B2;
-    --border-strong:   #A8BF92;
-    --text-primary:    #2D4A1E;
-    --text-secondary:  #5A7A42;
-    --text-muted:      #8AAD6E;
-    --accent:          #4A7C2F;
-    --accent-dark:     #3D6826;
-    --accent-mid:      #6B9E4A;
-    --accent-light:    #D4E8C2;
-    --accent-border:   #9DC87A;
+    /* ─── Emerald Light — single source of truth ─── */
+    --app-navy:        #f8f9ff; /* legacy alias, nu licht canvas */
+    --bg-base:         #f9fafb;
+    --bg-surface:      #ffffff;
+    --bg-surface-2:    #f3f4f6;
+    --border:          #e5e7eb;
+    --border-strong:   #d1d5db;
+    --text-primary:    #1f2937;
+    --text-secondary:  #4b5563;
+    --text-muted:      #6b7280;
+    --accent:          #10b981;
+    --accent-dark:     #047857;
+    --accent-mid:      #34d399;
+    --accent-light:    #ecfdf5;
+    --accent-border:   #a7f3d0;
     --on-accent:       #ffffff;
-    --danger:          #C0392B;
-    --danger-light:    #FDECEA;
-    --danger-border:   #E8A09A;
-    --success:         #2D7A3A;
-    --success-light:   #D4EDD8;
-    --success-border:  #8DC99A;
-    --warn-bg:         #FFF8DC;
-    --warn-text:       #8B6914;
-    --warn-border:     #E8D070;
-    --warn-light:      #FFF3CD;
-    --warn-dot:        #D4A017;
-    --info:            #2D5A8A;
-    --info-light:      #D4E8F5;
-    --info-border:     #7AAADE;
-    --info-dark:       #2D6B8A;
-    --purple:          #5A4A7C;
+    --danger:          #dc2626;
+    --danger-light:    #fef2f2;
+    --danger-border:   #fecaca;
+    --success:         #10b981;
+    --success-light:   #ecfdf5;
+    --success-border:  #a7f3d0;
+    --warn-bg:         #fffbeb;
+    --warn-text:       #92400e;
+    --warn-border:     #fde68a;
+    --warn-light:      #fef3c7;
+    --warn-dot:        #d97706;
+    --info:            #2563eb;
+    --info-light:      #eff6ff;
+    --info-border:     #bfdbfe;
+    --info-dark:       #1d4ed8;
+    --purple:          #7c3aed;
 
     /* Planning-specifiek */
-    --planning-card:        var(--bg-surface);
-    --planning-cell-empty:  var(--bg-surface-2);
-    --planning-button:      var(--bg-surface);
-    --planning-avatar-bg:   var(--accent-light);
-    --planning-border-soft: var(--border);
+    --planning-card:        #ffffff;
+    --planning-cell-empty:  #f9fafb;
+    --planning-button:      #ffffff;
+    --planning-avatar-bg:   #ecfdf5;
+    --planning-border-soft: #e5e7eb;
 
-
-    --background: 90 30% 95%;
-    --foreground: 100 45% 20%;
-    --card: 90 25% 92%;
-    --card-foreground: 100 45% 20%;
-    --popover: 90 25% 92%;
-    --popover-foreground: 100 45% 20%;
-    --primary: 104 45% 34%;
+    --background: 210 20% 98%;
+    --foreground: 215 25% 17%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 17%;
+    --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 90 28% 87%;
-    --secondary-foreground: 97 30% 37%;
-    --muted: 90 28% 87%;
-    --muted-foreground: 97 30% 55%;
-    --accent-hsl: 104 45% 34%;
+    --secondary: 152 76% 96%;
+    --secondary-foreground: 158 64% 22%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent-hsl: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 4 63% 46%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border-hsl: 90 25% 77%;
-    --input: 90 25% 77%;
-    --ring: 104 45% 34%;
-    --radius: 0.75rem;
-    --sidebar-background: 90 25% 92%;
-    --sidebar-foreground: 100 45% 20%;
-    --sidebar-primary: 104 45% 34%;
+    --border-hsl: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 160 84% 39%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 25% 17%;
+    --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 90 28% 87%;
-    --sidebar-accent-foreground: 100 45% 20%;
-    --sidebar-border: 90 25% 77%;
-    --sidebar-ring: 104 45% 34%;
+    --sidebar-accent: 152 76% 96%;
+    --sidebar-accent-foreground: 158 64% 22%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 160 84% 39%;
   }
 }
 
@@ -146,7 +146,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
   }
 
   /* Media en SVG nooit groter dan hun container */
@@ -162,9 +162,9 @@ p, h1, h2, h3, span.selectable, input, textarea {
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.015em;
   }
 
   ::-webkit-scrollbar {
@@ -245,145 +245,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
   100% { transform: scale(1); }
 }
 
-/* Dark mode */
-[data-theme="dark"] {
-  --bg-base:         #0a0a0f;
-  --bg-surface:      #111118;
-  --bg-surface-2:    #1a1a24;
-  --border:          #2a2a3a;
-  --border-strong:   #3a3a4a;
-  --text-primary:    #e2e8f0;
-  --text-secondary:  #94a3b8;
-  --text-muted:      #475569;
-  --accent:          #22c55e;
-  --accent-dark:     #16a34a;
-  --accent-mid:      #4ade80;
-  --accent-light:    rgba(34,197,94,0.12);
-  --accent-border:   rgba(34,197,94,0.3);
-  --danger:          #ef4444;
-  --danger-light:    rgba(239,68,68,0.12);
-  --danger-border:   rgba(239,68,68,0.3);
-  --success:         #22c55e;
-  --success-light:   rgba(34,197,94,0.12);
-  --success-border:  rgba(34,197,94,0.3);
-  --warn-bg:         rgba(251,191,36,0.12);
-  --warn-text:       #fbbf24;
-  --warn-border:     rgba(251,191,36,0.3);
-  --warn-light:      rgba(251,191,36,0.08);
-  --warn-dot:        #f59e0b;
-  --info:            #6366f1;
-  --info-light:      rgba(99,102,241,0.12);
-  --info-border:     rgba(99,102,241,0.3);
-  --info-dark:       #818cf8;
-  --purple:          #a78bfa;
-  --on-accent:       #005d2c;
-
-  --app-navy:             #030e20;
-  --planning-card:        #061327;
-  --planning-cell-empty:  rgba(61,72,93,0.18);
-  --planning-button:      #102038;
-  --planning-avatar-bg:   #142640;
-  --planning-border-soft: rgba(106,118,140,0.15);
-
-
-  --background: 222 47% 4%;
-  --foreground: 210 20% 89%;
-  --card: 222 47% 7%;
-  --card-foreground: 210 20% 89%;
-  --popover: 222 47% 7%;
-  --popover-foreground: 210 20% 89%;
-  --primary: 142 70% 45%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 222 47% 10%;
-  --secondary-foreground: 210 20% 70%;
-  --muted: 222 47% 10%;
-  --muted-foreground: 210 20% 50%;
-  --accent-hsl: 142 70% 45%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 4 63% 46%;
-  --destructive-foreground: 0 0% 100%;
-  --border-hsl: 222 47% 15%;
-  --input: 222 47% 15%;
-  --ring: 142 70% 45%;
-  --sidebar-background: 222 47% 7%;
-  --sidebar-foreground: 210 20% 89%;
-  --sidebar-primary: 142 70% 45%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 222 47% 10%;
-  --sidebar-accent-foreground: 210 20% 89%;
-  --sidebar-border: 222 47% 15%;
-  --sidebar-ring: 142 70% 45%;
-}
-
-/* Emerald Light theme — alleen kleuren, lettertypes blijven DM Sans/DM Mono */
-[data-theme="emerald"] {
-  --bg-base:         #f8f9ff;
-  --bg-surface:      #eff4ff;
-  --bg-surface-2:    #e6eeff;
-  --border:          #d9e3f6;
-  --border-strong:   #bbcabf;
-  --text-primary:    #121c2a;
-  --text-secondary:  #3c4a42;
-  --text-muted:      #6c7a71;
-  --accent:          #006c49;
-  --accent-dark:     #00422b;
-  --accent-mid:      #10b981;
-  --accent-light:    #adedd3;
-  --accent-border:   #95d3ba;
-  --danger:          #ba1a1a;
-  --danger-light:    #ffdad6;
-  --danger-border:   #ffb3af;
-  --success:         #006c49;
-  --success-light:   #adedd3;
-  --success-border:  #95d3ba;
-  --warn-bg:         #fff4d6;
-  --warn-text:       #8b6914;
-  --warn-border:     #e8d070;
-  --warn-light:      #fff8e0;
-  --warn-dot:        #d4a017;
-  --info:            #2b6954;
-  --info-light:      #dee9fc;
-  --info-border:     #bbcabf;
-  --info-dark:       #0b513d;
-  --purple:          #a43a3a;
-  --on-accent:       #ffffff;
-
-  --app-navy:             #f8f9ff;
-  --planning-card:        #ffffff;
-  --planning-cell-empty:  #eff4ff;
-  --planning-button:      #e6eeff;
-  --planning-avatar-bg:   #adedd3;
-  --planning-border-soft: #d9e3f6;
-
-
-  --background: 228 100% 98%;
-  --foreground: 213 39% 12%;
-  --card: 0 0% 100%;
-  --card-foreground: 213 39% 12%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 213 39% 12%;
-  --primary: 156 100% 21%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 156 60% 81%;
-  --secondary-foreground: 156 41% 31%;
-  --muted: 222 60% 95%;
-  --muted-foreground: 152 8% 30%;
-  --accent-hsl: 156 100% 21%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 76% 41%;
-  --destructive-foreground: 0 0% 100%;
-  --border-hsl: 222 60% 91%;
-  --input: 222 60% 91%;
-  --ring: 156 100% 21%;
-  --sidebar-background: 228 100% 98%;
-  --sidebar-foreground: 213 39% 12%;
-  --sidebar-primary: 156 100% 21%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 156 60% 81%;
-  --sidebar-accent-foreground: 156 41% 31%;
-  --sidebar-border: 222 60% 91%;
-  --sidebar-ring: 156 100% 21%;
-}
+/* Emerald Light is de enige stijl — dark/emerald data-theme overrides verwijderd. */
 
 @keyframes fadeIn {
   from { opacity: 0; }

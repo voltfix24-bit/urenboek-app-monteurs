@@ -23,8 +23,8 @@ export function AppLayout({ children, title, subtitle, headerActions, rawDesktop
         {title && (
           <header className="flex items-center justify-between px-10 pt-8 pb-4">
             <div>
-              <h1 className="text-[22px] font-medium" style={{ color: "#dae6ff" }}>{title}</h1>
-              {subtitle && <p className="text-sm mt-0.5" style={{ color: "#a0abc3" }}>{subtitle}</p>}
+              <h1 className="text-[22px] font-medium" style={{ color: "#1f2937" }}>{title}</h1>
+              {subtitle && <p className="text-sm mt-0.5" style={{ color: "#6b7280" }}>{subtitle}</p>}
             </div>
             {headerActions && <div className="flex items-center gap-2">{headerActions}</div>}
           </header>

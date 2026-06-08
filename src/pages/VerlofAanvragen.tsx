@@ -12,13 +12,13 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 
 const NAVY = "var(--app-navy)";
-const SURFACE = "#172129";
-const SURFACE_2 = "#0c141b";
-const GREEN = "#3fff8b";
-const GREEN_DARK = "#13ea79";
-const TEXT = "#dae6ff";
-const MUTED = "#a0abc3";
-const SUBTLE = "#424950";
+const SURFACE = "#ffffff";
+const SURFACE_2 = "#f9fafb";
+const GREEN = "#10b981";
+const GREEN_DARK = "#34d399";
+const TEXT = "#1f2937";
+const MUTED = "#6b7280";
+const SUBTLE = "#4b5563";
 
 type VerlofType = "vakantie" | "verlof" | "anders";
 
@@ -135,7 +135,7 @@ export default function VerlofAanvragen() {
         <div style={{
           position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)",
           width: 400, height: 400, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(63,255,139,0.15), transparent 70%)",
+          background: "radial-gradient(circle, #ecfdf5, transparent 70%)",
           pointerEvents: "none",
         }} />
 
@@ -143,11 +143,11 @@ export default function VerlofAanvragen() {
           width: 96, height: 96, borderRadius: "50%",
           background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          marginBottom: 28, boxShadow: "0 20px 60px rgba(63,255,139,0.4)",
+          marginBottom: 28, boxShadow: "0 20px 60px #6ee7b7",
           position: "relative", zIndex: 1,
         }}>
           <span className="material-symbols-outlined" style={{
-            fontSize: 56, color: "#005d2c", fontVariationSettings: "'FILL' 1",
+            fontSize: 56, color: "#047857", fontVariationSettings: "'FILL' 1",
           }}>check_circle</span>
         </div>
 
@@ -173,9 +173,9 @@ export default function VerlofAanvragen() {
             style={{
               width: "100%", padding: "18px 0", borderRadius: 16,
               background: `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})`,
-              border: "none", color: "#005d2c", fontFamily: "Manrope",
+              border: "none", color: "#047857", fontFamily: "Manrope",
               fontWeight: 800, fontSize: 16, cursor: "pointer",
-              boxShadow: "0 12px 40px rgba(63,255,139,0.2)",
+              boxShadow: "0 12px 40px #d1fae5",
             }}>
             Terug naar overzicht
           </button>
@@ -226,7 +226,7 @@ export default function VerlofAanvragen() {
         .verlof-cal {
           --rdp-cell-size: 44px;
           --rdp-accent-color: ${GREEN};
-          --rdp-background-color: rgba(63,255,139,0.14);
+          --rdp-background-color: #ecfdf5;
           margin: 0;
         }
         .verlof-cal .rdp-months { justify-content: center; }
@@ -244,7 +244,7 @@ export default function VerlofAanvragen() {
           width: 38px; height: 38px; border-radius: 12px;
           transition: background 0.15s, transform 0.1s;
         }
-        .verlof-cal .rdp-nav_button:hover { background: rgba(63,255,139,0.18); }
+        .verlof-cal .rdp-nav_button:hover { background: #ecfdf5; }
         .verlof-cal .rdp-nav_button:active { transform: scale(0.94); }
         .verlof-cal .rdp-head_cell {
           color: ${MUTED}; font-family: 'Inter', sans-serif;
@@ -262,7 +262,7 @@ export default function VerlofAanvragen() {
           transition: background 0.15s, color 0.15s;
         }
         .verlof-cal .rdp-day:hover:not([disabled]):not(.rdp-day_selected) {
-          background: rgba(255,255,255,0.07);
+          background: #e5e7eb;
         }
         /* Vandaag — duidelijke groene ring */
         .verlof-cal .rdp-day_today:not(.rdp-day_selected) {
@@ -281,7 +281,7 @@ export default function VerlofAanvragen() {
         /* ── RANGE: doorlopende balk over de hele cel ── */
         /* Middle days: volle balk, geen ronde hoeken, sterk contrast */
         .verlof-cal .rdp-day_range_middle {
-          background: rgba(63,255,139,0.22) !important;
+          background: #d1fae5 !important;
           color: ${TEXT} !important;
           border-radius: 0 !important;
           font-weight: 700 !important;
@@ -289,26 +289,26 @@ export default function VerlofAanvragen() {
           box-shadow: none !important;
         }
         .verlof-cal .rdp-cell:has(.rdp-day_range_middle) {
-          background: rgba(63,255,139,0.22);
+          background: #d1fae5;
         }
         /* Start: pill links, balk vult de cel rechts */
         .verlof-cal .rdp-cell:has(.rdp-day_range_start):not(:has(.rdp-day_range_end)) {
-          background: linear-gradient(to right, transparent 50%, rgba(63,255,139,0.22) 50%);
+          background: linear-gradient(to right, transparent 50%, #d1fae5 50%);
         }
         /* End: balk vult de cel links, pill rechts */
         .verlof-cal .rdp-cell:has(.rdp-day_range_end):not(:has(.rdp-day_range_start)) {
-          background: linear-gradient(to right, rgba(63,255,139,0.22) 50%, transparent 50%);
+          background: linear-gradient(to right, #d1fae5 50%, transparent 50%);
         }
         /* Start & end pills — sterke groene knop met schaduw */
         .verlof-cal .rdp-day_range_start,
         .verlof-cal .rdp-day_range_end {
           background: ${GREEN} !important;
-          color: #003d1f !important;
+          color: #047857 !important;
           font-weight: 800 !important;
           border-radius: 50% !important;
           width: 40px !important;
           height: 40px !important;
-          box-shadow: 0 6px 18px rgba(63,255,139,0.35), inset 0 0 0 2px rgba(255,255,255,0.15) !important;
+          box-shadow: 0 6px 18px #a7f3d0, inset 0 0 0 2px #e5e7eb !important;
           z-index: 1;
           position: relative;
         }
@@ -322,10 +322,10 @@ export default function VerlofAanvragen() {
         /* Eerste klik (alleen 'from' gekozen, nog geen 'to') */
         .verlof-cal .rdp-day_selected:not(.rdp-day_range_middle):not(.rdp-day_range_start):not(.rdp-day_range_end) {
           background: ${GREEN} !important;
-          color: #003d1f !important;
+          color: #047857 !important;
           border-radius: 50% !important;
           font-weight: 800 !important;
-          box-shadow: 0 6px 18px rgba(63,255,139,0.35), inset 0 0 0 2px rgba(255,255,255,0.15) !important;
+          box-shadow: 0 6px 18px #a7f3d0, inset 0 0 0 2px #e5e7eb !important;
         }
         /* Weekenden subtiel afgewisseld zodat ma-vr werkdagen visueel pop'en */
         .verlof-cal .rdp-head_cell:nth-child(6),
@@ -373,10 +373,10 @@ export default function VerlofAanvragen() {
                 style={{
                   flex: 1, padding: "12px 8px", borderRadius: 10, border: "none",
                   background: type === t ? `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})` : "transparent",
-                  color: type === t ? "#003d1f" : MUTED,
+                  color: type === t ? "#047857" : MUTED,
                   fontFamily: "Inter", fontWeight: 700, fontSize: 13,
                   cursor: "pointer", textTransform: "capitalize",
-                  boxShadow: type === t ? "0 4px 12px rgba(63,255,139,0.2)" : "none",
+                  boxShadow: type === t ? "0 4px 12px #d1fae5" : "none",
                   transition: "all 0.15s",
                 }}>{t}</button>
             ))}
@@ -407,7 +407,7 @@ export default function VerlofAanvragen() {
                   padding: "8px 14px", borderRadius: 12,
                   background: "rgba(255,113,108,0.1)",
                   border: "1px solid rgba(255,113,108,0.35)",
-                  color: "#ff716c", fontFamily: "Inter",
+                  color: "#dc2626", fontFamily: "Inter",
                   fontWeight: 700, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap",
                 }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restart_alt</span>
@@ -453,8 +453,8 @@ export default function VerlofAanvragen() {
               background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.35)",
               display: "flex", alignItems: "flex-start", gap: 10,
             }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#ff716c", flexShrink: 0, marginTop: 1 }}>error</span>
-              <p style={{ fontFamily: "Inter", fontSize: 12, color: "#ff716c", fontWeight: 600, lineHeight: 1.4 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#dc2626", flexShrink: 0, marginTop: 1 }}>error</span>
+              <p style={{ fontFamily: "Inter", fontSize: 12, color: "#dc2626", fontWeight: 600, lineHeight: 1.4 }}>
                 {validatieFout}
               </p>
             </div>
@@ -469,7 +469,7 @@ export default function VerlofAanvragen() {
             }}>
               <div style={{
                 width: 40, height: 40, borderRadius: 12,
-                background: "rgba(63,255,139,0.12)",
+                background: "#ecfdf5",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 flexShrink: 0,
               }}>
@@ -534,12 +534,12 @@ export default function VerlofAanvragen() {
             pointerEvents: "auto",
             width: "100%", padding: "16px 0", borderRadius: 14,
             background: isValid ? `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})` : SURFACE,
-            border: "none", color: isValid ? "#003d1f" : SUBTLE,
+            border: "none", color: isValid ? "#047857" : SUBTLE,
             fontFamily: "Manrope", fontWeight: 800, fontSize: 15,
             letterSpacing: "0.01em",
             cursor: isValid && !sending ? "pointer" : "not-allowed",
             opacity: sending ? 0.6 : 1,
-            boxShadow: isValid ? "0 12px 40px rgba(63,255,139,0.25)" : "none",
+            boxShadow: isValid ? "0 12px 40px #d1fae5" : "none",
             transition: "all 0.2s",
           }}>
           {sending ? "Versturen…" : "Aanvraag versturen"}
