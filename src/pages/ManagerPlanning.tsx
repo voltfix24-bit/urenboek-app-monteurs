@@ -717,20 +717,27 @@ export default function ManagerPlanning() {
               .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
             const maxUren = medewerkers.length * 5 * 8;
             const capaciteitPct = maxUren > 0 ? Math.round((totalGeplandUren / maxUren) * 100) : 0;
+            const activeProjects = new Set(entries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)).size;
             return (
-            <div style={{ marginTop: 24, background: "#000000", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", border: "1px solid rgba(61,72,93,0.2)" }}>
+            <div style={{ marginTop: 24, background: "#061327", borderRadius: 18, padding: "18px 20px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, border: "1px solid rgba(106,118,140,0.15)" }}>
               <div>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 4 }}>Capaciteit</p>
-                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: "#3fff8b" }}>
-                  {medewerkers.length > 0 ? `${capaciteitPct}%` : "—"}
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 6 }}>Geplande uren</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff", fontVariantNumeric: "tabular-nums" }}>
+                  {totalGeplandUren}<span style={{ fontSize: 14, color: "#a0abc3", marginLeft: 2 }}>u</span>
                 </span>
               </div>
-              <div style={{ height: 4, width: 80, background: "#152640", borderRadius: 9999, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, capaciteitPct) : 0}%`, background: "#3fff8b" }} />
+              <div style={{ borderLeft: "1px solid rgba(106,118,140,0.15)", borderRight: "1px solid rgba(106,118,140,0.15)", paddingLeft: 16, paddingRight: 16 }}>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 6 }}>Capaciteit</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: capaciteitPct > 100 ? "#ff716c" : "#3fff8b" }}>
+                  {medewerkers.length > 0 ? `${capaciteitPct}%` : "—"}
+                </span>
+                <div style={{ height: 4, marginTop: 8, background: "#152640", borderRadius: 9999, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, capaciteitPct) : 0}%`, background: capaciteitPct > 100 ? "#ff716c" : "#3fff8b", transition: "width 0.3s" }} />
+                </div>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 4 }}>Incidenten</p>
-                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 28, color: overplanned.length > 0 ? "#ff716c" : "#3fff8b" }}>{overplanned.length}</span>
+              <div>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "#a0abc3", marginBottom: 6 }}>Actieve projecten</p>
+                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "#dae6ff", fontVariantNumeric: "tabular-nums" }}>{activeProjects}</span>
               </div>
             </div>
             );
