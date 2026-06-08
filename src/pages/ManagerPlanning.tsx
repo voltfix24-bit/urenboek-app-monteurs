@@ -95,14 +95,24 @@ export default function ManagerPlanning() {
     setLoading(true);
     const startStr = format(weekStart, "yyyy-MM-dd");
     const endStr = format(addDays(weekStart, 4), "yyyy-MM-dd");
-    const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }] = await Promise.all([
+    const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }, { data: rolesData }] = await Promise.all([
       supabase.from("planning").select("*, activiteit, activiteit_kleur, planning_group_id").gte("datum", startStr).lte("datum", endStr),
       supabase.from("profiles").select("id, full_name, vaste_vrije_dagen, planning_partner_ids").eq("account_status", "active").order("full_name"),
       supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
+      supabase.from("user_roles").select("user_id, role"),
     ]);
+    const profIdToUserId = new Map<string, string>();
+    const profilesWithUser = await supabase.from("profiles").select("id, user_id").eq("account_status", "active");
+    (profilesWithUser.data ?? []).forEach((p: any) => profIdToUserId.set(p.id, p.user_id));
+    const userRoleMap = new Map<string, string>();
+    const rolePriority: Record<string, number> = { manager: 5, uitvoerder: 4, wv: 3, schakelmonteur: 2, monteur: 1 };
+    (rolesData ?? []).forEach((r: any) => {
+      const prev = userRoleMap.get(r.user_id);
+      if (!prev || (rolePriority[r.role] ?? 0) > (rolePriority[prev] ?? 0)) userRoleMap.set(r.user_id, r.role);
+    });
     setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "", activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, planning_group_id: d.planning_group_id || null })));
-    setMedewerkers(((profData ?? []) as any[]).map((p) => ({ ...p, planning_partner_ids: p.planning_partner_ids || [] })) as any);
+    setMedewerkers(((profData ?? []) as any[]).map((p) => ({ ...p, planning_partner_ids: p.planning_partner_ids || [], role: userRoleMap.get(profIdToUserId.get(p.id) || "") || null })) as any);
     setProjects((projData ?? []) as any);
     setBeschikbaarheid((beschData ?? []) as any);
     setLoading(false);
