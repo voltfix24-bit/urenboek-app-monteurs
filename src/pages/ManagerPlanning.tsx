@@ -18,9 +18,17 @@ import { nl } from "date-fns/locale";
 import { generatePlanningPdf, generatePersoneelsPdf } from "@/lib/planningPdf";
 
 interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; planning_group_id: string | null; }
-interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; planning_partner_ids: string[]; }
+interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; planning_partner_ids: string[]; role?: string | null; }
 interface ProjectInfo { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
 interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_tot: string; type: string; status: string; }
+
+const ROLE_LABELS: Record<string, string> = {
+  monteur: "Monteur",
+  schakelmonteur: "Schakelmonteur",
+  uitvoerder: "Uitvoerder",
+  wv: "Werkvoorbereider",
+  manager: "Manager",
+};
 
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
