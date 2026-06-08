@@ -1,9 +1,8 @@
 import { createContext, useContext, useEffect, useState, useMemo, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { PERMISSIES, getPermissies, getRolLabel, type RolPermissies } from "@/lib/permissions";
-
-export type { RolPermissies };
+import { getPermissies, getRolLabel, PERMISSIES, type RolPermissies } from "@/lib/permissions";
+export type { RolPermissies } from "@/lib/permissions";
 
 interface AuthContextType {
   session: Session | null;
