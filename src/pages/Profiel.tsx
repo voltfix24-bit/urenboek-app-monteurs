@@ -458,7 +458,7 @@ export default function Profiel() {
                 width: 24, height: 24,
                 borderRadius: '50%',
                 background: 'var(--accent)',
-                border: '3px solid #030e20',
+                border: '3px solid var(--bg-surface)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

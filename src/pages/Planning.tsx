@@ -1088,7 +1088,7 @@ export default function Planning() {
                                   {!isLast && (
                                     <div style={{
                                       height: 1,
-                                      background: 'rgba(61,72,93,0.5)',
+                                      background: 'var(--border)',
                                       margin: '0 16px',
                                     }} />
                                   )}

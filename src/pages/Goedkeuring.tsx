@@ -645,7 +645,7 @@ export default function Goedkeuring() {
                 onChange={(e) => setAfkeurReden(e.target.value)}
                 placeholder="Toelichting (optioneel)..."
                 rows={3}
-                style={{ width: "100%", marginTop: 8, marginBottom: 16, padding: "12px 16px", borderRadius: 16, border: "1px solid rgba(61,72,93,0.4)", background: "var(--app-navy)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", fontSize: 14, resize: "none", outline: "none", boxSizing: "border-box" }}
+                style={{ width: "100%", marginTop: 8, marginBottom: 16, padding: "12px 16px", borderRadius: 16, border: "1px solid var(--border)", background: "var(--app-navy)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", fontSize: 14, resize: "none", outline: "none", boxSizing: "border-box" }}
               />
               <button onClick={() => { updateStatus(afkeurId, "afgekeurd", afkeurReden); setAfkeurId(null); }} style={{
                 width: "100%", height: 56, borderRadius: 16, background: "var(--warn-text)", border: "none",

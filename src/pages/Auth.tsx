@@ -341,9 +341,9 @@ function RealLoginForm() {
 
         {/* DIVIDER */}
         <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "28px 0" }}>
-          <div style={{ flex: 1, height: 1, background: "rgba(61,72,93,0.4)" }} />
+          <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
           <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk", whiteSpace: "nowrap" }}>of snelle toegang</span>
-          <div style={{ flex: 1, height: 1, background: "rgba(61,72,93,0.4)" }} />
+          <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
         </div>
 
         {/* FACEID */}

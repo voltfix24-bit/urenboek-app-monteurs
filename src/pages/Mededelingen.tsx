@@ -487,7 +487,7 @@ export default function Mededelingen() {
                 flex: 1,
                 background: 'var(--bg-surface-2)',
                 borderRadius: 9999,
-                border: '1px solid rgba(61,72,93,0.5)',
+                border: '1px solid var(--border)',
                 display: 'flex',
                 alignItems: 'center',
                 padding: '0 16px',
