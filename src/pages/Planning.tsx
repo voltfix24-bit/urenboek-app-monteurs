@@ -439,8 +439,8 @@ export default function Planning() {
                   style={{
                     width: 40, height: 40,
                     borderRadius: 12,
-                    background: '#0d1f38',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#ffffff',
+                    border: '1px solid #e5e7eb',
                     color: '#1f2937',
                     display: 'flex',
                     alignItems: 'center',
@@ -458,8 +458,8 @@ export default function Planning() {
                   style={{
                     width: 40, height: 40,
                     borderRadius: 12,
-                    background: '#0d1f38',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#ffffff',
+                    border: '1px solid #e5e7eb',
                     color: '#1f2937',
                     display: 'flex',
                     alignItems: 'center',
@@ -487,13 +487,13 @@ export default function Planning() {
                 const barColor =
                   isToday ? '#10b981'
                   : hasItems ? '#d97706'
-                  : 'rgba(255,255,255,0.07)';
+                  : '#e5e7eb';
                 return (
                   <div key={i} style={{ flex: 1 }}>
                     <div style={{
                       height: 3, borderRadius: 2,
                       background: isToday
-                        ? `linear-gradient(90deg, #10b981 50%, rgba(255,255,255,0.07) 50%)`
+                        ? `linear-gradient(90deg, #10b981 50%, #e5e7eb 50%)`
                         : barColor,
                       marginBottom: 6,
                     }} />
@@ -501,7 +501,7 @@ export default function Planning() {
                       fontSize: 9.5,
                       fontFamily: 'Inter',
                       fontWeight: isToday ? 700 : 400,
-                      color: isToday ? '#10b981' : '#54617A',
+                      color: isToday ? '#10b981' : '#6b7280',
                       letterSpacing: '0.5px',
                       textTransform: 'uppercase',
                     }}>
@@ -551,7 +551,7 @@ export default function Planning() {
                           fontWeight: 600,
                           fontFamily: 'Inter',
                           textTransform: 'uppercase',
-                          color: isToday ? '#10b981' : '#54617A',
+                          color: isToday ? '#10b981' : '#6b7280',
                           marginBottom: 2,
                         }}>
                           {DOW}
@@ -587,8 +587,8 @@ export default function Planning() {
                         {beschItem && (
                           <div style={{
                             borderRadius: 12,
-                            border: '1px solid rgba(255,255,255,0.07)',
-                            background: '#0d1f38',
+                            border: '1px solid #e5e7eb',
+                            background: '#ffffff',
                             padding: '14px 16px',
                             display: 'flex',
                             alignItems: 'center',
@@ -619,7 +619,7 @@ export default function Planning() {
                         {isEmpty && (
                           <div style={{
                             borderRadius: 12,
-                            border: '1px dashed rgba(255,255,255,0.07)',
+                            border: '1px dashed #e5e7eb',
                             padding: '14px 16px',
                             display: 'flex',
                             alignItems: 'center',
@@ -649,8 +649,8 @@ export default function Planning() {
                         {!beschItem && dayItems.length > 0 && (
                           <div style={{
                             borderRadius: 12,
-                            border: `1px solid ${isToday ? '#d1fae5' : 'rgba(255,255,255,0.07)'}`,
-                            background: '#0d1f38',
+                            border: `1px solid ${isToday ? '#d1fae5' : '#e5e7eb'}`,
+                            background: '#ffffff',
                             overflow: 'hidden',
                             boxShadow: isToday ? 'inset 3px 0 0 #10b981' : 'none',
                           }}>
@@ -672,7 +672,7 @@ export default function Planning() {
                                 boeking!.status === "goedgekeurd" ? { bg: "#ecfdf5", border: "#d1fae5", fg: "#10b981", icon: "check_circle", fill: true } :
                                 boeking!.status === "afgekeurd"   ? { bg: "rgba(255,113,108,0.1)", border: "rgba(255,113,108,0.25)", fg: "#dc2626", icon: "error", fill: true } :
                                 boeking!.status === "ingediend"   ? { bg: "rgba(254,179,0,0.1)",  border: "rgba(254,179,0,0.25)",  fg: "#d97706", icon: "schedule", fill: false } :
-                                                                    { bg: "#ffffff",                border: "rgba(255,255,255,0.08)", fg: "#6b7280", icon: "edit_note", fill: false }
+                                                                    { bg: "#ffffff",                border: "#e5e7eb", fg: "#6b7280", icon: "edit_note", fill: false }
                               );
 
                               return (
@@ -843,7 +843,7 @@ export default function Planning() {
                                             className="material-symbols-outlined"
                                             style={{
                                               fontSize: 13,
-                                              color: isToday ? '#523700' : '#d97706',
+                                              color: isToday ? '#92400e' : '#d97706',
                                               fontVariationSettings: "'wght' 300",
                                             }}>
                                             pending
@@ -852,7 +852,7 @@ export default function Planning() {
                                             fontSize: 11,
                                             fontWeight: 700,
                                             fontFamily: 'Inter',
-                                            color: isToday ? '#523700' : '#d97706',
+                                            color: isToday ? '#92400e' : '#d97706',
                                           }}>
                                             Boeken
                                           </span>
@@ -864,8 +864,8 @@ export default function Planning() {
                                           gap: 4,
                                           padding: '4px 10px',
                                           borderRadius: 9999,
-                                          background: 'rgba(255,255,255,0.04)',
-                                          border: '1px solid rgba(255,255,255,0.08)',
+                                          background: '#e5e7eb',
+                                          border: '1px solid #e5e7eb',
                                           flexShrink: 0,
                                         }}>
                                           <span
@@ -910,7 +910,7 @@ export default function Planning() {
                                           className="material-symbols-outlined"
                                           style={{
                                             fontSize: 14,
-                                            color: '#54617A',
+                                            color: '#6b7280',
                                             fontVariationSettings: "'wght' 300",
                                           }}>
                                           schedule
@@ -933,7 +933,7 @@ export default function Planning() {
                                             className="material-symbols-outlined"
                                             style={{
                                               fontSize: 14,
-                                              color: '#54617A',
+                                              color: '#6b7280',
                                               fontVariationSettings: "'wght' 300",
                                             }}>
                                             location_on
@@ -964,7 +964,7 @@ export default function Planning() {
                                           className="material-symbols-outlined"
                                           style={{
                                             fontSize: 14,
-                                            color: '#54617A',
+                                            color: '#6b7280',
                                             fontVariationSettings: "'wght' 300",
                                           }}>
                                           group
@@ -1166,7 +1166,7 @@ export default function Planning() {
                 background: '#ffffff',
                 backdropFilter: 'blur(24px)',
                 borderRadius: '32px 32px 0 0',
-                borderTop: '1px solid rgba(255,255,255,0.1)',
+                borderTop: '1px solid #e5e7eb',
                 maxHeight: maxModalHeight,
                 display: 'flex',
                 flexDirection: 'column',
@@ -1180,7 +1180,7 @@ export default function Planning() {
                 background: '#ffffff',
                 borderTopLeftRadius: 32,
                 borderTopRightRadius: 32,
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                borderBottom: '1px solid #e5e7eb',
               }}>
                 {/* Handle */}
                 <div style={{
@@ -1191,7 +1191,7 @@ export default function Planning() {
                   <div style={{
                     width: 48, height: 4,
                     borderRadius: 9999,
-                    background: 'rgba(255,255,255,0.15)',
+                    background: '#e5e7eb',
                   }} />
                 </div>
 
@@ -1244,7 +1244,7 @@ export default function Planning() {
                             background:
                               editingBoekingStatus === 'ingediend' ? 'rgba(254,179,0,0.18)'
                               : editingBoekingStatus === 'afgekeurd' ? 'rgba(255,113,108,0.18)'
-                              : 'rgba(255,255,255,0.08)',
+                              : '#e5e7eb',
                             color:
                               editingBoekingStatus === 'ingediend' ? '#d97706'
                               : editingBoekingStatus === 'afgekeurd' ? '#dc2626'
@@ -1263,8 +1263,8 @@ export default function Planning() {
                       flexShrink: 0,
                       width: 44, height: 44,
                       borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.08)',
-                      border: '1px solid rgba(255,255,255,0.08)',
+                      background: '#e5e7eb',
+                      border: '1px solid #e5e7eb',
                       color: '#1f2937',
                       display: 'flex',
                       alignItems: 'center',
@@ -1299,7 +1299,7 @@ export default function Planning() {
                   padding: '12px 14px',
                   borderRadius: 14,
                   background: '#ffffff',
-                  border: '1px solid rgba(255,255,255,0.07)',
+                  border: '1px solid #e5e7eb',
                   marginBottom: 20,
                 }}>
                   <p style={{
@@ -1320,7 +1320,7 @@ export default function Planning() {
                       className="material-symbols-outlined"
                       style={{
                         fontSize: 13,
-                        color: '#54617A',
+                        color: '#6b7280',
                         fontVariationSettings: "'wght' 300",
                       }}>
                       schedule
@@ -1350,7 +1350,7 @@ export default function Planning() {
                   fontFamily: 'Inter',
                   textTransform: 'uppercase',
                   letterSpacing: '0.15em',
-                  color: '#54617A',
+                  color: '#6b7280',
                   marginBottom: 10,
                 }}>
                   Werkzaamheden
@@ -1394,7 +1394,7 @@ export default function Planning() {
                   fontFamily: 'Inter',
                   textTransform: 'uppercase',
                   letterSpacing: '0.15em',
-                  color: '#54617A',
+                  color: '#6b7280',
                   marginBottom: 12,
                   textAlign: 'center',
                 }}>
@@ -1488,7 +1488,7 @@ export default function Planning() {
                           borderRadius: 9999,
                           border: active
                             ? '1px solid #6ee7b7'
-                            : '1px solid rgba(255,255,255,0.07)',
+                            : '1px solid #e5e7eb',
                           background: active
                             ? '#ecfdf5'
                             : '#ffffff',
@@ -1574,7 +1574,7 @@ export default function Planning() {
                       />
                       <div style={{
                         fontSize: 10,
-                        color: '#54617A',
+                        color: '#6b7280',
                         fontFamily: 'Inter',
                         marginTop: 4,
                         textAlign: 'right',
@@ -1590,7 +1590,7 @@ export default function Planning() {
               <div style={{
                 flexShrink: 0,
                 padding: `14px 24px ${Math.round(footerOffset + 18)}px`,
-                borderTop: '1px solid rgba(255,255,255,0.06)',
+                borderTop: '1px solid #e5e7eb',
                 background: '#ffffff',
                 position: 'relative',
               }}>
@@ -1649,7 +1649,7 @@ export default function Planning() {
                       height: 52,
                       borderRadius: 14,
                       background: 'transparent',
-                      border: '1px solid rgba(255,255,255,0.12)',
+                      border: '1px solid #e5e7eb',
                       color: '#1f2937',
                       fontFamily: 'Manrope',
                       fontWeight: 700,

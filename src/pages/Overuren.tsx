@@ -31,7 +31,7 @@ interface Melding {
 
 const TYPE_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
   dag_overschrijding: { label: "Dag > 8u", bg: "rgba(254,179,0,0.08)", color: "#d97706" },
-  week_overschrijding: { label: "Week > 40u", bg: "rgba(110,155,255,0.1)", color: "#6e9bff" },
+  week_overschrijding: { label: "Week > 40u", bg: "rgba(110,155,255,0.1)", color: "#2563eb" },
   meer_dan_ingepland: { label: "Meer dan ingepland", bg: "rgba(255,113,108,0.1)", color: "#dc2626" },
 };
 

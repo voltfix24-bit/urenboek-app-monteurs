@@ -618,7 +618,7 @@ export default function ProjectPlanning() {
             <Check className="h-3.5 w-3.5" /> Gepubliceerd
           </button>
         ) : (
-          <button onClick={() => setShowDefinitiefDialog(true)} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: "#6e9bff" }}>
+          <button onClick={() => setShowDefinitiefDialog(true)} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: "#2563eb" }}>
             Definitief maken
           </button>
         )}
@@ -776,7 +776,7 @@ export default function ProjectPlanning() {
                         >
                           {monteur && (
                             <span className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold"
-                              style={{ background: "rgba(255,255,255,0.9)", color: cell?.color || "#1f2937" }}>
+                              style={{ background: "rgba(15,23,42,0.12)", color: cell?.color || "#1f2937" }}>
                               {getInitials(monteur.full_name)}
                             </span>
                           )}
@@ -956,7 +956,7 @@ export default function ProjectPlanning() {
       {/* Definitief dialog */}
       {showDefinitiefDialog && (
         <ConfirmDialog title="Planning definitief maken?" text="Monteurs kunnen de planning inzien zodra je dit bevestigt. Je kunt dit later ongedaan maken."
-          confirmLabel="Definitief maken" confirmColor="#6e9bff" onCancel={() => setShowDefinitiefDialog(false)} onConfirm={makeDefinitief} />
+          confirmLabel="Definitief maken" confirmColor="#2563eb" onCancel={() => setShowDefinitiefDialog(false)} onConfirm={makeDefinitief} />
       )}
       {showConceptDialog && (
         <ConfirmDialog title="Terug naar concept?" text="Monteurs kunnen de planning dan niet meer inzien."

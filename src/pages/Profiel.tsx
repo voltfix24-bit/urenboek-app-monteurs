@@ -24,13 +24,13 @@ interface ProfileData { id: string; full_name: string; telefoon: string; adres: 
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; bestand_url?: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; reden: string | null; status: string; }
 
-const CERT_COLORS: Record<string, string> = { VCA: "#10b981", NEN3140: "#6e9bff", rijbewijs_BE: "#d97706", overig: "#a78bfa" };
+const CERT_COLORS: Record<string, string> = { VCA: "#10b981", NEN3140: "#2563eb", rijbewijs_BE: "#d97706", overig: "#a78bfa" };
 const DAGEN_LABEL = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"];
-const AVATAR_COLORS = ['#10b981', '#22c55e', '#6e9bff', '#d97706', '#a78bfa'];
+const AVATAR_COLORS = ['#10b981', '#22c55e', '#2563eb', '#d97706', '#a78bfa'];
 
 const TYPE_COLORS: Record<string, { bg: string; border: string; dot: string }> = {
   vakantie: { bg: "rgba(254,179,0,0.1)", border: "rgba(254,179,0,0.3)", dot: "#d97706" },
-  verlof: { bg: "rgba(110,155,255,0.1)", border: "rgba(110,155,255,0.3)", dot: "#6e9bff" },
+  verlof: { bg: "rgba(110,155,255,0.1)", border: "rgba(110,155,255,0.3)", dot: "#2563eb" },
   ziek: { bg: "rgba(255,113,108,0.1)", border: "rgba(255,113,108,0.3)", dot: "#dc2626" },
   anders: { bg: "#ffffff", border: "#e5e7eb", dot: "#6b7280" },
 };
@@ -194,7 +194,7 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
 
       {contract?.status === "ondertekend_ot" && (
         <div className="rounded-xl p-3.5 space-y-2" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
-          <p className="text-sm font-semibold" style={{ color: "#6e9bff" }}>⏳ Wacht op TerreVolt</p>
+          <p className="text-sm font-semibold" style={{ color: "#2563eb" }}>⏳ Wacht op TerreVolt</p>
           <p className="text-xs" style={{ color: "#6b7280" }}>Je hebt ondertekend. TerreVolt rondt dit zo snel mogelijk af.</p>
           <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium mt-1" style={{ color: "#6b7280" }}>
             {showDetails ? "Verberg details ▲" : "Bekijk details ▼"}
@@ -365,7 +365,7 @@ export default function Profiel() {
           zIndex: 50,
           background: '#f9fafb',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid #e5e7eb',
           padding: '12px 20px',
           display: 'flex',
           alignItems: 'center',
@@ -435,7 +435,7 @@ export default function Profiel() {
               <div style={{
                 width: 96, height: 96,
                 borderRadius: '50%',
-                background: '#0d1f38',
+                background: '#ffffff',
                 border: '2px solid #d1fae5',
                 display: 'flex',
                 alignItems: 'center',
@@ -566,7 +566,7 @@ export default function Profiel() {
           {/* MIJN GEGEVENS */}
           <div style={{
             background: '#ffffff',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid #e5e7eb',
             borderRadius: 16,
             marginBottom: 12,
             overflow: 'hidden',
@@ -581,7 +581,7 @@ export default function Profiel() {
                 fontSize: 11,
                 fontWeight: 700,
                 fontFamily: 'Inter',
-                color: 'rgba(218,230,255,0.5)',
+                color: '#1f2937',
                 textTransform: 'uppercase',
                 letterSpacing: '0.15em',
               }}>
@@ -640,10 +640,10 @@ export default function Profiel() {
                           marginTop: 4,
                           padding: '10px 14px',
                           borderRadius: 12,
-                          background: '#060e20',
+                          background: '#f8f9ff',
                           border: profileErrors[f.key]
                             ? '1.5px solid #dc2626'
-                            : '1px solid rgba(255,255,255,0.07)',
+                            : '1px solid #e5e7eb',
                           color: '#1f2937',
                           fontFamily: 'Inter',
                           fontSize: 14,
@@ -682,8 +682,8 @@ export default function Profiel() {
                         marginTop: 4,
                         padding: '10px 14px',
                         borderRadius: 12,
-                        background: '#060e20',
-                        border: '1px solid rgba(255,255,255,0.07)',
+                        background: '#f8f9ff',
+                        border: '1px solid #e5e7eb',
                         color: '#1f2937',
                         fontFamily: 'Inter',
                         fontSize: 14,
@@ -707,14 +707,14 @@ export default function Profiel() {
                       gap: 14,
                       padding: '14px 0',
                       borderBottom: i < 3
-                        ? '1px solid rgba(255,255,255,0.05)'
+                        ? '1px solid #e5e7eb'
                         : 'none',
                     }}>
                       <div style={{
                         width: 40,
                         height: 40,
                         borderRadius: 12,
-                        background: '#060e20',
+                        background: '#f8f9ff',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -742,7 +742,7 @@ export default function Profiel() {
                         <p style={{
                           fontSize: 14,
                           fontWeight: 500,
-                          color: row.value ? '#1f2937' : '#54617A',
+                          color: row.value ? '#1f2937' : '#6b7280',
                           fontFamily: 'Inter',
                         }}>
                           {row.value || '—'}
@@ -766,7 +766,7 @@ export default function Profiel() {
           {/* RIJBEWIJS */}
           <div style={{
             background: '#ffffff',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid #e5e7eb',
             borderRadius: 16,
             marginBottom: 12,
             padding: '16px 20px',
@@ -775,7 +775,7 @@ export default function Profiel() {
               fontSize: 11,
               fontWeight: 700,
               fontFamily: 'Inter',
-              color: 'rgba(218,230,255,0.5)',
+              color: '#1f2937',
               textTransform: 'uppercase',
               letterSpacing: '0.15em',
               marginBottom: 14,
@@ -795,7 +795,7 @@ export default function Profiel() {
                 <div style={{
                   width: 40, height: 40,
                   borderRadius: 12,
-                  background: '#060e20',
+                  background: '#f8f9ff',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -845,7 +845,7 @@ export default function Profiel() {
           {/* NOODCONTACT */}
           <div style={{
             background: '#ffffff',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid #e5e7eb',
             borderRadius: 16,
             marginBottom: 12,
             padding: '16px 20px',
@@ -854,7 +854,7 @@ export default function Profiel() {
               fontSize: 11,
               fontWeight: 700,
               fontFamily: 'Inter',
-              color: 'rgba(218,230,255,0.5)',
+              color: '#1f2937',
               textTransform: 'uppercase',
               letterSpacing: '0.15em',
               marginBottom: 14,
@@ -878,7 +878,7 @@ export default function Profiel() {
                   <div style={{
                     width: 40, height: 40,
                     borderRadius: 12,
-                    background: '#060e20',
+                    background: '#f8f9ff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -906,7 +906,7 @@ export default function Profiel() {
                     <p style={{
                       fontSize: 14,
                       fontWeight: 500,
-                      color: row.value ? '#1f2937' : '#54617A',
+                      color: row.value ? '#1f2937' : '#6b7280',
                       fontFamily: 'Inter',
                     }}>
                       {row.value || '—'}
@@ -920,7 +920,7 @@ export default function Profiel() {
           {/* ZZP GEGEVENS */}
           <div style={{
             background: '#ffffff',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid #e5e7eb',
             borderRadius: 16,
             marginBottom: 12,
             overflow: 'hidden',
@@ -966,7 +966,7 @@ export default function Profiel() {
                 fontSize: 11,
                 fontWeight: 700,
                 fontFamily: 'Inter',
-                color: 'rgba(218,230,255,0.5)',
+                color: '#1f2937',
                 textTransform: 'uppercase',
                 letterSpacing: '0.15em',
               }}>
@@ -1051,8 +1051,8 @@ export default function Profiel() {
                           marginTop: 4,
                           padding: '10px 14px',
                           borderRadius: 12,
-                          background: '#060e20',
-                          border: '1px solid rgba(255,255,255,0.07)',
+                          background: '#f8f9ff',
+                          border: '1px solid #e5e7eb',
                           color: '#1f2937',
                           fontFamily: 'Inter',
                           fontSize: 14,
@@ -1081,8 +1081,8 @@ export default function Profiel() {
                         marginTop: 4,
                         padding: '10px 14px',
                         borderRadius: 12,
-                        background: '#060e20',
-                        border: '1px solid rgba(255,255,255,0.07)',
+                        background: '#f8f9ff',
+                        border: '1px solid #e5e7eb',
                         color: '#1f2937',
                         fontFamily: 'Inter',
                         fontSize: 14,
@@ -1141,7 +1141,7 @@ export default function Profiel() {
                           ? '#dc2626'
                           : row.value
                           ? '#1f2937'
-                          : '#54617A',
+                          : '#6b7280',
                         fontFamily: 'Inter',
                       }}>
                         {row.value || (row.warn ? 'Niet ingevuld' : '—')}
@@ -1162,7 +1162,7 @@ export default function Profiel() {
           {/* BESCHIKBAARHEID */}
           <div style={{
             background: '#ffffff',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid #e5e7eb',
             borderRadius: 16,
             marginBottom: 12,
             padding: '16px 20px',
@@ -1171,7 +1171,7 @@ export default function Profiel() {
               fontSize: 11,
               fontWeight: 700,
               fontFamily: 'Inter',
-              color: 'rgba(218,230,255,0.5)',
+              color: '#1f2937',
               textTransform: 'uppercase',
               letterSpacing: '0.15em',
               marginBottom: 14,
@@ -1203,11 +1203,11 @@ export default function Profiel() {
                       borderRadius: 12,
                       background: active
                         ? '#ecfdf5'
-                        : '#060e20',
+                        : '#f8f9ff',
                       border: active
                         ? '1px solid #6ee7b7'
-                        : '1px solid rgba(255,255,255,0.05)',
-                      color: active ? '#10b981' : '#54617A',
+                        : '1px solid #e5e7eb',
+                      color: active ? '#10b981' : '#6b7280',
                       fontFamily: 'Inter',
                       fontWeight: 700,
                       fontSize: 10,
@@ -1329,7 +1329,7 @@ export default function Profiel() {
               padding: '16px 20px',
               borderRadius: 16,
               background: '#ffffff',
-              border: '1px solid rgba(255,255,255,0.05)',
+              border: '1px solid #e5e7eb',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -1382,7 +1382,7 @@ export default function Profiel() {
               className="material-symbols-outlined"
               style={{
                 fontSize: 20,
-                color: '#54617A',
+                color: '#6b7280',
                 fontVariationSettings: "'wght' 300",
               }}>
               chevron_right

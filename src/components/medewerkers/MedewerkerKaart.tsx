@@ -5,7 +5,7 @@ const roleLabels: Record<string, string> = {
   monteur: "Monteur", schakelmonteur: "Schakelmonteur",
   uitvoerder: "Uitvoerder", wv: "WV", manager: "Manager"
 };
-const AVATAR_COLORS = ['#10b981', '#22c55e', '#6e9bff', '#d97706', '#a78bfa'];
+const AVATAR_COLORS = ['#10b981', '#22c55e', '#2563eb', '#d97706', '#a78bfa'];
 
 interface Employee {
   id: string; user_id: string; full_name: string; role: string;

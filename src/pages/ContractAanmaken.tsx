@@ -242,7 +242,7 @@ export default function ContractAanmaken() {
               <button
                 onClick={() => setStap(1)}
                 className="text-[10px] font-medium px-2 py-1 rounded mb-1"
-                style={{ color: "#6e9bff", border: "1px solid rgba(110,155,255,0.3)" }}>
+                style={{ color: "#2563eb", border: "1px solid rgba(110,155,255,0.3)" }}>
                 Volledig bewerken
               </button>
             </div>

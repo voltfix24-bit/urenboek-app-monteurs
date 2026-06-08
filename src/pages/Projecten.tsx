@@ -252,7 +252,7 @@ export default function Projecten() {
               ].map(f => (
                 <button key={f.key} onClick={() => setStatusFilter(f.key)} style={{
                   padding: "8px 16px", borderRadius: 9999,
-                  border: statusFilter === f.key ? "none" : "1px solid rgba(255,255,255,0.07)",
+                  border: statusFilter === f.key ? "none" : "1px solid #e5e7eb",
                   background: statusFilter === f.key ? "#10b981" : "#152640",
                   color: statusFilter === f.key ? "#047857" : "#6b7280",
                   fontFamily: "Inter", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap",
@@ -350,8 +350,8 @@ export default function Projecten() {
           {showAdd && (
             <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
               <div onClick={() => setShowAdd(false)} style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.4)" }} />
-              <div style={{ position: "relative", background: "var(--app-navy)", borderRadius: "40px 40px 0 0", padding: 24, paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 32px)", borderTop: "1px solid rgba(255,255,255,0.1)", maxHeight: "90vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
-                <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 24px" }} />
+              <div style={{ position: "relative", background: "var(--app-navy)", borderRadius: "40px 40px 0 0", padding: 24, paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 32px)", borderTop: "1px solid #e5e7eb", maxHeight: "90vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+                <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(15,23,42,0.08)", margin: "0 auto 24px" }} />
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
                   <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 24, color: "#1f2937" }}>Nieuw project</h2>
                   <button onClick={() => setShowAdd(false)} style={{ width: 40, height: 40, borderRadius: "50%", background: "#ecfdf5", border: "none", color: "#6b7280", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -380,8 +380,8 @@ export default function Projecten() {
             return (
               <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
                 <div onClick={() => setSelectedId(null)} style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.4)" }} />
-                <div style={{ position: "relative", background: "var(--app-navy)", borderRadius: "32px 32px 0 0", padding: "16px 20px 48px", borderTop: "1px solid rgba(255,255,255,0.1)", maxHeight: "92vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
-                  <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 16px" }} />
+                <div style={{ position: "relative", background: "var(--app-navy)", borderRadius: "32px 32px 0 0", padding: "16px 20px 48px", borderTop: "1px solid #e5e7eb", maxHeight: "92vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+                  <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(15,23,42,0.08)", margin: "0 auto 16px" }} />
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -448,8 +448,8 @@ export default function Projecten() {
             return (
               <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
                 <div onClick={() => { setEditId(null); setForm(emptyForm); }} style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.4)" }} />
-                <div style={{ position: "relative", background: "var(--app-navy)", borderRadius: "32px 32px 0 0", padding: 24, paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 32px)", borderTop: "1px solid rgba(255,255,255,0.1)", maxHeight: "92vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
-                  <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 16px" }} />
+                <div style={{ position: "relative", background: "var(--app-navy)", borderRadius: "32px 32px 0 0", padding: 24, paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 32px)", borderTop: "1px solid #e5e7eb", maxHeight: "92vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+                  <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(15,23,42,0.08)", margin: "0 auto 16px" }} />
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                     <h2 style={{ fontFamily: "DM Sans", fontWeight: 700, fontSize: 22, color: "#1f2937", letterSpacing: "-0.025em" }}>Project bewerken</h2>
                     <button onClick={() => { setEditId(null); setForm(emptyForm); }} style={{ width: 36, height: 36, borderRadius: "50%", background: "#ecfdf5", border: "none", color: "#6b7280", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>

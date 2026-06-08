@@ -20,7 +20,7 @@ export const INKOOPORDER_STATUS_CONFIG: Record<string, {
   },
   factuur_ontvangen: {
     label: "Factuur ontvangen ✓",
-    color: "#6e9bff",
+    color: "#2563eb",
     bg: "rgba(110,155,255,0.1)",
     border: "rgba(110,155,255,0.3)",
   },

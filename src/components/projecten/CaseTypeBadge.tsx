@@ -1,7 +1,7 @@
 export function CaseTypeBadge({ type }: { type: string | null }) {
   if (!type) return null;
   const styles: Record<string, { bg: string; color: string }> = {
-    "NSA-case": { bg: "rgba(110,155,255,0.1)", color: "#6e9bff" },
+    "NSA-case": { bg: "rgba(110,155,255,0.1)", color: "#2563eb" },
     "Compactstation": { bg: "#ecfdf5", color: "#1f2937" },
     "Provisorium": { bg: "rgba(254,179,0,0.1)", color: "#d97706" },
   };

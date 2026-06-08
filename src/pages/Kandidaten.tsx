@@ -477,7 +477,7 @@ export default function Kandidaten() {
                       </p>
                     )}
                     {k.afgesproken_tarief && (
-                      <p className="text-xs mt-1 font-mono" style={{ color: "#6e9bff" }}>
+                      <p className="text-xs mt-1 font-mono" style={{ color: "#2563eb" }}>
                         {euro(k.afgesproken_tarief, 2)}/uur
                       </p>
                     )}
@@ -529,7 +529,7 @@ export default function Kandidaten() {
                     {k.status === "gesprek" && (
                       <button onClick={() => { setShowTarief(k.id); setTariefForm({ tarief: "", notitie: "" }); }}
                         className="text-xs px-3 py-1.5 rounded-lg font-medium"
-                        style={{ background: "rgba(110,155,255,0.1)", color: "#6e9bff", border: `1px solid rgba(110,155,255,0.3)` }}>
+                        style={{ background: "rgba(110,155,255,0.1)", color: "#2563eb", border: `1px solid rgba(110,155,255,0.3)` }}>
                         Tarief instellen
                       </button>
                     )}
@@ -542,7 +542,7 @@ export default function Kandidaten() {
                     )}
                     {!wachtOpManager && !heeftCorrectie && k.status === "uitgenodigd" && contract && (
                       <div className="flex flex-col items-end gap-1">
-                        <span className="text-[10px] font-medium" style={{ color: "#6e9bff" }}>📧 Uitgenodigd</span>
+                        <span className="text-[10px] font-medium" style={{ color: "#2563eb" }}>📧 Uitgenodigd</span>
                         <button
                           onClick={async () => {
                             const { data, error } = await supabase.functions.invoke("contract-token-create", {
@@ -601,7 +601,7 @@ export default function Kandidaten() {
                       </div>
                     )}
                     <div className="flex items-center gap-2">
-                      <button onClick={() => openBewerk(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "#6e9bff" }}>
+                      <button onClick={() => openBewerk(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "#2563eb" }}>
                         <Pencil className="w-3 h-3" /> Bewerken
                       </button>
                       <button onClick={() => setDeleteConfirm(k)} className="flex items-center gap-1 text-[10px]" style={{ color: "#dc2626" }}>
@@ -771,7 +771,7 @@ export default function Kandidaten() {
                     border: `1px solid ${b.richting === "kandidaat_naar_manager" ? "rgba(255,113,108,0.3)" : "rgba(110,155,255,0.3)"}`,
                   }}>
                     <p className="font-semibold text-[10px] mb-1" style={{
-                      color: b.richting === "kandidaat_naar_manager" ? "#dc2626" : "#6e9bff",
+                      color: b.richting === "kandidaat_naar_manager" ? "#dc2626" : "#2563eb",
                     }}>
                       {b.richting === "kandidaat_naar_manager" ? "📨 Kandidaat" : "📤 Manager"}
                       {b.bericht_type === "correctie_verzoek" && " — Correctie verzoek"}

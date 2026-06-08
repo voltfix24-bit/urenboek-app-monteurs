@@ -64,7 +64,7 @@ export function BottomNav({ badges }: BottomNavProps) {
         height: `calc(72px + env(safe-area-inset-bottom, 34px))`,
         background: "#f9fafb",
         backdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(255,255,255,0.05)",
+        borderTop: "1px solid #e5e7eb",
         borderRadius: "24px 24px 0 0",
         boxShadow: "0 -4px 24px rgba(15,23,42,0.08)",
         paddingBottom: "env(safe-area-inset-bottom, 34px)",
@@ -104,7 +104,7 @@ export function BottomNav({ badges }: BottomNavProps) {
               <Icon
                 size={active ? 22 : 20}
                 style={{
-                  color: active ? "#10b981" : "rgba(218,230,255,0.5)",
+                  color: active ? "#10b981" : "#1f2937",
                   transition: "all 0.15s",
                 }}
               />
@@ -153,7 +153,7 @@ export function BottomNav({ badges }: BottomNavProps) {
                 fontFamily: "Inter",
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
-                color: active ? "#10b981" : "rgba(218,230,255,0.5)",
+                color: active ? "#10b981" : "#1f2937",
               }}
             >
               {t.label}

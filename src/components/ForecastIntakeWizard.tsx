@@ -390,7 +390,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
             <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>MS moffen & eindsluitingen</h3>
             {answers.rmu_vervangen && selectedRmu && (
               <div className="rounded-xl p-3" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
-                <p className="text-xs font-semibold" style={{ color: "#6e9bff" }}>Suggestie op basis van {selectedRmu.merk} {selectedRmu.code} ({selectedRmu.velden - 1} kabelvelden):</p>
+                <p className="text-xs font-semibold" style={{ color: "#2563eb" }}>Suggestie op basis van {selectedRmu.merk} {selectedRmu.code} ({selectedRmu.velden - 1} kabelvelden):</p>
                 <p className="text-xs mt-1" style={{ color: "#1f2937" }}>{suggestie.moffen}× MS moffen + {suggestie.eindsluitingen}× eindsluitingen</p>
                 <div className="flex gap-2 mt-2">
                   <button onClick={overneemSuggestie} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: "#10b981" }}>Overnemen</button>

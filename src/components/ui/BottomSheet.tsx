@@ -148,7 +148,7 @@ export function BottomSheet({
           background: "var(--app-navy)",
           borderTopLeftRadius: topRadius,
           borderTopRightRadius: topRadius,
-          borderTop: "1px solid rgba(255,255,255,0.1)",
+          borderTop: "1px solid #e5e7eb",
           maxHeight: `${maxHeightVh}vh`,
           overflowY: "auto",
           padding: padded ? "0 24px" : 0,
@@ -178,7 +178,7 @@ export function BottomSheet({
               width: 48,
               height: 6,
               borderRadius: 9999,
-              background: "rgba(255,255,255,0.2)",
+              background: "rgba(15,23,42,0.08)",
             }}
           />
         </div>

@@ -40,7 +40,7 @@ export function HandtekeningCanvas({ onSave, bestaande, readonly = false, hoogte
       img.src = bestaande;
     }
 
-    ctx.strokeStyle = '#1a1a2e';
+    ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -60,7 +60,7 @@ export function HandtekeningCanvas({ onSave, bestaande, readonly = false, hoogte
     if (isEmpty) {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.offsetWidth, hoogte);
-      ctx.strokeStyle = '#1a1a2e';
+      ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2.5;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';

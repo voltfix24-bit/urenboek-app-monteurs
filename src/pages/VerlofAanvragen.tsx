@@ -18,7 +18,7 @@ const GREEN = "#10b981";
 const GREEN_DARK = "#34d399";
 const TEXT = "#1f2937";
 const MUTED = "#6b7280";
-const SUBTLE = "#424950";
+const SUBTLE = "#4b5563";
 
 type VerlofType = "vakantie" | "verlof" | "anders";
 
@@ -262,7 +262,7 @@ export default function VerlofAanvragen() {
           transition: background 0.15s, color 0.15s;
         }
         .verlof-cal .rdp-day:hover:not([disabled]):not(.rdp-day_selected) {
-          background: rgba(255,255,255,0.07);
+          background: #e5e7eb;
         }
         /* Vandaag — duidelijke groene ring */
         .verlof-cal .rdp-day_today:not(.rdp-day_selected) {
@@ -303,12 +303,12 @@ export default function VerlofAanvragen() {
         .verlof-cal .rdp-day_range_start,
         .verlof-cal .rdp-day_range_end {
           background: ${GREEN} !important;
-          color: #003d1f !important;
+          color: #047857 !important;
           font-weight: 800 !important;
           border-radius: 50% !important;
           width: 40px !important;
           height: 40px !important;
-          box-shadow: 0 6px 18px #a7f3d0, inset 0 0 0 2px rgba(255,255,255,0.15) !important;
+          box-shadow: 0 6px 18px #a7f3d0, inset 0 0 0 2px #e5e7eb !important;
           z-index: 1;
           position: relative;
         }
@@ -322,10 +322,10 @@ export default function VerlofAanvragen() {
         /* Eerste klik (alleen 'from' gekozen, nog geen 'to') */
         .verlof-cal .rdp-day_selected:not(.rdp-day_range_middle):not(.rdp-day_range_start):not(.rdp-day_range_end) {
           background: ${GREEN} !important;
-          color: #003d1f !important;
+          color: #047857 !important;
           border-radius: 50% !important;
           font-weight: 800 !important;
-          box-shadow: 0 6px 18px #a7f3d0, inset 0 0 0 2px rgba(255,255,255,0.15) !important;
+          box-shadow: 0 6px 18px #a7f3d0, inset 0 0 0 2px #e5e7eb !important;
         }
         /* Weekenden subtiel afgewisseld zodat ma-vr werkdagen visueel pop'en */
         .verlof-cal .rdp-head_cell:nth-child(6),
@@ -373,7 +373,7 @@ export default function VerlofAanvragen() {
                 style={{
                   flex: 1, padding: "12px 8px", borderRadius: 10, border: "none",
                   background: type === t ? `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})` : "transparent",
-                  color: type === t ? "#003d1f" : MUTED,
+                  color: type === t ? "#047857" : MUTED,
                   fontFamily: "Inter", fontWeight: 700, fontSize: 13,
                   cursor: "pointer", textTransform: "capitalize",
                   boxShadow: type === t ? "0 4px 12px #d1fae5" : "none",
@@ -534,7 +534,7 @@ export default function VerlofAanvragen() {
             pointerEvents: "auto",
             width: "100%", padding: "16px 0", borderRadius: 14,
             background: isValid ? `linear-gradient(135deg, ${GREEN}, ${GREEN_DARK})` : SURFACE,
-            border: "none", color: isValid ? "#003d1f" : SUBTLE,
+            border: "none", color: isValid ? "#047857" : SUBTLE,
             fontFamily: "Manrope", fontWeight: 800, fontSize: 15,
             letterSpacing: "0.01em",
             cursor: isValid && !sending ? "pointer" : "not-allowed",

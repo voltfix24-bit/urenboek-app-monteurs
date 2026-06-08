@@ -16,7 +16,7 @@ export const T = {
   warn: "#d97706",
   warnSoft: "rgba(254,179,0,0.08)",
   warnBorder: "rgba(254,179,0,0.3)",
-  info: "#6e9bff",
+  info: "#2563eb",
   infoSoft: "rgba(110,155,255,0.1)",
   infoBorder: "rgba(110,155,255,0.3)",
   danger: "#dc2626",

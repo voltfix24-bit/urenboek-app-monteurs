@@ -18,7 +18,7 @@ const TRIGGER_TYPES = ["altijd", "case_type", "antwoord", "rmu_velden_gt"];
 const TRIGGER_VELDEN = ["rmu_vervangen", "rmu_velden", "trafo_situatie", "ls_rek", "ls_stroken", "ls_kabels", "vereffeningsleiding", "aardweerstand", "ggi", "boren", "dichtzetten", "traanplaat", "revisie", "wv", "wv_io", "ims_ombouw", "trafokabel", "zekeringen", "ls_moffen", "ls_eindsluitingen", "huisaansluitingen", "ls_kast_verwijderen", "ls_kast_aansluiten", "ov_kast", "ov_meter", "kabeldeel_vrijschakelen", "vp_uren", "avp_uren", "vop_uren", "case_type"];
 const TRIGGER_BADGES: Record<string, { bg: string; color: string }> = {
   altijd: { bg: "#ffffff", color: "#6b7280" },
-  case_type: { bg: "rgba(110,155,255,0.1)", color: "#6e9bff" },
+  case_type: { bg: "rgba(110,155,255,0.1)", color: "#2563eb" },
   antwoord: { bg: "#ecfdf5", color: "#10b981" },
   rmu_velden_gt: { bg: "rgba(254,179,0,0.1)", color: "#d97706" },
 };

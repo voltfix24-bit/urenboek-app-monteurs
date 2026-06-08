@@ -191,7 +191,7 @@ export default function Medewerkers() {
       <>
       <PageShell>
         <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)" }}>
-          <header style={{ position: "sticky", top: 0, zIndex: 50, background: "#f9fafb", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+          <header style={{ position: "sticky", top: 0, zIndex: 50, background: "#f9fafb", backdropFilter: "blur(20px)", borderBottom: "1px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
             <button onClick={() => setSelectedEmployee(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#10b981", display: "flex" }}>
               <ArrowLeft size={24} />
             </button>
@@ -260,7 +260,7 @@ export default function Medewerkers() {
     <PageShell>
       <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
         {/* HEADER */}
-        <header style={{ position: "sticky", top: 0, zIndex: 50, background: "#f9fafb", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <header style={{ position: "sticky", top: 0, zIndex: 50, background: "#f9fafb", backdropFilter: "blur(20px)", borderBottom: "1px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span className="material-symbols-outlined" style={{ color: "#10b981", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
             <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#10b981", letterSpacing: "0.1em", textTransform: "uppercase" }}>TERREVOLT UREN</span>
@@ -290,7 +290,7 @@ export default function Medewerkers() {
             {(["alle", "verificatie"] as const).map(f => (
               <button key={f} onClick={() => setFilter(f)} style={{
                 padding: "8px 16px", borderRadius: 9999,
-                border: filter === f ? "2px solid #10b981" : "1px solid rgba(255,255,255,0.07)",
+                border: filter === f ? "2px solid #10b981" : "1px solid #e5e7eb",
                 background: filter === f ? "#ecfdf5" : "#ffffff",
                 color: filter === f ? "#10b981" : "#6b7280",
                 fontFamily: "Inter", fontWeight: 700, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap",
@@ -395,7 +395,7 @@ export default function Medewerkers() {
                   const isOnboarding = emp.account_status === "onboarding" || emp.account_status === "invited";
                   const statusColor = isInactief ? "#6b7280" : isOnboarding ? "#d97706" : "#10b981";
                   const statusLabel = isInactief ? "INACTIEF" : isOnboarding ? "ONBOARDING" : "ACTIEF";
-                  const statusBg = isInactief ? "rgba(160,171,195,0.1)" : isOnboarding ? "rgba(254,179,0,0.1)" : "#ecfdf5";
+                  const statusBg = isInactief ? "#9ca3af" : isOnboarding ? "rgba(254,179,0,0.1)" : "#ecfdf5";
                   return (
                     <div key={emp.user_id} onClick={() => selectEmployee(emp)} style={{ background: "#ffffff", borderRadius: 14, borderLeft: `4px solid ${statusColor}`, padding: 16, cursor: "pointer", opacity: isInactief ? 0.6 : 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>

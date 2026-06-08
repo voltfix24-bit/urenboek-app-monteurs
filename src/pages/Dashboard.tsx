@@ -247,15 +247,15 @@ export default function Dashboard() {
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#d97706", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#523700", fontVariationSettings: "'FILL' 1" }}>priority_high</span>
+                      <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#92400e", fontVariationSettings: "'FILL' 1" }}>priority_high</span>
                     </div>
                     <span style={{ fontSize: 14, fontWeight: 700, fontFamily: "Inter", color: "#d97706" }}>
                       {pendingCount} weekstaten wachten op goedkeuring
                     </span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 4, background: "#d97706", borderRadius: 9999, padding: "6px 14px" }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#523700", fontFamily: "Inter" }}>Bekijk</span>
-                    <span className="material-symbols-outlined" style={{ fontSize: 14, color: "#523700" }}>arrow_forward</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#92400e", fontFamily: "Inter" }}>Bekijk</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: 14, color: "#92400e" }}>arrow_forward</span>
                   </div>
                 </div>
               )}

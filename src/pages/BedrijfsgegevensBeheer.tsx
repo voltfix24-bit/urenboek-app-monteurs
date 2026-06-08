@@ -158,8 +158,8 @@ export default function BedrijfsgegevensBeheer() {
 
           {/* Info banner */}
           <div className="flex items-start gap-2 p-3 rounded-xl" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
-            <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "#6e9bff" }} />
-            <p className="text-xs" style={{ color: "#6e9bff" }}>Wijzigingen worden automatisch meegenomen in alle nieuwe inkooporders en PDF's.</p>
+            <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "#2563eb" }} />
+            <p className="text-xs" style={{ color: "#2563eb" }}>Wijzigingen worden automatisch meegenomen in alle nieuwe inkooporders en PDF's.</p>
           </div>
 
           {/* Form card */}

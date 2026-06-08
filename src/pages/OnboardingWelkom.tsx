@@ -197,7 +197,7 @@ export default function OnboardingWelkom() {
           <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
             <span className="text-lg">✓</span>
             <div>
-              <p className="text-sm font-semibold" style={{ color: "#6e9bff" }}>Profiel ingediend</p>
+              <p className="text-sm font-semibold" style={{ color: "#2563eb" }}>Profiel ingediend</p>
               <p className="text-xs mt-1" style={{ color: "#6b7280" }}>Je manager verifieert je gegevens. Je ontvangt een bericht zodra je account actief is.</p>
             </div>
           </div>

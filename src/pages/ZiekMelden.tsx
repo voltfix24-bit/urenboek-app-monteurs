@@ -153,7 +153,7 @@ export default function ZiekMelden() {
               padding: "18px 0",
               borderRadius: 16,
               background: "#ffffff",
-              border: "1px solid rgba(66,73,80,0.15)",
+              border: "1px solid #e5e7eb",
               color: "#10b981",
               fontFamily: "Manrope",
               fontWeight: 800,
@@ -182,7 +182,7 @@ export default function ZiekMelden() {
             <p style={{
               fontSize: 9,
               fontWeight: 700,
-              color: "#424950",
+              color: "#4b5563",
               fontFamily: "Inter",
               textTransform: "uppercase",
               letterSpacing: "0.15em",
@@ -208,7 +208,7 @@ export default function ZiekMelden() {
             <p style={{
               fontSize: 9,
               fontWeight: 700,
-              color: "#424950",
+              color: "#4b5563",
               fontFamily: "Inter",
               textTransform: "uppercase",
               letterSpacing: "0.15em",
@@ -405,7 +405,7 @@ export default function ZiekMelden() {
           <p style={{
             fontSize: 10,
             fontWeight: 700,
-            color: "#424950",
+            color: "#4b5563",
             fontFamily: "Inter",
             textTransform: "uppercase",
             letterSpacing: "0.15em",
@@ -444,7 +444,7 @@ export default function ZiekMelden() {
           <p style={{
             fontSize: 10,
             fontWeight: 700,
-            color: "#424950",
+            color: "#4b5563",
             fontFamily: "Inter",
             textTransform: "uppercase",
             letterSpacing: "0.15em",
@@ -464,7 +464,7 @@ export default function ZiekMelden() {
                 border: "none",
                 borderRadius: 12,
                 padding: "14px 44px 14px 16px",
-                color: datumTerug ? "#1f2937" : "#424950",
+                color: datumTerug ? "#1f2937" : "#4b5563",
                 fontFamily: "Inter",
                 fontSize: 13,
                 outline: "none",
@@ -489,7 +489,7 @@ export default function ZiekMelden() {
           <p style={{
             fontSize: 10,
             fontWeight: 700,
-            color: "#424950",
+            color: "#4b5563",
             fontFamily: "Inter",
             textTransform: "uppercase",
             letterSpacing: "0.15em",
@@ -528,7 +528,7 @@ export default function ZiekMelden() {
           <div style={{
             flex: 1,
             height: 1,
-            background: "linear-gradient(to right, transparent, rgba(66,73,80,0.3), transparent)",
+            background: "linear-gradient(to right, transparent, #e5e7eb, transparent)",
           }} />
           <div style={{
             width: 6,
@@ -539,7 +539,7 @@ export default function ZiekMelden() {
           <div style={{
             flex: 1,
             height: 1,
-            background: "linear-gradient(to left, transparent, rgba(66,73,80,0.3), transparent)",
+            background: "linear-gradient(to left, transparent, #e5e7eb, transparent)",
           }} />
         </div>
 
@@ -578,7 +578,7 @@ export default function ZiekMelden() {
           textAlign: "center",
           fontSize: 9,
           fontWeight: 700,
-          color: "#424950",
+          color: "#4b5563",
           fontFamily: "Inter",
           textTransform: "uppercase",
           letterSpacing: "0.2em",

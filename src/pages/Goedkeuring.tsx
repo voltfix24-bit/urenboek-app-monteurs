@@ -484,14 +484,14 @@ export default function Goedkeuring() {
 
           {/* WEEK NAV */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-            <button onClick={() => setWeekOffset(w => w - 1)} style={{ width: 44, height: 44, borderRadius: 12, background: "#ffffff", border: "1px solid rgba(255,255,255,0.07)", color: "#1f2937", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <button onClick={() => setWeekOffset(w => w - 1)} style={{ width: 44, height: 44, borderRadius: 12, background: "#ffffff", border: "1px solid #e5e7eb", color: "#1f2937", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
               <ChevronLeft size={20} />
             </button>
             <button onClick={() => setWeekOffset(0)} style={{ flex: 1, textAlign: "center", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, color: "#1f2937", background: weekOffset === 0 ? "#ecfdf5" : "transparent", border: "none", borderRadius: 12, padding: "8px 0", cursor: "pointer" }}>
               Week {weekNumber}
               {weekOffset !== 0 && <span style={{ display: "block", fontSize: 10, color: "#10b981", marginTop: 2 }}>↩ Terug naar deze week</span>}
             </button>
-            <button onClick={() => setWeekOffset(w => w + 1)} style={{ width: 44, height: 44, borderRadius: 12, background: "#ffffff", border: "1px solid rgba(255,255,255,0.07)", color: "#1f2937", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <button onClick={() => setWeekOffset(w => w + 1)} style={{ width: 44, height: 44, borderRadius: 12, background: "#ffffff", border: "1px solid #e5e7eb", color: "#1f2937", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
               <ChevronRight size={20} />
             </button>
           </div>
@@ -501,7 +501,7 @@ export default function Goedkeuring() {
             {["alle", "ingediend", "goedgekeurd", "afgekeurd"].map((f) => (
               <button key={f} onClick={() => setFilter(f)} style={{
                 padding: "8px 16px", borderRadius: 9999,
-                border: filter === f ? "2px solid #10b981" : "1px solid rgba(255,255,255,0.07)",
+                border: filter === f ? "2px solid #10b981" : "1px solid #e5e7eb",
                 background: filter === f ? "#ecfdf5" : "#ffffff",
                 color: filter === f ? "#10b981" : "#6b7280",
                 fontFamily: "Inter", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", textTransform: "capitalize",
@@ -626,8 +626,8 @@ export default function Goedkeuring() {
         {afkeurId && (
           <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
             <div onClick={() => setAfkeurId(null)} style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.4)" }} />
-            <div style={{ position: "relative", background: "#ffffff", borderRadius: "40px 40px 0 0", padding: "24px 24px 48px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-              <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(255,255,255,0.2)", margin: "0 auto 24px" }} />
+            <div style={{ position: "relative", background: "#ffffff", borderRadius: "40px 40px 0 0", padding: "24px 24px 48px", borderTop: "1px solid #e5e7eb" }}>
+              <div style={{ width: 48, height: 6, borderRadius: 9999, background: "rgba(15,23,42,0.08)", margin: "0 auto 24px" }} />
               <h3 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 22, color: "#1f2937", marginBottom: 20 }}>Reden van afwijzing</h3>
               {["Onjuiste uren / project", "Dubbele boeking", "Geen omschrijving", "Anders..."].map((opt) => (
                 <button key={opt} onClick={() => setAfkeurReden(opt)} style={{
@@ -649,7 +649,7 @@ export default function Goedkeuring() {
               />
               <button onClick={() => { updateStatus(afkeurId, "afgekeurd", afkeurReden); setAfkeurId(null); }} style={{
                 width: "100%", height: 56, borderRadius: 16, background: "#d97706", border: "none",
-                color: "#523700", fontFamily: "Manrope", fontWeight: 800, fontSize: 15, textTransform: "uppercase",
+                color: "#92400e", fontFamily: "Manrope", fontWeight: 800, fontSize: 15, textTransform: "uppercase",
                 letterSpacing: "0.1em", cursor: "pointer", marginBottom: 12,
               }}>
                 AFWIJZEN

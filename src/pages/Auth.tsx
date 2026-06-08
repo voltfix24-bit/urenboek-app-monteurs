@@ -20,7 +20,7 @@ const ROLE_ICONS: Record<string, React.ReactNode> = {
 
 const ROLE_COLORS: Record<string, string> = {
   manager: "#10b981",
-  uitvoerder: "#6e9bff",
+  uitvoerder: "#2563eb",
   monteur: "#d97706",
   schakelmonteur: "#a78bfa",
   wv: "#dc2626",
@@ -166,9 +166,9 @@ function RealLoginForm() {
         <div style={{ position: "absolute", top: 16, right: 20, textAlign: "right" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end", marginBottom: 2 }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981" }} />
-            <span style={{ fontSize: 9, fontFamily: "Inter", color: "rgba(160,171,195,0.5)", textTransform: "uppercase", letterSpacing: "0.1em" }}>System: Auth_Link_Sent</span>
+            <span style={{ fontSize: 9, fontFamily: "Inter", color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.1em" }}>System: Auth_Link_Sent</span>
           </div>
-          <span style={{ fontSize: 9, fontFamily: "Inter", color: "rgba(160,171,195,0.4)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Status: Success_200</span>
+          <span style={{ fontSize: 9, fontFamily: "Inter", color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.1em" }}>Status: Success_200</span>
         </div>
 
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 32px" }}>
@@ -363,7 +363,7 @@ function RealLoginForm() {
             { text: "v2.4.0-Tactical" },
             { text: "Support: 0800-VOLT" },
           ].map((item, i) => (
-            <span key={i} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: "rgba(160,171,195,0.5)", fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            <span key={i} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 9, color: "#9ca3af", fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em" }}>
               {item.dot && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} />}
               {item.text}
             </span>

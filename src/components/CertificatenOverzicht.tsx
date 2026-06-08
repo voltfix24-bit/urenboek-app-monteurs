@@ -418,7 +418,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                             className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition"
                             style={{
                               background: active ? "#10b981" : "transparent",
-                              color: active ? "#003d1f" : "#6b7280",
+                              color: active ? "#047857" : "#6b7280",
                               letterSpacing: "0.08em",
                             }}
                           >
@@ -502,7 +502,7 @@ export default function CertificatenOverzicht({ certificaten, toonToevoegen, med
                                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider hover:brightness-110 active:scale-[0.97] transition cursor-pointer"
                                 style={{
                                   background: "#10b981",
-                                  color: "#003d1f",
+                                  color: "#047857",
                                   letterSpacing: "0.08em",
                                   border: "none",
                                 }}

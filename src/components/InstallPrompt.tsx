@@ -147,7 +147,7 @@ export function InstallPrompt() {
         }}
       >
         <div className="flex justify-center mb-3">
-          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.18)" }} />
+          <div className="w-10 h-1 rounded-full" style={{ background: "#e5e7eb" }} />
         </div>
 
         <div className="flex items-start gap-3 mb-4">
@@ -193,7 +193,7 @@ export function InstallPrompt() {
           <div className="space-y-3">
             <div
               className="rounded-2xl p-4 space-y-3"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid #e5e7eb" }}
+              style={{ background: "#e5e7eb", border: "1px solid #e5e7eb" }}
             >
               <Step
                 num={1}
@@ -241,7 +241,7 @@ export function InstallPrompt() {
             ) : (
               <div
                 className="rounded-2xl p-4 space-y-3"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid #e5e7eb" }}
+                style={{ background: "#e5e7eb", border: "1px solid #e5e7eb" }}
               >
                 <Step
                   num={1}
@@ -280,7 +280,7 @@ export function InstallPrompt() {
           <div className="space-y-3">
             <div
               className="rounded-2xl p-4 space-y-3"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid #e5e7eb" }}
+              style={{ background: "#e5e7eb", border: "1px solid #e5e7eb" }}
             >
               <Step
                 num={1}

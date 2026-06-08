@@ -45,7 +45,7 @@ export default function MijnOrders() {
           top: 0, zIndex: 50,
           background: '#f9fafb',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid #e5e7eb',
           padding: '12px 20px',
           display: 'flex',
           alignItems: 'center',

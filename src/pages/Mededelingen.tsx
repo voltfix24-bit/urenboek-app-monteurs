@@ -293,7 +293,7 @@ export default function Mededelingen() {
             top: 0, zIndex: 50,
             background: '#f9fafb',
             backdropFilter: 'blur(20px)',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
+            borderBottom: '1px solid #e5e7eb',
             padding: '12px 20px',
             display: 'flex',
             alignItems: 'center',
@@ -473,7 +473,7 @@ export default function Mededelingen() {
             padding: '12px 16px',
             background: '#f9fafb',
             backdropFilter: 'blur(20px)',
-            borderTop: '1px solid rgba(255,255,255,0.07)',
+            borderTop: '1px solid #e5e7eb',
             zIndex: 49,
           }}>
             <div style={{
@@ -565,7 +565,7 @@ export default function Mededelingen() {
           top: 0, zIndex: 50,
           background: '#f9fafb',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid #e5e7eb',
           padding: '12px 20px',
           display: 'flex',
           alignItems: 'center',
@@ -770,7 +770,7 @@ export default function Mededelingen() {
                 background: '#ffffff',
                 backdropFilter: 'blur(24px)',
                 borderRadius: '40px 40px 0 0',
-                borderTop: '1px solid rgba(255,255,255,0.1)',
+                borderTop: '1px solid #e5e7eb',
                 maxHeight: '85vh',
                 overflowY: 'auto',
                 paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 24px)",
@@ -778,7 +778,7 @@ export default function Mededelingen() {
             >
               {/* Handle */}
               <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
-                <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'rgba(255,255,255,0.2)' }} />
+                <div style={{ width: 48, height: 6, borderRadius: 9999, background: 'rgba(15,23,42,0.08)' }} />
               </div>
 
               <div style={{ padding: '16px 24px 24px' }}>
@@ -815,7 +815,7 @@ export default function Mededelingen() {
                           padding: '12px 16px',
                           borderRadius: 16,
                           background: '#ffffff',
-                          border: '1px solid rgba(255,255,255,0.07)',
+                          border: '1px solid #e5e7eb',
                           color: '#1f2937',
                           fontFamily: 'Inter',
                           fontSize: 14,
@@ -850,7 +850,7 @@ export default function Mededelingen() {
                         padding: '12px 16px',
                         borderRadius: 16,
                         background: '#ffffff',
-                        border: '1px solid rgba(255,255,255,0.07)',
+                        border: '1px solid #e5e7eb',
                         color: '#1f2937',
                         fontFamily: 'Inter',
                         fontSize: 14,
@@ -883,7 +883,7 @@ export default function Mededelingen() {
                         padding: '12px 16px',
                         borderRadius: 16,
                         background: '#ffffff',
-                        border: '1px solid rgba(255,255,255,0.07)',
+                        border: '1px solid #e5e7eb',
                         color: '#1f2937',
                         fontFamily: 'Inter',
                         fontSize: 14,

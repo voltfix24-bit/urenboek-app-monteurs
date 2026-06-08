@@ -114,8 +114,8 @@ export default function TarievenBeheer() {
 
         {/* Info banner */}
         <div className="mx-6 lg:mx-10 mb-4 rounded-xl p-3 flex items-start gap-2" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
-          <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "#6e9bff" }} />
-          <p className="text-xs" style={{ color: "#6e9bff" }}>Deze tarieven zijn gebaseerd op het prijsvoorstel van Van Gelder. Pas ze aan als er een nieuw voorstel is.</p>
+          <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "#2563eb" }} />
+          <p className="text-xs" style={{ color: "#2563eb" }}>Deze tarieven zijn gebaseerd op het prijsvoorstel van Van Gelder. Pas ze aan als er een nieuw voorstel is.</p>
         </div>
 
         <div className="px-6 lg:px-10 pb-10">

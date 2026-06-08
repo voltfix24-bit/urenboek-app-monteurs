@@ -42,7 +42,7 @@ export function MobileHeader({ showBrand = true, title, actions, initials }: Mob
       style={{
         position: "sticky", top: 0, zIndex: 50,
         background: "#f9fafb", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
+        borderBottom: "1px solid #e5e7eb",
         paddingTop: "calc(12px + env(safe-area-inset-top, 44px))",
         paddingBottom: 12,
         paddingLeft: "calc(20px + env(safe-area-inset-left, 0px))",

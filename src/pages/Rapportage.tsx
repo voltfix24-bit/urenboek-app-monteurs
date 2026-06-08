@@ -237,7 +237,7 @@ export default function Rapportage() {
         <div className="flex gap-2">
           {[
             { label: "Uren", value: totalHours + "u", Icon: Clock, color: "#10b981" },
-            { label: "Projecten", value: String(uniqueProjects), Icon: FolderOpen, color: "#6e9bff" },
+            { label: "Projecten", value: String(uniqueProjects), Icon: FolderOpen, color: "#2563eb" },
             { label: "Monteurs", value: String(uniqueEmployees), Icon: Users, color: "#d97706" },
           ].map((k, i) => (
             <div key={i} className="flex-1 rounded-2xl p-3 text-center" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>

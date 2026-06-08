@@ -242,7 +242,7 @@ export default function ContractOndertekenen() {
       <h1 className="text-lg font-bold mb-2" style={{ color: "#1f2937" }}>Link ongeldig</h1>
       <p className="text-sm" style={{ color: "#6b7280" }}>{error}</p>
       <p className="text-sm mt-4" style={{ color: "#6b7280" }}>Neem contact op met TerreVolt BV</p>
-      <p className="text-sm font-mono" style={{ color: "#6e9bff" }}>info@terrevolt.nl</p>
+      <p className="text-sm font-mono" style={{ color: "#2563eb" }}>info@terrevolt.nl</p>
     </CenterLayout>
   );
 

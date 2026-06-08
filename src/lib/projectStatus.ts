@@ -9,7 +9,7 @@ export const STATUS_CONFIG = {
   },
   gepland: {
     label: 'Gepland',
-    kleur: '#6e9bff',
+    kleur: '#2563eb',
     bg: 'rgba(110,155,255,0.1)',
     border: 'rgba(110,155,255,0.3)',
     icoon: '📅',
