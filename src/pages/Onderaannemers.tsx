@@ -441,7 +441,7 @@ export default function Onderaannemers() {
                     <button type="button" onClick={() => setOaAccountShowPw(!oaAccountShowPw)} style={iconBtn}>{oaAccountShowPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button type="button" onClick={() => setOaAccountPw(genPw() + "A1!")} style={secondaryBtn}>Genereer</button>
+                    <button type="button" onClick={() => setOaAccountPw(generateTemporaryPassword())} style={secondaryBtn}>Genereer</button>
                     <button type="button" onClick={createOnderaannemerAccount} disabled={oaAccountSaving} style={primaryBtn}>{oaAccountSaving ? "Bezig…" : "Account aanmaken"}</button>
                   </div>
                 </div>
@@ -664,7 +664,7 @@ export default function Onderaannemers() {
                 <button type="button" onClick={() => setOaShowPw(!oaShowPw)} style={iconBtn}>{oaShowPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button type="button" onClick={() => setOaPw(genPw())} style={secondaryBtn}>Genereer</button>
+                <button type="button" onClick={() => setOaPw(generateTemporaryPassword())} style={secondaryBtn}>Genereer</button>
                 <button type="submit" disabled={oaSaving} style={primaryBtn}>{oaSaving ? "Bezig…" : "Aanmaken"}</button>
               </div>
             </form>

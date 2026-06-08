@@ -80,6 +80,7 @@ export default function ManagerPlanning() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [modalForm, setModalForm] = useState({ medewerker_id: "", project_id: "", datum: "", starttijd: "07:00", eindtijd: "16:00", notitie: "" });
+  const [modalDatums, setModalDatums] = useState<string[]>([]);
   const [editId, setEditId] = useState<string | null>(null);
   const [expandedMedewerker, setExpandedMedewerker] = useState<string | null>(null);
   const [planningView, setPlanningView] = useState<'grid' | 'klus'>('grid');
@@ -165,11 +166,22 @@ export default function ManagerPlanning() {
     if (existing) {
       setEditId(existing.id);
       setModalForm({ medewerker_id: existing.medewerker_id, project_id: existing.project_id, datum: existing.datum, starttijd: existing.starttijd, eindtijd: existing.eindtijd, notitie: existing.notitie });
+      setModalDatums([existing.datum]);
     } else {
       setEditId(null);
       setModalForm({ medewerker_id, project_id: projects[0]?.id || "", datum, starttijd: "07:00", eindtijd: "16:00", notitie: "" });
+      setModalDatums([datum]);
     }
     setShowModal(true);
+  };
+
+  const toggleModalDatum = (datum: string) => {
+    if (editId) return;
+    setModalDatums(prev => {
+      const next = prev.includes(datum) ? prev.filter(d => d !== datum) : [...prev, datum];
+      return next.length > 0 ? next : [datum];
+    });
+    setModalForm(prev => ({ ...prev, datum }));
   };
 
   const savePlanning = async () => {
@@ -190,30 +202,49 @@ export default function ManagerPlanning() {
       // Verzamel ploeg = self + vaste collega's
       const me = medewerkers.find(m => m.id === modalForm.medewerker_id);
       const partners = (me?.planning_partner_ids || []).filter(pid => medewerkers.some(mm => mm.id === pid));
-      // Filter partners die al planning hebben op deze datum
-      const skipPartners = partners.filter(pid => entries.some(e => e.medewerker_id === pid && e.datum === modalForm.datum));
-      const inGroup = [modalForm.medewerker_id, ...partners.filter(p => !skipPartners.includes(p))];
-      const groupId = inGroup.length > 1 ? (crypto.randomUUID?.() ?? null) : null;
-      const rows = inGroup.map((medId) => ({
-        medewerker_id: medId,
-        project_id: modalForm.project_id,
-        datum: modalForm.datum,
-        starttijd: modalForm.starttijd,
-        eindtijd: modalForm.eindtijd,
-        notitie: modalForm.notitie,
-        created_by: myProfileId,
-        planning_group_id: groupId,
-        collega_ids: inGroup.filter(x => x !== medId),
-      })) as any;
+      const datums = [...(modalDatums.length > 0 ? modalDatums : [modalForm.datum])].sort();
+      const skipped: Array<{ medId: string; datum: string }> = [];
+      const rows = datums.flatMap((datum) => {
+        const kandidaatGroep = [modalForm.medewerker_id, ...partners];
+        const inGroup = kandidaatGroep.filter((medId) => {
+          const bestaatAl = entries.some(e => e.medewerker_id === medId && e.datum === datum);
+          if (bestaatAl) skipped.push({ medId, datum });
+          return !bestaatAl;
+        });
+        const groupId = inGroup.length > 1 ? (crypto.randomUUID?.() ?? null) : null;
+
+        return inGroup.map((medId) => ({
+          medewerker_id: medId,
+          project_id: modalForm.project_id,
+          datum,
+          starttijd: modalForm.starttijd,
+          eindtijd: modalForm.eindtijd,
+          notitie: modalForm.notitie,
+          created_by: myProfileId,
+          planning_group_id: groupId,
+          collega_ids: inGroup.filter(x => x !== medId),
+        }));
+      }) as any;
+
+      if (rows.length === 0) {
+        toast.error("Geen planning toegevoegd: alle geselecteerde dagen zijn al bezet.");
+        return;
+      }
+
       if (!await mutate(supabase.from("planning").insert(rows))) return;
-      if (inGroup.length > 1) {
-        toast.success(`Ingepland voor ${inGroup.length} monteurs`);
+      if (datums.length > 1) {
+        toast.success(`Ingepland voor ${datums.length} dagen`);
+      } else if (rows.length > 1) {
+        toast.success(`Ingepland voor ${rows.length} monteurs`);
       } else {
         toast.success("Ingepland!");
       }
-      if (skipPartners.length > 0) {
-        const namen = skipPartners.map(pid => medewerkers.find(mm => mm.id === pid)?.full_name).filter(Boolean).join(", ");
-        toast.info(`Overgeslagen (al ingepland): ${namen}`);
+      if (skipped.length > 0) {
+        const tekst = skipped
+          .slice(0, 4)
+          .map(({ medId, datum }) => `${medewerkers.find(mm => mm.id === medId)?.full_name || "Medewerker"} ${format(new Date(datum + "T12:00:00"), "EEE d/M", { locale: nl })}`)
+          .join(", ");
+        toast.info(`Overgeslagen (al ingepland): ${tekst}${skipped.length > 4 ? "..." : ""}`);
       }
       setShowModal(false); fetchAll();
     }
@@ -244,10 +275,15 @@ export default function ManagerPlanning() {
 
   const modalConflicts = useMemo(() => {
     if (!modalForm.medewerker_id || !modalForm.datum) return [];
-    const dayIndex = weekDates.findIndex(d => format(d, "yyyy-MM-dd") === modalForm.datum);
-    if (dayIndex < 0) return [];
-    return getConflicts(modalForm.medewerker_id, modalForm.datum, dayIndex, entries, medewerkers, beschikbaarheid, editId, weekDateStrings);
-  }, [modalForm.medewerker_id, modalForm.datum, entries, medewerkers, beschikbaarheid, editId, weekDates]);
+    const datums = editId ? [modalForm.datum] : (modalDatums.length > 0 ? modalDatums : [modalForm.datum]);
+    return datums.flatMap((datum) => {
+      const dayIndex = weekDates.findIndex(d => format(d, "yyyy-MM-dd") === datum);
+      if (dayIndex < 0) return [];
+      const label = format(new Date(datum + "T12:00:00"), "EEE d/M", { locale: nl });
+      return getConflicts(modalForm.medewerker_id, datum, dayIndex, entries, medewerkers, beschikbaarheid, editId, weekDateStrings)
+        .map(c => datums.length > 1 ? `${label}: ${c}` : c);
+    });
+  }, [modalForm.medewerker_id, modalForm.datum, modalDatums, entries, medewerkers, beschikbaarheid, editId, weekDates, weekDateStrings]);
 
   const berekenUren = (starttijd: string | null, eindtijd: string | null): number => {
     const s = starttijd
@@ -934,7 +970,11 @@ export default function ManagerPlanning() {
             <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "var(--text-primary)", marginBottom: 4 }}>
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
             </h2>
-            <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Inter", marginBottom: 16 }}>{modalForm.datum}</p>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Inter", marginBottom: 16 }}>
+              {editId
+                ? modalForm.datum
+                : `${modalDatums.length || 1} ${modalDatums.length === 1 ? "dag" : "dagen"} geselecteerd`}
+            </p>
             {modalStatus && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: modalStatus.bg, border: `1px solid ${modalStatus.color}33`, marginBottom: 12 }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: modalStatus.color, fontFamily: "Inter" }}>{modalStatus.label}</span>
@@ -951,6 +991,52 @@ export default function ManagerPlanning() {
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>
+                  Dagen
+                </label>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 8 }}>
+                  {weekDates.map((date, i) => {
+                    const datum = format(date, "yyyy-MM-dd");
+                    const selected = editId ? modalForm.datum === datum : modalDatums.includes(datum);
+                    const hasExisting = entries.some(e => e.medewerker_id === modalForm.medewerker_id && e.datum === datum);
+                    const disabled = !!editId && modalForm.datum !== datum;
+
+                    return (
+                      <button
+                        key={datum}
+                        type="button"
+                        onClick={() => toggleModalDatum(datum)}
+                        disabled={disabled}
+                        title={hasExisting && !selected ? "Deze dag heeft al planning" : undefined}
+                        style={{
+                          minHeight: 58,
+                          borderRadius: 12,
+                          border: selected ? "1px solid var(--accent-border)" : "1px solid var(--planning-border-soft)",
+                          background: selected ? "var(--accent)" : hasExisting ? "var(--warn-bg)" : "var(--app-navy)",
+                          color: selected ? "var(--on-accent)" : "var(--text-primary)",
+                          opacity: disabled ? 0.4 : 1,
+                          cursor: disabled ? "not-allowed" : "pointer",
+                          fontFamily: "Inter",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 2,
+                          boxShadow: selected ? "0 4px 14px var(--accent-border)" : "none",
+                        }}
+                      >
+                        <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: selected ? "var(--on-accent)" : "var(--text-secondary)" }}>
+                          {DAGEN[i]}
+                        </span>
+                        <span style={{ fontSize: 16, fontWeight: 800, fontFamily: "Manrope", fontVariantNumeric: "tabular-nums" }}>
+                          {format(date, "d/M")}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <div>
                 <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Project</label>
                 <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }}>
