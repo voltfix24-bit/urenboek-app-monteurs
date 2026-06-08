@@ -560,8 +560,8 @@ export default function ManagerPlanning() {
                               </>
                             ) : heeftEntry ? (
                               <>
-                                <span style={{ fontSize: 14, fontWeight: 800, fontFamily: "Manrope", color: "#dae6ff", letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}>
-                                  #{proj?.nummer || "—"}
+                                <span style={{ fontSize: 12, fontWeight: 700, fontFamily: "Inter", color: "#dae6ff", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%", padding: "0 2px" }}>
+                                  {proj?.naam || "—"}
                                 </span>
                                 <span style={{ fontSize: 9, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 3, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
                                   {entry?.starttijd?.slice(0, 5)}–{entry?.eindtijd?.slice(0, 5)}
