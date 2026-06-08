@@ -186,22 +186,46 @@ export default function ManagerPlanning() {
     if (editId) {
       const existing = entries.find(e => e.id === editId);
       const updatePayload = { project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any;
+      let groupId = existing?.planning_group_id || null;
       if (existing?.planning_group_id) {
-        // update alle gekoppelde entries
         if (!await mutate(supabase.from("planning").update(updatePayload).eq("planning_group_id", existing.planning_group_id))) return;
-        toast.success("Planning bijgewerkt voor hele ploeg");
       } else {
-        if (!await mutate(supabase.from("planning").update(updatePayload).eq("id", editId))) return;
-        toast.success("Planning bijgewerkt");
+        // Als we extra collega's toevoegen maken we alsnog een group_id aan
+        if (extraIds.length > 0) {
+          groupId = crypto.randomUUID?.() ?? null;
+          if (!await mutate(supabase.from("planning").update({ ...updatePayload, planning_group_id: groupId }).eq("id", editId))) return;
+        } else {
+          if (!await mutate(supabase.from("planning").update(updatePayload).eq("id", editId))) return;
+        }
       }
+      // Voeg extra collega's toe aan deze planning
+      let addedCount = 0;
+      let skippedNames: string[] = [];
+      if (extraIds.length > 0) {
+        const existingForDay = entries.filter(e => e.datum === modalForm.datum);
+        const toAdd = extraIds.filter(pid => !existingForDay.some(e => e.medewerker_id === pid));
+        skippedNames = extraIds.filter(pid => existingForDay.some(e => e.medewerker_id === pid))
+          .map(pid => medewerkers.find(m => m.id === pid)?.full_name).filter(Boolean) as string[];
+        if (toAdd.length > 0) {
+          const rows = toAdd.map(medId => ({
+            medewerker_id: medId, project_id: modalForm.project_id, datum: modalForm.datum,
+            starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie,
+            created_by: myProfileId, planning_group_id: groupId, collega_ids: [],
+          })) as any;
+          if (!await mutate(supabase.from("planning").insert(rows))) return;
+          addedCount = toAdd.length;
+        }
+      }
+      toast.success(addedCount > 0 ? `Planning bijgewerkt, ${addedCount} collega(s) toegevoegd` : (existing?.planning_group_id ? "Planning bijgewerkt voor hele ploeg" : "Planning bijgewerkt"));
+      if (skippedNames.length > 0) toast.info(`Overgeslagen (al ingepland): ${skippedNames.join(", ")}`);
       setShowModal(false); fetchAll();
     } else {
-      // Verzamel ploeg = self + vaste collega's
+      // Verzamel ploeg = self + vaste collega's + extra geselecteerde
       const me = medewerkers.find(m => m.id === modalForm.medewerker_id);
       const partners = (me?.planning_partner_ids || []).filter(pid => medewerkers.some(mm => mm.id === pid));
-      // Filter partners die al planning hebben op deze datum
-      const skipPartners = partners.filter(pid => entries.some(e => e.medewerker_id === pid && e.datum === modalForm.datum));
-      const inGroup = [modalForm.medewerker_id, ...partners.filter(p => !skipPartners.includes(p))];
+      const allCandidates = Array.from(new Set([...partners, ...extraIds])).filter(pid => pid !== modalForm.medewerker_id);
+      const skipPartners = allCandidates.filter(pid => entries.some(e => e.medewerker_id === pid && e.datum === modalForm.datum));
+      const inGroup = [modalForm.medewerker_id, ...allCandidates.filter(p => !skipPartners.includes(p))];
       const groupId = inGroup.length > 1 ? (crypto.randomUUID?.() ?? null) : null;
       const rows = inGroup.map((medId) => ({
         medewerker_id: medId,
