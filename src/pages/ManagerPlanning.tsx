@@ -310,10 +310,10 @@ export default function ManagerPlanning() {
             );
           })()}
 
-          <div className="flex gap-1">
-            <div className="w-16 lg:w-40 shrink-0" />
+          <div className="grid gap-1 grid-cols-[64px_repeat(5,1fr)] lg:grid-cols-[160px_repeat(5,1fr)]">
+            <div className="shrink-0" />
             {weekDates.map((d, i) => (
-              <div key={i} className="flex-1 text-center min-w-0">
+              <div key={i} className="text-center min-w-0">
                 <p className="text-[10px] font-semibold whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>{DAGEN[i]}</p>
                 <p className="text-[10px] font-bold tabular-nums whitespace-nowrap" style={{ color: "var(--text-primary)" }}>{format(d, "d/M")}</p>
               </div>
@@ -336,8 +336,8 @@ export default function ManagerPlanning() {
           )}
 
           {medewerkers.map((med, mi) => (
-            <div key={med.id} className="flex gap-1 items-stretch">
-              <div className="w-16 lg:w-40 shrink-0 flex items-center">
+            <div key={med.id} className="grid gap-1 grid-cols-[64px_repeat(5,1fr)] lg:grid-cols-[160px_repeat(5,1fr)]">
+              <div className="shrink-0 flex items-center">
                   <div className="flex items-center gap-1.5">
                     <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: AVATAR_COLORS[mi % AVATAR_COLORS.length], color: "#fff" }}>
                       {med.full_name.charAt(0)}
@@ -353,7 +353,7 @@ export default function ManagerPlanning() {
                 const hasConflict = conflicts.length > 0;
 
                 return (
-                  <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="flex-1 rounded-xl p-1 min-h-[52px] lg:min-h-[64px] flex flex-col items-center justify-center text-center transition-colors active:scale-95 relative" style={{
+                  <button key={i} onClick={() => openAddModal(med.id, dateStr)} className="rounded-xl p-1 min-h-[52px] lg:min-h-[64px] flex flex-col items-center justify-center text-center transition-colors active:scale-95 relative min-w-0" style={{
                     background: hasConflict && !entry ? "var(--danger-light)" : entry ? (entry.activiteit_kleur ? `${entry.activiteit_kleur}18` : "var(--accent-light)") : "var(--app-navy)",
                     border: hasConflict ? "1px solid var(--danger-border)" : entry ? `1px solid ${entry.activiteit_kleur || "var(--accent)"}44` : "1px solid var(--planning-button)",
                   }}>
