@@ -51,75 +51,74 @@ p, h1, h2, h3, span.selectable, input, textarea {
 
 @layer base {
   :root {
-    /* ─── Centrale TerreVolt navy (gebruikt door loading, modals, success, footer, etc.) ─── */
-    --app-navy:        #030e20;
-    --bg-base:         #F5F7F0;
-    --bg-surface:      #EBF0E4;
-    --bg-surface-2:    #DFE8D6;
-    --border:          #C5D4B2;
-    --border-strong:   #A8BF92;
-    --text-primary:    #2D4A1E;
-    --text-secondary:  #5A7A42;
-    --text-muted:      #8AAD6E;
-    --accent:          #4A7C2F;
-    --accent-dark:     #3D6826;
-    --accent-mid:      #6B9E4A;
-    --accent-light:    #D4E8C2;
-    --accent-border:   #9DC87A;
+    /* ─── Emerald Light — single source of truth ─── */
+    --app-navy:        #f8f9ff; /* legacy alias, nu licht canvas */
+    --bg-base:         #f9fafb;
+    --bg-surface:      #ffffff;
+    --bg-surface-2:    #f3f4f6;
+    --border:          #e5e7eb;
+    --border-strong:   #d1d5db;
+    --text-primary:    #1f2937;
+    --text-secondary:  #4b5563;
+    --text-muted:      #6b7280;
+    --accent:          #10b981;
+    --accent-dark:     #047857;
+    --accent-mid:      #34d399;
+    --accent-light:    #ecfdf5;
+    --accent-border:   #a7f3d0;
     --on-accent:       #ffffff;
-    --danger:          #C0392B;
-    --danger-light:    #FDECEA;
-    --danger-border:   #E8A09A;
-    --success:         #2D7A3A;
-    --success-light:   #D4EDD8;
-    --success-border:  #8DC99A;
-    --warn-bg:         #FFF8DC;
-    --warn-text:       #8B6914;
-    --warn-border:     #E8D070;
-    --warn-light:      #FFF3CD;
-    --warn-dot:        #D4A017;
-    --info:            #2D5A8A;
-    --info-light:      #D4E8F5;
-    --info-border:     #7AAADE;
-    --info-dark:       #2D6B8A;
-    --purple:          #5A4A7C;
+    --danger:          #dc2626;
+    --danger-light:    #fef2f2;
+    --danger-border:   #fecaca;
+    --success:         #10b981;
+    --success-light:   #ecfdf5;
+    --success-border:  #a7f3d0;
+    --warn-bg:         #fffbeb;
+    --warn-text:       #92400e;
+    --warn-border:     #fde68a;
+    --warn-light:      #fef3c7;
+    --warn-dot:        #d97706;
+    --info:            #2563eb;
+    --info-light:      #eff6ff;
+    --info-border:     #bfdbfe;
+    --info-dark:       #1d4ed8;
+    --purple:          #7c3aed;
 
     /* Planning-specifiek */
-    --planning-card:        var(--bg-surface);
-    --planning-cell-empty:  var(--bg-surface-2);
-    --planning-button:      var(--bg-surface);
-    --planning-avatar-bg:   var(--accent-light);
-    --planning-border-soft: var(--border);
+    --planning-card:        #ffffff;
+    --planning-cell-empty:  #f9fafb;
+    --planning-button:      #ffffff;
+    --planning-avatar-bg:   #ecfdf5;
+    --planning-border-soft: #e5e7eb;
 
-
-    --background: 90 30% 95%;
-    --foreground: 100 45% 20%;
-    --card: 90 25% 92%;
-    --card-foreground: 100 45% 20%;
-    --popover: 90 25% 92%;
-    --popover-foreground: 100 45% 20%;
-    --primary: 104 45% 34%;
+    --background: 210 20% 98%;
+    --foreground: 215 25% 17%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 17%;
+    --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 90 28% 87%;
-    --secondary-foreground: 97 30% 37%;
-    --muted: 90 28% 87%;
-    --muted-foreground: 97 30% 55%;
-    --accent-hsl: 104 45% 34%;
+    --secondary: 152 76% 96%;
+    --secondary-foreground: 158 64% 22%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent-hsl: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 4 63% 46%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border-hsl: 90 25% 77%;
-    --input: 90 25% 77%;
-    --ring: 104 45% 34%;
-    --radius: 0.75rem;
-    --sidebar-background: 90 25% 92%;
-    --sidebar-foreground: 100 45% 20%;
-    --sidebar-primary: 104 45% 34%;
+    --border-hsl: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 160 84% 39%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 25% 17%;
+    --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 90 28% 87%;
-    --sidebar-accent-foreground: 100 45% 20%;
-    --sidebar-border: 90 25% 77%;
-    --sidebar-ring: 104 45% 34%;
+    --sidebar-accent: 152 76% 96%;
+    --sidebar-accent-foreground: 158 64% 22%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 160 84% 39%;
   }
 }
 
