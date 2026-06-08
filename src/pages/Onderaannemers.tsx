@@ -209,6 +209,55 @@ export default function Onderaannemers() {
     load();
   };
 
+  // ─── Vaste planning-collega's ───
+  const startPartnerEdit = (m: { id: string; planning_partner_ids: string[] }) => {
+    setPartnerEditId(m.id);
+    setPartnerSel(new Set(m.planning_partner_ids || []));
+  };
+  const togglePartnerSel = (id: string) => {
+    setPartnerSel((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const savePartners = async (m: { id: string; planning_partner_ids: string[] }) => {
+    setPartnerSaving(true);
+    const oldSet = new Set(m.planning_partner_ids || []);
+    const newSet = partnerSel;
+    const added: string[] = [...newSet].filter((x) => !oldSet.has(x));
+    const removed: string[] = [...oldSet].filter((x) => !newSet.has(x));
+
+    // Update mijzelf
+    const { error: e1 } = await supabase
+      .from("profiles")
+      .update({ planning_partner_ids: [...newSet] } as any)
+      .eq("id", m.id);
+    if (e1) { toast.error("Opslaan mislukt"); setPartnerSaving(false); return; }
+
+    // Bidirectioneel: voeg toe/verwijder op de partners zelf
+    const affected = [...new Set([...added, ...removed])];
+    if (affected.length > 0) {
+      const { data: rows } = await supabase
+        .from("profiles")
+        .select("id, planning_partner_ids")
+        .in("id", affected);
+      for (const r of (rows || []) as any[]) {
+        const cur = new Set<string>((r.planning_partner_ids as string[] | null) || []);
+        if (added.includes(r.id)) cur.add(m.id);
+        if (removed.includes(r.id)) cur.delete(m.id);
+        await supabase.from("profiles").update({ planning_partner_ids: [...cur] } as any).eq("id", r.id);
+      }
+    }
+
+    toast.success("Vaste collega's bijgewerkt");
+    setPartnerEditId(null);
+    setPartnerSaving(false);
+    load();
+  };
+
+
+
   const load = async () => {
     setLoading(true);
     const { data: profielen } = await supabase
