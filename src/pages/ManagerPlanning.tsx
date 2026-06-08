@@ -500,7 +500,7 @@ export default function ManagerPlanning() {
                       </div>
                       <div>
                         <p style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#dae6ff", lineHeight: 1.2 }}>
-                          {med.full_name?.split(" ")[0]} {med.full_name?.split(" ").slice(-1)[0]?.[0]}.
+                          {med.full_name}
                         </p>
                         <p style={{ fontSize: 9, color: "#a0abc3", fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em" }}>Monteur</p>
                       </div>
