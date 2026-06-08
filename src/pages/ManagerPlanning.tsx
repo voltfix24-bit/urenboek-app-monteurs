@@ -368,7 +368,7 @@ export default function ManagerPlanning() {
                             {entry.activiteit}
                           </span>
                         )}
-                        <span className="text-[7px] lg:text-[10px]" style={{ color: "var(--text-secondary)" }}>{entry.starttijd}–{entry.eindtijd}</span>
+                        <span className="text-[7px] lg:text-[10px]" style={{ color: "var(--text-secondary)" }}>{berekenUren(entry.starttijd, entry.eindtijd)}u</span>
                       </>
                     ) : hasConflict ? (
                       <AlertTriangle className="h-3 w-3" style={{ color: "var(--danger)", opacity: 0.6 }} />
@@ -573,7 +573,7 @@ export default function ManagerPlanning() {
                                   {proj?.naam || "—"}
                                 </span>
                                 <span style={{ fontSize: 9, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 3, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
-                                  {entry?.starttijd?.slice(0, 5)}–{entry?.eindtijd?.slice(0, 5)}
+                                  {berekenUren(entry?.starttijd || null, entry?.eindtijd || null)}u
                                 </span>
                               </>
                             ) : (
