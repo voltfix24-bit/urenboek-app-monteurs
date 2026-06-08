@@ -131,7 +131,7 @@ export function BottomSheet({
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(15,23,42,0.4)",
+          background: "rgba(0,0,0,0.6)",
           backdropFilter: "blur(4px)",
         }}
       />
@@ -148,7 +148,7 @@ export function BottomSheet({
           background: "var(--app-navy)",
           borderTopLeftRadius: topRadius,
           borderTopRightRadius: topRadius,
-          borderTop: "1px solid #e5e7eb",
+          borderTop: "1px solid rgba(255,255,255,0.1)",
           maxHeight: `${maxHeightVh}vh`,
           overflowY: "auto",
           padding: padded ? "0 24px" : 0,
@@ -161,7 +161,7 @@ export function BottomSheet({
           width: "100%",
           maxWidth: 480,
           marginInline: "auto",
-          boxShadow: "0 -8px 32px rgba(15,23,42,0.12)",
+          boxShadow: "0 -8px 32px rgba(0,0,0,0.5)",
         }}
       >
         {/* Drag handle */}
@@ -178,7 +178,7 @@ export function BottomSheet({
               width: 48,
               height: 6,
               borderRadius: 9999,
-              background: "rgba(15,23,42,0.08)",
+              background: "rgba(255,255,255,0.2)",
             }}
           />
         </div>
@@ -200,7 +200,7 @@ export function BottomSheet({
                 style={{
                   fontSize: 18,
                   fontWeight: 700,
-                  color: "#1f2937",
+                  color: "#dae6ff",
                   fontFamily: "Inter",
                   margin: 0,
                   flex: 1,

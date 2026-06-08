@@ -43,12 +43,12 @@ export default function Setup() {
 
   const passwordStrength = () => {
     const p = form.password;
-    if (p.length < 8) return { label: "Te kort", color: "#dc2626" };
+    if (p.length < 8) return { label: "Te kort", color: "#ff716c" };
     const hasNumbers = /\d/.test(p);
     const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(p);
-    if (hasSpecial && hasNumbers) return { label: "Sterk", color: "#10b981" };
-    if (hasNumbers) return { label: "Goed", color: "#10b981" };
-    return { label: "Matig", color: "#d97706" };
+    if (hasSpecial && hasNumbers) return { label: "Sterk", color: "#3fff8b" };
+    if (hasNumbers) return { label: "Goed", color: "#3fff8b" };
+    return { label: "Matig", color: "#feb300" };
   };
 
   const isStep1Valid = form.firstName && form.lastName && form.email && form.password.length >= 8 && form.password === form.passwordConfirm;
@@ -97,15 +97,15 @@ export default function Setup() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "var(--app-navy)" }}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "#10b981" }} />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "#10b981" }} />
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "#3fff8b" }} />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-[0.07] blur-3xl" style={{ background: "#3fff8b" }} />
       </div>
 
       <div className="w-full relative" style={{ maxWidth: 440 }}>
         <div className="text-center mb-8">
           <img src={terrevoltLogo} alt="TerreVolt BV" className="h-16 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold" style={{ color: "#1f2937" }}>Welkom bij TerreVolt</h1>
-          <p className="text-sm mt-1" style={{ color: "#6b7280" }}>Maak je manager account aan om te beginnen.</p>
+          <h1 className="text-2xl font-bold" style={{ color: "#dae6ff" }}>Welkom bij TerreVolt</h1>
+          <p className="text-sm mt-1" style={{ color: "#a0abc3" }}>Maak je manager account aan om te beginnen.</p>
         </div>
 
         {/* Step indicator */}
@@ -113,43 +113,43 @@ export default function Setup() {
           {[1, 2].map(s => (
             <div key={s} className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{
-                background: step > s ? "#10b981" : step === s ? "#10b981" : "#ffffff",
-                color: step >= s ? "#fff" : "#6b7280",
+                background: step > s ? "#3fff8b" : step === s ? "#3fff8b" : "#102038",
+                color: step >= s ? "#fff" : "#a0abc3",
               }}>
                 {step > s ? "✓" : s}
               </div>
-              <span className="text-xs font-medium" style={{ color: step === s ? "#1f2937" : "#6b7280" }}>
+              <span className="text-xs font-medium" style={{ color: step === s ? "#dae6ff" : "#a0abc3" }}>
                 {s === 1 ? "Jouw gegevens" : "Bevestigen"}
               </span>
-              {s < 2 && <div className="w-8 h-px" style={{ background: "#e5e7eb" }} />}
+              {s < 2 && <div className="w-8 h-px" style={{ background: "rgba(106,118,140,0.15)" }} />}
             </div>
           ))}
         </div>
 
-        <div className="rounded-2xl p-6 space-y-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="rounded-2xl p-6 space-y-5" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
           {step === 1 && (
             <>
               <div className="space-y-3">
                 <div className="flex gap-3">
                   <div className="flex-1 space-y-1">
-                    <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>Voornaam</label>
-                    <input value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} placeholder="Jan" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }} />
+                    <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Voornaam</label>
+                    <input value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} placeholder="Jan" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>Achternaam</label>
-                    <input value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} placeholder="Jansen" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }} />
+                    <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Achternaam</label>
+                    <input value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} placeholder="Jansen" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>E-mailadres</label>
-                  <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="jan@terrevolt.nl" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }} />
+                  <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>E-mailadres</label>
+                  <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="jan@terrevolt.nl" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>Wachtwoord</label>
-                  <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="Min. 8 tekens" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }} />
+                  <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Wachtwoord</label>
+                  <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="Min. 8 tekens" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   {form.password && (
                     <div className="flex items-center gap-2 mt-1">
-                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "#ffffff" }}>
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "#102038" }}>
                         <div className="h-full rounded-full transition-all duration-300" style={{
                           width: strength.label === "Te kort" ? "25%" : strength.label === "Matig" ? "50%" : strength.label === "Goed" ? "75%" : "100%",
                           background: strength.color,
@@ -160,14 +160,14 @@ export default function Setup() {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>Wachtwoord herhalen</label>
-                  <input type="password" value={form.passwordConfirm} onChange={e => setForm({ ...form, passwordConfirm: e.target.value })} placeholder="Herhaal wachtwoord" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" }} />
+                  <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Wachtwoord herhalen</label>
+                  <input type="password" value={form.passwordConfirm} onChange={e => setForm({ ...form, passwordConfirm: e.target.value })} placeholder="Herhaal wachtwoord" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
                   {form.passwordConfirm && form.password !== form.passwordConfirm && (
-                    <p className="text-[10px] font-medium" style={{ color: "#dc2626" }}>Wachtwoorden komen niet overeen</p>
+                    <p className="text-[10px] font-medium" style={{ color: "#ff716c" }}>Wachtwoorden komen niet overeen</p>
                   )}
                 </div>
               </div>
-              <button onClick={() => setStep(2)} disabled={!isStep1Valid} className="w-full py-3 rounded-xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, #10b981, #047857)", color: "#fff" }}>
+              <button onClick={() => setStep(2)} disabled={!isStep1Valid} className="w-full py-3 rounded-xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", color: "#fff" }}>
                 Volgende →
               </button>
             </>
@@ -176,22 +176,22 @@ export default function Setup() {
           {step === 2 && (
             <>
               <div className="space-y-3">
-                <p className="text-sm font-semibold" style={{ color: "#1f2937" }}>Samenvatting</p>
+                <p className="text-sm font-semibold" style={{ color: "#dae6ff" }}>Samenvatting</p>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span style={{ color: "#6b7280" }}>Naam</span><span style={{ color: "#1f2937" }}>{fullName}</span></div>
-                  <div className="flex justify-between"><span style={{ color: "#6b7280" }}>E-mail</span><span style={{ color: "#1f2937" }}>{form.email}</span></div>
-                  <div className="flex justify-between"><span style={{ color: "#6b7280" }}>Rol</span><span className="font-semibold" style={{ color: "#10b981" }}>Manager</span></div>
+                  <div className="flex justify-between"><span style={{ color: "#a0abc3" }}>Naam</span><span style={{ color: "#dae6ff" }}>{fullName}</span></div>
+                  <div className="flex justify-between"><span style={{ color: "#a0abc3" }}>E-mail</span><span style={{ color: "#dae6ff" }}>{form.email}</span></div>
+                  <div className="flex justify-between"><span style={{ color: "#a0abc3" }}>Rol</span><span className="font-semibold" style={{ color: "#3fff8b" }}>Manager</span></div>
                 </div>
                 <label className="flex items-start gap-2 pt-2 cursor-pointer">
-                  <input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} className="mt-0.5 accent-[#10b981]" />
-                  <span className="text-xs" style={{ color: "#6b7280" }}>Ik ben de eerste beheerder van TerreVolt Urenregistratie</span>
+                  <input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} className="mt-0.5 accent-[#3fff8b]" />
+                  <span className="text-xs" style={{ color: "#a0abc3" }}>Ik ben de eerste beheerder van TerreVolt Urenregistratie</span>
                 </label>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#6b7280" }}>
+                <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
                   ← Terug
                 </button>
-                <button onClick={handleSubmit} disabled={!confirmed || submitting} className="flex-1 py-3 rounded-xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, #10b981, #047857)", color: "#fff" }}>
+                <button onClick={handleSubmit} disabled={!confirmed || submitting} className="flex-1 py-3 rounded-xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", color: "#fff" }}>
                   {submitting ? "Bezig..." : "Account aanmaken"}
                 </button>
               </div>
@@ -200,9 +200,9 @@ export default function Setup() {
         </div>
 
         <p className="text-center text-xs mt-6">
-          <button onClick={() => navigate("/login")} className="font-medium" style={{ color: "#10b981" }}>Al een account? → Inloggen</button>
+          <button onClick={() => navigate("/login")} className="font-medium" style={{ color: "#3fff8b" }}>Al een account? → Inloggen</button>
         </p>
-        <p className="text-center text-[11px] mt-4" style={{ color: "#6b7280" }}>© {new Date().getFullYear()} TerreVolt BV · Alle rechten voorbehouden</p>
+        <p className="text-center text-[11px] mt-4" style={{ color: "#a0abc3" }}>© {new Date().getFullYear()} TerreVolt BV · Alle rechten voorbehouden</p>
       </div>
     </div>
   );

@@ -296,7 +296,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(15,23,42,0.12)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
       <div
         className="w-full max-w-lg mx-4 rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto"
         style={{ background: T.surface, border: `1px solid ${T.border}`, backdropFilter: "blur(12px)" }}

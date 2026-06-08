@@ -68,9 +68,8 @@ export default {
         },
       },
       fontFamily: {
-        headline: ['Hanken Grotesk', 'system-ui', 'sans-serif'],
-        body: ['Hanken Grotesk', 'system-ui', 'sans-serif'],
-        mono: ['DM Mono', 'ui-monospace', 'monospace'],
+        headline: ['Manrope', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -14,15 +14,15 @@ function DesktopListCard({ project, ogNaam, selected, onClick, marge }: {
   project: Project; ogNaam: string | null; selected: boolean; onClick: () => void;
   marge?: { omzet: number; kosten: number; marge: number };
 }) {
-  const margeColor = (m: number) => m >= 30 ? "#10b981" : m >= 15 ? "#d97706" : "#dc2626";
-  const margeBg = (m: number) => m >= 30 ? "#ecfdf5" : m >= 15 ? "rgba(254,179,0,0.1)" : "rgba(255,113,108,0.1)";
+  const margeColor = (m: number) => m >= 30 ? "#3fff8b" : m >= 15 ? "#feb300" : "#ff716c";
+  const margeBg = (m: number) => m >= 30 ? "rgba(63,255,139,0.1)" : m >= 15 ? "rgba(254,179,0,0.1)" : "rgba(255,113,108,0.1)";
   return (
     <button onClick={onClick} className="w-full text-left p-2.5 rounded-xl mb-1.5 transition-colors cursor-pointer"
-      style={{ background: selected ? "#ecfdf5" : "#ffffff", border: selected ? "1.5px solid #10b981" : "1px solid #e5e7eb" }}>
+      style={{ background: selected ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)", border: selected ? "1.5px solid #3fff8b" : "1px solid rgba(106,118,140,0.15)" }}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[13px] font-semibold truncate" style={{ color: "#1f2937" }}>
+        <p className="text-[13px] font-semibold truncate" style={{ color: "#dae6ff" }}>
           {project.naam}
-          {(!project.straat || !project.stad) && <span title="Adres onvolledig"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "#d97706" }} /></span>}
+          {(!project.straat || !project.stad) && <span title="Adres onvolledig"><AlertTriangle className="h-3 w-3 inline ml-1" style={{ color: "#feb300" }} /></span>}
         </p>
         <div className="flex items-center gap-1.5 shrink-0">
           {marge && (
@@ -34,13 +34,13 @@ function DesktopListCard({ project, ogNaam, selected, onClick, marge }: {
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 mt-0.5">
-        <span className="text-[11px] font-mono" style={{ color: "#10b981" }}>{project.nummer}</span>
+        <span className="text-[11px] font-mono" style={{ color: "#3fff8b" }}>{project.nummer}</span>
         <div className="flex items-center gap-1.5">
           {project.status && <StatusBadge status={(project.status as ProjectStatus)} size="sm" />}
-          {ogNaam && <span className="text-[11px] truncate" style={{ color: "#6b7280" }}>{ogNaam}</span>}
+          {ogNaam && <span className="text-[11px] truncate" style={{ color: "#a0abc3" }}>{ogNaam}</span>}
         </div>
       </div>
-      {project.stationsnaam && <p className="text-[11px] mt-0.5" style={{ color: "#6b7280" }}>{project.stationsnaam}</p>}
+      {project.stationsnaam && <p className="text-[11px] mt-0.5" style={{ color: "#a0abc3" }}>{project.stationsnaam}</p>}
     </button>
   );
 }
@@ -61,14 +61,14 @@ interface Props {
 
 export function DesktopProjectLijst({ activeProjects, inactiveProjects, searchQuery, setSearchQuery, selectedId, onSelect, margeMap, getOgNaam, loading, statusFilter, onStatusFilter }: Props) {
   return (
-    <div className="flex-shrink-0 overflow-y-auto pr-4" style={{ width: "40%", borderRight: "1px solid #e5e7eb" }}>
+    <div className="flex-shrink-0 overflow-y-auto pr-4" style={{ width: "40%", borderRight: "1px solid rgba(106,118,140,0.15)" }}>
       <div className="relative mb-3">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#6b7280" }} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#a0abc3" }} />
         <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
           placeholder="Zoek op naam of casenummer..." className="w-full pl-9 pr-9 py-2 rounded-[10px] text-sm"
-          style={{ background: "#ffffff", border: "1px solid #e5e7eb", color: "#1f2937" }} />
+          style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
         {searchQuery && (
-          <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: "#6b7280", background: "none", border: "none", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>
+          <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: "#a0abc3", background: "none", border: "none", cursor: "pointer", fontSize: 16, lineHeight: 1 }}>
             <X className="h-4 w-4" />
           </button>
         )}
@@ -81,7 +81,7 @@ export function DesktopProjectLijst({ activeProjects, inactiveProjects, searchQu
             const active = statusFilter === s;
             return (
               <button key={s} onClick={() => onStatusFilter(s)} className="px-2 py-1 rounded-full text-[10px] font-semibold transition-colors"
-                style={{ background: active ? "#ecfdf5" : "#ffffff", color: active ? "#10b981" : "#6b7280", border: active ? "1px solid #a7f3d0" : "1px solid #e5e7eb" }}>
+                style={{ background: active ? "rgba(63,255,139,0.1)" : "#102038", color: active ? "#3fff8b" : "#a0abc3", border: active ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)" }}>
                 {labels[s]}
               </button>
             );
@@ -90,12 +90,12 @@ export function DesktopProjectLijst({ activeProjects, inactiveProjects, searchQu
       )}
 
       {loading ? (
-        <div className="text-center py-8"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#10b981", borderTopColor: "transparent" }} /></div>
+        <div className="text-center py-8"><div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: "#3fff8b", borderTopColor: "transparent" }} /></div>
       ) : (
         <>
           {activeProjects.length > 0 && (
             <div className="space-y-1.5 mb-4">
-              <p className="text-[10px] font-semibold uppercase tracking-wider px-1" style={{ color: "#6b7280" }}>Actief ({activeProjects.length})</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider px-1" style={{ color: "#a0abc3" }}>Actief ({activeProjects.length})</p>
               {activeProjects.map(p => (
                 <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => onSelect(p)} marge={margeMap.get(p.id)} />
               ))}
@@ -103,7 +103,7 @@ export function DesktopProjectLijst({ activeProjects, inactiveProjects, searchQu
           )}
           {inactiveProjects.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wider px-1" style={{ color: "#6b7280" }}>Inactief ({inactiveProjects.length})</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider px-1" style={{ color: "#a0abc3" }}>Inactief ({inactiveProjects.length})</p>
               {inactiveProjects.map(p => (
                 <DesktopListCard key={p.id} project={p} ogNaam={getOgNaam(p.opdrachtgever_id)} selected={selectedId === p.id} onClick={() => onSelect(p)} marge={margeMap.get(p.id)} />
               ))}

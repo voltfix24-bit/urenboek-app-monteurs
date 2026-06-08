@@ -19,31 +19,31 @@ const STAPPEN = ["RMU", "MS extra", "Trafo", "LS-rek", "Bouwkundig", "MS kabels"
 
 import { euroDecimals as euro, euro as euroShort } from "@/lib/formatting";
 
-const inputStyle = { background: "var(--app-navy)", border: "1px solid #e5e7eb", color: "#1f2937" };
+const inputStyle = { background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" };
 
 function NumberStepper({ value, onChange, min = 0, max = 999, step = 1, label, hint, tarief, eenheid }: {
   value: number; onChange: (v: number) => void; min?: number; max?: number; step?: number;
   label?: string; hint?: string; tarief?: number; eenheid?: string;
 }) {
   return (
-    <div className="rounded-xl p-3 mb-2" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+    <div className="rounded-xl p-3 mb-2" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium" style={{ color: "#1f2937" }}>
+          <p className="text-sm font-medium" style={{ color: "#dae6ff" }}>
             {label}
-            {tarief != null && <span className="ml-1 text-[11px] font-normal" style={{ color: "#6b7280", fontFamily: "DM Mono, monospace" }}>({euro(tarief)}/{eenheid || "st"})</span>}
+            {tarief != null && <span className="ml-1 text-[11px] font-normal" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>({euro(tarief)}/{eenheid || "st"})</span>}
           </p>
-          {hint && <p className="text-[11px] mt-0.5" style={{ color: "#6b7280" }}>{hint}</p>}
+          {hint && <p className="text-[11px] mt-0.5" style={{ color: "#a0abc3" }}>{hint}</p>}
         </div>
         <div className="flex items-center gap-0 shrink-0 ml-3">
-          <button onClick={() => onChange(Math.max(min, value - step))} className="w-8 h-8 rounded-l-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}>
-            <Minus className="h-3.5 w-3.5" style={{ color: "#6b7280" }} />
+          <button onClick={() => onChange(Math.max(min, value - step))} className="w-8 h-8 rounded-l-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
+            <Minus className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} />
           </button>
-          <div className="w-12 h-8 flex items-center justify-center text-sm font-bold" style={{ background: "var(--app-navy)", borderTop: "1px solid #e5e7eb", borderBottom: "1px solid #e5e7eb", color: "#1f2937", fontFamily: "DM Mono, monospace" }}>
+          <div className="w-12 h-8 flex items-center justify-center text-sm font-bold" style={{ background: "var(--app-navy)", borderTop: "1px solid rgba(106,118,140,0.15)", borderBottom: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff", fontFamily: "DM Mono, monospace" }}>
             {value}
           </div>
-          <button onClick={() => onChange(Math.min(max, value + step))} className="w-8 h-8 rounded-r-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}>
-            <Plus className="h-3.5 w-3.5" style={{ color: "#6b7280" }} />
+          <button onClick={() => onChange(Math.min(max, value + step))} className="w-8 h-8 rounded-r-lg flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
+            <Plus className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} />
           </button>
         </div>
       </div>
@@ -54,9 +54,9 @@ function NumberStepper({ value, onChange, min = 0, max = 999, step = 1, label, h
 function OptionButton({ selected, onClick, children, color }: { selected: boolean; onClick: () => void; children: React.ReactNode; color?: string }) {
   return (
     <button onClick={onClick} className="w-full text-left rounded-xl p-3 transition-all" style={{
-      background: selected ? (color === "warn" ? "rgba(254,179,0,0.08)" : "#ecfdf5") : "#ffffff",
-      border: `1.5px solid ${selected ? (color === "warn" ? "rgba(254,179,0,0.3)" : "#a7f3d0") : "#e5e7eb"}`,
-      color: "#1f2937",
+      background: selected ? (color === "warn" ? "rgba(254,179,0,0.08)" : "rgba(63,255,139,0.1)") : "rgba(10,26,48,0.7)",
+      border: `1.5px solid ${selected ? (color === "warn" ? "rgba(254,179,0,0.3)" : "rgba(63,255,139,0.3)") : "rgba(106,118,140,0.15)"}`,
+      color: "#dae6ff",
     }}>
       {children}
     </button>
@@ -68,16 +68,16 @@ function CheckRow({ checked, onChange, label, hint, tarief, eenheid }: {
 }) {
   return (
     <button onClick={() => onChange(!checked)} className="w-full flex items-center gap-3 rounded-xl p-3 mb-1.5 text-left transition-all" style={{
-      background: checked ? "#ecfdf5" : "#ffffff",
-      border: `1px solid ${checked ? "#a7f3d0" : "#e5e7eb"}`,
+      background: checked ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
+      border: `1px solid ${checked ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`,
     }}>
-      <input type="checkbox" checked={checked} readOnly className="w-[18px] h-[18px] shrink-0" style={{ accentColor: "#10b981" }} />
+      <input type="checkbox" checked={checked} readOnly className="w-[18px] h-[18px] shrink-0" style={{ accentColor: "#3fff8b" }} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium" style={{ color: "#1f2937" }}>
+        <p className="text-sm font-medium" style={{ color: "#dae6ff" }}>
           {label}
-          {tarief != null && <span className="ml-1 text-[11px] font-normal" style={{ color: "#6b7280", fontFamily: "DM Mono, monospace" }}>({euro(tarief)}/{eenheid || "st"})</span>}
+          {tarief != null && <span className="ml-1 text-[11px] font-normal" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>({euro(tarief)}/{eenheid || "st"})</span>}
         </p>
-        {hint && <p className="text-[11px] mt-0.5" style={{ color: "#6b7280" }}>{hint}</p>}
+        {hint && <p className="text-[11px] mt-0.5" style={{ color: "#a0abc3" }}>{hint}</p>}
       </div>
     </button>
   );
@@ -85,12 +85,12 @@ function CheckRow({ checked, onChange, label, hint, tarief, eenheid }: {
 
 function ToggleRow({ checked, onChange, label, hint }: { checked: boolean; onChange: (v: boolean) => void; label: string; hint?: string }) {
   return (
-    <div className="flex items-center justify-between rounded-xl p-3 mb-1.5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+    <div className="flex items-center justify-between rounded-xl p-3 mb-1.5" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
       <div>
-        <p className="text-sm font-medium" style={{ color: "#1f2937" }}>{label}</p>
-        {hint && <p className="text-[11px] mt-0.5" style={{ color: "#6b7280" }}>{hint}</p>}
+        <p className="text-sm font-medium" style={{ color: "#dae6ff" }}>{label}</p>
+        {hint && <p className="text-[11px] mt-0.5" style={{ color: "#a0abc3" }}>{hint}</p>}
       </div>
-      <button onClick={() => onChange(!checked)} className="w-11 h-6 rounded-full relative transition-colors shrink-0" style={{ background: checked ? "#10b981" : "#ffffff" }}>
+      <button onClick={() => onChange(!checked)} className="w-11 h-6 rounded-full relative transition-colors shrink-0" style={{ background: checked ? "#3fff8b" : "#102038" }}>
         <div className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform" style={{ left: checked ? 22 : 2 }} />
       </button>
     </div>
@@ -229,19 +229,19 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
       case 0:
         return (
           <div className="space-y-3">
-            <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>RMU installatie</h3>
+            <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>RMU installatie</h3>
             <div className="grid grid-cols-2 gap-2">
               <OptionButton selected={answers.rmu_vervangen} onClick={() => set({ rmu_vervangen: true })}>
-                <div className="flex items-center gap-2"><Zap className="h-4 w-4" style={{ color: "#10b981" }} /><span className="text-sm font-semibold">RMU vervangen/plaatsen</span></div>
+                <div className="flex items-center gap-2"><Zap className="h-4 w-4" style={{ color: "#3fff8b" }} /><span className="text-sm font-semibold">RMU vervangen/plaatsen</span></div>
               </OptionButton>
               <OptionButton selected={!answers.rmu_vervangen} onClick={() => set({ rmu_vervangen: false, rmu_merk: null, rmu_configuratie_id: null, rmu_velden: 3 })}>
-                <div className="flex items-center gap-2"><Minus className="h-4 w-4" style={{ color: "#6b7280" }} /><span className="text-sm">Geen RMU</span></div>
+                <div className="flex items-center gap-2"><Minus className="h-4 w-4" style={{ color: "#a0abc3" }} /><span className="text-sm">Geen RMU</span></div>
               </OptionButton>
             </div>
 
             {answers.rmu_vervangen && (
               <div className="space-y-3 animate-fade-in">
-                <p className="text-xs font-semibold" style={{ color: "#6b7280" }}>Welk merk?</p>
+                <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Welk merk?</p>
                 <div className="grid grid-cols-3 gap-2">
                   {(merken.length > 0 ? merken : ["ABB", "Siemens", "Magnefix"]).map(m => (
                     <OptionButton key={m} selected={answers.rmu_merk === m} onClick={() => set({ rmu_merk: m, rmu_configuratie_id: null })}>
@@ -252,40 +252,40 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
 
                 {answers.rmu_merk && (
                   <div className="space-y-2 animate-fade-in">
-                    <p className="text-xs font-semibold" style={{ color: "#6b7280" }}>Configuratie</p>
+                    <p className="text-xs font-semibold" style={{ color: "#a0abc3" }}>Configuratie</p>
                     <div className="flex flex-wrap gap-2">
                       {merkConfigs.map(c => (
                         <button key={c.id} onClick={() => { set({ rmu_configuratie_id: c.id, rmu_velden: c.velden }); }} className="px-3 py-2 rounded-lg text-xs font-medium transition-all" style={{
-                          background: answers.rmu_configuratie_id === c.id ? "#ecfdf5" : "#ffffff",
-                          border: `1.5px solid ${answers.rmu_configuratie_id === c.id ? "#a7f3d0" : "#e5e7eb"}`,
-                          color: "#1f2937",
+                          background: answers.rmu_configuratie_id === c.id ? "rgba(63,255,139,0.1)" : "rgba(10,26,48,0.7)",
+                          border: `1.5px solid ${answers.rmu_configuratie_id === c.id ? "rgba(63,255,139,0.3)" : "rgba(106,118,140,0.15)"}`,
+                          color: "#dae6ff",
                         }}>
                           <span className="font-bold">{c.code}</span> · {c.velden}-velds
                         </button>
                       ))}
-                      <button onClick={() => setShowNewRmu(true)} className="px-3 py-2 rounded-lg text-xs" style={{ border: "1px dashed #e5e7eb", color: "#6b7280" }}>+ Niet in lijst</button>
+                      <button onClick={() => setShowNewRmu(true)} className="px-3 py-2 rounded-lg text-xs" style={{ border: "1px dashed rgba(106,118,140,0.15)", color: "#a0abc3" }}>+ Niet in lijst</button>
                     </div>
 
                     {showNewRmu && (
-                      <div className="flex gap-2 items-end p-3 rounded-xl" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+                      <div className="flex gap-2 items-end p-3 rounded-xl" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
                         <div className="flex-1">
-                          <label className="text-[10px] block mb-1" style={{ color: "#6b7280" }}>Code</label>
+                          <label className="text-[10px] block mb-1" style={{ color: "#a0abc3" }}>Code</label>
                           <input value={newRmu.code} onChange={e => setNewRmu(p => ({ ...p, code: e.target.value }))} className="w-full px-2 py-1.5 rounded-lg text-xs" style={inputStyle} placeholder="FCV" />
                         </div>
                         <div className="w-20">
-                          <label className="text-[10px] block mb-1" style={{ color: "#6b7280" }}>Velden</label>
+                          <label className="text-[10px] block mb-1" style={{ color: "#a0abc3" }}>Velden</label>
                           <input type="number" value={newRmu.velden} onChange={e => setNewRmu(p => ({ ...p, velden: parseInt(e.target.value) || 3 }))} min={2} max={12} className="w-full px-2 py-1.5 rounded-lg text-xs text-center" style={inputStyle} />
                         </div>
-                        <button onClick={handleAddRmu} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: "#10b981" }}>Toevoegen</button>
+                        <button onClick={handleAddRmu} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: "#3fff8b" }}>Toevoegen</button>
                       </div>
                     )}
 
                     {selectedRmu && (
-                      <div className="rounded-xl p-3 animate-fade-in" style={{ background: "#ecfdf5", border: "1px solid #a7f3d0" }}>
-                        <p className="text-xs font-semibold" style={{ color: "#10b981" }}>Op basis van {selectedRmu.merk} {selectedRmu.code} ({selectedRmu.velden}-velds):</p>
-                        <p className="text-xs mt-1" style={{ color: "#1f2937" }}>✓ R320010 Basis MS-installatie (1×)</p>
-                        {selectedRmu.velden > 3 && <p className="text-xs" style={{ color: "#1f2937" }}>✓ R320020 Extra MS-veld ({selectedRmu.velden - 3}×)</p>}
-                        <p className="text-xs mt-1" style={{ color: "#6b7280" }}>Kabelvelden: {selectedRmu.velden - 1} → suggestie {selectedRmu.velden - 1}× moffen + {selectedRmu.velden - 1}× eindsluitingen</p>
+                      <div className="rounded-xl p-3 animate-fade-in" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }}>
+                        <p className="text-xs font-semibold" style={{ color: "#3fff8b" }}>Op basis van {selectedRmu.merk} {selectedRmu.code} ({selectedRmu.velden}-velds):</p>
+                        <p className="text-xs mt-1" style={{ color: "#dae6ff" }}>✓ R320010 Basis MS-installatie (1×)</p>
+                        {selectedRmu.velden > 3 && <p className="text-xs" style={{ color: "#dae6ff" }}>✓ R320020 Extra MS-veld ({selectedRmu.velden - 3}×)</p>}
+                        <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>Kabelvelden: {selectedRmu.velden - 1} → suggestie {selectedRmu.velden - 1}× moffen + {selectedRmu.velden - 1}× eindsluitingen</p>
                       </div>
                     )}
                   </div>
@@ -299,14 +299,14 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
       case 1:
         return (
           <div className="space-y-3">
-            <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>MS extra werkzaamheden</h3>
+            <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>MS extra werkzaamheden</h3>
             <CheckRow checked={answers.ims_ombouw} onChange={v => set({ ims_ombouw: v })} label="Ombouw naar iMS" tarief={getSpec("R320030")?.tarief} eenheid="st" />
             {answers.ims_ombouw && <NumberStepper value={answers.ims_aantal} onChange={v => set({ ims_aantal: v })} min={1} max={5} label="Aantal ombouw" />}
             <CheckRow checked={answers.trafokabel} onChange={v => set({ trafokabel: v })}
               label={isCompact ? "Trafokabel compactstation" : "Trafokabel betreedbaar station"}
               tarief={getSpec(isCompact ? "R330040" : "R330030")?.tarief} eenheid="st"
               hint="Kabel tussen trafo en LS-rek" />
-            {!answers.ims_ombouw && !answers.trafokabel && <p className="text-xs italic" style={{ color: "#6b7280" }}>Geen extra MS werkzaamheden</p>}
+            {!answers.ims_ombouw && !answers.trafokabel && <p className="text-xs italic" style={{ color: "#a0abc3" }}>Geen extra MS werkzaamheden</p>}
           </div>
         );
 
@@ -314,7 +314,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
       case 2:
         return (
           <div className="space-y-3">
-            <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>Transformator</h3>
+            <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Transformator</h3>
             <div className="space-y-2">
               {([
                 { val: "nieuw" as const, icon: "🔄", label: "Nieuwe trafo plaatsen", code: "R330010" },
@@ -327,7 +327,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
                     <span>{o.icon}</span>
                     <div>
                       <p className="text-sm font-medium">{o.label}</p>
-                      {o.code && <p className="text-[11px]" style={{ color: "#6b7280", fontFamily: "DM Mono, monospace" }}>{o.code} — {euro(getSpec(o.code)?.tarief || 0)}</p>}
+                      {o.code && <p className="text-[11px]" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>{o.code} — {euro(getSpec(o.code)?.tarief || 0)}</p>}
                     </div>
                   </div>
                 </OptionButton>
@@ -340,7 +340,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
       case 3:
         return (
           <div className="space-y-3">
-            <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>LS-rek installatie</h3>
+            <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>LS-rek installatie</h3>
             <div className="space-y-2">
               {([
                 { val: "klein" as const, label: "≤630 kVA — Nieuw LS-rek", code: "R340010" },
@@ -351,13 +351,13 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
                 <OptionButton key={o.val} selected={answers.ls_rek === o.val} onClick={() => set({ ls_rek: o.val })}>
                   <div>
                     <p className="text-sm font-medium">{o.label}</p>
-                    {o.code && <p className="text-[11px]" style={{ color: "#6b7280", fontFamily: "DM Mono, monospace" }}>{o.code} — {euro(getSpec(o.code)?.tarief || 0)}</p>}
+                    {o.code && <p className="text-[11px]" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>{o.code} — {euro(getSpec(o.code)?.tarief || 0)}</p>}
                   </div>
                 </OptionButton>
               ))}
             </div>
             {answers.ls_rek === "uitbreiden" && <NumberStepper value={answers.ls_rek_aantal} onChange={v => set({ ls_rek_aantal: v })} min={1} max={5} label="Aantal uitbreidingsrekken" />}
-            <div className="pt-2" style={{ borderTop: "1px solid #e5e7eb" }}>
+            <div className="pt-2" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
               <NumberStepper value={answers.ls_stroken} onChange={v => set({ ls_stroken: v })} max={30} label="LS stroken herschikken/toevoegen" tarief={getSpec("R340040")?.tarief} eenheid="st" />
               <NumberStepper value={answers.ls_kabels} onChange={v => set({ ls_kabels: v })} max={30} label="LS kabels aansluiten" tarief={getSpec("R340050")?.tarief} eenheid="st" />
               <NumberStepper value={answers.zekeringen} onChange={v => set({ zekeringen: v })} max={50} label="Zekeringen wisselen" tarief={getSpec("R340060")?.tarief} eenheid="st" />
@@ -371,10 +371,10 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
         return (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>Bouwkundige werkzaamheden</h3>
-              {allZero && <button onClick={() => setStep(s => s + 1)} className="text-xs px-3 py-1.5 rounded-lg" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Overslaan →</button>}
+              <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Bouwkundige werkzaamheden</h3>
+              {allZero && <button onClick={() => setStep(s => s + 1)} className="text-xs px-3 py-1.5 rounded-lg" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Overslaan →</button>}
             </div>
-            {allZero && <p className="text-xs italic" style={{ color: "#6b7280" }}>Vul in als van toepassing, of sla over</p>}
+            {allZero && <p className="text-xs italic" style={{ color: "#a0abc3" }}>Vul in als van toepassing, of sla over</p>}
             <NumberStepper value={answers.boren} onChange={v => set({ boren: v })} max={10} label="Boren gaten" tarief={getSpec("R310010")?.tarief} eenheid="st" hint="Nieuwe kabelinvoeren" />
             <NumberStepper value={answers.dichtzetten} onChange={v => set({ dichtzetten: v })} max={10} label="Dichtzetten doorvoeringen" tarief={getSpec("R310020")?.tarief} eenheid="st" hint="Oude doorvoeringen dichten" />
             <NumberStepper value={answers.ggi} onChange={v => set({ ggi: v })} max={10} label="GGI" tarief={getSpec("R310030")?.tarief} eenheid="st" hint="Verlichting, schakelaars per ruimte" />
@@ -387,21 +387,21 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
       case 5:
         return (
           <div className="space-y-3">
-            <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>MS moffen & eindsluitingen</h3>
+            <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>MS moffen & eindsluitingen</h3>
             {answers.rmu_vervangen && selectedRmu && (
               <div className="rounded-xl p-3" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
-                <p className="text-xs font-semibold" style={{ color: "#2563eb" }}>Suggestie op basis van {selectedRmu.merk} {selectedRmu.code} ({selectedRmu.velden - 1} kabelvelden):</p>
-                <p className="text-xs mt-1" style={{ color: "#1f2937" }}>{suggestie.moffen}× MS moffen + {suggestie.eindsluitingen}× eindsluitingen</p>
+                <p className="text-xs font-semibold" style={{ color: "#6e9bff" }}>Suggestie op basis van {selectedRmu.merk} {selectedRmu.code} ({selectedRmu.velden - 1} kabelvelden):</p>
+                <p className="text-xs mt-1" style={{ color: "#dae6ff" }}>{suggestie.moffen}× MS moffen + {suggestie.eindsluitingen}× eindsluitingen</p>
                 <div className="flex gap-2 mt-2">
-                  <button onClick={overneemSuggestie} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: "#10b981" }}>Overnemen</button>
-                  <button className="px-3 py-1.5 rounded-lg text-xs" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Zelf invullen</button>
+                  <button onClick={overneemSuggestie} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: "#3fff8b" }}>Overnemen</button>
+                  <button className="px-3 py-1.5 rounded-lg text-xs" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Zelf invullen</button>
                 </div>
               </div>
             )}
             {isProvisiorium && (
-              <div className="flex gap-2 p-3 rounded-r-xl" style={{ background: "rgba(254,179,0,0.08)", borderLeft: "3px solid #d97706" }}>
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "#d97706" }} />
-                <p className="text-xs font-medium" style={{ color: "#d97706" }}>Provisorium — vul eindsluitingen handmatig in. Niet automatisch afgeleid.</p>
+              <div className="flex gap-2 p-3 rounded-r-xl" style={{ background: "rgba(254,179,0,0.08)", borderLeft: "3px solid #feb300" }}>
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "#feb300" }} />
+                <p className="text-xs font-medium" style={{ color: "#feb300" }}>Provisorium — vul eindsluitingen handmatig in. Niet automatisch afgeleid.</p>
               </div>
             )}
             <NumberStepper value={answers.ms_moffen} onChange={v => set({ ms_moffen: v })} max={20} label="MS moffen" tarief={getSpec("R410010")?.tarief} eenheid="st" hint="Binnen het station" />
@@ -415,8 +415,8 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
         return (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>LS moffen & eindsluitingen</h3>
-              {allZero && <button onClick={() => setStep(s => s + 1)} className="text-xs px-3 py-1.5 rounded-lg" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Overslaan →</button>}
+              <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>LS moffen & eindsluitingen</h3>
+              {allZero && <button onClick={() => setStep(s => s + 1)} className="text-xs px-3 py-1.5 rounded-lg" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Overslaan →</button>}
             </div>
             <NumberStepper value={answers.ls_moffen} onChange={v => set({ ls_moffen: v })} max={50} label="LS verbindingsmoffen" tarief={getSpec("R420010")?.tarief} eenheid="st" />
             <NumberStepper value={answers.ls_eindsluitingen} onChange={v => set({ ls_eindsluitingen: v })} max={50} label="LS eindsluitingen" tarief={getSpec("R420020")?.tarief} eenheid="st" />
@@ -430,8 +430,8 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
         return (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>Aansluitingen & OV</h3>
-              {allZero && <button onClick={() => setStep(s => s + 1)} className="text-xs px-3 py-1.5 rounded-lg" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Overslaan →</button>}
+              <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Aansluitingen & OV</h3>
+              {allZero && <button onClick={() => setStep(s => s + 1)} className="text-xs px-3 py-1.5 rounded-lg" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Overslaan →</button>}
             </div>
             <NumberStepper value={answers.huisaansluitingen} onChange={v => set({ huisaansluitingen: v })} max={30} label="Huisaansluitingen overzetten" tarief={getSpec("R430010")?.tarief} eenheid="st" hint="Bij kabelvervanging in de straat" />
             <NumberStepper value={answers.ls_kast_verwijderen} onChange={v => set({ ls_kast_verwijderen: v })} max={10} label="LS kasten verwijderen" tarief={getSpec("R430020")?.tarief} eenheid="st" />
@@ -448,8 +448,8 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
         return (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>Vrijschakelen</h3>
-              {allZero && <button onClick={() => setStep(s => s + 1)} className="text-xs px-3 py-1.5 rounded-lg" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>Overslaan →</button>}
+              <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Vrijschakelen</h3>
+              {allZero && <button onClick={() => setStep(s => s + 1)} className="text-xs px-3 py-1.5 rounded-lg" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>Overslaan →</button>}
             </div>
             <NumberStepper value={answers.kabeldeel_vrijschakelen} onChange={v => set({ kabeldeel_vrijschakelen: v })} max={10} label="Kabeldelen vrijschakelen" tarief={getSpec("R440030")?.tarief} eenheid="keer" hint="Voor LS werkzaamheden in het veld" />
           </div>
@@ -460,14 +460,14 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
       case 9:
         return (
           <div className="space-y-4">
-            <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>Aarding & revisie</h3>
+            <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Aarding & revisie</h3>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#6b7280" }}>Aarding</p>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#a0abc3" }}>Aarding</p>
               <CheckRow checked={answers.aardweerstand} onChange={v => set({ aardweerstand: v })} label="Aardweerstand meten" tarief={getSpec("R350010")?.tarief} eenheid="keer" />
               <NumberStepper value={answers.vereffeningsleiding} onChange={v => set({ vereffeningsleiding: v })} max={10} label="Vereffeningsleiding" tarief={getSpec("R350020")?.tarief} eenheid="st" hint={answers.rmu_vervangen ? "Standaard 2 bij MS vervanging" : undefined} />
             </div>
-            <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 12 }}>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#6b7280" }}>Opleverdossier</p>
+            <div style={{ borderTop: "1px solid rgba(106,118,140,0.15)", paddingTop: 12 }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#a0abc3" }}>Opleverdossier</p>
               <div className="space-y-2">
                 {([
                   { val: "geen" as const, label: "Geen revisie", icon: "—", code: null, hint: null },
@@ -479,8 +479,8 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
                       <span>{o.icon}</span>
                       <div>
                         <p className="text-sm font-medium">{o.label}</p>
-                        {o.code && <p className="text-[11px]" style={{ color: "#6b7280", fontFamily: "DM Mono, monospace" }}>{o.code} — {euro(getSpec(o.code)?.tarief || 0)}</p>}
-                        {o.hint && <p className="text-[11px]" style={{ color: "#6b7280" }}>{o.hint}</p>}
+                        {o.code && <p className="text-[11px]" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>{o.code} — {euro(getSpec(o.code)?.tarief || 0)}</p>}
+                        {o.hint && <p className="text-[11px]" style={{ color: "#a0abc3" }}>{o.hint}</p>}
                       </div>
                     </div>
                   </OptionButton>
@@ -495,13 +495,13 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
         const defaultWv = isProvisiorium ? 32 : 16;
         return (
           <div className="space-y-4">
-            <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>WV & personeel</h3>
+            <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>WV & personeel</h3>
             <div>
               <ToggleRow checked={answers.wv} onChange={v => set({ wv: v, wv_uren: v && answers.wv_uren === 0 ? defaultWv : answers.wv_uren })} label="WV-er inzetten (R440010)" hint={`€110,00/uur`} />
               {answers.wv && (
                 <div className="ml-4 animate-fade-in">
                   <NumberStepper value={answers.wv_uren} onChange={v => set({ wv_uren: v })} step={8} max={999} label="Uren WV-er" tarief={110} eenheid="uur" />
-                  <p className="text-[11px] italic" style={{ color: "#6b7280" }}>Standaard {defaultWv}u voor {project.case_type || "dit type"}</p>
+                  <p className="text-[11px] italic" style={{ color: "#a0abc3" }}>Standaard {defaultWv}u voor {project.case_type || "dit type"}</p>
                 </div>
               )}
             </div>
@@ -513,8 +513,8 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
                 </div>
               )}
             </div>
-            <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 12 }}>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#6b7280" }}>Extra personeel (optioneel)</p>
+            <div style={{ borderTop: "1px solid rgba(106,118,140,0.15)", paddingTop: 12 }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#a0abc3" }}>Extra personeel (optioneel)</p>
               <NumberStepper value={answers.vp_uren} onChange={v => set({ vp_uren: v })} max={999} step={8} label="VP uren" tarief={getSpec("R610040")?.tarief} eenheid="uur" hint="Vakbekwaam persoon" />
               <NumberStepper value={answers.avp_uren} onChange={v => set({ avp_uren: v })} max={999} step={8} label="AVP uren" tarief={getSpec("R610050")?.tarief} eenheid="uur" hint="Algemeen vakbekwaam persoon" />
               <NumberStepper value={answers.vop_uren} onChange={v => set({ vop_uren: v })} max={999} step={8} label="VOP uren" tarief={getSpec("R610060")?.tarief} eenheid="uur" hint="Voldoend onderricht persoon" />
@@ -528,51 +528,51 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
         return (
           <div className="space-y-3">
             <div>
-              <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>Overzicht forecast</h3>
-              <p className="text-xs" style={{ color: "#6b7280" }}>Controleer en pas aan indien nodig</p>
+              <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Overzicht forecast</h3>
+              <p className="text-xs" style={{ color: "#a0abc3" }}>Controleer en pas aan indien nodig</p>
             </div>
             {overzichtRegels.length === 0 ? (
-              <p className="text-sm text-center py-6" style={{ color: "#6b7280" }}>Geen codes geselecteerd. Ga terug en vul de stappen in.</p>
+              <p className="text-sm text-center py-6" style={{ color: "#a0abc3" }}>Geen codes geselecteerd. Ga terug en vul de stappen in.</p>
             ) : (
-              <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #e5e7eb" }}>
+              <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(106,118,140,0.15)" }}>
                 {groepen.map(([groep, regels]) => {
                   const isOpen = openGroups.has(groep);
                   const groepOmzet = regels.reduce((s, r) => s + r.tarief * r.aantal, 0);
                   return (
                     <div key={groep}>
-                      <button onClick={() => setOpenGroups(prev => { const n = new Set(prev); if (n.has(groep)) n.delete(groep); else n.add(groep); return n; })} className="w-full flex items-center justify-between px-3 py-2" style={{ background: "#ffffff" }}>
-                        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#6b7280", letterSpacing: "0.5px" }}>
+                      <button onClick={() => setOpenGroups(prev => { const n = new Set(prev); if (n.has(groep)) n.delete(groep); else n.add(groep); return n; })} className="w-full flex items-center justify-between px-3 py-2" style={{ background: "#102038" }}>
+                        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#a0abc3", letterSpacing: "0.5px" }}>
                           {GROEP_LABELS[groep] || groep} ({regels.length})
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-medium" style={{ color: "#6b7280", fontFamily: "DM Mono, monospace" }}>{euroShort(groepOmzet)}</span>
-                          {isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "#6b7280" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "#6b7280" }} />}
+                          <span className="text-[11px] font-medium" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>{euroShort(groepOmzet)}</span>
+                          {isOpen ? <ChevronDown className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} /> : <ChevronRight className="h-3.5 w-3.5" style={{ color: "#a0abc3" }} />}
                         </div>
                       </button>
                       {isOpen && regels.map(r => (
-                        <div key={r.spec_code} className="flex items-center gap-2 px-3 py-2" style={{ borderTop: "1px solid #e5e7eb" }}>
-                          <span className="text-[10px] font-bold shrink-0 w-16" style={{ color: "#6b7280", fontFamily: "DM Mono, monospace" }}>{r.spec_code}</span>
-                          <span className="text-xs flex-1 min-w-0 truncate" style={{ color: "#1f2937" }}>{r.label}</span>
+                        <div key={r.spec_code} className="flex items-center gap-2 px-3 py-2" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
+                          <span className="text-[10px] font-bold shrink-0 w-16" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>{r.spec_code}</span>
+                          <span className="text-xs flex-1 min-w-0 truncate" style={{ color: "#dae6ff" }}>{r.label}</span>
                           <div className="flex items-center gap-0 shrink-0">
-                            <button onClick={() => { const nv = Math.max(r.min_aantal, r.aantal - 1); setAnswers(a => { const key = getAnswerKey(r.spec_code, a); if (key) return { ...a, [key]: nv }; return a; }); }} className="w-6 h-6 rounded-l flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}>
-                              <Minus className="h-3 w-3" style={{ color: "#6b7280" }} />
+                            <button onClick={() => { const nv = Math.max(r.min_aantal, r.aantal - 1); setAnswers(a => { const key = getAnswerKey(r.spec_code, a); if (key) return { ...a, [key]: nv }; return a; }); }} className="w-6 h-6 rounded-l flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
+                              <Minus className="h-3 w-3" style={{ color: "#a0abc3" }} />
                             </button>
-                            <div className="w-8 h-6 flex items-center justify-center text-[11px] font-bold" style={{ background: "var(--app-navy)", borderTop: "1px solid #e5e7eb", borderBottom: "1px solid #e5e7eb", fontFamily: "DM Mono, monospace", color: "#1f2937" }}>{r.aantal}</div>
-                            <button onClick={() => { const nv = Math.min(r.max_aantal, r.aantal + 1); setAnswers(a => { const key = getAnswerKey(r.spec_code, a); if (key) return { ...a, [key]: nv }; return a; }); }} className="w-6 h-6 rounded-r flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid #e5e7eb" }}>
-                              <Plus className="h-3 w-3" style={{ color: "#6b7280" }} />
+                            <div className="w-8 h-6 flex items-center justify-center text-[11px] font-bold" style={{ background: "var(--app-navy)", borderTop: "1px solid rgba(106,118,140,0.15)", borderBottom: "1px solid rgba(106,118,140,0.15)", fontFamily: "DM Mono, monospace", color: "#dae6ff" }}>{r.aantal}</div>
+                            <button onClick={() => { const nv = Math.min(r.max_aantal, r.aantal + 1); setAnswers(a => { const key = getAnswerKey(r.spec_code, a); if (key) return { ...a, [key]: nv }; return a; }); }} className="w-6 h-6 rounded-r flex items-center justify-center" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
+                              <Plus className="h-3 w-3" style={{ color: "#a0abc3" }} />
                             </button>
                           </div>
-                          <span className="text-[10px] shrink-0 w-10 text-right" style={{ color: "#6b7280", fontFamily: "DM Mono, monospace" }}>{euro(r.tarief)}</span>
-                          <span className="text-[11px] font-bold shrink-0 w-16 text-right" style={{ color: "#10b981", fontFamily: "DM Mono, monospace" }}>{euroShort(r.tarief * r.aantal)}</span>
+                          <span className="text-[10px] shrink-0 w-10 text-right" style={{ color: "#a0abc3", fontFamily: "DM Mono, monospace" }}>{euro(r.tarief)}</span>
+                          <span className="text-[11px] font-bold shrink-0 w-16 text-right" style={{ color: "#3fff8b", fontFamily: "DM Mono, monospace" }}>{euroShort(r.tarief * r.aantal)}</span>
                         </div>
                       ))}
                     </div>
                   );
                 })}
                 {/* Totaal */}
-                <div className="px-3 py-3 text-right" style={{ borderTop: "2px solid #a7f3d0" }}>
-                  <p className="text-[11px] uppercase tracking-wider" style={{ color: "#6b7280" }}>Totaal omzet (Van Gelder)</p>
-                  <p className="text-lg font-bold" style={{ color: "#10b981", fontFamily: "DM Mono, monospace" }}>{euro(totaalOmzet)}</p>
+                <div className="px-3 py-3 text-right" style={{ borderTop: "2px solid rgba(63,255,139,0.3)" }}>
+                  <p className="text-[11px] uppercase tracking-wider" style={{ color: "#a0abc3" }}>Totaal omzet (Van Gelder)</p>
+                  <p className="text-lg font-bold" style={{ color: "#3fff8b", fontFamily: "DM Mono, monospace" }}>{euro(totaalOmzet)}</p>
                 </div>
               </div>
             )}
@@ -585,24 +585,24 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
 
   if (confirmRedo) {
     return (
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(15,23,42,0.12)" }}>
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
         <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" style={{ background: "var(--app-navy)", border: "1px solid rgba(254,179,0,0.3)" }}>
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(254,179,0,0.1)" }}>
-              <AlertTriangle className="h-5 w-5" style={{ color: "#d97706" }} />
+              <AlertTriangle className="h-5 w-5" style={{ color: "#feb300" }} />
             </div>
             <div className="flex-1">
-              <h3 className="text-base font-bold" style={{ color: "#1f2937" }}>Bestaande forecast overschrijven?</h3>
-              <p className="text-xs mt-1" style={{ color: "#6b7280" }}>
+              <h3 className="text-base font-bold" style={{ color: "#dae6ff" }}>Bestaande forecast overschrijven?</h3>
+              <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>
                 Dit project heeft al een forecast. Als je doorgaat worden de huidige gegevens vervangen door de nieuwe intake-resultaten.
               </p>
             </div>
           </div>
           <div className="flex gap-2 pt-2">
-            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>
+            <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
               Annuleren
             </button>
-            <button onClick={() => setConfirmRedo(false)} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1" style={{ background: "#d97706" }}>
+            <button onClick={() => setConfirmRedo(false)} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1" style={{ background: "#feb300" }}>
               <RotateCcw className="h-4 w-4" /> Doorgaan
             </button>
           </div>
@@ -612,16 +612,16 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(15,23,42,0.12)" }}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
       <div className="w-full sm:max-w-lg max-h-[92vh] flex flex-col rounded-t-2xl sm:rounded-2xl" style={{ background: "var(--app-navy)" }}>
         {/* Header */}
-        <div className="shrink-0 px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid #e5e7eb" }}>
+        <div className="shrink-0 px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
           <div>
-            <p className="text-sm font-bold" style={{ color: "#1f2937" }}>Forecast intake</p>
-            <p className="text-[11px]" style={{ color: "#6b7280" }}>{project.nummer} · {project.naam}</p>
+            <p className="text-sm font-bold" style={{ color: "#dae6ff" }}>Forecast intake</p>
+            <p className="text-[11px]" style={{ color: "#a0abc3" }}>{project.nummer} · {project.naam}</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#ffffff" }}>
-            <X className="h-4 w-4" style={{ color: "#6b7280" }} />
+          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(10,26,48,0.7)" }}>
+            <X className="h-4 w-4" style={{ color: "#a0abc3" }} />
           </button>
         </div>
 
@@ -629,11 +629,11 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
         <div className="shrink-0 px-4 py-2">
           <div className="flex gap-1">
             {STAPPEN.map((_, i) => (
-              <div key={i} className="flex-1 h-1 rounded-full" style={{ background: i < step ? "#10b981" : i === step ? "#10b981" : "#ffffff" }} />
+              <div key={i} className="flex-1 h-1 rounded-full" style={{ background: i < step ? "#3fff8b" : i === step ? "#3fff8b" : "#102038" }} />
             ))}
           </div>
-          <p className="text-[11px] mt-1.5" style={{ color: "#6b7280" }}>
-            Stap {step + 1} van {totalSteps} — <span className="font-semibold" style={{ color: step === totalSteps - 1 ? "#10b981" : "#6b7280" }}>{STAPPEN[step]}</span>
+          <p className="text-[11px] mt-1.5" style={{ color: "#a0abc3" }}>
+            Stap {step + 1} van {totalSteps} — <span className="font-semibold" style={{ color: step === totalSteps - 1 ? "#3fff8b" : "#a0abc3" }}>{STAPPEN[step]}</span>
           </p>
         </div>
 
@@ -643,20 +643,20 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
         </div>
 
         {/* Navigation */}
-        <div className="shrink-0 px-4 py-3 flex gap-2" style={{ borderTop: "1px solid #e5e7eb" }}>
+        <div className="shrink-0 px-4 py-3 flex gap-2" style={{ borderTop: "1px solid rgba(106,118,140,0.15)" }}>
           {step > 0 && (
-            <button onClick={() => setStep(s => s - 1)} className="px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-1" style={{ border: "1px solid #e5e7eb", color: "#6b7280" }}>
+            <button onClick={() => setStep(s => s - 1)} className="px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-1" style={{ border: "1px solid rgba(106,118,140,0.15)", color: "#a0abc3" }}>
               <ChevronLeft className="h-4 w-4" /> Vorige
             </button>
           )}
           <div className="flex-1" />
           {isOverzicht ? (
-            <button onClick={handleSave} disabled={saving || overzichtRegels.length === 0} className="px-6 py-2.5 rounded-xl text-sm font-bold text-white flex items-center gap-2 disabled:opacity-50" style={{ background: "linear-gradient(135deg, #10b981, #047857)" }}>
+            <button onClick={handleSave} disabled={saving || overzichtRegels.length === 0} className="px-6 py-2.5 rounded-xl text-sm font-bold text-white flex items-center gap-2 disabled:opacity-50" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)" }}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
               Forecast aanmaken
             </button>
           ) : (
-            <button onClick={() => setStep(s => s + 1)} className="px-6 py-2.5 rounded-xl text-sm font-bold text-white flex items-center gap-1" style={{ background: "#10b981" }}>
+            <button onClick={() => setStep(s => s + 1)} className="px-6 py-2.5 rounded-xl text-sm font-bold text-white flex items-center gap-1" style={{ background: "#3fff8b" }}>
               Volgende <ChevronRight className="h-4 w-4" />
             </button>
           )}
