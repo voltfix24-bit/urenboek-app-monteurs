@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { PageShell } from "@/components/PageShell";
 import { toast } from "sonner";
+import { generateEmailSuffix, generateTemporaryPassword } from "@/lib/passwords";
 import {
   ArrowLeft, Plus, X, Building2, Users, Copy, Eye, EyeOff,
   Phone, Mail, ChevronRight, Pencil, Trash2, Check,
@@ -148,7 +149,7 @@ export default function Onderaannemers() {
     if (!selected) return;
     if (!confirm(`Nieuw wachtwoord genereren voor ${selected.full_name}? Het oude wachtwoord werkt daarna niet meer.`)) return;
     setPwResetting(true);
-    const pw = genPw() + "A1!";
+    const pw = generateTemporaryPassword();
     const { data, error } = await supabase.functions.invoke("reset-password", {
       body: { user_id: selected.user_id, password: pw },
     });
@@ -289,11 +290,7 @@ export default function Onderaannemers() {
 
   const monteursVoor = (oaId: string) => monteurs.filter((m) => m.onderaannemer_id === oaId);
 
-  const genPw = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-    let r = ""; for (let i = 0; i < 10; i++) r += chars.charAt(Math.floor(Math.random() * chars.length));
-    return r;
-  };
+  const genPw = () => generateTemporaryPassword();
 
   const resetOaForm = () => {
     setOaVoornaam(""); setOaAchternaam(""); setOaEmail(""); setOaTel("");
@@ -357,8 +354,8 @@ export default function Onderaannemers() {
     const fullName = `${mVoornaam.trim()} ${mAchternaam.trim()}`.trim();
     const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
     const domain = slug(selected.bedrijfsnaam || selected.full_name) || "onderaannemer";
-    const autoEmail = `${slug(mVoornaam)}.${slug(mAchternaam)}.${Math.random().toString(36).slice(2, 6)}@${domain}.local`;
-    const autoPw = genPw() + "A1!";
+    const autoEmail = `${slug(mVoornaam)}.${slug(mAchternaam)}.${generateEmailSuffix(6)}@${domain}.local`;
+    const autoPw = generateTemporaryPassword();
     const { data, error } = await supabase.functions.invoke("create-user", {
       body: {
         email: autoEmail,

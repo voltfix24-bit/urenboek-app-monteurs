@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
+import { generateTemporaryPassword } from "@/lib/passwords";
 import { Copy, Eye, EyeOff, Plus, X, Users, ArrowLeft, AlertTriangle } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
@@ -94,10 +95,7 @@ export default function Medewerkers() {
   };
 
   const generatePassword = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-    let result = "";
-    for (let i = 0; i < 10; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-    setPassword(result);
+    setPassword(generateTemporaryPassword());
   };
 
   const resetForm = () => {

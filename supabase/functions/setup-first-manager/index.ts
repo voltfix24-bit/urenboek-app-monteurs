@@ -5,9 +5,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Methode niet toegestaan" }), {
+      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -44,7 +52,15 @@ Deno.serve(async (req) => {
     }
 
     const { email, password, fullName } = await req.json();
-    if (!email || !password || !fullName) {
+    if (
+      typeof email !== "string" ||
+      !emailRegex.test(email) ||
+      typeof password !== "string" ||
+      password.length < 8 ||
+      password.length > 200 ||
+      typeof fullName !== "string" ||
+      fullName.trim().length < 2
+    ) {
       return new Response(JSON.stringify({ error: "Email, wachtwoord en naam zijn verplicht" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
