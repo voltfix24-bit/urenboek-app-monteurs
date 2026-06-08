@@ -16,7 +16,7 @@ export function UpdatePrompt() {
     onRegisteredSW(swUrl, registration) {
       // Elke 30 minuten checken op een nieuwe versie
       if (registration) {
-        setInterval(
+        setHanken Groteskval(
           () => {
             registration.update().catch(() => {});
           },

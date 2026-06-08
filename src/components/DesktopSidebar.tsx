@@ -212,7 +212,7 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
               <p className="text-[10px] truncate" style={{ color: "var(--sidebar-shell-muted)" }}>Mijn profiel</p>
             </div>
           </button>
-          <button onClick={signOut} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium" style={{ border: "1px solid rgba(255,113,108,0.3)", color: "#ff716c", background: "rgba(255,113,108,0.1)" }}>
+          <button onClick={signOut} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--danger-border)", color: "var(--danger)", background: "var(--danger-light)" }}>
             <LogOut className="h-3.5 w-3.5" /> Uitloggen
           </button>
         </div>

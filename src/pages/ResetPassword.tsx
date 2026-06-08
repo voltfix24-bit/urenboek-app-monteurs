@@ -43,28 +43,28 @@ export default function ResetPassword() {
       <div className="w-full relative" style={{ maxWidth: 440 }}>
         <div className="text-center mb-8">
           <img src={terrevoltLogo} alt="TerreVolt BV" className="h-12 mx-auto mb-3" />
-          <h1 className="text-xl font-bold" style={{ color: "#dae6ff" }}>Wachtwoord instellen</h1>
-          <p className="text-sm mt-1" style={{ color: "#a0abc3" }}>Kies een nieuw wachtwoord</p>
+          <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Wachtwoord instellen</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Kies een nieuw wachtwoord</p>
         </div>
 
-        <div className="rounded-2xl p-6 space-y-4" style={{ background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }}>
+        <div className="rounded-2xl p-6 space-y-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
           {success ? (
             <div className="text-center py-4">
-              <p className="text-sm font-semibold" style={{ color: "#3fff8b" }}>✓ Wachtwoord gewijzigd!</p>
-              <p className="text-xs mt-1" style={{ color: "#a0abc3" }}>Je wordt doorgestuurd naar inloggen...</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--accent)" }}>✓ Wachtwoord gewijzigd!</p>
+              <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Je wordt doorgestuurd naar inloggen...</p>
             </div>
           ) : (
             <>
               <div className="space-y-1">
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Nieuw wachtwoord</label>
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 tekens" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Nieuw wachtwoord</label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 tekens" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }} />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Wachtwoord herhalen</label>
-                <input type="password" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} placeholder="Herhaal wachtwoord" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
+                <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Wachtwoord herhalen</label>
+                <input type="password" value={passwordConfirm} onChange={e => setPasswordConfirm(e.target.value)} placeholder="Herhaal wachtwoord" className="w-full px-3 py-2.5 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }} />
               </div>
-              {error && <p className="text-xs font-medium" style={{ color: "#ff716c" }}>{error}</p>}
-              <button onClick={handleReset} disabled={loading || !password || !passwordConfirm} className="w-full py-3 rounded-xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, #3fff8b, #005d2c)", color: "#fff" }}>
+              {error && <p className="text-xs font-medium" style={{ color: "var(--danger)" }}>{error}</p>}
+              <button onClick={handleReset} disabled={loading || !password || !passwordConfirm} className="w-full py-3 rounded-xl text-sm font-bold disabled:opacity-40" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
                 {loading ? "Bezig..." : "Wachtwoord instellen"}
               </button>
             </>

@@ -37,7 +37,7 @@ export default {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
+          DEFAULT: "hsl(var(--accent-hsl))",
           foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
@@ -49,11 +49,11 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         success: {
-          DEFAULT: "hsl(var(--success))",
+          DEFAULT: "var(--success)",
           foreground: "hsl(var(--success-foreground))",
         },
         warning: {
-          DEFAULT: "hsl(var(--warning))",
+          DEFAULT: "var(--warn-bg)",
           foreground: "hsl(var(--warning-foreground))",
         },
         sidebar: {
@@ -68,8 +68,8 @@ export default {
         },
       },
       fontFamily: {
-        headline: ['Manrope', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
+        headline: ['Hanken Grotesk', 'sans-serif'],
+        body: ['Hanken Grotesk', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",

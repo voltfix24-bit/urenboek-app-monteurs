@@ -11,16 +11,16 @@ interface FormFieldProps {
 export function FormField({ label, error, required, hint, children }: FormFieldProps) {
   return (
     <div className="space-y-1">
-      <label className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-0.5" style={{ color: error ? "#ff716c" : "#a0abc3" }}>
+      <label className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-0.5" style={{ color: error ? "var(--danger)" : "var(--text-muted)" }}>
         {label}
-        {required && <span style={{ color: "#ff716c" }}>*</span>}
+        {required && <span style={{ color: "var(--danger)" }}>*</span>}
       </label>
       {children}
       {hint && !error && (
-        <p className="text-[10px]" style={{ color: "#a0abc3" }}>{hint}</p>
+        <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{hint}</p>
       )}
       {error && (
-        <p className="text-[10px] font-medium" style={{ color: "#ff716c" }}>⚠ {error}</p>
+        <p className="text-[10px] font-medium" style={{ color: "var(--danger)" }}>⚠ {error}</p>
       )}
     </div>
   );
@@ -37,8 +37,8 @@ export function ValidatedInput({ error, style, ...props }: ValidatedInputProps) 
       className={`w-full px-3 py-2.5 rounded-xl text-sm ${props.className || ""}`}
       style={{
         background: "var(--app-navy)",
-        border: error ? "1.5px solid #ff716c" : "1px solid rgba(106,118,140,0.15)",
-        color: "#dae6ff",
+        border: error ? "1.5px solid var(--danger)" : "1px solid var(--planning-border-soft)",
+        color: "var(--text-primary)",
         ...style,
       }}
     />

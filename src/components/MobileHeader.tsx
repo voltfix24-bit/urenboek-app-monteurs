@@ -41,8 +41,8 @@ export function MobileHeader({ showBrand = true, title, actions, initials }: Mob
       className="lg:hidden"
       style={{
         position: "sticky", top: 0, zIndex: 50,
-        background: "rgba(3,14,32,0.9)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
+        background: "color-mix(in srgb, var(--bg-surface) 94%, transparent)", backdropFilter: "blur(20px)",
+        borderBottom: "1px solid var(--planning-border-soft)",
         paddingTop: "calc(12px + env(safe-area-inset-top, 44px))",
         paddingBottom: 12,
         paddingLeft: "calc(20px + env(safe-area-inset-left, 0px))",
@@ -51,11 +51,11 @@ export function MobileHeader({ showBrand = true, title, actions, initials }: Mob
       }}>
       {showBrand ? (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span className="material-symbols-outlined" style={{ color: "#3fff8b", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
-          <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 18, color: "#3fff8b", letterSpacing: "0.1em", textTransform: "uppercase" }}>TERREVOLT UREN</span>
+          <span className="material-symbols-outlined" style={{ color: "var(--accent)", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
+          <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 18, color: "var(--accent)", letterSpacing: "0.1em", textTransform: "uppercase" }}>TERREVOLT UREN</span>
         </div>
       ) : (
-        <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "#dae6ff" }}>
+        <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 20, color: "var(--text-primary)" }}>
           {title}
         </span>
       )}
@@ -65,7 +65,7 @@ export function MobileHeader({ showBrand = true, title, actions, initials }: Mob
           type="button"
           onClick={() => navigate("/mededelingen")}
           aria-label="Mededelingen"
-          style={{ background: "none", border: "none", cursor: "pointer", color: "#a0abc3", display: "flex", position: "relative" }}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", position: "relative" }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 24 }}>notifications</span>
           {unread > 0 && (
@@ -73,7 +73,7 @@ export function MobileHeader({ showBrand = true, title, actions, initials }: Mob
               position: "absolute", top: -4, right: -4,
               minWidth: 16, height: 16,
               borderRadius: 9999,
-              background: "#ff716c",
+              background: "var(--danger)",
               border: "2px solid var(--app-navy)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 9, fontWeight: 800, color: "#fff",
@@ -90,8 +90,8 @@ export function MobileHeader({ showBrand = true, title, actions, initials }: Mob
           title={profileLabel}
           style={{
             width: 36, height: 36, borderRadius: "50%", background: "#142640",
-            border: "1px solid rgba(63,255,139,0.3)", display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: "Manrope", fontWeight: 700, fontSize: 13, color: "#3fff8b",
+            border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, color: "var(--accent)",
             cursor: "pointer", padding: 0,
           }}
         >

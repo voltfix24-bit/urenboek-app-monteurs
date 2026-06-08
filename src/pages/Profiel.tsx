@@ -14,7 +14,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { formatDatum } from "@/lib/formatting";
 import { CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO, differenceInDays } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfHanken Groteskval, getDay, addMonths, subMonths, isSameDay, isWithinHanken Groteskval, parseISO, differenceInDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
@@ -24,15 +24,15 @@ interface ProfileData { id: string; full_name: string; telefoon: string; adres: 
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; bestand_url?: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; reden: string | null; status: string; }
 
-const CERT_COLORS: Record<string, string> = { VCA: "#3fff8b", NEN3140: "#6e9bff", rijbewijs_BE: "#feb300", overig: "#a78bfa" };
+const CERT_COLORS: Record<string, string> = { VCA: "var(--accent)", NEN3140: "var(--info)", rijbewijs_BE: "var(--warn-text)", overig: "#a78bfa" };
 const DAGEN_LABEL = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"];
-const AVATAR_COLORS = ['#3fff8b', '#22c55e', '#6e9bff', '#feb300', '#a78bfa'];
+const AVATAR_COLORS = ['var(--accent)', '#22c55e', 'var(--info)', 'var(--warn-text)', '#a78bfa'];
 
 const TYPE_COLORS: Record<string, { bg: string; border: string; dot: string }> = {
-  vakantie: { bg: "rgba(254,179,0,0.1)", border: "rgba(254,179,0,0.3)", dot: "#feb300" },
-  verlof: { bg: "rgba(110,155,255,0.1)", border: "rgba(110,155,255,0.3)", dot: "#6e9bff" },
-  ziek: { bg: "rgba(255,113,108,0.1)", border: "rgba(255,113,108,0.3)", dot: "#ff716c" },
-  anders: { bg: "rgba(10,26,48,0.7)", border: "rgba(106,118,140,0.15)", dot: "#a0abc3" },
+  vakantie: { bg: "var(--warn-light)", border: "var(--warn-border)", dot: "var(--warn-text)" },
+  verlof: { bg: "rgba(110,155,255,0.1)", border: "rgba(110,155,255,0.3)", dot: "var(--info)" },
+  ziek: { bg: "var(--danger-light)", border: "var(--danger-border)", dot: "var(--danger)" },
+  anders: { bg: "var(--bg-surface)", border: "var(--planning-border-soft)", dot: "var(--text-muted)" },
 };
 
 function PasswordChange() {
@@ -53,10 +53,10 @@ function PasswordChange() {
 
   return (
     <div className="pt-2 space-y-2">
-      <p className="text-[10px] font-medium" style={{ color: "#a0abc3" }}>Wachtwoord wijzigen</p>
-      <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-      <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Herhaal nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)", color: "#dae6ff" }} />
-      <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} className="w-full py-2.5 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)", color: "#3fff8b" }}>
+      <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>Wachtwoord wijzigen</p>
+      <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }} />
+      <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Herhaal nieuw wachtwoord" className="w-full px-3 py-2 rounded-xl text-sm" style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }} />
+      <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} className="w-full py-2.5 rounded-xl text-xs font-semibold disabled:opacity-40" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)" }}>
         {saving ? "Bezig..." : "Wachtwoord wijzigen"}
       </button>
     </div>
@@ -77,23 +77,23 @@ function ManagerHandtekeningSection({ profileId }: { profileId: string | null })
   if (loading) return null;
 
   return (
-    <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }} className="space-y-3">
-      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Jouw handtekening</p>
-      <p className="text-[10px]" style={{ color: "#a0abc3" }}>Voor digitale ondertekening van contracten</p>
+    <div style={{ background: 'var(--bg-surface)', backdropFilter: 'blur(12px)', border: '1px solid var(--planning-border-soft)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }} className="space-y-3">
+      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Jouw handtekening</p>
+      <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Voor digitale ondertekening van contracten</p>
 
       {htData?.handtekening && !showCanvas ? (
         <>
           <div style={{ maxWidth: 300 }}>
-            <img src={htData.handtekening} alt="Handtekening" style={{ width: "100%", height: 80, objectFit: "contain", background: "#fff", borderRadius: 8, border: "1px solid rgba(106,118,140,0.15)" }} />
+            <img src={htData.handtekening} alt="Handtekening" style={{ width: "100%", height: 80, objectFit: "contain", background: "#fff", borderRadius: 8, border: "1px solid var(--planning-border-soft)" }} />
           </div>
-          <p className="text-[10px]" style={{ color: "#a0abc3" }}>Opgeslagen op {htData.updated_op ? formatDatum(htData.updated_op) : "–"}</p>
-          <button onClick={() => setShowCanvas(true)} className="text-xs underline" style={{ color: "#3fff8b" }}>Nieuwe handtekening tekenen</button>
+          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Opgeslagen op {htData.updated_op ? formatDatum(htData.updated_op) : "–"}</p>
+          <button onClick={() => setShowCanvas(true)} className="text-xs underline" style={{ color: "var(--accent)" }}>Nieuwe handtekening tekenen</button>
         </>
       ) : (
         <>
           {!htData?.handtekening && (
-            <div className="rounded-xl p-2.5" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
-              <p className="text-xs" style={{ color: "#feb300" }}>⚠ Sla je handtekening op om contracten digitaal te kunnen ondertekenen</p>
+            <div className="rounded-xl p-2.5" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+              <p className="text-xs" style={{ color: "var(--warn-text)" }}>⚠ Sla je handtekening op om contracten digitaal te kunnen ondertekenen</p>
             </div>
           )}
           <HandtekeningCanvas hoogte={120} bestaande={htData?.handtekening} onSave={async (b64) => {
@@ -166,26 +166,26 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
   }
 
   return (
-    <div style={{ background: 'linear-gradient(135deg, rgba(10,26,48,0.7), rgba(6,19,39,0.8))', backdropFilter: 'blur(12px)', border: '1px solid rgba(106,118,140,0.15)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }} className="space-y-3">
-      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>Mijn contract</p>
+    <div style={{ background: 'var(--bg-surface)', backdropFilter: 'blur(12px)', border: '1px solid var(--planning-border-soft)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }} className="space-y-3">
+      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Mijn contract</p>
 
       {contract?.status === "ondertekend_beiden" && (
-        <div className="rounded-xl p-3.5 space-y-2" style={{ background: "rgba(63,255,139,0.1)", border: "1px solid rgba(63,255,139,0.3)" }}>
-          <p className="text-sm font-semibold" style={{ color: "#3fff8b" }}>✅ Actief contract</p>
-          <p className="text-xs font-mono" style={{ color: "#a0abc3" }}>{contract.contract_nummer}</p>
+        <div className="rounded-xl p-3.5 space-y-2" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--accent)" }}>✅ Actief contract</p>
+          <p className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{contract.contract_nummer}</p>
           {contract.startdatum && contract.einddatum && (
-            <p className="text-xs" style={{ color: "#a0abc3" }}>Geldig: {formatDatum(contract.startdatum)} — {formatDatum(contract.einddatum)}</p>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>Geldig: {formatDatum(contract.startdatum)} — {formatDatum(contract.einddatum)}</p>
           )}
           {contractDays !== null && contractDays <= 30 && contractDays >= 0 && (
-            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "rgba(254,179,0,0.08)", color: "#feb300" }}>⚠ Verloopt binnenkort</span>
+            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "var(--warn-light)", color: "var(--warn-text)" }}>⚠ Verloopt binnenkort</span>
           )}
           <div className="flex items-center gap-3 mt-1">
             {contract.pdf_path && (
-              <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "#3fff8b" }}>
+              <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "var(--accent)" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 14 }}>download</span> Download PDF
               </button>
             )}
-            <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium" style={{ color: "#a0abc3" }}>
+            <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
               {showDetails ? "Verberg details ▲" : "Bekijk details ▼"}
             </button>
           </div>
@@ -194,37 +194,37 @@ function MonteurContractSection({ profileId }: { profileId: string | null }) {
 
       {contract?.status === "ondertekend_ot" && (
         <div className="rounded-xl p-3.5 space-y-2" style={{ background: "rgba(110,155,255,0.1)", border: "1px solid rgba(110,155,255,0.3)" }}>
-          <p className="text-sm font-semibold" style={{ color: "#6e9bff" }}>⏳ Wacht op TerreVolt</p>
-          <p className="text-xs" style={{ color: "#a0abc3" }}>Je hebt ondertekend. TerreVolt rondt dit zo snel mogelijk af.</p>
-          <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium mt-1" style={{ color: "#a0abc3" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--info)" }}>⏳ Wacht op TerreVolt</p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>Je hebt ondertekend. TerreVolt rondt dit zo snel mogelijk af.</p>
+          <button onClick={() => setShowDetails(!showDetails)} className="text-xs font-medium mt-1" style={{ color: "var(--text-muted)" }}>
             {showDetails ? "Verberg details ▲" : "Bekijk details ▼"}
           </button>
         </div>
       )}
 
       {contract?.status === "verstuurd" && (
-        <div className="rounded-xl p-3.5 space-y-1" style={{ background: "rgba(254,179,0,0.1)", border: "1px solid rgba(254,179,0,0.3)" }}>
-          <p className="text-sm font-semibold" style={{ color: "#feb300" }}>📧 Wacht op jouw handtekening</p>
-          <p className="text-xs" style={{ color: "#a0abc3" }}>Bekijk je e-mail voor de ondertekeningslink.</p>
-          <p className="text-[10px] mt-1" style={{ color: "#a0abc3" }}>Geen e-mail ontvangen? Neem contact op via info@terrevolt.nl</p>
+        <div className="rounded-xl p-3.5 space-y-1" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--warn-text)" }}>📧 Wacht op jouw handtekening</p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>Bekijk je e-mail voor de ondertekeningslink.</p>
+          <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>Geen e-mail ontvangen? Neem contact op via info@terrevolt.nl</p>
         </div>
       )}
 
       {/* Contract details panel */}
       {showDetails && contract && detailRows.length > 0 && (
-        <div className="rounded-xl p-3 space-y-1.5" style={{ background: "var(--app-navy)", border: "1px solid rgba(106,118,140,0.15)" }}>
-          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "#a0abc3" }}>Contractgegevens</p>
+        <div className="rounded-xl p-3 space-y-1.5" style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Contractgegevens</p>
           {detailRows.map((row, i) => (
-            <div key={i} className="flex justify-between items-center py-1" style={{ borderBottom: i < detailRows.length - 1 ? "1px solid rgba(106,118,140,0.15)" : "none" }}>
-              <span className="text-[11px]" style={{ color: "#a0abc3" }}>{row.label}</span>
-              <span className="text-xs font-medium text-right max-w-[60%]" style={{ color: "#dae6ff" }}>{row.value}</span>
+            <div key={i} className="flex justify-between items-center py-1" style={{ borderBottom: i < detailRows.length - 1 ? "1px solid var(--planning-border-soft)" : "none" }}>
+              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>{row.label}</span>
+              <span className="text-xs font-medium text-right max-w-[60%]" style={{ color: "var(--text-primary)" }}>{row.value}</span>
             </div>
           ))}
         </div>
       )}
 
       {!contract && (
-        <p className="text-xs" style={{ color: "#a0abc3" }}>Geen actief contract</p>
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>Geen actief contract</p>
       )}
     </div>
   );
@@ -314,21 +314,21 @@ export default function Profiel() {
 
   const certStatus = (verval: string) => {
     const diff = (new Date(verval).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-    if (diff < 0) return { label: "Verlopen", color: "#ff716c" };
-    if (diff < 30) return { label: `${Math.ceil(diff)}d`, color: "#feb300" };
-    return { label: "Geldig", color: "#3fff8b" };
+    if (diff < 0) return { label: "Verlopen", color: "var(--danger)" };
+    if (diff < 30) return { label: `${Math.ceil(diff)}d`, color: "var(--warn-text)" };
+    return { label: "Geldig", color: "var(--accent)" };
   };
 
   const statusColors: Record<string, { bg: string; text: string }> = {
-    aangevraagd: { bg: "rgba(254,179,0,0.1)", text: "#feb300" },
-    goedgekeurd: { bg: "rgba(63,255,139,0.1)", text: "#3fff8b" },
-    afgekeurd: { bg: "rgba(255,113,108,0.1)", text: "#ff716c" },
+    aangevraagd: { bg: "var(--warn-light)", text: "var(--warn-text)" },
+    goedgekeurd: { bg: "var(--accent-light)", text: "var(--accent)" },
+    afgekeurd: { bg: "var(--danger-light)", text: "var(--danger)" },
   };
 
   // Calendar helpers
   const monthStart = startOfMonth(calMonth);
   const monthEnd = endOfMonth(calMonth);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const days = eachDayOfHanken Groteskval({ start: monthStart, end: monthEnd });
   const startPad = getDay(monthStart); // 0=Sun
 
   const getDayStatus = (day: Date): { type: string; status: string } | null => {
@@ -342,7 +342,7 @@ export default function Profiel() {
       try {
         const van = parseISO(b.datum_van);
         const tot = parseISO(b.datum_tot);
-        if (isWithinInterval(day, { start: van, end: tot }) || isSameDay(day, van) || isSameDay(day, tot)) {
+        if (isWithinHanken Groteskval(day, { start: van, end: tot }) || isSameDay(day, van) || isSameDay(day, tot)) {
           return { type: b.type, status: b.status };
         }
       } catch { /* skip */ }
@@ -363,19 +363,19 @@ export default function Profiel() {
         <header style={{
           position: 'sticky', top: 0,
           zIndex: 50,
-          background: 'rgba(3,14,32,0.9)',
+          background: 'color-mix(in srgb, var(--bg-surface) 94%, transparent)',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid var(--planning-border-soft)',
           padding: '12px 20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
           <span style={{
-            fontFamily: 'Manrope',
+            fontFamily: 'Hanken Grotesk',
             fontWeight: 800,
             fontSize: 20,
-            color: '#3fff8b',
+            color: 'var(--accent)',
           }}>
             Mijn Profiel
           </span>
@@ -390,7 +390,7 @@ export default function Profiel() {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                color: '#a0abc3',
+                color: 'var(--text-muted)',
                 display: 'flex',
                 alignItems: 'center',
               }}>
@@ -406,15 +406,15 @@ export default function Profiel() {
             <div style={{
               width: 32, height: 32,
               borderRadius: '50%',
-              background: '#3fff8b',
+              background: 'var(--accent)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontFamily: 'Manrope',
+              fontFamily: 'Hanken Grotesk',
               fontWeight: 800,
               fontSize: 13,
-              color: '#005d2c',
-              boxShadow: '0 0 12px rgba(63,255,139,0.25)',
+              color: 'var(--accent-dark)',
+              boxShadow: '0 0 12px color-mix(in srgb, var(--accent) 25%, transparent)',
             }}>
               {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
@@ -436,17 +436,17 @@ export default function Profiel() {
                 width: 96, height: 96,
                 borderRadius: '50%',
                 background: '#0d1f38',
-                border: '2px solid rgba(63,255,139,0.2)',
+                border: '2px solid var(--accent-border)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 20px rgba(63,255,139,0.15)',
+                boxShadow: '0 0 20px var(--accent-light)',
               }}>
                 <span style={{
-                  fontFamily: 'Manrope',
+                  fontFamily: 'Hanken Grotesk',
                   fontWeight: 800,
                   fontSize: 32,
-                  color: '#3fff8b',
+                  color: 'var(--accent)',
                 }}>
                   {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
                 </span>
@@ -457,7 +457,7 @@ export default function Profiel() {
                 bottom: 0, right: 0,
                 width: 24, height: 24,
                 borderRadius: '50%',
-                background: '#3fff8b',
+                background: 'var(--accent)',
                 border: '3px solid #030e20',
                 display: 'flex',
                 alignItems: 'center',
@@ -467,7 +467,7 @@ export default function Profiel() {
                   className="material-symbols-outlined"
                   style={{
                     fontSize: 13,
-                    color: '#005d2c',
+                    color: 'var(--accent-dark)',
                     fontVariationSettings: "'FILL' 1",
                   }}>
                   check
@@ -475,10 +475,10 @@ export default function Profiel() {
               </div>
             </div>
             <h2 style={{
-              fontFamily: 'Manrope',
+              fontFamily: 'Hanken Grotesk',
               fontWeight: 700,
               fontSize: 22,
-              color: '#dae6ff',
+              color: 'var(--text-primary)',
               marginBottom: 8,
             }}>
               {profile?.full_name || 'Naam'}
@@ -490,11 +490,11 @@ export default function Profiel() {
               gap: 8,
             }}>
               <span style={{
-                background: 'rgba(63,255,139,0.1)',
-                color: '#3fff8b',
+                background: 'var(--accent-light)',
+                color: 'var(--accent)',
                 fontSize: 10,
                 fontWeight: 700,
-                fontFamily: 'Inter',
+                fontFamily: 'Hanken Grotesk',
                 padding: '3px 8px',
                 borderRadius: 4,
                 letterSpacing: '0.1em',
@@ -504,8 +504,8 @@ export default function Profiel() {
               </span>
               <span style={{
                 fontSize: 13,
-                color: '#a0abc3',
-                fontFamily: 'Inter',
+                color: 'var(--text-muted)',
+                fontFamily: 'Hanken Grotesk',
               }}>
                 TerreVolt BV
               </span>
@@ -519,7 +519,7 @@ export default function Profiel() {
               borderRadius: 16,
               background: 'rgba(254,179,0,0.06)',
               border: '1px solid rgba(254,179,0,0.2)',
-              borderLeft: '3px solid #feb300',
+              borderLeft: '3px solid var(--warn-text)',
               marginBottom: 12,
               display: 'flex',
               alignItems: 'center',
@@ -530,15 +530,15 @@ export default function Profiel() {
                 <p style={{
                   fontSize: 14,
                   fontWeight: 700,
-                  color: '#feb300',
-                  fontFamily: 'Inter',
+                  color: 'var(--warn-text)',
+                  fontFamily: 'Hanken Grotesk',
                 }}>
                   ⚠ Account nog niet actief
                 </p>
                 <p style={{
                   fontSize: 12,
-                  color: '#a0abc3',
-                  fontFamily: 'Inter',
+                  color: 'var(--text-muted)',
+                  fontFamily: 'Hanken Grotesk',
                   marginTop: 2,
                 }}>
                   Vul je gegevens aan en rond je onboarding af.
@@ -549,9 +549,9 @@ export default function Profiel() {
                 style={{
                   padding: '6px 12px',
                   borderRadius: 12,
-                  background: '#3fff8b',
-                  color: '#005d2c',
-                  fontFamily: 'Inter',
+                  background: 'var(--accent)',
+                  color: 'var(--accent-dark)',
+                  fontFamily: 'Hanken Grotesk',
                   fontWeight: 700,
                   fontSize: 11,
                   border: 'none',
@@ -566,7 +566,7 @@ export default function Profiel() {
           {/* MIJN GEGEVENS */}
           <div style={{
             background: '#111a2c',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid var(--planning-border-soft)',
             borderRadius: 16,
             marginBottom: 12,
             overflow: 'hidden',
@@ -580,7 +580,7 @@ export default function Profiel() {
               <h3 style={{
                 fontSize: 11,
                 fontWeight: 700,
-                fontFamily: 'Inter',
+                fontFamily: 'Hanken Grotesk',
                 color: 'rgba(218,230,255,0.5)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.15em',
@@ -593,10 +593,10 @@ export default function Profiel() {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  color: '#3fff8b',
+                  color: 'var(--accent)',
                   fontSize: 13,
                   fontWeight: 600,
-                  fontFamily: 'Inter',
+                  fontFamily: 'Hanken Grotesk',
                 }}>
                 {editing ? 'Opslaan' : 'Bewerken'}
               </button>
@@ -617,8 +617,8 @@ export default function Profiel() {
                       <label style={{
                         fontSize: 10,
                         fontWeight: 600,
-                        color: profileErrors[f.key] ? '#ff716c' : '#a0abc3',
-                        fontFamily: 'Inter',
+                        color: profileErrors[f.key] ? 'var(--danger)' : 'var(--text-muted)',
+                        fontFamily: 'Hanken Grotesk',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                       }}>
@@ -642,10 +642,10 @@ export default function Profiel() {
                           borderRadius: 12,
                           background: '#060e20',
                           border: profileErrors[f.key]
-                            ? '1.5px solid #ff716c'
-                            : '1px solid rgba(255,255,255,0.07)',
-                          color: '#dae6ff',
-                          fontFamily: 'Inter',
+                            ? '1.5px solid var(--danger)'
+                            : '1px solid var(--planning-border-soft)',
+                          color: 'var(--text-primary)',
+                          fontFamily: 'Hanken Grotesk',
                           fontSize: 14,
                           outline: 'none',
                           boxSizing: 'border-box',
@@ -653,9 +653,9 @@ export default function Profiel() {
                       {profileErrors[f.key] && (
                         <p style={{
                           fontSize: 10,
-                          color: '#ff716c',
+                          color: 'var(--danger)',
                           marginTop: 2,
-                          fontFamily: 'Inter',
+                          fontFamily: 'Hanken Grotesk',
                         }}>
                           ⚠ {profileErrors[f.key]}
                         </p>
@@ -666,8 +666,8 @@ export default function Profiel() {
                     <label style={{
                       fontSize: 10,
                       fontWeight: 600,
-                      color: '#a0abc3',
-                      fontFamily: 'Inter',
+                      color: 'var(--text-muted)',
+                      fontFamily: 'Hanken Grotesk',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}>
@@ -683,9 +683,9 @@ export default function Profiel() {
                         padding: '10px 14px',
                         borderRadius: 12,
                         background: '#060e20',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        color: '#dae6ff',
-                        fontFamily: 'Inter',
+                        border: '1px solid var(--planning-border-soft)',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'Hanken Grotesk',
                         fontSize: 14,
                         outline: 'none',
                         boxSizing: 'border-box',
@@ -707,7 +707,7 @@ export default function Profiel() {
                       gap: 14,
                       padding: '14px 0',
                       borderBottom: i < 3
-                        ? '1px solid rgba(255,255,255,0.05)'
+                        ? '1px solid var(--planning-border-soft)'
                         : 'none',
                     }}>
                       <div style={{
@@ -724,7 +724,7 @@ export default function Profiel() {
                           className="material-symbols-outlined"
                           style={{
                             fontSize: 20,
-                            color: '#a0abc3',
+                            color: 'var(--text-muted)',
                             fontVariationSettings: "'wght' 300",
                           }}>
                           {row.icon}
@@ -733,8 +733,8 @@ export default function Profiel() {
                       <div>
                         <p style={{
                           fontSize: 11,
-                          color: '#a0abc3',
-                          fontFamily: 'Inter',
+                          color: 'var(--text-muted)',
+                          fontFamily: 'Hanken Grotesk',
                           marginBottom: 2,
                         }}>
                           {row.label}
@@ -742,8 +742,8 @@ export default function Profiel() {
                         <p style={{
                           fontSize: 14,
                           fontWeight: 500,
-                          color: row.value ? '#dae6ff' : '#54617A',
-                          fontFamily: 'Inter',
+                          color: row.value ? 'var(--text-primary)' : '#54617A',
+                          fontFamily: 'Hanken Grotesk',
                         }}>
                           {row.value || '—'}
                         </p>
@@ -766,7 +766,7 @@ export default function Profiel() {
           {/* RIJBEWIJS */}
           <div style={{
             background: '#111a2c',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid var(--planning-border-soft)',
             borderRadius: 16,
             marginBottom: 12,
             padding: '16px 20px',
@@ -774,7 +774,7 @@ export default function Profiel() {
             <h3 style={{
               fontSize: 11,
               fontWeight: 700,
-              fontFamily: 'Inter',
+              fontFamily: 'Hanken Grotesk',
               color: 'rgba(218,230,255,0.5)',
               textTransform: 'uppercase',
               letterSpacing: '0.15em',
@@ -804,7 +804,7 @@ export default function Profiel() {
                     className="material-symbols-outlined"
                     style={{
                       fontSize: 20,
-                      color: '#a0abc3',
+                      color: 'var(--text-muted)',
                       fontVariationSettings: "'wght' 300",
                     }}>
                     directions_car
@@ -814,16 +814,16 @@ export default function Profiel() {
                   <p style={{
                     fontSize: 14,
                     fontWeight: 500,
-                    color: '#dae6ff',
-                    fontFamily: 'Inter',
+                    color: 'var(--text-primary)',
+                    fontFamily: 'Hanken Grotesk',
                     marginBottom: 2,
                   }}>
                     Rijbewijs B
                   </p>
                   <p style={{
                     fontSize: 11,
-                    color: '#a0abc3',
-                    fontFamily: 'Inter',
+                    color: 'var(--text-muted)',
+                    fontFamily: 'Hanken Grotesk',
                   }}>
                     {profile?.rijbewijs ? 'Bewijs aanwezig' : 'Niet opgegeven'}
                   </p>
@@ -833,8 +833,8 @@ export default function Profiel() {
                 <span style={{
                   fontSize: 12,
                   fontWeight: 600,
-                  color: '#3fff8b',
-                  fontFamily: 'Inter',
+                  color: 'var(--accent)',
+                  fontFamily: 'Hanken Grotesk',
                 }}>
                   Bewijs aanwezig
                 </span>
@@ -845,7 +845,7 @@ export default function Profiel() {
           {/* NOODCONTACT */}
           <div style={{
             background: '#111a2c',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid var(--planning-border-soft)',
             borderRadius: 16,
             marginBottom: 12,
             padding: '16px 20px',
@@ -853,7 +853,7 @@ export default function Profiel() {
             <h3 style={{
               fontSize: 11,
               fontWeight: 700,
-              fontFamily: 'Inter',
+              fontFamily: 'Hanken Grotesk',
               color: 'rgba(218,230,255,0.5)',
               textTransform: 'uppercase',
               letterSpacing: '0.15em',
@@ -888,7 +888,7 @@ export default function Profiel() {
                       className="material-symbols-outlined"
                       style={{
                         fontSize: 20,
-                        color: '#a0abc3',
+                        color: 'var(--text-muted)',
                         fontVariationSettings: "'wght' 300",
                       }}>
                       {row.icon}
@@ -897,8 +897,8 @@ export default function Profiel() {
                   <div>
                     <p style={{
                       fontSize: 11,
-                      color: '#a0abc3',
-                      fontFamily: 'Inter',
+                      color: 'var(--text-muted)',
+                      fontFamily: 'Hanken Grotesk',
                       marginBottom: 2,
                     }}>
                       {row.label}
@@ -906,8 +906,8 @@ export default function Profiel() {
                     <p style={{
                       fontSize: 14,
                       fontWeight: 500,
-                      color: row.value ? '#dae6ff' : '#54617A',
-                      fontFamily: 'Inter',
+                      color: row.value ? 'var(--text-primary)' : '#54617A',
+                      fontFamily: 'Hanken Grotesk',
                     }}>
                       {row.value || '—'}
                     </p>
@@ -920,7 +920,7 @@ export default function Profiel() {
           {/* ZZP GEGEVENS */}
           <div style={{
             background: '#111a2c',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid var(--planning-border-soft)',
             borderRadius: 16,
             marginBottom: 12,
             overflow: 'hidden',
@@ -939,7 +939,7 @@ export default function Profiel() {
                   className="material-symbols-outlined"
                   style={{
                     fontSize: 16,
-                    color: '#ff716c',
+                    color: 'var(--danger)',
                     fontVariationSettings: "'wght' 300",
                     flexShrink: 0,
                   }}>
@@ -947,8 +947,8 @@ export default function Profiel() {
                 </span>
                 <p style={{
                   fontSize: 12,
-                  color: '#ff716c',
-                  fontFamily: 'Inter',
+                  color: 'var(--danger)',
+                  fontFamily: 'Hanken Grotesk',
                   lineHeight: 1.4,
                 }}>
                   Vul je ZZP gegevens aan om inkooporders te kunnen ontvangen
@@ -965,7 +965,7 @@ export default function Profiel() {
               <h3 style={{
                 fontSize: 11,
                 fontWeight: 700,
-                fontFamily: 'Inter',
+                fontFamily: 'Hanken Grotesk',
                 color: 'rgba(218,230,255,0.5)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.15em',
@@ -981,17 +981,17 @@ export default function Profiel() {
                   <span style={{
                     fontSize: 9,
                     fontWeight: 700,
-                    fontFamily: 'Inter',
+                    fontFamily: 'Hanken Grotesk',
                     padding: '3px 8px',
                     borderRadius: 4,
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase',
                     background: profile?.kvk_nummer && profile?.iban
-                      ? 'rgba(63,255,139,0.1)'
-                      : 'rgba(255,113,108,0.1)',
+                      ? 'var(--accent-light)'
+                      : 'var(--danger-light)',
                     color: profile?.kvk_nummer && profile?.iban
-                      ? '#3fff8b'
-                      : '#ff716c',
+                      ? 'var(--accent)'
+                      : 'var(--danger)',
                   }}>
                     {profile?.kvk_nummer && profile?.iban ? 'Compleet' : 'Incompleet'}
                   </span>
@@ -1002,10 +1002,10 @@ export default function Profiel() {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: '#3fff8b',
+                    color: 'var(--accent)',
                     fontSize: 13,
                     fontWeight: 600,
-                    fontFamily: 'Inter',
+                    fontFamily: 'Hanken Grotesk',
                   }}>
                   <span
                     className="material-symbols-outlined"
@@ -1036,8 +1036,8 @@ export default function Profiel() {
                       <label style={{
                         fontSize: 10,
                         fontWeight: 600,
-                        color: '#a0abc3',
-                        fontFamily: 'Inter',
+                        color: 'var(--text-muted)',
+                        fontFamily: 'Hanken Grotesk',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                       }}>
@@ -1052,9 +1052,9 @@ export default function Profiel() {
                           padding: '10px 14px',
                           borderRadius: 12,
                           background: '#060e20',
-                          border: '1px solid rgba(255,255,255,0.07)',
-                          color: '#dae6ff',
-                          fontFamily: 'Inter',
+                          border: '1px solid var(--planning-border-soft)',
+                          color: 'var(--text-primary)',
+                          fontFamily: 'Hanken Grotesk',
                           fontSize: 14,
                           outline: 'none',
                           boxSizing: 'border-box',
@@ -1065,8 +1065,8 @@ export default function Profiel() {
                     <label style={{
                       fontSize: 10,
                       fontWeight: 600,
-                      color: '#a0abc3',
-                      fontFamily: 'Inter',
+                      color: 'var(--text-muted)',
+                      fontFamily: 'Hanken Grotesk',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}>
@@ -1082,9 +1082,9 @@ export default function Profiel() {
                         padding: '10px 14px',
                         borderRadius: 12,
                         background: '#060e20',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        color: '#dae6ff',
-                        fontFamily: 'Inter',
+                        border: '1px solid var(--planning-border-soft)',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'Hanken Grotesk',
                         fontSize: 14,
                         outline: 'none',
                         boxSizing: 'border-box',
@@ -1104,8 +1104,8 @@ export default function Profiel() {
                     }}
                     style={{
                       fontSize: 12,
-                      color: '#a0abc3',
-                      fontFamily: 'Inter',
+                      color: 'var(--text-muted)',
+                      fontFamily: 'Hanken Grotesk',
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
@@ -1128,8 +1128,8 @@ export default function Profiel() {
                     <div key={i}>
                       <p style={{
                         fontSize: 11,
-                        color: '#a0abc3',
-                        fontFamily: 'Inter',
+                        color: 'var(--text-muted)',
+                        fontFamily: 'Hanken Grotesk',
                         marginBottom: 3,
                       }}>
                         {row.label}
@@ -1138,11 +1138,11 @@ export default function Profiel() {
                         fontSize: 13,
                         fontWeight: 500,
                         color: row.warn
-                          ? '#ff716c'
+                          ? 'var(--danger)'
                           : row.value
-                          ? '#dae6ff'
+                          ? 'var(--text-primary)'
                           : '#54617A',
-                        fontFamily: 'Inter',
+                        fontFamily: 'Hanken Grotesk',
                       }}>
                         {row.value || (row.warn ? 'Niet ingevuld' : '—')}
                       </p>
@@ -1162,7 +1162,7 @@ export default function Profiel() {
           {/* BESCHIKBAARHEID */}
           <div style={{
             background: '#111a2c',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid var(--planning-border-soft)',
             borderRadius: 16,
             marginBottom: 12,
             padding: '16px 20px',
@@ -1170,7 +1170,7 @@ export default function Profiel() {
             <h3 style={{
               fontSize: 11,
               fontWeight: 700,
-              fontFamily: 'Inter',
+              fontFamily: 'Hanken Grotesk',
               color: 'rgba(218,230,255,0.5)',
               textTransform: 'uppercase',
               letterSpacing: '0.15em',
@@ -1180,8 +1180,8 @@ export default function Profiel() {
             </h3>
             <p style={{
               fontSize: 11,
-              color: '#a0abc3',
-              fontFamily: 'Inter',
+              color: 'var(--text-muted)',
+              fontFamily: 'Hanken Grotesk',
               marginBottom: 10,
             }}>
               Vaste vrije dagen
@@ -1202,18 +1202,18 @@ export default function Profiel() {
                       aspectRatio: '1',
                       borderRadius: 12,
                       background: active
-                        ? 'rgba(63,255,139,0.15)'
+                        ? 'var(--accent-light)'
                         : '#060e20',
                       border: active
-                        ? '1px solid rgba(63,255,139,0.4)'
-                        : '1px solid rgba(255,255,255,0.05)',
-                      color: active ? '#3fff8b' : '#54617A',
-                      fontFamily: 'Inter',
+                        ? '1px solid var(--accent-border)'
+                        : '1px solid var(--planning-border-soft)',
+                      color: active ? 'var(--accent)' : '#54617A',
+                      fontFamily: 'Hanken Grotesk',
                       fontWeight: 700,
                       fontSize: 10,
                       cursor: 'pointer',
                       boxShadow: active
-                        ? '0 0 12px rgba(63,255,139,0.15)'
+                        ? '0 0 12px var(--accent-light)'
                         : 'none',
                       display: 'flex',
                       alignItems: 'center',
@@ -1236,8 +1236,8 @@ export default function Profiel() {
             <button
               onClick={() => navigate('/verlof-aanvragen')}
               style={{
-                background: 'rgba(63,255,139,0.08)',
-                border: '1px solid rgba(63,255,139,0.25)',
+                background: 'var(--accent-light)',
+                border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
                 borderRadius: 16,
                 padding: '20px 16px',
                 display: 'flex',
@@ -1249,7 +1249,7 @@ export default function Profiel() {
               <div style={{
                 width: 48, height: 48,
                 borderRadius: '50%',
-                background: 'rgba(63,255,139,0.15)',
+                background: 'var(--accent-light)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1258,7 +1258,7 @@ export default function Profiel() {
                   className="material-symbols-outlined"
                   style={{
                     fontSize: 24,
-                    color: '#3fff8b',
+                    color: 'var(--accent)',
                     fontVariationSettings: "'wght' 300",
                   }}>
                   event_busy
@@ -1267,8 +1267,8 @@ export default function Profiel() {
               <span style={{
                 fontSize: 11,
                 fontWeight: 700,
-                fontFamily: 'Inter',
-                color: '#3fff8b',
+                fontFamily: 'Hanken Grotesk',
+                color: 'var(--accent)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 textAlign: 'center',
@@ -1301,7 +1301,7 @@ export default function Profiel() {
                   className="material-symbols-outlined"
                   style={{
                     fontSize: 24,
-                    color: '#ff716c',
+                    color: 'var(--danger)',
                     fontVariationSettings: "'wght' 300",
                   }}>
                   medical_services
@@ -1310,8 +1310,8 @@ export default function Profiel() {
               <span style={{
                 fontSize: 11,
                 fontWeight: 700,
-                fontFamily: 'Inter',
-                color: '#ff716c',
+                fontFamily: 'Hanken Grotesk',
+                color: 'var(--danger)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 textAlign: 'center',
@@ -1329,7 +1329,7 @@ export default function Profiel() {
               padding: '16px 20px',
               borderRadius: 16,
               background: '#111a2c',
-              border: '1px solid rgba(255,255,255,0.05)',
+              border: '1px solid var(--planning-border-soft)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -1344,7 +1344,7 @@ export default function Profiel() {
               <div style={{
                 width: 44, height: 44,
                 borderRadius: '50%',
-                background: 'rgba(63,255,139,0.1)',
+                background: 'var(--accent-light)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1353,7 +1353,7 @@ export default function Profiel() {
                   className="material-symbols-outlined"
                   style={{
                     fontSize: 22,
-                    color: '#3fff8b',
+                    color: 'var(--accent)',
                     fontVariationSettings: "'wght' 300",
                   }}>
                   receipt_long
@@ -1363,16 +1363,16 @@ export default function Profiel() {
                 <div style={{
                   fontSize: 15,
                   fontWeight: 600,
-                  color: '#dae6ff',
-                  fontFamily: 'Inter',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'Hanken Grotesk',
                   marginBottom: 2,
                 }}>
                   Mijn inkooporders
                 </div>
                 <div style={{
                   fontSize: 11,
-                  color: '#a0abc3',
-                  fontFamily: 'Inter',
+                  color: 'var(--text-muted)',
+                  fontFamily: 'Hanken Grotesk',
                 }}>
                   Bekijk je orders en PDF's
                 </div>
@@ -1398,9 +1398,9 @@ export default function Profiel() {
                 padding: '16px 20px',
                 borderRadius: 16,
                 background: '#111a2c',
-                border: '1px solid rgba(63,255,139,0.2)',
-                color: '#3fff8b',
-                fontFamily: 'Inter',
+                border: '1px solid var(--accent-border)',
+                color: 'var(--accent)',
+                fontFamily: 'Hanken Grotesk',
                 fontWeight: 600,
                 fontSize: 14,
                 cursor: 'pointer',
@@ -1428,7 +1428,7 @@ export default function Profiel() {
             padding: '16px 20px',
             borderRadius: 16,
             background: '#111a2c',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid var(--planning-border-soft)',
             marginBottom: 12,
           }}>
             <div style={{
@@ -1440,7 +1440,7 @@ export default function Profiel() {
               <div style={{
                 width: 44, height: 44,
                 borderRadius: '50%',
-                background: 'rgba(63,255,139,0.1)',
+                background: 'var(--accent-light)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1449,7 +1449,7 @@ export default function Profiel() {
                   className="material-symbols-outlined"
                   style={{
                     fontSize: 22,
-                    color: '#3fff8b',
+                    color: 'var(--accent)',
                     fontVariationSettings: "'wght' 300",
                   }}>
                   palette
@@ -1459,7 +1459,7 @@ export default function Profiel() {
                 <div style={{
                   fontSize: 15,
                   fontWeight: 600,
-                  color: '#dae6ff',
+                  color: 'var(--text-primary)',
                   fontFamily: 'DM Sans',
                   marginBottom: 2,
                 }}>
@@ -1467,7 +1467,7 @@ export default function Profiel() {
                 </div>
                 <div style={{
                   fontSize: 11,
-                  color: '#a0abc3',
+                  color: 'var(--text-muted)',
                   fontFamily: 'DM Sans',
                 }}>
                   Kies tussen donker of licht (Emerald)
@@ -1497,9 +1497,9 @@ export default function Profiel() {
                       fontWeight: 600,
                       fontSize: 13,
                       cursor: 'pointer',
-                      border: active ? '1px solid #3fff8b' : '1px solid rgba(255,255,255,0.08)',
-                      background: active ? 'rgba(63,255,139,0.12)' : 'transparent',
-                      color: active ? '#3fff8b' : '#dae6ff',
+                      border: active ? '1px solid var(--accent)' : '1px solid var(--planning-border-soft)',
+                      background: active ? 'var(--accent-light)' : 'transparent',
+                      color: active ? 'var(--accent)' : 'var(--text-primary)',
                     }}>
                     {opt.label}
                   </button>

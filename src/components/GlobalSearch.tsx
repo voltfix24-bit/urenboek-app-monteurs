@@ -72,18 +72,18 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh]" onClick={onClose}>
-      <div className="absolute inset-0" style={{ background: "color-mix(in srgb, #dae6ff 40%, transparent)", backdropFilter: "blur(8px)" }} />
-      <div className="relative w-full rounded-2xl overflow-hidden" style={{ maxWidth: 560, maxHeight: "70vh", background: "rgba(10,26,48,0.7)", border: "1px solid rgba(106,118,140,0.15)" }} onClick={e => e.stopPropagation()}>
-        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid rgba(106,118,140,0.15)" }}>
-          <Search className="h-5 w-5 shrink-0" style={{ color: "#a0abc3" }} />
-          <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} onKeyDown={handleKeyDown} placeholder="Zoek projecten, medewerkers, mededelingen..." className="flex-1 text-base bg-transparent outline-none" style={{ color: "#dae6ff" }} />
-          <button onClick={onClose}><X className="h-5 w-5" style={{ color: "#a0abc3" }} /></button>
+      <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 40%, transparent)", backdropFilter: "blur(8px)" }} />
+      <div className="relative w-full rounded-2xl overflow-hidden" style={{ maxWidth: 560, maxHeight: "70vh", background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }} onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid var(--planning-border-soft)" }}>
+          <Search className="h-5 w-5 shrink-0" style={{ color: "var(--text-muted)" }} />
+          <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} onKeyDown={handleKeyDown} placeholder="Zoek projecten, medewerkers, mededelingen..." className="flex-1 text-base bg-transparent outline-none" style={{ color: "var(--text-primary)" }} />
+          <button onClick={onClose}><X className="h-5 w-5" style={{ color: "var(--text-muted)" }} /></button>
         </div>
         <div className="overflow-y-auto" style={{ maxHeight: "calc(70vh - 56px)" }}>
           {!query.trim() ? (
-            <p className="text-center py-8 text-sm" style={{ color: "#a0abc3" }}>Typ om te zoeken...</p>
+            <p className="text-center py-8 text-sm" style={{ color: "var(--text-muted)" }}>Typ om te zoeken...</p>
           ) : results.length === 0 ? (
-            <p className="text-center py-8 text-sm" style={{ color: "#a0abc3" }}>Geen resultaten voor '{query}'</p>
+            <p className="text-center py-8 text-sm" style={{ color: "var(--text-muted)" }}>Geen resultaten voor '{query}'</p>
           ) : (
             sectionOrder.map(type => {
               const items = results.filter(r => r.type === type);
@@ -91,15 +91,15 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
               const Icon = iconMap[type];
               return (
                 <div key={type}>
-                  <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#a0abc3" }}>{sectionLabels[type]}</p>
+                  <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{sectionLabels[type]}</p>
                   {items.map(r => {
                     const gi = results.indexOf(r);
                     return (
-                      <button key={r.id} onClick={() => handleSelect(r)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors" style={{ background: activeIndex === gi ? "rgba(63,255,139,0.1)" : "transparent" }}>
-                        <Icon className="h-4 w-4 shrink-0" style={{ color: "#a0abc3" }} />
+                      <button key={r.id} onClick={() => handleSelect(r)} className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors" style={{ background: activeIndex === gi ? "var(--accent-light)" : "transparent" }}>
+                        <Icon className="h-4 w-4 shrink-0" style={{ color: "var(--text-muted)" }} />
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium truncate" style={{ color: "#dae6ff" }}>{r.title}</p>
-                          {r.subtitle && <p className="text-[11px] truncate" style={{ color: "#a0abc3" }}>{r.subtitle}</p>}
+                          <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{r.title}</p>
+                          {r.subtitle && <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{r.subtitle}</p>}
                         </div>
                       </button>
                     );

@@ -13,7 +13,7 @@ export function Spinner({ size = "md", center = true, padding = "py-10" }: Spinn
       style={{
         width: px,
         height: px,
-        border: "2px solid #3fff8b",
+        border: "2px solid var(--accent)",
         borderTopColor: "transparent",
       }}
     />
