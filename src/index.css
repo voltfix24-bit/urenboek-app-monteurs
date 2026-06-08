@@ -145,7 +145,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
   }
 
   /* Media en SVG nooit groter dan hun container */
@@ -161,9 +161,9 @@ p, h1, h2, h3, span.selectable, input, textarea {
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.015em;
   }
 
   ::-webkit-scrollbar {
