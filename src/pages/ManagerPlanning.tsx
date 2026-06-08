@@ -977,6 +977,64 @@ export default function ManagerPlanning() {
               <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{medName(modalForm.medewerker_id) || "—"}</span>
             </p>
 
+            {/* Collega's toevoegen */}
+            {(() => {
+              const candidates = medewerkers.filter(m => m.id !== modalForm.medewerker_id && !extraIds.includes(m.id));
+              const filtered = collegaSearch.trim()
+                ? candidates.filter(m => m.full_name.toLowerCase().includes(collegaSearch.toLowerCase()))
+                : candidates;
+              return (
+                <div style={{ marginBottom: 16, position: "relative" }}>
+                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Collega's toevoegen</label>
+                  <div style={{ position: "relative" }}>
+                    <Plus size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
+                    <input
+                      value={collegaSearch}
+                      onChange={e => { setCollegaSearch(e.target.value); setCollegaOpen(true); }}
+                      onFocus={() => setCollegaOpen(true)}
+                      placeholder="Zoek collega's..."
+                      style={{ width: "100%", padding: "10px 12px 10px 34px", borderRadius: 12, fontSize: 13, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }}
+                    />
+                  </div>
+                  {collegaOpen && filtered.length > 0 && (
+                    <div style={{ marginTop: 6, maxHeight: 160, overflowY: "auto", borderRadius: 12, border: "1px solid var(--planning-border-soft)", background: "var(--app-navy)" }}>
+                      {filtered.slice(0, 30).map(m => {
+                        const conflict = entries.some(e => e.medewerker_id === m.id && e.datum === modalForm.datum);
+                        return (
+                          <button
+                            key={m.id}
+                            onClick={() => { setExtraIds([...extraIds, m.id]); setCollegaSearch(""); setCollegaOpen(false); }}
+                            style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "transparent", border: "none", borderBottom: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                          >
+                            <span>{m.full_name}</span>
+                            {conflict && <span style={{ fontSize: 10, color: "var(--warn-text)" }}>al ingepland</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {extraIds.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                      {extraIds.map(pid => {
+                        const m = medewerkers.find(mm => mm.id === pid);
+                        if (!m) return null;
+                        return (
+                          <span key={pid} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 9999, background: "var(--accent-light, rgba(34,197,94,0.12))", border: "1px solid var(--accent-border)", color: "var(--accent)", fontSize: 12, fontFamily: "Inter", fontWeight: 600 }}>
+                            {m.full_name}
+                            <button onClick={() => setExtraIds(extraIds.filter(x => x !== pid))} style={{ background: "transparent", border: "none", color: "var(--accent)", cursor: "pointer", padding: 0, display: "flex" }}>
+                              <X size={12} />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+
+
             {/* Week selectie */}
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Week selectie</label>
