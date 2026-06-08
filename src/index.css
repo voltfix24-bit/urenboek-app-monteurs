@@ -16,7 +16,7 @@ html, body {
   height: 100%;
   min-height: 100dvh;
   overflow-x: hidden;
-  background-color: var(--app-navy);
+  background-color: var(--bg-base);
 }
 
 * {
