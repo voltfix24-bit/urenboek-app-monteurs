@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+﻿import { useState, useEffect, useCallback, useMemo } from "react";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -433,13 +433,13 @@ export default function ManagerPlanning() {
           {/* WEEK SELECTOR */}
           <section style={{ marginBottom: 28, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--accent)", marginBottom: 4 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--accent)", marginBottom: 4 }}>
                 TEAM PLANNING
               </p>
-              <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", lineHeight: 1, marginBottom: 4 }}>
+              <h2 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", lineHeight: 1, marginBottom: 4 }}>
                 Week {weekNumber}
               </h2>
-              <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Inter" }}>
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Hanken Grotesk" }}>
                 {format(weekStart, "EEE d MMM", { locale: nl })} t/m {format(addDays(weekStart, 4), "EEE d MMM", { locale: nl })}
               </p>
             </div>
@@ -493,11 +493,11 @@ export default function ManagerPlanning() {
           {planningView === 'grid' && (<>
           {/* PROJECT FILTER CHIPS */}
           <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none", marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
-            <button style={{ padding: "8px 16px", borderRadius: 9999, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Inter", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 12px var(--accent-border)" }}>
+            <button style={{ padding: "8px 16px", borderRadius: 9999, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 12px var(--accent-border)" }}>
               Alle projecten
             </button>
             {projects.slice(0, 3).map(p => (
-              <button key={p.id} style={{ padding: "8px 16px", borderRadius: 9999, background: "var(--planning-button)", border: "none", color: "var(--text-secondary)", fontFamily: "Inter", fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
+              <button key={p.id} style={{ padding: "8px 16px", borderRadius: 9999, background: "var(--planning-button)", border: "none", color: "var(--text-secondary)", fontFamily: "Hanken Grotesk", fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
                 {p.naam || p.nummer}
               </button>
             ))}
@@ -518,8 +518,8 @@ export default function ManagerPlanning() {
                 const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
                 return (
                   <div key={i} style={{ textAlign: "center", lineHeight: 1.2, padding: "4px 2px", borderRadius: 8, background: isToday ? "var(--accent-light)" : "transparent", border: isToday ? "1px solid var(--accent-border)" : "1px solid transparent" }}>
-                    <span style={{ display: "block", fontSize: 11, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.08em", color: isToday ? "var(--accent)" : "var(--text-secondary)" }}>{DAGEN[i]}</span>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 800, fontFamily: "Inter", color: "var(--text-primary)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", marginTop: 2 }}>{format(d, "d/M")}</span>
+                    <span style={{ display: "block", fontSize: 11, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.08em", color: isToday ? "var(--accent)" : "var(--text-secondary)" }}>{DAGEN[i]}</span>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 800, fontFamily: "Hanken Grotesk", color: "var(--text-primary)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", marginTop: 2 }}>{format(d, "d/M")}</span>
                   </div>
                 );
               })}
@@ -537,9 +537,9 @@ export default function ManagerPlanning() {
             <div style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)", borderRadius: 16, padding: "14px 16px", marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 12 }}>
               <AlertTriangle size={16} style={{ color: "var(--warn-text)", marginTop: 2, flexShrink: 0 }} />
               <div>
-                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--warn-text)", fontFamily: "Inter", marginBottom: 4 }}>Overplanning</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--warn-text)", fontFamily: "Hanken Grotesk", marginBottom: 4 }}>Overplanning</p>
                 {overplanned.map(m => (
-                  <p key={m.id} style={{ fontSize: 11, color: "var(--text-secondary)", fontFamily: "Inter" }}>{m.name}: {m.days} dagen ingepland</p>
+                  <p key={m.id} style={{ fontSize: 11, color: "var(--text-secondary)", fontFamily: "Hanken Grotesk" }}>{m.name}: {m.days} dagen ingepland</p>
                 ))}
               </div>
             </div>
@@ -567,14 +567,14 @@ export default function ManagerPlanning() {
                       onClick={() => setExpandedMedewerker(prev => prev === med.id ? null : med.id)}
                       style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, cursor: "pointer" }}
                     >
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-avatar-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 800, fontSize: 13, color: "var(--accent)", border: "1px solid var(--accent-border)", flexShrink: 0, letterSpacing: "0.02em" }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-avatar-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 13, color: "var(--accent)", border: "1px solid var(--accent-border)", flexShrink: 0, letterSpacing: "0.02em" }}>
                         {initials}
                       </div>
                       <div style={{ minWidth: 0 }}>
-                        <p style={{ fontFamily: "Manrope", fontWeight: 700, fontSize: 14, color: "var(--text-primary)", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <p style={{ fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 14, color: "var(--text-primary)", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {med.full_name}
                         </p>
-                        <p style={{ fontSize: 10, color: "var(--text-secondary)", fontFamily: "Inter", marginTop: 2, fontWeight: 500 }}>
+                        <p style={{ fontSize: 10, color: "var(--text-secondary)", fontFamily: "Hanken Grotesk", marginTop: 2, fontWeight: 500 }}>
                           {ROLE_LABELS[med.role || ""] || "Medewerker"}
                         </p>
                       </div>
@@ -604,17 +604,17 @@ export default function ManagerPlanning() {
                           }}>
                             {verlof ? (
                               <>
-                                <span style={{ fontSize: 10, fontWeight: 800, fontFamily: "Inter", color: verlofColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                                <span style={{ fontSize: 10, fontWeight: 800, fontFamily: "Hanken Grotesk", color: verlofColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                                   {verlof.type === "ziek" ? "Ziek" : "Verlof"}
                                 </span>
-                                <span style={{ fontSize: 9, fontWeight: 500, fontFamily: "Inter", color: "var(--text-secondary)", marginTop: 2 }}>
+                                <span style={{ fontSize: 9, fontWeight: 500, fontFamily: "Hanken Grotesk", color: "var(--text-secondary)", marginTop: 2 }}>
                                   Hele dag
                                 </span>
                               </>
                             ) : heeftEntry ? (
                               <>
                                 <span style={{
-                                  fontSize: 11, fontWeight: 700, fontFamily: "Inter",
+                                  fontSize: 11, fontWeight: 700, fontFamily: "Hanken Grotesk",
                                   color: "var(--text-primary)", letterSpacing: "-0.01em",
                                   width: "100%", padding: "0 2px", textAlign: "center",
                                   display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
@@ -782,14 +782,14 @@ export default function ManagerPlanning() {
             return (
             <div style={{ marginTop: 24, background: "var(--planning-card)", borderRadius: 18, padding: "18px 20px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, border: "1px solid var(--planning-border-soft)" }}>
               <div>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Geplande uren</p>
-                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Geplande uren</p>
+                <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
                   {totalGeplandUren}<span style={{ fontSize: 14, color: "var(--text-secondary)", marginLeft: 2 }}>u</span>
                 </span>
               </div>
               <div style={{ borderLeft: "1px solid var(--planning-border-soft)", borderRight: "1px solid var(--planning-border-soft)", paddingLeft: 16, paddingRight: 16 }}>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Capaciteit</p>
-                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: capaciteitPct > 100 ? "var(--danger)" : "var(--accent)" }}>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Capaciteit</p>
+                <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 26, color: capaciteitPct > 100 ? "var(--danger)" : "var(--accent)" }}>
                   {medewerkers.length > 0 ? `${capaciteitPct}%` : "—"}
                 </span>
                 <div style={{ height: 4, marginTop: 8, background: "var(--planning-button)", borderRadius: 9999, overflow: "hidden" }}>
@@ -797,8 +797,8 @@ export default function ManagerPlanning() {
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Actieve projecten</p>
-                <span style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>{activeProjects}</span>
+                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Actieve projecten</p>
+                <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>{activeProjects}</span>
               </div>
             </div>
             );
@@ -954,7 +954,7 @@ export default function ManagerPlanning() {
           position: "fixed", bottom: "calc(96px + env(safe-area-inset-bottom, 34px))", left: "50%", transform: "translateX(-50%)", zIndex: 40,
           background: "var(--accent)", color: "var(--on-accent)", border: "none", borderRadius: 9999,
           height: 56, padding: "0 32px", display: "flex", alignItems: "center", gap: 8,
-          fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase",
+          fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 14, textTransform: "uppercase",
           letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 8px 24px var(--accent-border)", whiteSpace: "nowrap",
         }}>
           <Plus size={20} /> Inplannen
@@ -967,17 +967,17 @@ export default function ManagerPlanning() {
         const modalBody = (
           <>
             <div style={{ width: 48, height: 6, borderRadius: 9999, background: "var(--planning-border-soft)", margin: "0 auto 20px" }} />
-            <h2 style={{ fontFamily: "Manrope", fontWeight: 800, fontSize: 20, color: "var(--text-primary)", marginBottom: 4 }}>
+            <h2 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 20, color: "var(--text-primary)", marginBottom: 4 }}>
               {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
             </h2>
-            <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Inter", marginBottom: 16 }}>
+            <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Hanken Grotesk", marginBottom: 16 }}>
               {editId
                 ? modalForm.datum
                 : `${modalDatums.length || 1} ${modalDatums.length === 1 ? "dag" : "dagen"} geselecteerd`}
             </p>
             {modalStatus && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: modalStatus.bg, border: `1px solid ${modalStatus.color}33`, marginBottom: 12 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: modalStatus.color, fontFamily: "Inter" }}>{modalStatus.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: modalStatus.color, fontFamily: "Hanken Grotesk" }}>{modalStatus.label}</span>
               </div>
             )}
             {modalConflicts.length > 0 && (
@@ -985,14 +985,14 @@ export default function ManagerPlanning() {
                 {modalConflicts.map((c, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: "var(--danger-light)", border: "1px solid var(--danger-border)", marginBottom: 6 }}>
                     <AlertTriangle size={14} style={{ color: "var(--danger)", flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, fontWeight: 500, color: "var(--danger)", fontFamily: "Inter" }}>Conflict: {c}</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: "var(--danger)", fontFamily: "Hanken Grotesk" }}>Conflict: {c}</span>
                   </div>
                 ))}
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
-                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>
+                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>
                   Dagen
                 </label>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 8 }}>
@@ -1017,7 +1017,7 @@ export default function ManagerPlanning() {
                           color: selected ? "var(--on-accent)" : "var(--text-primary)",
                           opacity: disabled ? 0.4 : 1,
                           cursor: disabled ? "not-allowed" : "pointer",
-                          fontFamily: "Inter",
+                          fontFamily: "Hanken Grotesk",
                           display: "flex",
                           flexDirection: "column",
                           alignItems: "center",
@@ -1029,7 +1029,7 @@ export default function ManagerPlanning() {
                         <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: selected ? "var(--on-accent)" : "var(--text-secondary)" }}>
                           {DAGEN[i]}
                         </span>
-                        <span style={{ fontSize: 16, fontWeight: 800, fontFamily: "Manrope", fontVariantNumeric: "tabular-nums" }}>
+                        <span style={{ fontSize: 16, fontWeight: 800, fontFamily: "Hanken Grotesk", fontVariantNumeric: "tabular-nums" }}>
                           {format(date, "d/M")}
                         </span>
                       </button>
@@ -1038,8 +1038,8 @@ export default function ManagerPlanning() {
                 </div>
               </div>
               <div>
-                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Project</label>
-                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }}>
+                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Project</label>
+                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", outline: "none" }}>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
                 </select>
                 {(() => {
@@ -1049,27 +1049,27 @@ export default function ManagerPlanning() {
                   return (
                     <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, marginTop: 6, background: "var(--planning-card)", border: "1px solid var(--planning-border-soft)" }}>
                       <MapPin size={12} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, color: addr ? "var(--text-secondary)" : "var(--warn-text)", fontFamily: "Inter" }}>{addr || "⚠ Geen adres ingevuld"}</span>
+                      <span style={{ fontSize: 11, color: addr ? "var(--text-secondary)" : "var(--warn-text)", fontFamily: "Hanken Grotesk" }}>{addr || "⚠ Geen adres ingevuld"}</span>
                     </div>
                   );
                 })()}
               </div>
               <div style={{ display: "flex", gap: 12 }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Start</label>
-                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
+                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Start</label>
+                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", outline: "none" }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Eind</label>
-                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
+                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Eind</label>
+                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", outline: "none" }} />
                 </div>
               </div>
-              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Inter", outline: "none" }} />
-              <button onClick={savePlanning} style={{ width: "100%", height: 52, borderRadius: 14, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Manrope", fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 4px 16px var(--accent-border)" }}>
+              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", outline: "none" }} />
+              <button onClick={savePlanning} style={{ width: "100%", height: 52, borderRadius: 14, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 4px 16px var(--accent-border)" }}>
                 {editId ? "Bijwerken" : "Inplannen"}
               </button>
               {editId && (
-                <button onClick={deletePlanning} style={{ width: "100%", height: 48, borderRadius: 14, background: "transparent", border: "1px solid var(--danger-border)", color: "var(--danger)", fontFamily: "Inter", fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer" }}>
+                <button onClick={deletePlanning} style={{ width: "100%", height: 48, borderRadius: 14, background: "transparent", border: "1px solid var(--danger-border)", color: "var(--danger)", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer" }}>
                   Verwijderen
                 </button>
               )}
@@ -1088,3 +1088,4 @@ export default function ManagerPlanning() {
     </PageShell>
   );
 }
+

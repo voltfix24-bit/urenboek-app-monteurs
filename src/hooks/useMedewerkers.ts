@@ -54,9 +54,9 @@ export function useMedewerkers(options: UseMedewerkersOptions = {}) {
       return;
     }
 
-    const rolMap = new Map(((rollen ?? []) as any[]).map((r) => [r.user_id, r.role]));
+    const rolMap = new Map((rollen ?? []).map((r) => [r.user_id, r.role]));
 
-    let result = ((profielen ?? []) as any[]).map((p) => ({
+    let result = (profielen ?? []).map((p) => ({
       ...p,
       role: rolMap.get(p.user_id) || "monteur",
     })) as ProfielMetRol[];
