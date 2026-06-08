@@ -20,6 +20,7 @@ interface Onderaannemer {
   iban: string | null;
   uurtarief: number | null;
   account_status: string;
+  planning_partner_ids: string[];
 }
 
 interface Monteur {
@@ -31,7 +32,9 @@ interface Monteur {
   onderaannemer_id: string | null;
   account_status: string;
   role?: string;
+  planning_partner_ids: string[];
 }
+
 
 const ROLES = [
   { value: "monteur", label: "Monteur" },
@@ -83,6 +86,12 @@ export default function Onderaannemers() {
   const [editRole, setEditRole] = useState("monteur");
   const [editSaving, setEditSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Vaste planning-collega's
+  const [partnerEditId, setPartnerEditId] = useState<string | null>(null);
+  const [partnerSel, setPartnerSel] = useState<Set<string>>(new Set());
+  const [partnerSaving, setPartnerSaving] = useState(false);
+
 
   // Wachtwoord reset voor onderaannemer (account delen)
   const [pwResetting, setPwResetting] = useState(false);
@@ -200,11 +209,60 @@ export default function Onderaannemers() {
     load();
   };
 
+  // ─── Vaste planning-collega's ───
+  const startPartnerEdit = (m: { id: string; planning_partner_ids: string[] }) => {
+    setPartnerEditId(m.id);
+    setPartnerSel(new Set(m.planning_partner_ids || []));
+  };
+  const togglePartnerSel = (id: string) => {
+    setPartnerSel((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const savePartners = async (m: { id: string; planning_partner_ids: string[] }) => {
+    setPartnerSaving(true);
+    const oldSet = new Set(m.planning_partner_ids || []);
+    const newSet = partnerSel;
+    const added: string[] = [...newSet].filter((x) => !oldSet.has(x));
+    const removed: string[] = [...oldSet].filter((x) => !newSet.has(x));
+
+    // Update mijzelf
+    const { error: e1 } = await supabase
+      .from("profiles")
+      .update({ planning_partner_ids: [...newSet] } as any)
+      .eq("id", m.id);
+    if (e1) { toast.error("Opslaan mislukt"); setPartnerSaving(false); return; }
+
+    // Bidirectioneel: voeg toe/verwijder op de partners zelf
+    const affected = [...new Set([...added, ...removed])];
+    if (affected.length > 0) {
+      const { data: rows } = await supabase
+        .from("profiles")
+        .select("id, planning_partner_ids")
+        .in("id", affected);
+      for (const r of (rows || []) as any[]) {
+        const cur = new Set<string>((r.planning_partner_ids as string[] | null) || []);
+        if (added.includes(r.id)) cur.add(m.id);
+        if (removed.includes(r.id)) cur.delete(m.id);
+        await supabase.from("profiles").update({ planning_partner_ids: [...cur] } as any).eq("id", r.id);
+      }
+    }
+
+    toast.success("Vaste collega's bijgewerkt");
+    setPartnerEditId(null);
+    setPartnerSaving(false);
+    load();
+  };
+
+
+
   const load = async () => {
     setLoading(true);
     const { data: profielen } = await supabase
       .from("profiles")
-      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,kvk_nummer,iban,uurtarief,account_status,is_onderaannemer,onderaannemer_id")
+      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,kvk_nummer,iban,uurtarief,account_status,is_onderaannemer,onderaannemer_id,planning_partner_ids")
       .order("full_name");
     const { data: rollen } = await supabase.from("user_roles").select("user_id,role");
     const rolMap = new Map((rollen || []).map((r) => [r.user_id, r.role]));
@@ -212,10 +270,11 @@ export default function Onderaannemers() {
     const oa: Onderaannemer[] = [];
     const mt: Monteur[] = [];
     (profielen || []).forEach((p: any) => {
+      const ppi = (p.planning_partner_ids as string[] | null) || [];
       if (p.is_onderaannemer) {
-        oa.push(p);
+        oa.push({ ...p, planning_partner_ids: ppi });
       } else if (p.onderaannemer_id) {
-        mt.push({ ...p, role: rolMap.get(p.user_id) });
+        mt.push({ ...p, role: rolMap.get(p.user_id), planning_partner_ids: ppi });
       }
     });
     setOnderaannemers(oa);
@@ -224,6 +283,7 @@ export default function Onderaannemers() {
     setSelected((prev) => prev ? oa.find((o) => o.id === prev.id) ?? null : null);
     setLoading(false);
   };
+
 
   useEffect(() => { load(); }, []);
 
@@ -495,25 +555,73 @@ export default function Onderaannemers() {
                     </div>
                   );
                 }
+                const isPartnerEdit = partnerEditId === m.id;
+                const teamForPartner: { id: string; full_name: string }[] = [
+                  { id: selected.id, full_name: `${selected.bedrijfsnaam || selected.full_name} (onderaannemer)` },
+                  ...mList.filter((x) => x.id !== m.id).map((x) => ({ id: x.id, full_name: x.full_name })),
+                ];
+                const partnerNamen = (m.planning_partner_ids || [])
+                  .map((pid) => teamForPartner.find((t) => t.id === pid)?.full_name)
+                  .filter(Boolean) as string[];
                 return (
-                  <div key={m.id} style={{ background: "#0a1a30", borderRadius: 14, padding: 14, border: "1px solid rgba(106,118,140,0.15)", display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(63,255,139,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, color: "#3fff8b", fontSize: 13 }}>
-                      {m.full_name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                  <div key={m.id} style={{ background: "#0a1a30", borderRadius: 14, padding: 14, border: "1px solid rgba(106,118,140,0.15)", display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(63,255,139,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope", fontWeight: 700, color: "#3fff8b", fontSize: 13 }}>
+                        {m.full_name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontWeight: 700, color: "#dae6ff", fontSize: 14 }}>{m.full_name}</p>
+                        <p style={{ fontSize: 12, color: "#6a768c" }}>{m.email || m.telefoon || "—"}</p>
+                      </div>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.1em" }}>{m.role || "monteur"}</span>
+                      <button type="button" onClick={() => isPartnerEdit ? setPartnerEditId(null) : startPartnerEdit(m)} title="Vaste collega's" style={{ width: 32, height: 32, borderRadius: 10, background: isPartnerEdit ? "rgba(63,255,139,0.2)" : "rgba(106,118,140,0.15)", border: isPartnerEdit ? "1px solid rgba(63,255,139,0.4)" : "1px solid rgba(106,118,140,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: isPartnerEdit ? "#3fff8b" : "#a0abc3" }}>
+                        <Users size={14} />
+                      </button>
+                      <button type="button" onClick={() => startEdit(m)} title="Bewerken" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(106,118,140,0.15)", border: "1px solid rgba(106,118,140,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#a0abc3" }}>
+                        <Pencil size={14} />
+                      </button>
+                      <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} title="Verwijderen" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#ff716c", opacity: deletingId === m.id ? 0.5 : 1 }}>
+                        <Trash2 size={14} />
+                      </button>
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontWeight: 700, color: "#dae6ff", fontSize: 14 }}>{m.full_name}</p>
-                      <p style={{ fontSize: 12, color: "#6a768c" }}>{m.email || m.telefoon || "—"}</p>
-                    </div>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.1em" }}>{m.role || "monteur"}</span>
-                    <button type="button" onClick={() => startEdit(m)} title="Bewerken" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(106,118,140,0.15)", border: "1px solid rgba(106,118,140,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#a0abc3" }}>
-                      <Pencil size={14} />
-                    </button>
-                    <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} title="Verwijderen" style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,113,108,0.1)", border: "1px solid rgba(255,113,108,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#ff716c", opacity: deletingId === m.id ? 0.5 : 1 }}>
-                      <Trash2 size={14} />
-                    </button>
+
+                    {!isPartnerEdit && partnerNamen.length > 0 && (
+                      <p style={{ fontSize: 11, color: "#a0abc3", fontStyle: "italic", paddingLeft: 4 }}>
+                        Plant automatisch mee met: <span style={{ color: "#3fff8b", fontWeight: 700 }}>{partnerNamen.join(", ")}</span>
+                      </p>
+                    )}
+
+                    {isPartnerEdit && (
+                      <div style={{ background: "#061327", borderRadius: 12, padding: 12, border: "1px solid rgba(63,255,139,0.25)", display: "flex", flexDirection: "column", gap: 8 }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: "#3fff8b", textTransform: "uppercase", letterSpacing: "0.15em" }}>Vaste planning-collega's</p>
+                        <p style={{ fontSize: 11, color: "#a0abc3", lineHeight: 1.4 }}>
+                          Selecteer met wie deze monteur altijd samen wordt ingepland. Bij het maken, wijzigen of verwijderen van een planning gaan alle gekoppelde monteurs mee.
+                        </p>
+                        {teamForPartner.length === 0 ? (
+                          <p style={{ fontSize: 11, color: "#6a768c", fontStyle: "italic" }}>Geen andere teamleden beschikbaar.</p>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            {teamForPartner.map((t) => {
+                              const checked = partnerSel.has(t.id);
+                              return (
+                                <label key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 8, background: checked ? "rgba(63,255,139,0.1)" : "#0a1a30", border: checked ? "1px solid rgba(63,255,139,0.3)" : "1px solid rgba(106,118,140,0.15)", cursor: "pointer" }}>
+                                  <input type="checkbox" checked={checked} onChange={() => togglePartnerSel(t.id)} style={{ width: 16, height: 16, accentColor: "#3fff8b" }} />
+                                  <span style={{ fontSize: 13, color: "#dae6ff", fontWeight: checked ? 700 : 500 }}>{t.full_name}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                        <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                          <button type="button" onClick={() => setPartnerEditId(null)} style={secondaryBtn}>Annuleren</button>
+                          <button type="button" onClick={() => savePartners(m)} disabled={partnerSaving} style={primaryBtn}>{partnerSaving ? "Bezig…" : "Opslaan"}</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
+
             </div>
           </main>
         </div>

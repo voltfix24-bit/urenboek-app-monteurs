@@ -1283,6 +1283,7 @@ export type Database = {
           id: string
           medewerker_id: string
           notitie: string
+          planning_group_id: string | null
           project_id: string
           starttijd: string
           updated_at: string
@@ -1299,6 +1300,7 @@ export type Database = {
           id?: string
           medewerker_id: string
           notitie?: string
+          planning_group_id?: string | null
           project_id: string
           starttijd?: string
           updated_at?: string
@@ -1315,6 +1317,7 @@ export type Database = {
           id?: string
           medewerker_id?: string
           notitie?: string
+          planning_group_id?: string | null
           project_id?: string
           starttijd?: string
           updated_at?: string
@@ -1450,6 +1453,7 @@ export type Database = {
           onboarding_voltooid: boolean
           onboarding_voltooid_op: string | null
           onderaannemer_id: string | null
+          planning_partner_ids: string[]
           rijbewijs: boolean
           telefoon: string
           updated_at: string
@@ -1483,6 +1487,7 @@ export type Database = {
           onboarding_voltooid?: boolean
           onboarding_voltooid_op?: string | null
           onderaannemer_id?: string | null
+          planning_partner_ids?: string[]
           rijbewijs?: boolean
           telefoon?: string
           updated_at?: string
@@ -1516,6 +1521,7 @@ export type Database = {
           onboarding_voltooid?: boolean
           onboarding_voltooid_op?: string | null
           onderaannemer_id?: string | null
+          planning_partner_ids?: string[]
           rijbewijs?: boolean
           telefoon?: string
           updated_at?: string
