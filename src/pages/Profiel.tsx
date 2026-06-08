@@ -16,7 +16,7 @@ import { formatDatum } from "@/lib/formatting";
 import { CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isWithinInterval, parseISO, differenceInDays } from "date-fns";
 import { nl } from "date-fns/locale";
-import { BottomNav } from "@/components/BottomNav";
+
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { triggerInstallPrompt, canShowInstallPrompt } from "@/components/InstallPrompt";
 
@@ -1427,7 +1427,7 @@ export default function Profiel() {
 
 
         </main>
-        <BottomNav badges={badges} />
+        
       </div>
     </PageShell>
   );

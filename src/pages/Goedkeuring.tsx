@@ -14,7 +14,7 @@ import { Check, X, ChevronLeft, ChevronRight, CheckCheck, AlertTriangle, Plus, P
 import { checkOveruren } from "@/lib/overurenCheck";
 import { useNavigate } from "react-router-dom";
 import { useGoedkeuring } from "@/hooks/useGoedkeuring";
-import { BottomNav } from "@/components/BottomNav";
+
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { format, startOfWeek, addDays, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -666,7 +666,6 @@ export default function Goedkeuring() {
       </div>
       </PullToRefresh>
 
-      <BottomNav badges={badges} />
 
       {/* Book modal */}
       {showBookModal && (

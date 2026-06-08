@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { cachePlanning, getCachedPlanning } from "@/lib/offlineQueue";
 import { mutate } from "@/lib/supabaseHelpers";
 import { ListSkeleton, PlanningCardSkeleton } from "@/components/ui/Skeletons";
-import { BottomNav } from "@/components/BottomNav";
+
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { useActiveMedewerker } from "@/hooks/useActiveMedewerker";
 import { MonteurSwitcher } from "@/components/MonteurSwitcher";
@@ -1143,7 +1143,6 @@ export default function Planning() {
           </main>
         </PullToRefresh>
 
-        <BottomNav badges={badges} />
 
         {/* UREN MODAL */}
         {showUrenModal && modalItem && (

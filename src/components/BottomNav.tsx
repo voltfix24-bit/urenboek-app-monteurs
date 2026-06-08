@@ -71,10 +71,8 @@ export function BottomNav({ badges }: BottomNavProps) {
         paddingLeft: "env(safe-area-inset-left)",
         paddingRight: "env(safe-area-inset-right)",
         zIndex: 50,
-        display: "flex",
-        alignItems: "center",
       }}
-      className="lg:hidden"
+      className="lg:hidden flex items-center"
     >
       {tabs.map((t) => {
         const active = isActive(t.key);
