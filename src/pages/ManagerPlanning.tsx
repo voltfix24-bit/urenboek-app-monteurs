@@ -452,14 +452,17 @@ export default function ManagerPlanning() {
           </div>
 
           {/* DAY HEADERS */}
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8, paddingRight: 4 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, width: 168 }}>
-              {weekDates.map((d, i) => (
-                <div key={i} style={{ textAlign: "center", lineHeight: 1.1 }}>
-                  <span style={{ display: "block", fontSize: 9, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.08em", color: "#a0abc3" }}>{DAGEN[i]}</span>
-                  <span style={{ display: "block", fontSize: 10, fontWeight: 700, fontFamily: "Inter", color: "#dae6ff", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{format(d, "d/M")}</span>
-                </div>
-              ))}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10, paddingRight: 4 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, width: 240 }}>
+              {weekDates.map((d, i) => {
+                const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+                return (
+                  <div key={i} style={{ textAlign: "center", lineHeight: 1.2, padding: "4px 2px", borderRadius: 8, background: isToday ? "rgba(63,255,139,0.08)" : "transparent", border: isToday ? "1px solid rgba(63,255,139,0.25)" : "1px solid transparent" }}>
+                    <span style={{ display: "block", fontSize: 11, fontWeight: 700, fontFamily: "Inter", textTransform: "uppercase", letterSpacing: "0.08em", color: isToday ? "#3fff8b" : "#a0abc3" }}>{DAGEN[i]}</span>
+                    <span style={{ display: "block", fontSize: 13, fontWeight: 800, fontFamily: "Inter", color: "#dae6ff", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", marginTop: 2 }}>{format(d, "d/M")}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
