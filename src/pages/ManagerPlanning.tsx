@@ -510,20 +510,38 @@ export default function ManagerPlanning() {
                     </div>
 
                     {/* Day blocks */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, width: 240 }}>
                       {weekDates.map((date, i) => {
                         const dateStr = format(date, "yyyy-MM-dd");
                         const entry = entries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
                         const heeftEntry = !!entry;
                         const verlof = beschikbaarheid.find(b => b.medewerker_id === med.id && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
-                        const bgColor = verlof ? "#152640" : !heeftEntry ? "rgba(61,72,93,0.3)" : entry?.activiteit_kleur || "#3fff8b";
+                        const proj = entry ? projMap.get(entry.project_id) : null;
+                        const accent = entry?.activiteit_kleur || "#3fff8b";
+                        const bgColor = verlof ? "#152640" : !heeftEntry ? "rgba(61,72,93,0.25)" : `${accent}22`;
+                        const borderColor = verlof ? "rgba(160,171,195,0.2)" : !heeftEntry ? "rgba(106,118,140,0.18)" : `${accent}66`;
                         return (
                           <div key={i} onClick={() => openAddModal(med.id, dateStr)} style={{
-                            width: 28, height: 36, borderRadius: 8, background: bgColor, cursor: "pointer",
-                            boxShadow: heeftEntry ? `0 0 8px ${bgColor}50` : "none",
-                            display: "flex", alignItems: "center", justifyContent: "center",
+                            height: 48, borderRadius: 10, background: bgColor, cursor: "pointer",
+                            border: `1px solid ${borderColor}`,
+                            boxShadow: heeftEntry ? `0 0 10px ${accent}33` : "none",
+                            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                            padding: "2px 3px", lineHeight: 1.05, transition: "transform 0.1s",
                           }}>
-                            {verlof && <span className="material-symbols-outlined" style={{ fontSize: 12, color: "#a0abc3" }}>beach_access</span>}
+                            {verlof ? (
+                              <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#a0abc3" }}>beach_access</span>
+                            ) : heeftEntry ? (
+                              <>
+                                <span style={{ fontSize: 11, fontWeight: 800, fontFamily: "Inter", color: "#dae6ff", letterSpacing: "-0.01em" }}>
+                                  {proj?.nummer?.slice(-3) || "•"}
+                                </span>
+                                <span style={{ fontSize: 8, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 1, fontVariantNumeric: "tabular-nums" }}>
+                                  {entry?.starttijd?.slice(0, 5)}
+                                </span>
+                              </>
+                            ) : (
+                              <span style={{ fontSize: 18, color: "rgba(160,171,195,0.35)", lineHeight: 1 }}>+</span>
+                            )}
                           </div>
                         );
                       })}
