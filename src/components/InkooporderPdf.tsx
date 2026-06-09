@@ -447,14 +447,17 @@ export function InkooporderDocument({
 
         {/* TABEL RIJEN */}
         {regels.map((r: any, i: number) => {
-          const omschrijving = r.activiteit || r.beschrijving || "Elektrotechnische werkzaamheden";
+          const isReiskosten = (r.regel_type || "uren") === "reiskosten";
+          const omschrijving = isReiskosten
+            ? `${r.activiteit || "Reiskosten ploeg"}${r.retour_km ? ` · retour ${r.retour_km} km, vrij ${r.vrije_km || 0} km` : ""}`
+            : r.activiteit || r.beschrijving || "Elektrotechnische werkzaamheden";
           return (
             <View key={i} style={[styles.tabelRij, i % 2 === 0 ? styles.tabelRijEven : styles.tabelRijOneven]}>
               <View style={styles.kolDatum}><Text style={styles.tabelMuted}>{fmtDatumMetDag(r.datum)}</Text></View>
               <View style={styles.kolProject}><Text style={styles.tabelProject}>{r.project_naam || ""}</Text></View>
               <View style={styles.kolWerk}><Text style={styles.tabelTekst}>{omschrijving}</Text></View>
-              <View style={styles.kolUren}><Text style={[styles.tabelTekst, { textAlign: "center", fontFamily: "Helvetica-Bold" }]}>{r.uren}</Text></View>
-              <View style={styles.kolTarief}><Text style={[styles.tabelTekst, { textAlign: "right" }]}>{euro(Number(r.uurtarief))}</Text></View>
+              <View style={styles.kolUren}><Text style={[styles.tabelTekst, { textAlign: "center", fontFamily: "Helvetica-Bold" }]}>{isReiskosten ? `${r.kilometers || 0} km` : r.uren}</Text></View>
+              <View style={styles.kolTarief}><Text style={[styles.tabelTekst, { textAlign: "right" }]}>{isReiskosten ? `${euro(Number(r.km_tarief || 0))}/km` : euro(Number(r.uurtarief))}</Text></View>
               <View style={styles.kolBedrag}><Text style={[styles.tabelBedrag, { textAlign: "right" }]}>{euro(Number(r.bedrag))}</Text></View>
             </View>
           );

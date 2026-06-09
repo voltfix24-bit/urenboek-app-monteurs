@@ -2,7 +2,7 @@
 
 ## Core
 TerreVolt BV workforce management platform. Emerald Light theme (single theme, geen dark mode).
-Achtergrond #f9fafb, surfaces #ffffff, primary emerald #10b981, accent-dark #006c49, on-accent #052e22 (donkergroene tekst op accent, NIET wit — wit op #10b981 faalt AA). Tekst #121c2a, borders #e5e7eb, text-muted #6c7a71.
+Achtergrond #f9fafb, surfaces #ffffff, primary emerald #047857 (WCAG AA: 5.6:1 wit op accent), tekst #121c2a, borders #e5e7eb.
 Hanken Grotesk overal (headings + body), DM Mono voor cijfers/codes. Mobile-first, max-width 430px.
 Supabase Cloud backend. Dutch (nl-NL) locale throughout.
 Roles: monteur, schakelmonteur, uitvoerder, wv, manager. Manager sees all.
@@ -10,8 +10,7 @@ Bottom nav: monteur (Uren/Planning/Berichten/Profiel), manager (Dashboard/Keuren
 Bottom sheets for all modals with drag handle. FAB green bottom-right for primary actions.
 Status badges: concept=grey, ingediend=orange, goedgekeurd=green, afgekeurd=red.
 Tonal layering ipv shadows. Geen donkere kleuren meer toevoegen — light theme is enige stijl.
-Planning-avatar-bg = #adedd3 (lichtgroen), sidebar-shell-active-bg = #10b981. Knoppen op accent gebruiken altijd var(--on-accent), nooit hardcoded wit.
-Onderaannemer view monteurs_voor_onderaannemer is HARD beperkt tot id/full_name/is_onderaannemer/onderaannemer_id/account_status met security_invoker=false. Nooit email/telefoon/adres/bedrijfsnaam/uurtarief/iban/kvk/contract_einddatum toevoegen.
+Contrast regels (WCAG AA): tekst-muted = #5a685f, accent = #047857 voor zowel knoppen (wit erop) als links/tekst (op wit). Nooit #10b981 als tekstkleur of als knop-achtergrond met witte tekst — faalt AA (2.5:1).
 
 ## Memories
 - [Design system](mem://design/tokens) — Full color palette, surfaces, typography, border radii
