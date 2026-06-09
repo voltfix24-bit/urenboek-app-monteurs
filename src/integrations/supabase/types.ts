@@ -2154,63 +2154,24 @@ export type Database = {
       monteurs_voor_onderaannemer: {
         Row: {
           account_status: string | null
-          activated_at: string | null
-          adres: string | null
-          avatar_url: string | null
-          bedrijfsnaam: string | null
-          contract_einddatum: string | null
-          created_at: string | null
-          email: string | null
           full_name: string | null
           id: string | null
-          invited_at: string | null
           is_onderaannemer: boolean | null
-          onboarding_voltooid: boolean | null
-          onboarding_voltooid_op: string | null
           onderaannemer_id: string | null
-          telefoon: string | null
-          updated_at: string | null
-          user_id: string | null
         }
         Insert: {
           account_status?: string | null
-          activated_at?: string | null
-          adres?: string | null
-          avatar_url?: string | null
-          bedrijfsnaam?: string | null
-          contract_einddatum?: string | null
-          created_at?: string | null
-          email?: string | null
           full_name?: string | null
           id?: string | null
-          invited_at?: string | null
           is_onderaannemer?: boolean | null
-          onboarding_voltooid?: boolean | null
-          onboarding_voltooid_op?: string | null
           onderaannemer_id?: string | null
-          telefoon?: string | null
-          updated_at?: string | null
-          user_id?: string | null
         }
         Update: {
           account_status?: string | null
-          activated_at?: string | null
-          adres?: string | null
-          avatar_url?: string | null
-          bedrijfsnaam?: string | null
-          contract_einddatum?: string | null
-          created_at?: string | null
-          email?: string | null
           full_name?: string | null
           id?: string | null
-          invited_at?: string | null
           is_onderaannemer?: boolean | null
-          onboarding_voltooid?: boolean | null
-          onboarding_voltooid_op?: string | null
           onderaannemer_id?: string | null
-          telefoon?: string | null
-          updated_at?: string | null
-          user_id?: string | null
         }
         Relationships: [
           {
