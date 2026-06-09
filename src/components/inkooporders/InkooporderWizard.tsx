@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { X, Check, AlertTriangle, ChevronLeft, Users, Calendar, ListChecks, FileCheck2 } from "lucide-react";
+import { X, Check, AlertTriangle, ChevronLeft, Users, Calendar, ListChecks, FileCheck2, Navigation } from "lucide-react";
+
 import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 import { T } from "@/lib/inkooporderTheme";
