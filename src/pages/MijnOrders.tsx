@@ -19,7 +19,7 @@ export default function MijnOrders() {
     setLoading(true);
     const { data } = await supabase.from("inkooporders").select("*").eq("medewerker_id", profileId).order("aangemaakt_op", { ascending: false });
     setOrders(data || []);
-    const { data: prof } = await supabase.from("profiles").select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon, is_onderaannemer").eq("id", profileId).single();
+    const { data: prof } = await supabase.from("profiles").select("id, full_name").eq("id", profileId).single();
     setProfile(prof);
     setLoading(false);
   }, [profileId]);
@@ -28,13 +28,6 @@ export default function MijnOrders() {
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--app-navy)' }}><Spinner /></div>;
 
-  const magBedragenZien = !!(
-    profile?.is_onderaannemer ||
-    profile?.bedrijfsnaam ||
-    profile?.kvk_nummer ||
-    profile?.iban ||
-    profile?.uurtarief
-  );
   const totaalBedrag = orders.reduce((sum, o) => sum + (Number(o.totaal_excl_btw) || 0), 0);
 
   return (
@@ -117,29 +110,17 @@ export default function MijnOrders() {
               color: 'var(--text-muted)',
               marginBottom: 8,
             }}>
-              {magBedragenZien ? "DIT KWARTAAL" : "MIJN ORDERS"}
+              DIT KWARTAAL
             </p>
             <div style={{
               fontFamily: 'Hanken Grotesk',
               fontWeight: 800,
-              fontSize: magBedragenZien ? 40 : 36,
+              fontSize: 40,
               color: 'var(--accent)',
               marginBottom: 16,
             }}>
-              {magBedragenZien ? euro(totaalBedrag) : orders.length}
+              {euro(totaalBedrag)}
             </div>
-            {!magBedragenZien && (
-              <p style={{
-                fontSize: 12,
-                color: 'var(--text-muted)',
-                fontFamily: 'Hanken Grotesk',
-                lineHeight: 1.5,
-                marginTop: -8,
-                marginBottom: 16,
-              }}>
-                Financiele orderbedragen zijn alleen zichtbaar voor ZZP/onderaannemer-profielen.
-              </p>
-            )}
             <div style={{
               display: 'flex',
               justifyContent: 'center',
@@ -162,38 +143,9 @@ export default function MijnOrders() {
           </div>
 
           {/* ── PER WEEK DOWNLOAD ── */}
-          {orders.length > 0 && magBedragenZien && (
+          {orders.length > 0 && (
             <div style={{ marginBottom: 24 }}>
               <WeekDownloadList orders={orders} toonBedrag />
-            </div>
-          )}
-
-          {orders.length > 0 && !magBedragenZien && (
-            <div className="space-y-2" style={{ marginBottom: 24 }}>
-              <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "var(--text-muted)" }}>
-                Status
-              </p>
-              {orders.map((order) => (
-                <div key={order.id} className="rounded-2xl p-3.5 flex items-center justify-between gap-3"
-                  style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)", fontFamily: "Hanken Grotesk" }}>
-                      {order.order_nummer || "Inkooporder"}
-                    </p>
-                    <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                      {order.week_label || order.aangemaakt_op?.slice?.(0, 10) || "Aangemaakt"}
-                    </p>
-                  </div>
-                  <span className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold"
-                    style={{
-                      background: order.status === "betaald" ? "var(--accent-light)" : order.status === "verzonden" ? "var(--warn-light)" : "var(--bg-surface-2)",
-                      border: order.status === "betaald" ? "1px solid var(--accent-border)" : order.status === "verzonden" ? "1px solid var(--warn-border)" : "1px solid var(--planning-border-soft)",
-                      color: order.status === "betaald" ? "var(--accent)" : order.status === "verzonden" ? "var(--warn-text)" : "var(--text-muted)",
-                    }}>
-                    {order.status || "nieuw"}
-                  </span>
-                </div>
-              ))}
             </div>
           )}
 
