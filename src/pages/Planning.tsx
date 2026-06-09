@@ -15,7 +15,6 @@ import { nl } from "date-fns/locale";
 import { toast } from "sonner";
 import { cachePlanning, getCachedPlanning } from "@/lib/offlineQueue";
 import { mutate } from "@/lib/supabaseHelpers";
-import { ListSkeleton, PlanningCardSkeleton } from "@/components/ui/Skeletons";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { useActiveMedewerker } from "@/hooks/useActiveMedewerker";
@@ -360,8 +359,9 @@ export default function Planning() {
     afgekeurd: { bg: "var(--danger-light)", text: "var(--danger)", label: "Niet goedgekeurd" },
   };
 
-  const definitiefItems = items.filter(it => it.is_definitief);
-  const allConcept = items.length > 0 && definitiefItems.length === 0;
+  const vandaagInWeek = weekDates.some(d => format(d, "yyyy-MM-dd") === today);
+  const vandaagItems = items.filter(it => it.datum === today);
+  const vandaagBeschikbaarheid = getBeschikbaarheidForDate(today);
   // Blokkade voor onboarding accounts
   if (profileData?.account_status === 'onboarding') {
     return (
@@ -512,6 +512,155 @@ export default function Planning() {
                 );
               })}
             </div>
+
+            {vandaagInWeek && !loading && (
+              <section style={{
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--planning-border-soft)',
+                borderRadius: 18,
+                padding: 16,
+                marginBottom: 24,
+                boxShadow: '0 8px 24px rgba(18,28,42,0.06)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                  <div>
+                    <p style={{
+                      fontSize: 10,
+                      fontWeight: 800,
+                      fontFamily: 'Hanken Grotesk',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.16em',
+                      color: 'var(--accent)',
+                      marginBottom: 3,
+                    }}>
+                      Vandaag
+                    </p>
+                    <h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                      {format(new Date(), 'EEEE d MMMM', { locale: nl })}
+                    </h3>
+                  </div>
+                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: 'var(--accent)' }}>
+                    bolt
+                  </span>
+                </div>
+
+                {vandaagBeschikbaarheid && (
+                  <div style={{
+                    padding: '12px 14px',
+                    borderRadius: 14,
+                    background: 'var(--warn-light)',
+                    border: '1px solid var(--warn-border)',
+                    color: 'var(--warn-text)',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    fontFamily: 'Hanken Grotesk',
+                  }}>
+                    Vandaag sta je als {vandaagBeschikbaarheid.type === 'vakantie' ? 'vakantie' : 'afwezig'} geregistreerd.
+                  </div>
+                )}
+
+                {!vandaagBeschikbaarheid && vandaagItems.length === 0 && (
+                  <div style={{
+                    padding: '12px 14px',
+                    borderRadius: 14,
+                    background: 'var(--bg-surface-2)',
+                    border: '1px solid var(--planning-border-soft)',
+                    color: 'var(--text-muted)',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    fontFamily: 'Hanken Grotesk',
+                  }}>
+                    Geen werk gepland voor vandaag.
+                  </div>
+                )}
+
+                {!vandaagBeschikbaarheid && vandaagItems.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {vandaagItems.map((item) => {
+                      const boeking = existingBoekingen.get(`${today}|${item.project_id}`);
+                      const adres = volledigAdres({
+                        straat: item.project_straat,
+                        postcode: item.project_postcode,
+                        stad: item.project_stad,
+                        adres: item.project_adres,
+                      });
+                      const magUrenBoeken = item.is_definitief && (!boeking || isManager || boeking.status !== 'goedgekeurd');
+                      return (
+                        <div key={item.id} style={{
+                          padding: 12,
+                          borderRadius: 14,
+                          background: 'var(--bg-surface-2)',
+                          border: '1px solid var(--planning-border-soft)',
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+                            <div style={{ minWidth: 0 }}>
+                              <p style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Hanken Grotesk', margin: 0 }}>
+                                {item.project_naam}
+                              </p>
+                              <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'Hanken Grotesk', marginTop: 2 }}>
+                                {item.starttijd}-{item.eindtijd}{item.project_stad ? ` - ${item.project_stad}` : ''}
+                              </p>
+                            </div>
+                            {boeking && (
+                              <span style={{
+                                alignSelf: 'flex-start',
+                                padding: '4px 8px',
+                                borderRadius: 9999,
+                                background: boeking.status === 'goedgekeurd' ? 'var(--accent-light)' : boeking.status === 'afgekeurd' ? 'var(--danger-light)' : 'var(--warn-light)',
+                                border: boeking.status === 'goedgekeurd' ? '1px solid var(--accent-border)' : boeking.status === 'afgekeurd' ? '1px solid var(--danger-border)' : '1px solid var(--warn-border)',
+                                color: boeking.status === 'goedgekeurd' ? 'var(--accent)' : boeking.status === 'afgekeurd' ? 'var(--danger)' : 'var(--warn-text)',
+                                fontSize: 10,
+                                fontWeight: 800,
+                                textTransform: 'uppercase',
+                                whiteSpace: 'nowrap',
+                              }}>
+                                {boeking.uren}u
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: adres ? '1fr 1fr' : '1fr', gap: 8 }}>
+                            {adres && (
+                              <button
+                                onClick={() => openNavigatie(adres)}
+                                style={{
+                                  minHeight: 42,
+                                  borderRadius: 12,
+                                  border: '1px solid var(--accent-border)',
+                                  background: 'var(--accent-light)',
+                                  color: 'var(--accent)',
+                                  fontSize: 13,
+                                  fontWeight: 800,
+                                  fontFamily: 'Hanken Grotesk',
+                                }}
+                              >
+                                Navigeer
+                              </button>
+                            )}
+                            <button
+                              onClick={() => boeking ? openUrenModal(item, boeking) : openUrenModal(item)}
+                              disabled={!magUrenBoeken}
+                              style={{
+                                minHeight: 42,
+                                borderRadius: 12,
+                                border: magUrenBoeken ? 'none' : '1px solid var(--planning-border-soft)',
+                                background: magUrenBoeken ? 'var(--accent)' : 'var(--bg-surface)',
+                                color: magUrenBoeken ? 'var(--on-accent)' : 'var(--text-muted)',
+                                fontSize: 13,
+                                fontWeight: 800,
+                                fontFamily: 'Hanken Grotesk',
+                                opacity: magUrenBoeken ? 1 : 0.7,
+                              }}
+                            >
+                              {boeking ? 'Uren aanpassen' : 'Uren boeken'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            )}
 
             {/* LOADING */}
             {loading && (
