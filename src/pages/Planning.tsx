@@ -30,8 +30,9 @@ export default function Planning() {
   const { user, isManager } = useAuth();
   const { badges } = useNavBadges();
   const { profileId, profile: profileData } = useProfile();
-  const { activeProfileId, activeLid, isOnderaannemer } = useActiveMedewerker();
-  const queryProfileId = activeProfileId || profileId;
+  const { activeProfileId, activeLid, isOnderaannemer, team } = useActiveMedewerker();
+  const onderaannemerZonderMonteurs = isOnderaannemer && team.length <= 1;
+  const queryProfileId = onderaannemerZonderMonteurs ? null : (activeProfileId || profileId);
   const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [items, setItems] = useState<PlanningItem[]>([]);
