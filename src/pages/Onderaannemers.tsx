@@ -20,6 +20,10 @@ interface Onderaannemer {
   kvk_nummer: string | null;
   iban: string | null;
   uurtarief: number | null;
+  onderaannemer_startlocatie: string | null;
+  onderaannemer_vrije_km_per_dag: number;
+  onderaannemer_km_tarief: number;
+  onderaannemer_reiskosten_per_ploeg: boolean;
   account_status: string;
   planning_partner_ids: string[];
 }
@@ -263,7 +267,7 @@ export default function Onderaannemers() {
     setLoading(true);
     const { data: profielen } = await supabase
       .from("profiles")
-      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,kvk_nummer,iban,uurtarief,account_status,is_onderaannemer,onderaannemer_id,planning_partner_ids")
+      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,kvk_nummer,iban,uurtarief,onderaannemer_startlocatie,onderaannemer_vrije_km_per_dag,onderaannemer_km_tarief,onderaannemer_reiskosten_per_ploeg,account_status,is_onderaannemer,onderaannemer_id,planning_partner_ids")
       .order("full_name");
     const { data: rollen } = await supabase.from("user_roles").select("user_id,role");
     const rolMap = new Map((rollen || []).map((r) => [r.user_id, r.role]));
@@ -331,6 +335,9 @@ export default function Onderaannemers() {
         kvk_nummer: oaKvk || null,
         iban: oaIban || null,
         uurtarief: oaUurtarief ? Number(oaUurtarief.replace(",", ".")) : null,
+        onderaannemer_vrije_km_per_dag: 150,
+        onderaannemer_km_tarief: 0.46,
+        onderaannemer_reiskosten_per_ploeg: true,
       }).eq("id", data.profile_id);
     }
     toast.success(`Onderaannemer ${fullName} aangemaakt`);
@@ -491,6 +498,82 @@ export default function Onderaannemers() {
                   />
                   <span style={{ fontSize: 11, color: "#6a768c" }}>/uur</span>
                 </div>
+              </div>
+            </div>
+
+            {/* Reiskosten afspraak */}
+            <div style={{ background: "var(--bg-surface)", borderRadius: 16, padding: 18, marginBottom: 20, border: "1px solid var(--planning-border-soft)" }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#6a768c", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Reiskosten afspraak</p>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 12, lineHeight: 1.5 }}>
+                Deze waarden worden gebruikt voor weekorders vanuit de planning. De berekening wordt als snapshot opgeslagen op de inkooporder.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <label style={fieldLabel}>
+                  Startlocatie ploeg
+                  <input
+                    defaultValue={selected.onderaannemer_startlocatie || ""}
+                    onBlur={async (e) => {
+                      const value = e.target.value.trim() || null;
+                      if ((selected.onderaannemer_startlocatie || null) === value) return;
+                      const { error } = await supabase.from("profiles").update({ onderaannemer_startlocatie: value } as any).eq("id", selected.id);
+                      if (error) { toast.error("Startlocatie opslaan mislukt"); return; }
+                      toast.success("Startlocatie opgeslagen");
+                      load();
+                    }}
+                    placeholder="Bijv. bedrijfsadres of opstapplaats"
+                    style={inputStyle}
+                  />
+                </label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <label style={fieldLabel}>
+                    Vrije km per dag
+                    <input
+                      type="number"
+                      step="1"
+                      defaultValue={selected.onderaannemer_vrije_km_per_dag ?? 150}
+                      onBlur={async (e) => {
+                        const value = Number(e.target.value || 150);
+                        if ((selected.onderaannemer_vrije_km_per_dag ?? 150) === value) return;
+                        const { error } = await supabase.from("profiles").update({ onderaannemer_vrije_km_per_dag: value } as any).eq("id", selected.id);
+                        if (error) { toast.error("Vrije km opslaan mislukt"); return; }
+                        toast.success("Vrije km opgeslagen");
+                        load();
+                      }}
+                      style={inputStyle}
+                    />
+                  </label>
+                  <label style={fieldLabel}>
+                    Km-tarief
+                    <input
+                      type="number"
+                      step="0.01"
+                      defaultValue={selected.onderaannemer_km_tarief ?? 0.46}
+                      onBlur={async (e) => {
+                        const value = Number((e.target.value || "0.46").replace(",", "."));
+                        if ((selected.onderaannemer_km_tarief ?? 0.46) === value) return;
+                        const { error } = await supabase.from("profiles").update({ onderaannemer_km_tarief: value } as any).eq("id", selected.id);
+                        if (error) { toast.error("Km-tarief opslaan mislukt"); return; }
+                        toast.success("Km-tarief opgeslagen");
+                        load();
+                      }}
+                      style={inputStyle}
+                    />
+                  </label>
+                </div>
+                <label style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>
+                  <input
+                    type="checkbox"
+                    defaultChecked={selected.onderaannemer_reiskosten_per_ploeg ?? true}
+                    onChange={async (e) => {
+                      const { error } = await supabase.from("profiles").update({ onderaannemer_reiskosten_per_ploeg: e.target.checked } as any).eq("id", selected.id);
+                      if (error) { toast.error("Reiskostenafspraak opslaan mislukt"); return; }
+                      toast.success("Reiskostenafspraak opgeslagen");
+                      load();
+                    }}
+                    style={{ width: 16, height: 16, accentColor: "var(--accent)" }}
+                  />
+                  Reiskosten een keer per ploeg/auto per dag rekenen
+                </label>
               </div>
             </div>
 
@@ -722,6 +805,16 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 10, padding: "10px 12px", color: "var(--text-primary)", fontSize: 14, fontFamily: "Hanken Grotesk", outline: "none",
 };
 const selectStyle: React.CSSProperties = { ...inputStyle, cursor: "pointer" };
+const fieldLabel: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 6,
+  fontSize: 11,
+  fontWeight: 700,
+  color: "var(--text-muted)",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+};
 const primaryBtn: React.CSSProperties = {
   flex: 1, height: 42, borderRadius: 10, background: "var(--accent)", color: "#003a18",
   border: "none", fontWeight: 800, fontFamily: "Hanken Grotesk", fontSize: 13, textTransform: "uppercase",

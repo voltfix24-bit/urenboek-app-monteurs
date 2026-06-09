@@ -5,7 +5,7 @@ import { X, Check, AlertTriangle, ChevronLeft, Users, Calendar, ListChecks, File
 import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 import { T } from "@/lib/inkooporderTheme";
-import { format, parseISO, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
+import { differenceInMinutes, format, parseISO, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
 
 interface WeekOptie {
   key: string;          // "2026-W21"
@@ -21,12 +21,27 @@ interface Medewerker { id: string; full_name: string; is_onderaannemer?: boolean
 interface Boeking {
   id: string; datum: string; project_id: string; uren: number; beschrijving?: string; type?: string;
   project_naam?: string; project_nummer?: string; activiteit?: string | null;
-  medewerker_id?: string; monteur_naam?: string;
+  medewerker_id?: string; monteur_naam?: string; bron?: "uren" | "planning"; planning_id?: string;
+  starttijd?: string; eindtijd?: string; project_adres?: string | null;
 }
 interface Profile {
   id: string; full_name: string; uurtarief?: number | null; kvk_nummer?: string | null;
   btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null;
   factuuradres?: string | null; adres?: string | null; betalingstermijn?: number | null; telefoon?: string | null;
+  onderaannemer_startlocatie?: string | null; onderaannemer_vrije_km_per_dag?: number | null;
+  onderaannemer_km_tarief?: number | null; onderaannemer_reiskosten_per_ploeg?: boolean | null;
+}
+interface ReiskostenRegel {
+  id: string;
+  datum: string;
+  project_id: string | null;
+  project_naam: string;
+  project_adres: string | null;
+  retour_km: number;
+  vrije_km: number;
+  km_tarief: number;
+  startlocatie: string | null;
+  afstand_bron: string;
 }
 
 interface Props {
@@ -60,6 +75,10 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
   const [weken, setWeken] = useState<WeekOptie[]>([]);
   const [loadingWeken, setLoadingWeken] = useState(false);
   const [geselecteerdeWeek, setGeselecteerdeWeek] = useState<string>("");
+  const [reiskosten, setReiskosten] = useState<ReiskostenRegel[]>([]);
+
+  const selectedMedewerker = useMemo(() => medewerkers.find(m => m.id === medewerker), [medewerkers, medewerker]);
+  const isOnderaannemerOrder = !!selectedMedewerker?.is_onderaannemer;
 
   // Init vanuit URL params (vanuit Goedkeuring)
   useEffect(() => {
@@ -73,7 +92,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
 
   const reset = useCallback(() => {
     setStep(1); setMedewerker(""); setVan(""); setTot("");
-    setBoekingen([]); setSelected(new Set()); setTarief(0);
+    setBoekingen([]); setSelected(new Set()); setTarief(0); setReiskosten([]);
     setNotitie(""); setMedProfile(null);
     setWeken([]); setGeselecteerdeWeek("");
   }, []);
@@ -84,7 +103,21 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
     () => boekingen.filter(b => selected.has(b.id)).reduce((s, b) => s + Number(b.uren), 0),
     [boekingen, selected],
   );
-  const subtotaal = totaalUren * tarief;
+  const urenSubtotaal = totaalUren * tarief;
+  const reiskostenTotaal = useMemo(
+    () => reiskosten.reduce((sum, r) => sum + Math.max(0, Number(r.retour_km || 0) - Number(r.vrije_km || 0)) * Number(r.km_tarief || 0), 0),
+    [reiskosten],
+  );
+  const subtotaal = urenSubtotaal + reiskostenTotaal;
+
+  const calcPlanningUren = (starttijd?: string, eindtijd?: string) => {
+    if (!starttijd || !eindtijd) return 8;
+    const start = new Date(`2026-01-01T${starttijd}`);
+    const eind = new Date(`2026-01-01T${eindtijd}`);
+    const minuten = differenceInMinutes(eind, start);
+    if (!Number.isFinite(minuten) || minuten <= 0) return 8;
+    return Math.max(0, Math.round(((minuten / 60) - 1) * 100) / 100);
+  };
 
   // Laad beschikbare weken zodra stap 2 actief is voor de geselecteerde monteur
   useEffect(() => {
@@ -99,6 +132,47 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
           const { data: monteurs } = await supabase
             .from("profiles").select("id").eq("onderaannemer_id", medewerker);
           (monteurs || []).forEach((m: any) => teamIds.push(m.id));
+
+          const huidigeWeekStart = format(startOfISOWeek(new Date()), "yyyy-MM-dd");
+          const { data: planningRows } = await supabase
+            .from("planning")
+            .select("id, datum, starttijd, eindtijd")
+            .in("medewerker_id", teamIds)
+            .lt("datum", huidigeWeekStart)
+            .order("datum");
+
+          const { data: bestaandeOrders } = await supabase
+            .from("inkooporders")
+            .select("week_jaar, week_nummer")
+            .eq("medewerker_id", medewerker)
+            .eq("order_type", "onderaannemer_week");
+          const bestaande = new Set((bestaandeOrders || []).map((o: any) => `${o.week_jaar}-W${String(o.week_nummer).padStart(2, "0")}`));
+
+          const map = new Map<string, WeekOptie>();
+          for (const p of (planningRows || []) as any[]) {
+            const d = parseISO(p.datum);
+            const jaar = getISOWeekYear(d);
+            const week = getISOWeek(d);
+            const key = `${jaar}-W${String(week).padStart(2, "0")}`;
+            if (bestaande.has(key)) continue;
+            if (!map.has(key)) {
+              map.set(key, {
+                key, jaar, week,
+                van: format(startOfISOWeek(d), "yyyy-MM-dd"),
+                tot: format(endOfISOWeek(d), "yyyy-MM-dd"),
+                aantalBoekingen: 0,
+                totaalUren: 0,
+              });
+            }
+            const g = map.get(key)!;
+            g.aantalBoekingen += 1;
+            g.totaalUren += calcPlanningUren(p.starttijd, p.eindtijd);
+          }
+          const lijst = Array.from(map.values()).sort((a, b) =>
+            a.jaar !== b.jaar ? b.jaar - a.jaar : b.week - a.week
+          );
+          if (!cancelled) setWeken(lijst);
+          return;
         }
         const vandaag = format(new Date(), "yyyy-MM-dd");
         const { data: rawBoekingen } = await supabase
@@ -170,6 +244,76 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
           teamIds.push(m.id);
           naamMap.set(m.id, m.full_name);
         });
+
+        const { data: planningRows } = await supabase
+          .from("planning")
+          .select("id, datum, project_id, medewerker_id, starttijd, eindtijd, activiteit, notitie")
+          .in("medewerker_id", teamIds)
+          .gte("datum", vanD)
+          .lte("datum", totD)
+          .order("datum");
+
+        const projIds = [...new Set((planningRows || []).map((p: any) => p.project_id).filter(Boolean))];
+        const { data: projs } = projIds.length
+          ? await supabase.from("projects").select("id, naam, nummer, adres, straat, postcode, stad").in("id", projIds)
+          : { data: [] as any[] };
+        const projMap = new Map((projs || []).map((p: any) => [p.id, p]));
+
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon, onderaannemer_startlocatie, onderaannemer_vrije_km_per_dag, onderaannemer_km_tarief, onderaannemer_reiskosten_per_ploeg")
+          .eq("id", medewerker).single();
+
+        const enriched: Boeking[] = (planningRows || []).map((p: any) => {
+          const proj: any = projMap.get(p.project_id) || {};
+          const projectAdres = [proj.adres || proj.straat, proj.postcode, proj.stad].filter(Boolean).join(", ") || null;
+          return {
+            id: `planning:${p.id}`,
+            planning_id: p.id,
+            bron: "planning",
+            datum: p.datum,
+            project_id: p.project_id,
+            medewerker_id: p.medewerker_id,
+            monteur_naam: naamMap.get(p.medewerker_id) || "",
+            project_naam: proj.naam || "",
+            project_nummer: proj.nummer || "",
+            project_adres: projectAdres,
+            activiteit: p.activiteit || "Gepland werk",
+            uren: calcPlanningUren(p.starttijd, p.eindtijd),
+            starttijd: p.starttijd,
+            eindtijd: p.eindtijd,
+          };
+        });
+
+        const vrijeKm = Number((prof as any)?.onderaannemer_vrije_km_per_dag ?? 150);
+        const kmTarief = Number((prof as any)?.onderaannemer_km_tarief ?? 0.46);
+        const perPloeg = (prof as any)?.onderaannemer_reiskosten_per_ploeg !== false;
+        const reisMap = new Map<string, ReiskostenRegel>();
+        enriched.forEach((b) => {
+          const key = perPloeg ? `${b.datum}:${b.project_id}` : `${b.datum}:${b.project_id}:${b.medewerker_id}`;
+          if (!reisMap.has(key)) {
+            reisMap.set(key, {
+              id: key,
+              datum: b.datum,
+              project_id: b.project_id,
+              project_naam: b.project_naam || "Project",
+              project_adres: b.project_adres || null,
+              retour_km: 0,
+              vrije_km: vrijeKm,
+              km_tarief: kmTarief,
+              startlocatie: (prof as any)?.onderaannemer_startlocatie || null,
+              afstand_bron: "handmatig",
+            });
+          }
+        });
+
+        setBoekingen(enriched);
+        setSelected(new Set(enriched.map(b => b.id)));
+        setReiskosten(Array.from(reisMap.values()));
+        setMedProfile(prof as Profile);
+        setTarief(Number((prof as any)?.uurtarief) || 0);
+        setStep(3);
+        return;
       }
 
       const { data: rawBoekingen } = await supabase
@@ -241,12 +385,16 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
       const orderNummer = nummerData as string;
 
       const selectedBoekingen = boekingen.filter(b => selected.has(b.id));
+      const weekInfo = weken.find(w => w.key === geselecteerdeWeek);
 
       const { data: order, error } = await supabase.from("inkooporders").insert({
         order_nummer: orderNummer,
         medewerker_id: medewerker,
         periode_van: van,
         periode_tot: tot,
+        order_type: isOnderaannemerOrder ? "onderaannemer_week" : "medewerker",
+        week_jaar: weekInfo?.jaar ?? null,
+        week_nummer: weekInfo?.week ?? null,
         status: "concept",
         totaal_uren: totaalUren,
         totaal_excl_btw: subtotaal,
@@ -263,17 +411,48 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
 
       const regels = selectedBoekingen.map(b => ({
         inkooporder_id: order.id,
-        uren_boeking_id: b.id,
+        uren_boeking_id: b.bron === "planning" ? null : b.id,
+        regel_type: "uren",
+        medewerker_id: b.medewerker_id || null,
+        medewerker_naam: b.monteur_naam || null,
         datum: b.datum,
         project_id: b.project_id,
         project_naam: b.project_naam,
+        project_adres: b.project_adres || null,
         activiteit: b.activiteit || null,
         uren: Number(b.uren),
         uurtarief: tarief,
         bedrag: Number(b.uren) * tarief,
       }));
 
-      const { error: regelsError } = await supabase.from("inkooporder_regels").insert(regels as any);
+      const reisRegels = isOnderaannemerOrder
+        ? reiskosten
+          .filter(r => Number(r.retour_km || 0) > 0)
+          .map(r => {
+            const vergoedbareKm = Math.max(0, Number(r.retour_km || 0) - Number(r.vrije_km || 0));
+            return {
+              inkooporder_id: order.id,
+              uren_boeking_id: null,
+              regel_type: "reiskosten",
+              datum: r.datum,
+              project_id: r.project_id,
+              project_naam: r.project_naam,
+              project_adres: r.project_adres,
+              activiteit: `Reiskosten ploeg (${vergoedbareKm} km vergoedbaar)`,
+              uren: 0,
+              uurtarief: 0,
+              bedrag: vergoedbareKm * Number(r.km_tarief || 0),
+              kilometers: vergoedbareKm,
+              retour_km: Number(r.retour_km || 0),
+              vrije_km: Number(r.vrije_km || 0),
+              km_tarief: Number(r.km_tarief || 0),
+              afstand_bron: r.afstand_bron,
+              startlocatie: r.startlocatie,
+            };
+          })
+        : [];
+
+      const { error: regelsError } = await supabase.from("inkooporder_regels").insert([...regels, ...reisRegels] as any);
       if (regelsError) {
         // Rollback: verwijder de zojuist aangemaakte order
         await supabase.from("inkooporders").delete().eq("id", order.id);
@@ -401,7 +580,9 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
         {step === 2 && (
           <div className="space-y-3">
             <p className="text-xs" style={{ color: T.textMuted }}>
-              Welke week wil je factureren? Alleen weken met nog niet gefactureerde, goedgekeurde uren worden getoond.
+              {isOnderaannemerOrder
+                ? "Welke afgeronde week wil je omzetten naar een onderaannemer-weekorder? Alleen weken uit de planning die nog geen weekorder hebben worden getoond."
+                : "Welke week wil je factureren? Alleen weken met nog niet gefactureerde, goedgekeurde uren worden getoond."}
             </p>
 
             {loadingWeken ? (
@@ -411,7 +592,9 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                 <AlertTriangle className="h-6 w-6 mx-auto" style={{ color: T.warn }} />
                 <p className="text-sm font-medium" style={{ color: T.text }}>Geen beschikbare weken</p>
                 <p className="text-[11px]" style={{ color: T.textMuted }}>
-                  Alle goedgekeurde uren tot vandaag staan al op een inkooporder, of er zijn nog geen goedgekeurde uren.
+                  {isOnderaannemerOrder
+                    ? "Er zijn geen afgeronde planningweken zonder weekorder."
+                    : "Alle goedgekeurde uren tot vandaag staan al op een inkooporder, of er zijn nog geen goedgekeurde uren."}
                 </p>
               </div>
             ) : (
@@ -518,12 +701,105 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                           {b.project_naam || "—"} · {b.activiteit || b.type}
                         </span>
                       </div>
-                      <span className="text-xs font-bold shrink-0" style={{ fontFamily: T.mono, color: T.primary }}>
-                        {b.uren}u
-                      </span>
+                      {isOnderaannemerOrder ? (
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.25"
+                          value={b.uren}
+                          onChange={(e) => {
+                            const value = Number(e.target.value || 0);
+                            setBoekingen(prev => prev.map(item => item.id === b.id ? { ...item, uren: value } : item));
+                          }}
+                          className="w-20 px-2 py-1.5 rounded-lg text-xs font-bold text-right"
+                          style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.primary, fontFamily: T.mono }}
+                        />
+                      ) : (
+                        <span className="text-xs font-bold shrink-0" style={{ fontFamily: T.mono, color: T.primary }}>
+                          {b.uren}u
+                        </span>
+                      )}
                     </label>
                   );
                 })}
+              </div>
+            )}
+
+            {isOnderaannemerOrder && reiskosten.length > 0 && (
+              <div className="space-y-2">
+                <div>
+                  <p className="text-xs font-bold" style={{ color: T.text }}>Reiskosten ploeg</p>
+                  <p className="text-[11px]" style={{ color: T.textMuted }}>
+                    Vul per dag/project de retourafstand in. Vrije kilometers en km-tarief worden automatisch toegepast.
+                  </p>
+                </div>
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {reiskosten.map(r => {
+                    const vergoedbareKm = Math.max(0, Number(r.retour_km || 0) - Number(r.vrije_km || 0));
+                    const bedrag = vergoedbareKm * Number(r.km_tarief || 0);
+                    return (
+                      <div key={r.id} className="rounded-lg p-2 space-y-2" style={{ background: T.navy, border: `1px solid ${T.border}` }}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold" style={{ color: T.text }}>{r.datum} · {r.project_naam}</p>
+                            <p className="text-[10px]" style={{ color: T.textMuted }}>
+                              {r.startlocatie || "Startlocatie ontbreekt"} → {r.project_adres || "projectadres onbekend"}
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold shrink-0" style={{ color: T.primary, fontFamily: T.mono }}>{euro(bedrag)}</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <label className="text-[10px]" style={{ color: T.textMuted }}>
+                            Retour km
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={r.retour_km}
+                              onChange={(e) => {
+                                const value = Number(e.target.value || 0);
+                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, retour_km: value } : item));
+                              }}
+                              className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
+                              style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.text, fontFamily: T.mono }}
+                            />
+                          </label>
+                          <label className="text-[10px]" style={{ color: T.textMuted }}>
+                            Vrij
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              value={r.vrije_km}
+                              onChange={(e) => {
+                                const value = Number(e.target.value || 0);
+                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, vrije_km: value } : item));
+                              }}
+                              className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
+                              style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.text, fontFamily: T.mono }}
+                            />
+                          </label>
+                          <label className="text-[10px]" style={{ color: T.textMuted }}>
+                            Tarief
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={r.km_tarief}
+                              onChange={(e) => {
+                                const value = Number(e.target.value || 0);
+                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, km_tarief: value } : item));
+                              }}
+                              className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
+                              style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.text, fontFamily: T.mono }}
+                            />
+                          </label>
+                        </div>
+                        <p className="text-[10px]" style={{ color: T.textMuted }}>Vergoedbaar: {vergoedbareKm} km</p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -587,6 +863,18 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
               <div className="flex justify-between text-xs">
                 <span style={{ color: T.textMuted }}>{selected.size} regels · {totaalUren}u × {euro(tarief)}</span>
               </div>
+              {isOnderaannemerOrder && (
+                <div className="flex justify-between text-xs">
+                  <span style={{ color: T.textMuted }}>Uren subtotaal</span>
+                  <span style={{ fontFamily: T.mono, color: T.text }}>{euro(urenSubtotaal)}</span>
+                </div>
+              )}
+              {isOnderaannemerOrder && (
+                <div className="flex justify-between text-xs">
+                  <span style={{ color: T.textMuted }}>Reiskosten ploeg</span>
+                  <span style={{ fontFamily: T.mono, color: T.text }}>{euro(reiskostenTotaal)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-xs">
                 <span style={{ color: T.textMuted }}>BTW</span>
                 <span style={{ fontFamily: T.mono, color: T.warn }}>Verlegd (art. 12)</span>
