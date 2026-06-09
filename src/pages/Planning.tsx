@@ -398,6 +398,15 @@ export default function Planning() {
 
         <PullToRefresh onRefresh={async () => { await fetchPlanning(); }}>
           <MonteurSwitcher />
+          {onderaannemerZonderMonteurs && (
+            <div style={{ margin: "0 20px 16px", padding: 16, borderRadius: 14, background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
+              <EmptyState
+                icoon="👥"
+                titel="Geen monteurs gekoppeld"
+                subtitel="Zodra een manager monteurs aan jouw account koppelt, zie je hier hun planning."
+              />
+            </div>
+          )}
           <main style={{ padding: '24px 20px' }}>
             {/* ── WEEK HEADER ── */}
             <div style={{
