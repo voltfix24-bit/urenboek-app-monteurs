@@ -827,7 +827,22 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                             />
                           </label>
                         </div>
-                        <p className="text-[10px]" style={{ color: T.textMuted }}>Vergoedbaar: {vergoedbareKm} km</p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-[10px]" style={{ color: T.textMuted }}>
+                            Vergoedbaar: {vergoedbareKm} km · bron: {r.afstand_bron === "google_routes" ? "automatisch" : "handmatig"}
+                          </p>
+                          <button
+                            type="button"
+                            disabled={!r.startlocatie || !r.project_adres || berekenenId === r.id}
+                            onClick={() => berekenAfstand(r.id)}
+                            className="text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1 disabled:opacity-40"
+                            style={{ background: T.primarySoft, color: T.primary, border: `1px solid ${T.borderActive}` }}
+                          >
+                            <Navigation className="h-3 w-3" />
+                            {berekenenId === r.id ? "Berekenen…" : "Bereken afstand"}
+                          </button>
+                        </div>
+
                       </div>
                     );
                   })}
