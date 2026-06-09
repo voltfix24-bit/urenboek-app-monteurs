@@ -449,7 +449,7 @@ export function InkooporderDocument({
         {regels.map((r: any, i: number) => {
           const isReiskosten = (r.regel_type || "uren") === "reiskosten";
           const omschrijving = isReiskosten
-            ? `${r.activiteit || "Reiskosten ploeg"}${r.retour_km ? ` · retour ${r.retour_km} km, vrij ${r.vrije_km || 0} km` : ""}`
+            ? `${r.activiteit || "Reiskosten ploeg"}${r.retour_km ? ` · retour ${r.retour_km} km, vrij ${r.vrije_km || 0} km · ${r.afstand_bron === "google_routes" ? "auto" : "handmatig"}` : ""}`
             : r.activiteit || r.beschrijving || "Elektrotechnische werkzaamheden";
           return (
             <View key={i} style={[styles.tabelRij, i % 2 === 0 ? styles.tabelRijEven : styles.tabelRijOneven]}>
