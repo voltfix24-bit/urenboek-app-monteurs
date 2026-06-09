@@ -6,14 +6,15 @@ import { euroDecimals as euro } from "@/lib/formatting";
 import { format, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 
-
 interface Props {
   orders: any[];
   /** Toon naam van monteur per order (alleen handig voor manager-view). */
   toonNaam?: boolean;
+  /** Toon bedragen in de lijst. Zet uit voor gewone monteurs. */
+  toonBedrag?: boolean;
 }
 
-export function WeekDownloadList({ orders, toonNaam = false }: Props) {
+export function WeekDownloadList({ orders, toonNaam = false, toonBedrag = true }: Props) {
   const [ordersMetRegels, setOrdersMetRegels] = useState<Array<{ order: any; regels: any[] }>>([]);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export function WeekDownloadList({ orders, toonNaam = false }: Props) {
     return (
       <div className="rounded-2xl p-3.5 text-center text-xs"
         style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>
-        Weken laden…
+        Weken laden...
       </div>
     );
   }
@@ -63,14 +64,18 @@ export function WeekDownloadList({ orders, toonNaam = false }: Props) {
           style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
           <div className="min-w-0">
             <p className="text-sm font-bold" style={{ color: "var(--text-primary)", fontFamily: "Hanken Grotesk" }}>
-              Week {g.week} · {g.jaar}
+              Week {g.week} - {g.jaar}
             </p>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-              {format(parseISO(g.van), "d MMM", { locale: nl })} – {format(parseISO(g.tot), "d MMM", { locale: nl })}
-              {" · "}
+              {format(parseISO(g.van), "d MMM", { locale: nl })} - {format(parseISO(g.tot), "d MMM", { locale: nl })}
+              {" - "}
               {g.totaalUren.toFixed(1).replace(".", ",")} uur
-              {" · "}
-              <span style={{ fontFamily: "DM Mono, monospace", color: "var(--accent)" }}>{euro(g.totaalBedrag)}</span>
+              {toonBedrag && (
+                <>
+                  {" - "}
+                  <span style={{ fontFamily: "DM Mono, monospace", color: "var(--accent)" }}>{euro(g.totaalBedrag)}</span>
+                </>
+              )}
             </p>
             {toonNaam && (
               <p className="text-[10px] mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>
