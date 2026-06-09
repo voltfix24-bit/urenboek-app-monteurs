@@ -30,8 +30,9 @@ export default function Planning() {
   const { user, isManager } = useAuth();
   const { badges } = useNavBadges();
   const { profileId, profile: profileData } = useProfile();
-  const { activeProfileId, activeLid, isOnderaannemer } = useActiveMedewerker();
-  const queryProfileId = activeProfileId || profileId;
+  const { activeProfileId, activeLid, isOnderaannemer, team } = useActiveMedewerker();
+  const onderaannemerZonderMonteurs = isOnderaannemer && team.length <= 1;
+  const queryProfileId = onderaannemerZonderMonteurs ? null : (activeProfileId || profileId);
   const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [items, setItems] = useState<PlanningItem[]>([]);
@@ -397,6 +398,15 @@ export default function Planning() {
 
         <PullToRefresh onRefresh={async () => { await fetchPlanning(); }}>
           <MonteurSwitcher />
+          {onderaannemerZonderMonteurs && (
+            <div style={{ margin: "0 20px 16px", padding: 16, borderRadius: 14, background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
+              <EmptyState
+                icoon="👥"
+                titel="Geen monteurs gekoppeld"
+                subtitel="Zodra een manager monteurs aan jouw account koppelt, zie je hier hun planning."
+              />
+            </div>
+          )}
           <main style={{ padding: '24px 20px' }}>
             {/* ── WEEK HEADER ── */}
             <div style={{

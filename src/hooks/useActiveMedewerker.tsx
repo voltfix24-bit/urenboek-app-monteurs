@@ -76,7 +76,10 @@ export function ActiveMedewerkerProvider({ children }: { children: ReactNode }) 
       ];
       setTeam(lijst);
       const stored = localStorage.getItem(STORAGE_KEY);
-      const valid = stored && lijst.some((l) => l.id === stored) ? stored : profileId;
+      // Onderaannemer wordt zelf niet ingepland → default naar eerste gekoppelde monteur.
+      const eersteMonteur = lijst.find((l) => !l.is_self);
+      const fallback = eersteMonteur ? eersteMonteur.id : profileId;
+      const valid = stored && lijst.some((l) => l.id === stored) ? stored : fallback;
       setActiveIdState(valid);
       setLoading(false);
     };
