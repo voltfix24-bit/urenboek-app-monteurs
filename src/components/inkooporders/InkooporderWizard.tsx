@@ -77,6 +77,36 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
   const [loadingWeken, setLoadingWeken] = useState(false);
   const [geselecteerdeWeek, setGeselecteerdeWeek] = useState<string>("");
   const [reiskosten, setReiskosten] = useState<ReiskostenRegel[]>([]);
+  const [berekenenId, setBerekenenId] = useState<string | null>(null);
+
+  const berekenAfstand = useCallback(async (regelId: string) => {
+    const regel = reiskosten.find(r => r.id === regelId);
+    if (!regel) return;
+    if (!regel.startlocatie || !regel.project_adres) {
+      toast.error("Startlocatie of projectadres ontbreekt");
+      return;
+    }
+    setBerekenenId(regelId);
+    try {
+      const { data, error } = await supabase.functions.invoke("bereken-afstand", {
+        body: { origin: regel.startlocatie, destination: regel.project_adres },
+      });
+      if (error || !data || (data as any).error) {
+        toast.error((data as any)?.error || "Afstand berekenen mislukt — vul handmatig in");
+        return;
+      }
+      const retour = Number((data as any).retour_km || 0);
+      setReiskosten(prev => prev.map(r => r.id === regelId
+        ? { ...r, retour_km: retour, afstand_bron: "google_routes" }
+        : r));
+      toast.success(`Afstand berekend: ${retour} km retour`);
+    } catch {
+      toast.error("Afstand berekenen mislukt — vul handmatig in");
+    } finally {
+      setBerekenenId(null);
+    }
+  }, [reiskosten]);
+
 
   const selectedMedewerker = useMemo(() => medewerkers.find(m => m.id === medewerker), [medewerkers, medewerker]);
   const isOnderaannemerOrder = !!selectedMedewerker?.is_onderaannemer;
@@ -759,12 +789,13 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                               value={r.retour_km}
                               onChange={(e) => {
                                 const value = Number(e.target.value || 0);
-                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, retour_km: value } : item));
+                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, retour_km: value, afstand_bron: "handmatig" } : item));
                               }}
                               className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
                               style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.text, fontFamily: T.mono }}
                             />
                           </label>
+
                           <label className="text-[10px]" style={{ color: T.textMuted }}>
                             Vrij
                             <input
