@@ -60,44 +60,44 @@ p, h1, h2, h3, span.selectable, input, textarea {
     --border-strong:   #d1d5db;
     --text-primary:    #121c2a;
     --text-secondary:  #3c4a42;
-    --text-muted:      #5a685f;
-    --accent:          #047857;
-    --accent-dark:     #064e3b;
-    --accent-mid:      #10b981;
+    --text-muted:      #6c7a71;
+    --accent:          #10b981;
+    --accent-dark:     #006c49;
+    --accent-mid:      #4edea3;
     --accent-light:    #ecfdf5;
-    --accent-border:   #6ee7b7;
-    --on-accent:       #ffffff;
-    --danger:          #b91c1c;
-    --danger-light:    #fee2e2;
-    --danger-border:   #fca5a5;
-    --success:         #047857;
+    --accent-border:   #95d3ba;
+    --on-accent:       #052e22;
+    --danger:          #ba1a1a;
+    --danger-light:    #ffdad6;
+    --danger-border:   #ffb3af;
+    --success:         #006c49;
     --success-light:   #ecfdf5;
-    --success-border:  #6ee7b7;
-    --warn-bg:         #fef3c7;
-    --warn-text:       #854d0e;
-    --warn-border:     #fcd34d;
-    --warn-light:      #fffbeb;
-    --warn-dot:        #d97706;
-    --info:            #1e3a8a;
-    --info-light:      #dbeafe;
-    --info-border:     #93c5fd;
-    --info-dark:       #1e3a8a;
-    --purple:          #6d28d9;
+    --success-border:  #95d3ba;
+    --warn-bg:         #fff4d6;
+    --warn-text:       #8b6914;
+    --warn-border:     #e8d070;
+    --warn-light:      #fff8e0;
+    --warn-dot:        #d4a017;
+    --info:            #2b6954;
+    --info-light:      #dee9fc;
+    --info-border:     #bbcabf;
+    --info-dark:       #0b513d;
+    --purple:          #a43a3a;
 
     /* Planning-specifiek */
     --planning-card:        #ffffff;
     --planning-cell-empty:  #eff4ff;
     --planning-button:      #e6eeff;
-    --planning-avatar-bg:   #047857;
+    --planning-avatar-bg:   #adedd3;
     --planning-border-soft: #d9e3f6;
 
     --sidebar-shell-bg:        #1f2937;
     --sidebar-shell-fg:        #eaf1ff;
     --sidebar-shell-muted:     #a7b0bd;
     --sidebar-shell-border:    rgba(234,241,255,0.12);
-    --sidebar-shell-active-bg: #047857;
+    --sidebar-shell-active-bg: #10b981;
     --sidebar-shell-active-fg: #ffffff;
-    --sidebar-shell-subtle-bg: rgba(4,120,87,0.14);
+    --sidebar-shell-subtle-bg: rgba(16,185,129,0.14);
 
 
 
