@@ -676,39 +676,69 @@ export type Database = {
       inkooporder_regels: {
         Row: {
           activiteit: string | null
+          afstand_bron: string | null
           bedrag: number
           datum: string
           id: string
           inkooporder_id: string
+          kilometers: number | null
+          km_tarief: number | null
+          medewerker_id: string | null
+          medewerker_naam: string | null
+          project_adres: string | null
           project_id: string | null
           project_naam: string | null
+          regel_type: string
+          retour_km: number | null
+          startlocatie: string | null
           uren: number
           uren_boeking_id: string | null
           uurtarief: number
+          vrije_km: number | null
         }
         Insert: {
           activiteit?: string | null
+          afstand_bron?: string | null
           bedrag: number
           datum: string
           id?: string
           inkooporder_id: string
+          kilometers?: number | null
+          km_tarief?: number | null
+          medewerker_id?: string | null
+          medewerker_naam?: string | null
+          project_adres?: string | null
           project_id?: string | null
           project_naam?: string | null
+          regel_type?: string
+          retour_km?: number | null
+          startlocatie?: string | null
           uren: number
           uren_boeking_id?: string | null
           uurtarief: number
+          vrije_km?: number | null
         }
         Update: {
           activiteit?: string | null
+          afstand_bron?: string | null
           bedrag?: number
           datum?: string
           id?: string
           inkooporder_id?: string
+          kilometers?: number | null
+          km_tarief?: number | null
+          medewerker_id?: string | null
+          medewerker_naam?: string | null
+          project_adres?: string | null
           project_id?: string | null
           project_naam?: string | null
+          regel_type?: string
+          retour_km?: number | null
+          startlocatie?: string | null
           uren?: number
           uren_boeking_id?: string | null
           uurtarief?: number
+          vrije_km?: number | null
         }
         Relationships: [
           {
@@ -716,6 +746,27 @@ export type Database = {
             columns: ["inkooporder_id"]
             isOneToOne: false
             referencedRelation: "inkooporders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporder_regels_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporder_regels_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inkooporder_regels_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -760,6 +811,7 @@ export type Database = {
           medewerker_id: string
           notitie: string | null
           order_nummer: string
+          order_type: string
           periode_tot: string
           periode_van: string
           status: string
@@ -767,6 +819,8 @@ export type Database = {
           totaal_incl_btw: number | null
           totaal_uren: number | null
           verzonden_op: string | null
+          week_jaar: number | null
+          week_nummer: number | null
         }
         Insert: {
           aangemaakt_door?: string | null
@@ -779,6 +833,7 @@ export type Database = {
           medewerker_id: string
           notitie?: string | null
           order_nummer: string
+          order_type?: string
           periode_tot: string
           periode_van: string
           status?: string
@@ -786,6 +841,8 @@ export type Database = {
           totaal_incl_btw?: number | null
           totaal_uren?: number | null
           verzonden_op?: string | null
+          week_jaar?: number | null
+          week_nummer?: number | null
         }
         Update: {
           aangemaakt_door?: string | null
@@ -798,6 +855,7 @@ export type Database = {
           medewerker_id?: string
           notitie?: string | null
           order_nummer?: string
+          order_type?: string
           periode_tot?: string
           periode_van?: string
           status?: string
@@ -805,6 +863,8 @@ export type Database = {
           totaal_incl_btw?: number | null
           totaal_uren?: number | null
           verzonden_op?: string | null
+          week_jaar?: number | null
+          week_nummer?: number | null
         }
         Relationships: [
           {
@@ -1453,6 +1513,10 @@ export type Database = {
           onboarding_voltooid: boolean
           onboarding_voltooid_op: string | null
           onderaannemer_id: string | null
+          onderaannemer_km_tarief: number
+          onderaannemer_reiskosten_per_ploeg: boolean
+          onderaannemer_startlocatie: string | null
+          onderaannemer_vrije_km_per_dag: number
           planning_partner_ids: string[]
           rijbewijs: boolean
           telefoon: string
@@ -1487,6 +1551,10 @@ export type Database = {
           onboarding_voltooid?: boolean
           onboarding_voltooid_op?: string | null
           onderaannemer_id?: string | null
+          onderaannemer_km_tarief?: number
+          onderaannemer_reiskosten_per_ploeg?: boolean
+          onderaannemer_startlocatie?: string | null
+          onderaannemer_vrije_km_per_dag?: number
           planning_partner_ids?: string[]
           rijbewijs?: boolean
           telefoon?: string
@@ -1521,6 +1589,10 @@ export type Database = {
           onboarding_voltooid?: boolean
           onboarding_voltooid_op?: string | null
           onderaannemer_id?: string | null
+          onderaannemer_km_tarief?: number
+          onderaannemer_reiskosten_per_ploeg?: boolean
+          onderaannemer_startlocatie?: string | null
+          onderaannemer_vrije_km_per_dag?: number
           planning_partner_ids?: string[]
           rijbewijs?: boolean
           telefoon?: string
