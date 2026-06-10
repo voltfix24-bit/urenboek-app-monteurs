@@ -7,6 +7,7 @@ import { format, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 import terrevoltLogoPng from "@/assets/terrevolt-logo.png";
 import { roundKilometers } from "@/lib/kilometers";
+import { resolveLeverancier } from "@/lib/leverancierSnapshot";
 
 const groen = "#2d4a1e";
 const groenMid = "#4a7c2f";
@@ -355,7 +356,13 @@ export function InkooporderDocument({
   logoPng: string;
 }) {
   const bNaam = bedrijf?.bedrijfsnaam || "TerreVolt B.V.";
-  const monteurNaam = prof?.bedrijfsnaam || prof?.full_name || order.medewerker_naam || "";
+  const leverancier = resolveLeverancier(order, prof);
+  const monteurNaam =
+    leverancier.bedrijfsnaam || leverancier.contactpersoon || prof?.full_name || order.medewerker_naam || "";
+  const contactpersoonRegel =
+    leverancier.bedrijfsnaam && leverancier.contactpersoon && leverancier.contactpersoon !== leverancier.bedrijfsnaam
+      ? leverancier.contactpersoon
+      : null;
   const termijn = bedrijf?.betalingstermijn || 30;
   const email = bedrijf?.email || "info@terrevolt.nl";
   const periodeStr =
@@ -393,15 +400,19 @@ export function InkooporderDocument({
           <View style={styles.partijBox}>
             <Text style={styles.partijLabel}>Uitgevoerd door</Text>
             <Text style={styles.partijNaam}>{monteurNaam}</Text>
-            {(prof?.factuuradres || prof?.adres) && (
+            {contactpersoonRegel && (
+              <Text style={styles.partijDetail}>t.a.v. {contactpersoonRegel}</Text>
+            )}
+            {leverancier.factuuradres && (
               <Text style={styles.partijDetail}>
-                {(prof.factuuradres || prof.adres).split(",").map((s: string) => s.trim()).join("\n")}
+                {leverancier.factuuradres.split(",").map((s: string) => s.trim()).join("\n")}
               </Text>
             )}
-            {prof?.kvk_nummer && <Text style={styles.partijDetail}>KVK: {prof.kvk_nummer}</Text>}
-            {prof?.btw_nummer && <Text style={styles.partijDetail}>BTW: {prof.btw_nummer}</Text>}
-            {prof?.iban && <Text style={styles.partijDetail}>IBAN: {formatIban(prof.iban)}</Text>}
-            {prof?.telefoon && <Text style={styles.partijDetail}>Tel: {prof.telefoon}</Text>}
+            {leverancier.kvk_nummer && <Text style={styles.partijDetail}>KVK: {leverancier.kvk_nummer}</Text>}
+            {leverancier.btw_nummer && <Text style={styles.partijDetail}>BTW: {leverancier.btw_nummer}</Text>}
+            {leverancier.iban && <Text style={styles.partijDetail}>IBAN: {formatIban(leverancier.iban)}</Text>}
+            {leverancier.telefoon && <Text style={styles.partijDetail}>Tel: {leverancier.telefoon}</Text>}
+            {leverancier.email && <Text style={styles.partijDetail}>{leverancier.email}</Text>}
           </View>
           <View style={styles.partijBox}>
             <Text style={styles.partijLabel}>Opdracht van</Text>
