@@ -6,6 +6,7 @@ import { pdf } from "@react-pdf/renderer";
 import { format, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 import terrevoltLogoPng from "@/assets/terrevolt-logo.png";
+import { roundKilometers } from "@/lib/kilometers";
 
 const groen = "#2d4a1e";
 const groenMid = "#4a7c2f";
