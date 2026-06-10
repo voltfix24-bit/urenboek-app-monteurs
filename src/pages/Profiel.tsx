@@ -1075,6 +1075,7 @@ export default function Profiel() {
                           outline: 'none',
                           boxSizing: 'border-box',
                         }} />
+                      {zzpErrors[f.key] && <p style={{ fontSize: 11, color: 'var(--danger)', marginTop: 4, fontFamily: 'Hanken Grotesk' }}>⚠ {zzpErrors[f.key]}</p>}
                     </div>
                   ))}
                   <div>
