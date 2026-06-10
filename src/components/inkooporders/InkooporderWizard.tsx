@@ -98,7 +98,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
         toast.error((data as any)?.error || "Afstand berekenen mislukt — vul handmatig in");
         return;
       }
-      const retour = Number((data as any).retour_km || 0);
+      const retour = roundKilometers((data as any).retour_km);
       setReiskosten(prev => prev.map(r => r.id === regelId
         ? { ...r, retour_km: retour, afstand_bron: "google_routes" }
         : r));
