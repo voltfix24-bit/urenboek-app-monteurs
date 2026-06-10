@@ -106,8 +106,9 @@ Deno.serve(async (req) => {
       return json({ error: "Geen route gevonden" }, 404);
     }
 
-    const enkele_reis_km = Math.round(meters / 100) / 10;
-    const retour_km = Math.round((meters * 2) / 100) / 10;
+    // Kilometers ALTIJD als gehele getallen — geen decimalen, geen floating-point restanten.
+    const enkele_reis_km = Math.round(meters / 1000);
+    const retour_km = Math.max(0, Math.round((meters * 2) / 1000));
 
     return json({
       meters,

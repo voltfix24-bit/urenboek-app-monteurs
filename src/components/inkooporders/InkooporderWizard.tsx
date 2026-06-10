@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { X, Check, AlertTriangle, ChevronLeft, Users, Calendar, ListChecks, FileCheck2, Navigation } from "lucide-react";
 
 import { euroDecimals as euro } from "@/lib/formatting";
+import { roundKilometers, berekenReiskosten } from "@/lib/kilometers";
 import { Spinner } from "@/components/ui/Spinner";
 import { T } from "@/lib/inkooporderTheme";
 import { differenceInMinutes, format, parseISO, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
@@ -97,7 +98,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
         toast.error((data as any)?.error || "Afstand berekenen mislukt — vul handmatig in");
         return;
       }
-      const retour = Number((data as any).retour_km || 0);
+      const retour = roundKilometers((data as any).retour_km);
       setReiskosten(prev => prev.map(r => r.id === regelId
         ? { ...r, retour_km: retour, afstand_bron: "google_routes" }
         : r));
@@ -138,7 +139,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
   );
   const urenSubtotaal = totaalUren * tarief;
   const reiskostenTotaal = useMemo(
-    () => reiskosten.reduce((sum, r) => sum + Math.max(0, Number(r.retour_km || 0) - Number(r.vrije_km || 0)) * Number(r.km_tarief || 0), 0),
+    () => reiskosten.reduce((sum, r) => sum + berekenReiskosten(r.retour_km, r.vrije_km, r.km_tarief).bedrag, 0),
     [reiskosten],
   );
   const subtotaal = urenSubtotaal + reiskostenTotaal;
@@ -345,7 +346,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
           };
         });
 
-        const vrijeKm = Number((prof as any)?.onderaannemer_vrije_km_per_dag ?? 150);
+        const vrijeKm = roundKilometers((prof as any)?.onderaannemer_vrije_km_per_dag ?? 150);
         const kmTarief = Number((prof as any)?.onderaannemer_km_tarief ?? 0.46);
         // Onderaannemer-orders: ALTIJD één reiskostenregel per ploeg/dag/project.
         const reisMap = new Map<string, ReiskostenRegel>();
@@ -487,9 +488,9 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
 
       const reisRegels = isOnderaannemerOrder
         ? reiskosten
-          .filter(r => Number(r.retour_km || 0) > 0)
+          .filter(r => roundKilometers(r.retour_km) > 0)
           .map(r => {
-            const vergoedbareKm = Math.max(0, Number(r.retour_km || 0) - Number(r.vrije_km || 0));
+            const { retour_km, vrije_km, vergoedbare_km, bedrag } = berekenReiskosten(r.retour_km, r.vrije_km, r.km_tarief);
             return {
               inkooporder_id: order.id,
               uren_boeking_id: null,
@@ -498,13 +499,13 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
               project_id: r.project_id,
               project_naam: r.project_naam,
               project_adres: r.project_adres,
-              activiteit: `Reiskosten ploeg (${vergoedbareKm} km vergoedbaar)`,
+              activiteit: `Reiskosten ploeg (${vergoedbare_km} km vergoedbaar)`,
               uren: 0,
               uurtarief: 0,
-              bedrag: vergoedbareKm * Number(r.km_tarief || 0),
-              kilometers: vergoedbareKm,
-              retour_km: Number(r.retour_km || 0),
-              vrije_km: Number(r.vrije_km || 0),
+              bedrag,
+              kilometers: vergoedbare_km,
+              retour_km,
+              vrije_km,
               km_tarief: Number(r.km_tarief || 0),
               afstand_bron: r.afstand_bron,
               startlocatie: r.startlocatie,
@@ -815,8 +816,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                 </div>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {reiskosten.map(r => {
-                    const vergoedbareKm = Math.max(0, Number(r.retour_km || 0) - Number(r.vrije_km || 0));
-                    const bedrag = vergoedbareKm * Number(r.km_tarief || 0);
+                    const calc = berekenReiskosten(r.retour_km, r.vrije_km, r.km_tarief);
                     return (
                       <div key={r.id} className="rounded-lg p-2 space-y-2" style={{ background: T.navy, border: `1px solid ${T.border}` }}>
                         <div className="flex items-start justify-between gap-2">
@@ -826,7 +826,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                               {r.startlocatie || "Startlocatie ontbreekt"} → {r.project_adres || "projectadres onbekend"}
                             </p>
                           </div>
-                          <span className="text-xs font-bold shrink-0" style={{ color: T.primary, fontFamily: T.mono }}>{euro(bedrag)}</span>
+                          <span className="text-xs font-bold shrink-0" style={{ color: T.primary, fontFamily: T.mono }}>{euro(calc.bedrag)}</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                           <label className="text-[10px]" style={{ color: T.textMuted }}>
@@ -837,7 +837,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                               step="1"
                               value={r.retour_km}
                               onChange={(e) => {
-                                const value = Number(e.target.value || 0);
+                                const value = roundKilometers(e.target.value);
                                 setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, retour_km: value, afstand_bron: "handmatig" } : item));
                               }}
                               className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
@@ -853,7 +853,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                               step="1"
                               value={r.vrije_km}
                               onChange={(e) => {
-                                const value = Number(e.target.value || 0);
+                                const value = roundKilometers(e.target.value);
                                 setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, vrije_km: value } : item));
                               }}
                               className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
@@ -878,7 +878,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                         </div>
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-[10px]" style={{ color: T.textMuted }}>
-                            Vergoedbaar: {vergoedbareKm} km · bron: {r.afstand_bron === "google_routes" ? "automatisch" : "handmatig"}
+                            retour {calc.retour_km} km · vrij {calc.vrije_km} km · vergoedbaar {calc.vergoedbare_km} km · bron: {r.afstand_bron === "google_routes" ? "automatisch" : "handmatig"}
                           </p>
                           <button
                             type="button"
