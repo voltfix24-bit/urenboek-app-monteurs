@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (!roleRow) return json({ error: "Forbidden" }, 403);
 
-    // Rate limit (5 per 60s per user)
+    // Rate limit (30 per 60s per user)
     const { data: allowed } = await supabase.rpc("check_rate_limit", {
       _key: userId,
       _endpoint: "bereken-afstand",
