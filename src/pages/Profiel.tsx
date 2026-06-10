@@ -985,7 +985,7 @@ export default function Profiel() {
                 textTransform: 'uppercase',
                 letterSpacing: '0.15em',
               }}>
-                ZZP Gegevens
+                {profile?.is_onderaannemer ? 'Bedrijfsgegevens' : 'ZZP Gegevens'}
               </h3>
               <div style={{
                 display: 'flex',
@@ -1042,6 +1042,7 @@ export default function Profiel() {
                 }}>
                   {[
                     { label: 'Bedrijfsnaam', key: 'bedrijfsnaam' as const },
+                    { label: 'Contactpersoon', key: 'contactpersoon' as const },
                     { label: 'KvK-nummer', key: 'kvk_nummer' as const },
                     { label: 'BTW-nummer', key: 'btw_nummer' as const },
                     { label: 'IBAN', key: 'iban' as const },
