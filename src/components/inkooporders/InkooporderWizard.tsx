@@ -19,11 +19,13 @@ interface WeekOptie {
 }
 
 interface Medewerker { id: string; full_name: string; is_onderaannemer?: boolean; monteur_count?: number }
+interface PloegLid { id: string; naam: string; uren: number; starttijd?: string; eindtijd?: string }
 interface Boeking {
   id: string; datum: string; project_id: string; uren: number; beschrijving?: string; type?: string;
   project_naam?: string; project_nummer?: string; activiteit?: string | null;
   medewerker_id?: string; monteur_naam?: string; bron?: "uren" | "planning"; planning_id?: string;
   starttijd?: string; eindtijd?: string; project_adres?: string | null;
+  is_ploeg?: boolean; ploegleden?: PloegLid[]; uren_mismatch?: boolean;
 }
 interface Profile {
   id: string; full_name: string; uurtarief?: number | null; kvk_nummer?: string | null;
@@ -295,33 +297,60 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
           .select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon, onderaannemer_startlocatie, onderaannemer_vrije_km_per_dag, onderaannemer_km_tarief, onderaannemer_reiskosten_per_ploeg")
           .eq("id", medewerker).single();
 
-        const enriched: Boeking[] = (planningRows || []).map((p: any) => {
+        // Groepeer planningregels per dag+project tot één ploeg-boeking.
+        // Ploegtarief geldt één keer per ploeg/uur, niet per monteur.
+        type Groep = {
+          datum: string; project_id: string; proj: any; projectAdres: string | null;
+          activiteit: string; leden: PloegLid[];
+        };
+        const groepen = new Map<string, Groep>();
+        for (const p of (planningRows || []) as any[]) {
           const proj: any = projMap.get(p.project_id) || {};
           const projectAdres = [proj.adres || proj.straat, proj.postcode, proj.stad].filter(Boolean).join(", ") || null;
-          return {
-            id: `planning:${p.id}`,
-            planning_id: p.id,
-            bron: "planning",
-            datum: p.datum,
-            project_id: p.project_id,
-            medewerker_id: p.medewerker_id,
-            monteur_naam: naamMap.get(p.medewerker_id) || "",
-            project_naam: proj.naam || "",
-            project_nummer: proj.nummer || "",
-            project_adres: projectAdres,
-            activiteit: p.activiteit || "Gepland werk",
+          const key = `${p.datum}|${p.project_id || "geen"}`;
+          if (!groepen.has(key)) {
+            groepen.set(key, {
+              datum: p.datum, project_id: p.project_id, proj, projectAdres,
+              activiteit: p.activiteit || "Gepland werk", leden: [],
+            });
+          }
+          groepen.get(key)!.leden.push({
+            id: p.medewerker_id,
+            naam: naamMap.get(p.medewerker_id) || "",
             uren: calcPlanningUren(p.starttijd, p.eindtijd),
             starttijd: p.starttijd,
             eindtijd: p.eindtijd,
+          });
+        }
+
+        const enriched: Boeking[] = Array.from(groepen.values()).map((g) => {
+          const urenSet = new Set(g.leden.map(l => l.uren));
+          const mismatch = urenSet.size > 1;
+          const ploeguren = Math.max(...g.leden.map(l => l.uren));
+          return {
+            id: `ploeg:${g.datum}:${g.project_id || "geen"}`,
+            bron: "planning",
+            datum: g.datum,
+            project_id: g.project_id,
+            medewerker_id: undefined,
+            monteur_naam: g.leden.map(l => l.naam).filter(Boolean).join(" + "),
+            project_naam: g.proj.naam || "",
+            project_nummer: g.proj.nummer || "",
+            project_adres: g.projectAdres,
+            activiteit: g.activiteit,
+            uren: ploeguren,
+            is_ploeg: true,
+            ploegleden: g.leden,
+            uren_mismatch: mismatch,
           };
         });
 
         const vrijeKm = Number((prof as any)?.onderaannemer_vrije_km_per_dag ?? 150);
         const kmTarief = Number((prof as any)?.onderaannemer_km_tarief ?? 0.46);
-        const perPloeg = (prof as any)?.onderaannemer_reiskosten_per_ploeg !== false;
+        // Onderaannemer-orders: ALTIJD één reiskostenregel per ploeg/dag/project.
         const reisMap = new Map<string, ReiskostenRegel>();
         enriched.forEach((b) => {
-          const key = perPloeg ? `${b.datum}:${b.project_id}` : `${b.datum}:${b.project_id}:${b.medewerker_id}`;
+          const key = `${b.datum}:${b.project_id}`;
           if (!reisMap.has(key)) {
             reisMap.set(key, {
               id: key,
@@ -706,54 +735,74 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                 </p>
               </div>
             ) : (
-              <div className="space-y-1 max-h-64 overflow-y-auto">
-                {boekingen.map(b => {
-                  const isSel = selected.has(b.id);
-                  return (
-                    <label key={b.id}
-                      className="flex items-center gap-2 p-2 rounded-lg cursor-pointer"
-                      style={{ background: isSel ? T.primarySoft : T.navy, border: `1px solid ${isSel ? T.borderActive : T.border}` }}>
-                      <input type="checkbox" checked={isSel}
-                        onChange={() => {
-                          const next = new Set(selected);
-                          next.has(b.id) ? next.delete(b.id) : next.add(b.id);
-                          setSelected(next);
-                        }} />
-                      <div className="flex-1 min-w-0">
+              <>
+                {isOnderaannemerOrder && (
+                  <div className="rounded-lg p-2 text-[11px]" style={{ background: T.primarySoft, border: `1px solid ${T.borderActive}`, color: T.primary }}>
+                    Ploegtarief <strong>{euro(tarief)}/uur</strong> — geldt één keer per ploeg, niet per monteur. Eén regel per dag/project.
+                  </div>
+                )}
+                <div className="space-y-1 max-h-64 overflow-y-auto">
+                  {boekingen.map(b => {
+                    const isSel = selected.has(b.id);
+                    return (
+                      <label key={b.id}
+                        className="flex flex-col gap-1 p-2 rounded-lg cursor-pointer"
+                        style={{ background: isSel ? T.primarySoft : T.navy, border: `1px solid ${isSel ? T.borderActive : T.border}` }}>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium" style={{ color: T.text }}>{b.datum}</span>
-                          {b.monteur_naam && medewerkers.find(m => m.id === medewerker)?.is_onderaannemer && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: T.primarySoft, color: T.primary, border: `1px solid ${T.borderActive}` }}>
-                              {b.monteur_naam}
+                          <input type="checkbox" checked={isSel}
+                            onChange={() => {
+                              const next = new Set(selected);
+                              next.has(b.id) ? next.delete(b.id) : next.add(b.id);
+                              setSelected(next);
+                            }} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-medium" style={{ color: T.text }}>{b.datum}</span>
+                              {b.is_ploeg && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold" style={{ background: T.primarySoft, color: T.primary, border: `1px solid ${T.borderActive}` }}>
+                                  Ploeg ({b.ploegleden?.length || 0})
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px]" style={{ color: T.textMuted }}>
+                              {b.project_naam || "—"} · {b.activiteit || b.type}
+                            </span>
+                          </div>
+                          {isOnderaannemerOrder ? (
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.25"
+                              value={b.uren}
+                              onChange={(e) => {
+                                const value = Number(e.target.value || 0);
+                                setBoekingen(prev => prev.map(item => item.id === b.id ? { ...item, uren: value, uren_mismatch: false } : item));
+                              }}
+                              className="w-20 px-2 py-1.5 rounded-lg text-xs font-bold text-right"
+                              style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.primary, fontFamily: T.mono }}
+                            />
+                          ) : (
+                            <span className="text-xs font-bold shrink-0" style={{ fontFamily: T.mono, color: T.primary }}>
+                              {b.uren}u
                             </span>
                           )}
                         </div>
-                        <span className="text-[11px]" style={{ color: T.textMuted }}>
-                          {b.project_naam || "—"} · {b.activiteit || b.type}
-                        </span>
-                      </div>
-                      {isOnderaannemerOrder ? (
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.25"
-                          value={b.uren}
-                          onChange={(e) => {
-                            const value = Number(e.target.value || 0);
-                            setBoekingen(prev => prev.map(item => item.id === b.id ? { ...item, uren: value } : item));
-                          }}
-                          className="w-20 px-2 py-1.5 rounded-lg text-xs font-bold text-right"
-                          style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.primary, fontFamily: T.mono }}
-                        />
-                      ) : (
-                        <span className="text-xs font-bold shrink-0" style={{ fontFamily: T.mono, color: T.primary }}>
-                          {b.uren}u
-                        </span>
-                      )}
-                    </label>
-                  );
-                })}
-              </div>
+                        {b.is_ploeg && b.ploegleden && b.ploegleden.length > 0 && (
+                          <div className="pl-6 text-[10px]" style={{ color: T.textMuted }}>
+                            Ploegleden: {b.ploegleden.map(l => `${l.naam} (${l.uren}u)`).join(" · ")}
+                          </div>
+                        )}
+                        {b.uren_mismatch && (
+                          <div className="pl-6 flex items-start gap-1 text-[10px]" style={{ color: T.warn }}>
+                            <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" />
+                            <span>Ploegleden hebben afwijkende uren. Ploeguren is op het maximum gezet — controleer en pas zo nodig handmatig aan.</span>
+                          </div>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+              </>
             )}
 
             {isOnderaannemerOrder && reiskosten.length > 0 && (
