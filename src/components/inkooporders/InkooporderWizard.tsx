@@ -297,33 +297,60 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
           .select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon, onderaannemer_startlocatie, onderaannemer_vrije_km_per_dag, onderaannemer_km_tarief, onderaannemer_reiskosten_per_ploeg")
           .eq("id", medewerker).single();
 
-        const enriched: Boeking[] = (planningRows || []).map((p: any) => {
+        // Groepeer planningregels per dag+project tot één ploeg-boeking.
+        // Ploegtarief geldt één keer per ploeg/uur, niet per monteur.
+        type Groep = {
+          datum: string; project_id: string; proj: any; projectAdres: string | null;
+          activiteit: string; leden: PloegLid[];
+        };
+        const groepen = new Map<string, Groep>();
+        for (const p of (planningRows || []) as any[]) {
           const proj: any = projMap.get(p.project_id) || {};
           const projectAdres = [proj.adres || proj.straat, proj.postcode, proj.stad].filter(Boolean).join(", ") || null;
-          return {
-            id: `planning:${p.id}`,
-            planning_id: p.id,
-            bron: "planning",
-            datum: p.datum,
-            project_id: p.project_id,
-            medewerker_id: p.medewerker_id,
-            monteur_naam: naamMap.get(p.medewerker_id) || "",
-            project_naam: proj.naam || "",
-            project_nummer: proj.nummer || "",
-            project_adres: projectAdres,
-            activiteit: p.activiteit || "Gepland werk",
+          const key = `${p.datum}|${p.project_id || "geen"}`;
+          if (!groepen.has(key)) {
+            groepen.set(key, {
+              datum: p.datum, project_id: p.project_id, proj, projectAdres,
+              activiteit: p.activiteit || "Gepland werk", leden: [],
+            });
+          }
+          groepen.get(key)!.leden.push({
+            id: p.medewerker_id,
+            naam: naamMap.get(p.medewerker_id) || "",
             uren: calcPlanningUren(p.starttijd, p.eindtijd),
             starttijd: p.starttijd,
             eindtijd: p.eindtijd,
+          });
+        }
+
+        const enriched: Boeking[] = Array.from(groepen.values()).map((g) => {
+          const urenSet = new Set(g.leden.map(l => l.uren));
+          const mismatch = urenSet.size > 1;
+          const ploeguren = Math.max(...g.leden.map(l => l.uren));
+          return {
+            id: `ploeg:${g.datum}:${g.project_id || "geen"}`,
+            bron: "planning",
+            datum: g.datum,
+            project_id: g.project_id,
+            medewerker_id: undefined,
+            monteur_naam: g.leden.map(l => l.naam).filter(Boolean).join(" + "),
+            project_naam: g.proj.naam || "",
+            project_nummer: g.proj.nummer || "",
+            project_adres: g.projectAdres,
+            activiteit: g.activiteit,
+            uren: ploeguren,
+            is_ploeg: true,
+            ploegleden: g.leden,
+            uren_mismatch: mismatch,
           };
         });
 
         const vrijeKm = Number((prof as any)?.onderaannemer_vrije_km_per_dag ?? 150);
         const kmTarief = Number((prof as any)?.onderaannemer_km_tarief ?? 0.46);
-        const perPloeg = (prof as any)?.onderaannemer_reiskosten_per_ploeg !== false;
+        // Onderaannemer-orders: ALTIJD één reiskostenregel per ploeg/dag/project.
         const reisMap = new Map<string, ReiskostenRegel>();
         enriched.forEach((b) => {
-          const key = perPloeg ? `${b.datum}:${b.project_id}` : `${b.datum}:${b.project_id}:${b.medewerker_id}`;
+          const key = `${b.datum}:${b.project_id}`;
           if (!reisMap.has(key)) {
             reisMap.set(key, {
               id: key,
