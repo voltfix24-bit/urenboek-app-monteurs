@@ -7,7 +7,7 @@ import { PageShell } from "@/components/PageShell";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
-import { valideer, profielSchema } from "@/lib/validatie";
+import { valideer, profielSchema, zzpSchema } from "@/lib/validatie";
 
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/Spinner";
@@ -20,7 +20,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { triggerInstallPrompt, canShowInstallPrompt } from "@/components/InstallPrompt";
 
-interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; geboortedatum?: string | null; account_status?: string; }
+interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; contactpersoon?: string | null; email?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; geboortedatum?: string | null; account_status?: string; is_onderaannemer?: boolean; }
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; bestand_url?: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; reden: string | null; status: string; }
 
@@ -241,7 +241,8 @@ export default function Profiel() {
   const [editing, setEditing] = useState(false);
   const [editingZzp, setEditingZzp] = useState(false);
   const [editForm, setEditForm] = useState({ full_name: "", telefoon: "", adres: "", geboortedatum: "" });
-  const [zzpEditForm, setZzpEditForm] = useState({ bedrijfsnaam: "", kvk_nummer: "", btw_nummer: "", iban: "", factuuradres: "", betalingstermijn: 30 });
+  const [zzpEditForm, setZzpEditForm] = useState({ bedrijfsnaam: "", contactpersoon: "", kvk_nummer: "", btw_nummer: "", iban: "", factuuradres: "", betalingstermijn: 30 });
+  const [zzpErrors, setZzpErrors] = useState<Record<string, string>>({});
   const [showZiek, setShowZiek] = useState(false);
   const [loading, setLoading] = useState(true);
   const [calMonth, setCalMonth] = useState(new Date());
@@ -249,11 +250,11 @@ export default function Profiel() {
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("profiles").select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, uurtarief, betalingstermijn, factuuradres, geboortedatum, account_status").eq("user_id", user.id).single();
+    const { data } = await supabase.from("profiles").select("id, full_name, telefoon, adres, rijbewijs, vaste_vrije_dagen, kvk_nummer, btw_nummer, iban, bedrijfsnaam, contactpersoon, email, uurtarief, betalingstermijn, factuuradres, geboortedatum, account_status, is_onderaannemer").eq("user_id", user.id).single();
     if (data) {
       setProfile(data as any);
       setEditForm({ full_name: data.full_name, telefoon: (data as any).telefoon || "", adres: (data as any).adres || "", geboortedatum: (data as any).geboortedatum || "" });
-      setZzpEditForm({ bedrijfsnaam: (data as any).bedrijfsnaam || "", kvk_nummer: (data as any).kvk_nummer || "", btw_nummer: (data as any).btw_nummer || "", iban: (data as any).iban || "", factuuradres: (data as any).factuuradres || "", betalingstermijn: (data as any).betalingstermijn || 30 });
+      setZzpEditForm({ bedrijfsnaam: (data as any).bedrijfsnaam || "", contactpersoon: (data as any).contactpersoon || "", kvk_nummer: (data as any).kvk_nummer || "", btw_nummer: (data as any).btw_nummer || "", iban: (data as any).iban || "", factuuradres: (data as any).factuuradres || "", betalingstermijn: (data as any).betalingstermijn || 30 });
     }
     setLoading(false);
   }, [user]);
@@ -279,15 +280,29 @@ export default function Profiel() {
 
   const saveZzp = async () => {
     if (!profile) return;
+    const vResult = valideer(zzpSchema, {
+      bedrijfsnaam: zzpEditForm.bedrijfsnaam,
+      kvk_nummer: zzpEditForm.kvk_nummer,
+      btw_nummer: zzpEditForm.btw_nummer,
+      iban: zzpEditForm.iban.replace(/\s/g, ""),
+      factuuradres: zzpEditForm.factuuradres,
+    });
+    if (!vResult.success) {
+      setZzpErrors(vResult.errors);
+      toast.error("Controleer KvK, BTW of IBAN");
+      return;
+    }
+    setZzpErrors({});
     if (!await mutate(supabase.from("profiles").update({
       bedrijfsnaam: zzpEditForm.bedrijfsnaam || null,
+      contactpersoon: zzpEditForm.contactpersoon || null,
       kvk_nummer: zzpEditForm.kvk_nummer || null,
       btw_nummer: zzpEditForm.btw_nummer || null,
-      iban: zzpEditForm.iban || null,
+      iban: zzpEditForm.iban.replace(/\s/g, "") || null,
       factuuradres: zzpEditForm.factuuradres || null,
       betalingstermijn: zzpEditForm.betalingstermijn,
     } as any).eq("id", profile.id))) return;
-    toast.success("ZZP gegevens opgeslagen");
+    toast.success("Bedrijfsgegevens opgeslagen ✓");
     setEditingZzp(false);
     fetchProfile();
     refetchProfileContext();
@@ -970,7 +985,7 @@ export default function Profiel() {
                 textTransform: 'uppercase',
                 letterSpacing: '0.15em',
               }}>
-                ZZP Gegevens
+                {profile?.is_onderaannemer ? 'Bedrijfsgegevens' : 'ZZP Gegevens'}
               </h3>
               <div style={{
                 display: 'flex',
@@ -1027,6 +1042,7 @@ export default function Profiel() {
                 }}>
                   {[
                     { label: 'Bedrijfsnaam', key: 'bedrijfsnaam' as const },
+                    { label: 'Contactpersoon', key: 'contactpersoon' as const },
                     { label: 'KvK-nummer', key: 'kvk_nummer' as const },
                     { label: 'BTW-nummer', key: 'btw_nummer' as const },
                     { label: 'IBAN', key: 'iban' as const },
@@ -1059,6 +1075,7 @@ export default function Profiel() {
                           outline: 'none',
                           boxSizing: 'border-box',
                         }} />
+                      {zzpErrors[f.key] && <p style={{ fontSize: 11, color: 'var(--danger)', marginTop: 4, fontFamily: 'Hanken Grotesk' }}>⚠ {zzpErrors[f.key]}</p>}
                     </div>
                   ))}
                   <div>
@@ -1095,6 +1112,7 @@ export default function Profiel() {
                       setEditingZzp(false);
                       setZzpEditForm({
                         bedrijfsnaam: profile?.bedrijfsnaam || '',
+                        contactpersoon: profile?.contactpersoon || '',
                         kvk_nummer: profile?.kvk_nummer || '',
                         btw_nummer: profile?.btw_nummer || '',
                         iban: profile?.iban || '',

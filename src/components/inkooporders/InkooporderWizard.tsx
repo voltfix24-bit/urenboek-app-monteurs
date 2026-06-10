@@ -5,6 +5,7 @@ import { X, Check, AlertTriangle, ChevronLeft, Users, Calendar, ListChecks, File
 
 import { euroDecimals as euro } from "@/lib/formatting";
 import { roundKilometers, berekenReiskosten } from "@/lib/kilometers";
+import { buildLeverancierSnapshot } from "@/lib/leverancierSnapshot";
 import { Spinner } from "@/components/ui/Spinner";
 import { T } from "@/lib/inkooporderTheme";
 import { differenceInMinutes, format, parseISO, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
@@ -31,6 +32,7 @@ interface Boeking {
 interface Profile {
   id: string; full_name: string; uurtarief?: number | null; kvk_nummer?: string | null;
   btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null;
+  contactpersoon?: string | null; email?: string | null;
   factuuradres?: string | null; adres?: string | null; betalingstermijn?: number | null; telefoon?: string | null;
   onderaannemer_startlocatie?: string | null; onderaannemer_vrije_km_per_dag?: number | null;
   onderaannemer_km_tarief?: number | null; onderaannemer_reiskosten_per_ploeg?: boolean | null;
@@ -295,7 +297,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
 
         const { data: prof } = await supabase
           .from("profiles")
-          .select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon, onderaannemer_startlocatie, onderaannemer_vrije_km_per_dag, onderaannemer_km_tarief, onderaannemer_reiskosten_per_ploeg")
+          .select("id, full_name, contactpersoon, email, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon, onderaannemer_startlocatie, onderaannemer_vrije_km_per_dag, onderaannemer_km_tarief, onderaannemer_reiskosten_per_ploeg")
           .eq("id", medewerker).single();
 
         // Groepeer planningregels per dag+project tot één ploeg-boeking.
@@ -418,7 +420,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
 
       const { data: prof } = await supabase
         .from("profiles")
-        .select("id, full_name, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon")
+        .select("id, full_name, contactpersoon, email, uurtarief, kvk_nummer, btw_nummer, iban, bedrijfsnaam, factuuradres, adres, betalingstermijn, telefoon")
         .eq("id", medewerker).single();
       setMedProfile(prof as Profile);
       setTarief(Number(prof?.uurtarief) || 0);
@@ -463,6 +465,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
         totaal_incl_btw: subtotaal,
         aangemaakt_door: profileId,
         notitie: notitie || null,
+        leverancier_snapshot: buildLeverancierSnapshot(medProfile) as any,
       } as any).select("id").single();
 
       if (error || !order) {
