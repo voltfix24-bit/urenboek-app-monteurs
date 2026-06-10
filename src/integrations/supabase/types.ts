@@ -808,6 +808,7 @@ export type Database = {
           factuur_datum: string | null
           factuur_nummer: string | null
           id: string
+          leverancier_snapshot: Json | null
           medewerker_id: string
           notitie: string | null
           order_nummer: string
@@ -830,6 +831,7 @@ export type Database = {
           factuur_datum?: string | null
           factuur_nummer?: string | null
           id?: string
+          leverancier_snapshot?: Json | null
           medewerker_id: string
           notitie?: string | null
           order_nummer: string
@@ -852,6 +854,7 @@ export type Database = {
           factuur_datum?: string | null
           factuur_nummer?: string | null
           id?: string
+          leverancier_snapshot?: Json | null
           medewerker_id?: string
           notitie?: string | null
           order_nummer?: string
@@ -1495,6 +1498,7 @@ export type Database = {
           bedrijfsnaam: string | null
           betalingstermijn: number
           btw_nummer: string | null
+          contactpersoon: string | null
           contract_einddatum: string | null
           created_at: string
           email: string | null
@@ -1533,6 +1537,7 @@ export type Database = {
           bedrijfsnaam?: string | null
           betalingstermijn?: number
           btw_nummer?: string | null
+          contactpersoon?: string | null
           contract_einddatum?: string | null
           created_at?: string
           email?: string | null
@@ -1571,6 +1576,7 @@ export type Database = {
           bedrijfsnaam?: string | null
           betalingstermijn?: number
           btw_nummer?: string | null
+          contactpersoon?: string | null
           contract_einddatum?: string | null
           created_at?: string
           email?: string | null
