@@ -816,8 +816,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                 </div>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {reiskosten.map(r => {
-                    const vergoedbareKm = Math.max(0, Number(r.retour_km || 0) - Number(r.vrije_km || 0));
-                    const bedrag = vergoedbareKm * Number(r.km_tarief || 0);
+                    const calc = berekenReiskosten(r.retour_km, r.vrije_km, r.km_tarief);
                     return (
                       <div key={r.id} className="rounded-lg p-2 space-y-2" style={{ background: T.navy, border: `1px solid ${T.border}` }}>
                         <div className="flex items-start justify-between gap-2">
@@ -827,7 +826,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                               {r.startlocatie || "Startlocatie ontbreekt"} → {r.project_adres || "projectadres onbekend"}
                             </p>
                           </div>
-                          <span className="text-xs font-bold shrink-0" style={{ color: T.primary, fontFamily: T.mono }}>{euro(bedrag)}</span>
+                          <span className="text-xs font-bold shrink-0" style={{ color: T.primary, fontFamily: T.mono }}>{euro(calc.bedrag)}</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                           <label className="text-[10px]" style={{ color: T.textMuted }}>
@@ -838,7 +837,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                               step="1"
                               value={r.retour_km}
                               onChange={(e) => {
-                                const value = Number(e.target.value || 0);
+                                const value = roundKilometers(e.target.value);
                                 setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, retour_km: value, afstand_bron: "handmatig" } : item));
                               }}
                               className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
@@ -854,7 +853,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                               step="1"
                               value={r.vrije_km}
                               onChange={(e) => {
-                                const value = Number(e.target.value || 0);
+                                const value = roundKilometers(e.target.value);
                                 setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, vrije_km: value } : item));
                               }}
                               className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
@@ -879,7 +878,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                         </div>
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-[10px]" style={{ color: T.textMuted }}>
-                            Vergoedbaar: {vergoedbareKm} km · bron: {r.afstand_bron === "google_routes" ? "automatisch" : "handmatig"}
+                            retour {calc.retour_km} km · vrij {calc.vrije_km} km · vergoedbaar {calc.vergoedbare_km} km · bron: {r.afstand_bron === "google_routes" ? "automatisch" : "handmatig"}
                           </p>
                           <button
                             type="button"
