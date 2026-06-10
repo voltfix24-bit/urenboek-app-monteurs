@@ -1110,6 +1110,7 @@ export default function Profiel() {
                       setEditingZzp(false);
                       setZzpEditForm({
                         bedrijfsnaam: profile?.bedrijfsnaam || '',
+                        contactpersoon: profile?.contactpersoon || '',
                         kvk_nummer: profile?.kvk_nummer || '',
                         btw_nummer: profile?.btw_nummer || '',
                         iban: profile?.iban || '',
