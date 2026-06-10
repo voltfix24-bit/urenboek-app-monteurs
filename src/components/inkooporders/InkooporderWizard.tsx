@@ -19,11 +19,13 @@ interface WeekOptie {
 }
 
 interface Medewerker { id: string; full_name: string; is_onderaannemer?: boolean; monteur_count?: number }
+interface PloegLid { id: string; naam: string; uren: number; starttijd?: string; eindtijd?: string }
 interface Boeking {
   id: string; datum: string; project_id: string; uren: number; beschrijving?: string; type?: string;
   project_naam?: string; project_nummer?: string; activiteit?: string | null;
   medewerker_id?: string; monteur_naam?: string; bron?: "uren" | "planning"; planning_id?: string;
   starttijd?: string; eindtijd?: string; project_adres?: string | null;
+  is_ploeg?: boolean; ploegleden?: PloegLid[]; uren_mismatch?: boolean;
 }
 interface Profile {
   id: string; full_name: string; uurtarief?: number | null; kvk_nummer?: string | null;
