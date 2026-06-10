@@ -32,6 +32,7 @@ interface Boeking {
 interface Profile {
   id: string; full_name: string; uurtarief?: number | null; kvk_nummer?: string | null;
   btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null;
+  contactpersoon?: string | null; email?: string | null;
   factuuradres?: string | null; adres?: string | null; betalingstermijn?: number | null; telefoon?: string | null;
   onderaannemer_startlocatie?: string | null; onderaannemer_vrije_km_per_dag?: number | null;
   onderaannemer_km_tarief?: number | null; onderaannemer_reiskosten_per_ploeg?: boolean | null;
