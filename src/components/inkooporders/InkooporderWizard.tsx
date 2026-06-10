@@ -346,7 +346,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
           };
         });
 
-        const vrijeKm = Number((prof as any)?.onderaannemer_vrije_km_per_dag ?? 150);
+        const vrijeKm = roundKilometers((prof as any)?.onderaannemer_vrije_km_per_dag ?? 150);
         const kmTarief = Number((prof as any)?.onderaannemer_km_tarief ?? 0.46);
         // Onderaannemer-orders: ALTIJD één reiskostenregel per ploeg/dag/project.
         const reisMap = new Map<string, ReiskostenRegel>();
