@@ -139,7 +139,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
   );
   const urenSubtotaal = totaalUren * tarief;
   const reiskostenTotaal = useMemo(
-    () => reiskosten.reduce((sum, r) => sum + Math.max(0, Number(r.retour_km || 0) - Number(r.vrije_km || 0)) * Number(r.km_tarief || 0), 0),
+    () => reiskosten.reduce((sum, r) => sum + berekenReiskosten(r.retour_km, r.vrije_km, r.km_tarief).bedrag, 0),
     [reiskosten],
   );
   const subtotaal = urenSubtotaal + reiskostenTotaal;
