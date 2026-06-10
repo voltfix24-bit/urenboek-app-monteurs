@@ -7,7 +7,7 @@ import { PageShell } from "@/components/PageShell";
 import CertificatenOverzicht from "@/components/CertificatenOverzicht";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
-import { valideer, profielSchema } from "@/lib/validatie";
+import { valideer, profielSchema, zzpSchema } from "@/lib/validatie";
 
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/Spinner";
