@@ -488,9 +488,9 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
 
       const reisRegels = isOnderaannemerOrder
         ? reiskosten
-          .filter(r => Number(r.retour_km || 0) > 0)
+          .filter(r => roundKilometers(r.retour_km) > 0)
           .map(r => {
-            const vergoedbareKm = Math.max(0, Number(r.retour_km || 0) - Number(r.vrije_km || 0));
+            const { retour_km, vrije_km, vergoedbare_km, bedrag } = berekenReiskosten(r.retour_km, r.vrije_km, r.km_tarief);
             return {
               inkooporder_id: order.id,
               uren_boeking_id: null,
@@ -499,13 +499,13 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
               project_id: r.project_id,
               project_naam: r.project_naam,
               project_adres: r.project_adres,
-              activiteit: `Reiskosten ploeg (${vergoedbareKm} km vergoedbaar)`,
+              activiteit: `Reiskosten ploeg (${vergoedbare_km} km vergoedbaar)`,
               uren: 0,
               uurtarief: 0,
-              bedrag: vergoedbareKm * Number(r.km_tarief || 0),
-              kilometers: vergoedbareKm,
-              retour_km: Number(r.retour_km || 0),
-              vrije_km: Number(r.vrije_km || 0),
+              bedrag,
+              kilometers: vergoedbare_km,
+              retour_km,
+              vrije_km,
               km_tarief: Number(r.km_tarief || 0),
               afstand_bron: r.afstand_bron,
               startlocatie: r.startlocatie,
