@@ -88,6 +88,11 @@ export default function Onderaannemers() {
   const [selected, setSelected] = useState<Onderaannemer | null>(null);
   const [showAddOA, setShowAddOA] = useState(false);
   const [showAddMonteur, setShowAddMonteur] = useState(false);
+  const [showLinkMonteur, setShowLinkMonteur] = useState(false);
+  const [linkSearch, setLinkSearch] = useState("");
+  const [linkSelected, setLinkSelected] = useState<Set<string>>(new Set());
+  const [linkSaving, setLinkSaving] = useState(false);
+  const [linkConfirm, setLinkConfirm] = useState<{ moveCount: number; freeCount: number } | null>(null);
   const { focus, clear: clearFocus } = useFocusParam();
   useClearFocusOnClose(selected !== null);
   const focusHandledRef = useRef<string | null>(null);
