@@ -102,6 +102,14 @@ export default function PlannerKoppeling() {
   const [analyseTab, setAnalyseTab] = useState<"projecten" | "monteurs">("projecten");
   const [analyseStatusFilter, setAnalyseStatusFilter] = useState<AnalyseStatus | "alle">("alle");
   const [analyseQuery, setAnalyseQuery] = useState("");
+  const [koppelBusyKey, setKoppelBusyKey] = useState<string | null>(null);
+  const [koppelConfirm, setKoppelConfirm] = useState<{
+    kind: "project" | "monteur";
+    urenapp_id: string;
+    planner_id: string;
+    label: string;
+    afwijkingen: Afwijking[];
+  } | null>(null);
 
   async function runAnalyse() {
     setAnalyseBusy(true);
@@ -116,6 +124,35 @@ export default function PlannerKoppeling() {
       setAnalyseBusy(false);
     }
   }
+
+  async function doKoppel(kind: "project" | "monteur", urenapp_id: string, planner_id: string) {
+    const key = `${kind}:${urenapp_id}`;
+    if (koppelBusyKey) return; // anti-dubbele-klik
+    setKoppelBusyKey(key);
+    try {
+      const { data, error } = await supabase.functions.invoke("confirm-planner-match", {
+        body: { kind, urenapp_id, planner_id },
+      });
+      if (error) {
+        const ctx = (error as any)?.context;
+        let msg = (error as any)?.message ?? "Koppelen mislukt";
+        try {
+          const body = ctx && typeof ctx.json === "function" ? await ctx.json() : null;
+          if (body?.error) msg = body.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+      if ((data as any)?.reeds_gekoppeld) toast.info("Records waren al gekoppeld");
+      else toast.success("Gekoppeld");
+      await runAnalyse();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Koppelen mislukt");
+    } finally {
+      setKoppelBusyKey(null);
+      setKoppelConfirm(null);
+    }
+  }
+
 
   async function loadStats() {
     setLoading(true);
