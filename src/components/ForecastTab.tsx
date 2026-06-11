@@ -525,9 +525,9 @@ function FilterChip({ active, onClick, icon: Icon, label, count }: { active: boo
 
 // =================== Stuksprijzen editor ===================
 
-function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, planningKostenTotaal }: {
+function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, planningKostenTotaal, reiskosten }: {
   regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; specCodes: SpecCode[];
-  planningKosten: PlanningKostRegel[]; planningKostenTotaal: number;
+  planningKosten: PlanningKostRegel[]; planningKostenTotaal: number; reiskosten: number;
 }) {
   const [search, setSearch] = useState("");
   const [browserOpen, setBrowserOpen] = useState(true);
