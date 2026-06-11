@@ -297,7 +297,7 @@ export default function Onderaannemers() {
     setLoading(true);
     const { data: profielen } = await supabase
       .from("profiles")
-      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,kvk_nummer,iban,uurtarief,onderaannemer_startlocatie,onderaannemer_vrije_km_per_dag,onderaannemer_km_tarief,onderaannemer_reiskosten_per_ploeg,account_status,is_onderaannemer,onderaannemer_id,planning_partner_ids")
+      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,contactpersoon,factuuradres,kvk_nummer,btw_nummer,iban,betalingstermijn,uurtarief,onderaannemer_startlocatie,onderaannemer_vrije_km_per_dag,onderaannemer_km_tarief,onderaannemer_reiskosten_per_ploeg,account_status,is_onderaannemer,onderaannemer_id,planning_partner_ids,bedrijfsgegevens_updated_at,bedrijfsgegevens_updated_by")
       .order("full_name");
     const { data: rollen } = await supabase.from("user_roles").select("user_id,role");
     const rolMap = new Map((rollen || []).map((r) => [r.user_id, r.role]));
@@ -314,7 +314,6 @@ export default function Onderaannemers() {
     });
     setOnderaannemers(oa);
     setMonteurs(mt);
-    // sync selected
     setSelected((prev) => prev ? oa.find((o) => o.id === prev.id) ?? null : null);
     setLoading(false);
   };
