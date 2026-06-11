@@ -458,8 +458,8 @@ export function InkooporderDocument({
           ))}
         </View>
 
-        {/* TABEL HEADER */}
-        <View style={styles.tabelHeader}>
+        {/* TABEL HEADER (herhaald op iedere pagina) */}
+        <View style={styles.tabelHeader} fixed>
           <View style={styles.kolDatum}><Text style={styles.tabelHeaderTekst}>Datum</Text></View>
           <View style={styles.kolProject}><Text style={styles.tabelHeaderTekst}>Project</Text></View>
           <View style={styles.kolWerk}><Text style={styles.tabelHeaderTekst}>Werkzaamheden</Text></View>
@@ -479,7 +479,7 @@ export function InkooporderDocument({
             ? `Reiskosten ploeg · retour ${retourKm} km · vrij ${vrijKm} km · ${bronLabel}`
             : r.activiteit || r.beschrijving || "Elektrotechnische werkzaamheden";
           return (
-            <View key={i} style={[styles.tabelRij, i % 2 === 0 ? styles.tabelRijEven : styles.tabelRijOneven]}>
+            <View key={i} wrap={false} style={[styles.tabelRij, i % 2 === 0 ? styles.tabelRijEven : styles.tabelRijOneven]}>
               <View style={styles.kolDatum}><Text style={styles.tabelMuted}>{fmtDatumMetDag(r.datum)}</Text></View>
               <View style={styles.kolProject}><Text style={styles.tabelProject}>{r.project_naam || ""}</Text></View>
               <View style={styles.kolWerk}><Text style={styles.tabelTekst}>{omschrijving}</Text></View>
