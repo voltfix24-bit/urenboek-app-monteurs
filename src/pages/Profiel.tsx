@@ -11,6 +11,7 @@ import { valideer, profielSchema, zzpSchema } from "@/lib/validatie";
 
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/Spinner";
+import { NumericInput } from "@/components/ui/NumericInput";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { formatDatum } from "@/lib/formatting";
 import { CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
@@ -1089,10 +1090,14 @@ export default function Profiel() {
                     }}>
                       Betalingstermijn (dagen)
                     </label>
-                    <input
-                      type="number"
+                    <NumericInput
+                      integer
+                      min={0}
+                      max={365}
                       value={zzpEditForm.betalingstermijn}
-                      onChange={e => setZzpEditForm({ ...zzpEditForm, betalingstermijn: Number(e.target.value) || 30 })}
+                      emptyAs={30}
+                      selectOnFocus
+                      onChange={v => setZzpEditForm({ ...zzpEditForm, betalingstermijn: v ?? 30 })}
                       style={{
                         width: '100%',
                         marginTop: 4,

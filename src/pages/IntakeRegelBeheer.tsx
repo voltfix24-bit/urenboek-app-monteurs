@@ -8,6 +8,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { ArrowLeft, Plus, Pencil, Trash2, X, Check, FlaskConical, AlertTriangle, ChevronDown, ChevronRight, Settings, LayoutList } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
+import { NumericInput } from "@/components/ui/NumericInput";
 import { SPEC_CODES, GROEP_LABELS } from "@/lib/specCodes";
 import { IntakeRegel, IntakeAntwoorden, BerekendeRegel, LEGE_ANTWOORDEN, berekenRegels } from "@/lib/forecastIntake";
 import { euroDecimals as euro } from "@/lib/formatting";
@@ -313,7 +314,7 @@ export default function IntakeRegelBeheer() {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "var(--text-muted)" }}>Aantal:</label>
-          <input type="number" value={editForm.standaard_aantal} onChange={e => setEditForm(f => ({ ...f, standaard_aantal: Number(e.target.value) }))} className="w-full px-3 py-2 rounded-xl text-sm text-center" style={inputStyle} />
+          <NumericInput integer min={0} value={editForm.standaard_aantal} emptyAs={0} selectOnFocus onChange={v => setEditForm(f => ({ ...f, standaard_aantal: v ?? 0 }))} className="w-full px-3 py-2 rounded-xl text-sm text-center" style={inputStyle} />
         </div>
         <div className="flex items-end">
           <label className="flex items-center gap-2 text-sm pb-2" style={{ color: "var(--text-primary)" }}>
@@ -328,9 +329,9 @@ export default function IntakeRegelBeheer() {
           <div>
             <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: "var(--text-muted)" }}>Min – Max:</label>
             <div className="flex items-center gap-2">
-              <input type="number" value={editForm.min_aantal} onChange={e => setEditForm(f => ({ ...f, min_aantal: Number(e.target.value) }))} className="w-full px-3 py-2 rounded-xl text-sm text-center" style={inputStyle} />
+              <NumericInput integer min={0} value={editForm.min_aantal} emptyAs={0} selectOnFocus onChange={v => setEditForm(f => ({ ...f, min_aantal: v ?? 0 }))} className="w-full px-3 py-2 rounded-xl text-sm text-center" style={inputStyle} />
               <span style={{ color: "var(--text-muted)" }}>–</span>
-              <input type="number" value={editForm.max_aantal} onChange={e => setEditForm(f => ({ ...f, max_aantal: Number(e.target.value) }))} className="w-full px-3 py-2 rounded-xl text-sm text-center" style={inputStyle} />
+              <NumericInput integer min={0} value={editForm.max_aantal} emptyAs={0} selectOnFocus onChange={v => setEditForm(f => ({ ...f, max_aantal: v ?? 0 }))} className="w-full px-3 py-2 rounded-xl text-sm text-center" style={inputStyle} />
             </div>
           </div>
           <div />
@@ -397,11 +398,11 @@ export default function IntakeRegelBeheer() {
           <input value={editForm.label} onChange={e => setEditForm(f => ({ ...f, label: e.target.value }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5" style={inputStyle} />
         </div>
         <div className="grid grid-cols-3 gap-1">
-          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Aantal</label><input type="number" value={editForm.standaard_aantal} onChange={e => setEditForm(f => ({ ...f, standaard_aantal: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
-          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Min</label><input type="number" value={editForm.min_aantal} onChange={e => setEditForm(f => ({ ...f, min_aantal: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
-          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Max</label><input type="number" value={editForm.max_aantal} onChange={e => setEditForm(f => ({ ...f, max_aantal: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
+          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Aantal</label><NumericInput integer min={0} value={editForm.standaard_aantal} emptyAs={0} selectOnFocus onChange={v => setEditForm(f => ({ ...f, standaard_aantal: v ?? 0 }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
+          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Min</label><NumericInput integer min={0} value={editForm.min_aantal} emptyAs={0} selectOnFocus onChange={v => setEditForm(f => ({ ...f, min_aantal: v ?? 0 }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
+          <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Max</label><NumericInput integer min={0} value={editForm.max_aantal} emptyAs={0} selectOnFocus onChange={v => setEditForm(f => ({ ...f, max_aantal: v ?? 0 }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
         </div>
-        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Volgorde</label><input type="number" value={editForm.volgorde} onChange={e => setEditForm(f => ({ ...f, volgorde: Number(e.target.value) }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
+        <div><label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Volgorde</label><NumericInput integer min={0} value={editForm.volgorde} emptyAs={0} selectOnFocus onChange={v => setEditForm(f => ({ ...f, volgorde: v ?? 0 }))} className="w-full px-2 py-1.5 rounded-lg text-xs mt-0.5 text-center" style={inputStyle} /></div>
         <label className="flex items-center gap-2 text-xs mt-4" style={{ color: "var(--text-primary)" }}><input type="checkbox" checked={editForm.aanpasbaar} onChange={e => setEditForm(f => ({ ...f, aanpasbaar: e.target.checked }))} style={{ accentColor: "var(--accent)" }} /> Aanpasbaar</label>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">

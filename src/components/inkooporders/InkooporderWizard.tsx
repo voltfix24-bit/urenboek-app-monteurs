@@ -7,6 +7,7 @@ import { euroDecimals as euro } from "@/lib/formatting";
 import { roundKilometers, berekenReiskosten } from "@/lib/kilometers";
 import { buildLeverancierSnapshot } from "@/lib/leverancierSnapshot";
 import { Spinner } from "@/components/ui/Spinner";
+import { NumericInput } from "@/components/ui/NumericInput";
 import { T } from "@/lib/inkooporderTheme";
 import { differenceInMinutes, format, parseISO, startOfISOWeek, endOfISOWeek, getISOWeek, getISOWeekYear } from "date-fns";
 
@@ -773,14 +774,15 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                             </span>
                           </div>
                           {isOnderaannemerOrder ? (
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.25"
+                            <NumericInput
+                              min={0}
+                              decimals={2}
                               value={b.uren}
-                              onChange={(e) => {
-                                const value = Number(e.target.value || 0);
-                                setBoekingen(prev => prev.map(item => item.id === b.id ? { ...item, uren: value, uren_mismatch: false } : item));
+                              emptyAs={0}
+                              selectOnFocus
+                              onChange={(value) => {
+                                const v = value ?? 0;
+                                setBoekingen(prev => prev.map(item => item.id === b.id ? { ...item, uren: v, uren_mismatch: false } : item));
                               }}
                               className="w-20 px-2 py-1.5 rounded-lg text-xs font-bold text-right"
                               style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.primary, fontFamily: T.mono }}
@@ -834,14 +836,15 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                         <div className="grid grid-cols-3 gap-2">
                           <label className="text-[10px]" style={{ color: T.textMuted }}>
                             Retour km
-                            <input
-                              type="number"
-                              min="0"
-                              step="1"
+                            <NumericInput
+                              integer
+                              min={0}
                               value={r.retour_km}
-                              onChange={(e) => {
-                                const value = roundKilometers(e.target.value);
-                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, retour_km: value, afstand_bron: "handmatig" } : item));
+                              emptyAs={0}
+                              selectOnFocus
+                              onChange={(value) => {
+                                const v = value ?? 0;
+                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, retour_km: v, afstand_bron: "handmatig" } : item));
                               }}
                               className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
                               style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.text, fontFamily: T.mono }}
@@ -850,14 +853,15 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
 
                           <label className="text-[10px]" style={{ color: T.textMuted }}>
                             Vrij
-                            <input
-                              type="number"
-                              min="0"
-                              step="1"
+                            <NumericInput
+                              integer
+                              min={0}
                               value={r.vrije_km}
-                              onChange={(e) => {
-                                const value = roundKilometers(e.target.value);
-                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, vrije_km: value } : item));
+                              emptyAs={0}
+                              selectOnFocus
+                              onChange={(value) => {
+                                const v = value ?? 0;
+                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, vrije_km: v } : item));
                               }}
                               className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
                               style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.text, fontFamily: T.mono }}
@@ -865,14 +869,15 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
                           </label>
                           <label className="text-[10px]" style={{ color: T.textMuted }}>
                             Tarief
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
+                            <NumericInput
+                              min={0}
+                              decimals={2}
                               value={r.km_tarief}
-                              onChange={(e) => {
-                                const value = Number(e.target.value || 0);
-                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, km_tarief: value } : item));
+                              emptyAs={0}
+                              selectOnFocus
+                              onChange={(value) => {
+                                const v = value ?? 0;
+                                setReiskosten(prev => prev.map(item => item.id === r.id ? { ...item, km_tarief: v } : item));
                               }}
                               className="w-full mt-1 px-2 py-1.5 rounded-lg text-xs text-right"
                               style={{ background: T.surface, border: `1px solid ${T.border}`, color: T.text, fontFamily: T.mono }}
@@ -940,7 +945,7 @@ export function InkooporderWizard({ open, medewerkers, profileId, initial, onClo
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[10px] font-medium" style={{ color: T.textMuted }}>Uurtarief</label>
-                <input type="number" value={tarief} onChange={e => setTarief(Number(e.target.value))}
+                <NumericInput value={tarief} onChange={v => setTarief(v ?? 0)} min={0} decimals={2} emptyAs={0} selectOnFocus
                   className="w-full px-3 py-2 rounded-xl text-sm"
                   style={{ background: T.navy, border: `1px solid ${T.border}`, color: T.text, fontFamily: T.mono }} />
                 {medProfile?.uurtarief != null && Number(medProfile.uurtarief) !== tarief && (

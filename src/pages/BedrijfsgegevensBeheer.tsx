@@ -7,6 +7,7 @@ import { PageShell } from "@/components/PageShell";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { Spinner } from "@/components/ui/Spinner";
+import { NumericInput } from "@/components/ui/NumericInput";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -38,7 +39,7 @@ function NumberField({ label, hint, value, onChange }: {
   return (
     <div className="space-y-1">
       <label className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>{label}</label>
-      <input type="number" value={value} onChange={e => onChange(Number(e.target.value))}
+      <NumericInput value={value} emptyAs={0} selectOnFocus onChange={v => onChange(v ?? 0)}
         className="w-full px-3 py-2.5 rounded-xl text-sm"
         style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }} />
       {hint && <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{hint}</p>}
