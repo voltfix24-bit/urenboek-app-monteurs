@@ -840,12 +840,12 @@ export default function ManagerPlanning() {
 
           {/* CAPACITEIT CARD */}
           {!loading && (() => {
-            const totalGeplandUren = entries
+            const totalGeplandUren = visibleEntries
               .filter(e => weekDateStrings.includes(e.datum))
               .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
             const maxUren = medewerkers.length * 5 * 8;
             const capaciteitPct = maxUren > 0 ? Math.round((totalGeplandUren / maxUren) * 100) : 0;
-            const activeProjects = new Set(entries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)).size;
+            const activeProjects = new Set(visibleEntries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)).size;
             return (
             <div style={{ marginTop: 24, background: "var(--planning-card)", borderRadius: 18, padding: "18px 20px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, border: "1px solid var(--planning-border-soft)" }}>
               <div>
