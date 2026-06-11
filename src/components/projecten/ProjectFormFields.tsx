@@ -6,6 +6,7 @@ export interface FormState {
   stationsnaam: string; straat: string; postcode: string; stad: string; case_type: string;
   contactpersoon_naam: string; contactpersoon_tel: string; contactpersoon_email: string;
   vergoed_methode: 'stuksprijzen' | 'uren' | '';
+  projectjaar: string;
 }
 
 export const emptyForm: FormState = {
@@ -13,6 +14,7 @@ export const emptyForm: FormState = {
   straat: "", postcode: "", stad: "", case_type: "",
   contactpersoon_naam: "", contactpersoon_tel: "", contactpersoon_email: "",
   vergoed_methode: "",
+  projectjaar: "",
 };
 
 const selectStyle = { background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" };
@@ -82,6 +84,19 @@ export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, er
             <option value="Compactstation">Compactstation</option>
             <option value="Provisorium">Provisorium</option>
           </select>
+        </FormField>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <FormField label="Projectjaar" error={errors.projectjaar} required>
+          <ValidatedInput
+            type="number"
+            inputMode="numeric"
+            value={form.projectjaar}
+            onChange={e => update("projectjaar", e.target.value.replace(/[^\d]/g, ""))}
+            placeholder="2026"
+            error={errors.projectjaar}
+          />
         </FormField>
       </div>
 

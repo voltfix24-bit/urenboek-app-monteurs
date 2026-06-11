@@ -57,6 +57,7 @@ export interface Project {
   rmu_configuratie_id: string | null;
   status_gewijzigd_op: string | null;
   status_gewijzigd_door: string | null;
+  projectjaar: number | null;
 }
 
 export interface Opdrachtgever {

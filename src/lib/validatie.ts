@@ -30,7 +30,17 @@ const iban = z
   .or(z.literal(''));
 
 // ─── PROJECT SCHEMA ───────────────────
-export const projectSchema = z.object({
+const projectjaarVerplicht = z.string()
+  .min(1, 'Projectjaar is verplicht')
+  .refine(v => /^\d{4}$/.test(v), 'Projectjaar moet 4 cijfers zijn')
+  .refine(v => { const n = Number(v); return n >= 2000 && n <= 2100; }, 'Projectjaar moet tussen 2000 en 2100 liggen');
+
+const projectjaarOptioneel = z.string()
+  .optional()
+  .refine(v => !v || /^\d{4}$/.test(v), 'Projectjaar moet 4 cijfers zijn')
+  .refine(v => { if (!v) return true; const n = Number(v); return n >= 2000 && n <= 2100; }, 'Projectjaar moet tussen 2000 en 2100 liggen');
+
+const projectBase = {
   nummer: z.string().min(1, 'Casenummer is verplicht'),
   naam: z.string().min(2, 'Naam moet minimaal 2 tekens zijn').max(100, 'Naam mag maximaal 100 tekens zijn'),
   stationsnaam: z.string().optional(),
@@ -42,7 +52,12 @@ export const projectSchema = z.object({
   contactpersoon_naam: z.string().optional(),
   contactpersoon_tel: nlTelefoon.optional(),
   contactpersoon_email: z.string().email('Ongeldig e-mailadres').or(z.literal('')).optional(),
-});
+};
+
+// Nieuw project: projectjaar is verplicht.
+export const projectSchema = z.object({ ...projectBase, projectjaar: projectjaarVerplicht });
+// Bestaand project bewerken: projectjaar mag leeg blijven (manager kan later invullen).
+export const projectEditSchema = z.object({ ...projectBase, projectjaar: projectjaarOptioneel });
 
 export type ProjectFormData = z.infer<typeof projectSchema>;
 
