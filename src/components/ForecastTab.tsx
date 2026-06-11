@@ -43,6 +43,17 @@ interface ProjectInfo {
   naam: string | null;
 }
 
+export interface PlanningKostRegel {
+  medewerker_id: string;
+  full_name: string;
+  rol: string;
+  uurtarief: number | null;
+  dagen: number;
+  uren: number;
+  kosten: number;
+  zonderTarief: boolean;
+}
+
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 export function ForecastTab({ projectId }: { projectId: string }) {
@@ -57,6 +68,8 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const isSavingRef = useRef(false);
   const [project, setProject] = useState<ProjectInfo>({ nummer: null, naam: null });
+  const [planningKosten, setPlanningKosten] = useState<PlanningKostRegel[]>([]);
+
 
   const loadForecast = useCallback(async () => {
     setLoading(true);
