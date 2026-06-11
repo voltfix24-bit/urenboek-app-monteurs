@@ -81,7 +81,7 @@ interface Stats {
   monteursGekoppeld: number;
 }
 
-type SelectieMode = null | { kind: "project"; row: ProjectRow } | { kind: "monteur"; row: MonteurRow } | { kind: "bulk"; actie: "projecten" | "monteurs" };
+type SelectieMode = null | { kind: "project"; row: ProjectRow } | { kind: "monteur"; row: MonteurRow } | { kind: "exclusion"; row: ProjectRow } | { kind: "bulk"; actie: "projecten" | "monteurs" };
 
 export default function PlannerKoppeling() {
   const { isManager } = useAuth();
