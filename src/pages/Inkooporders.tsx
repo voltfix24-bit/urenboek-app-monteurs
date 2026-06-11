@@ -11,6 +11,7 @@ import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { Plus, Download, FileText, Trash2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { downloadInkooporderPdf } from "@/components/InkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";
@@ -88,6 +89,18 @@ export default function Inkooporders() {
       setShowCreate(true);
     }
   }, [searchParams, medewerkers]);
+
+  const { focus, clear: clearFocus } = useFocusParam();
+  useClearFocusOnClose(selectedOrder !== null);
+  const focusHandledRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focus || loading) return;
+    if (focusHandledRef.current === focus) return;
+    const order = orders.find(o => o.id === focus);
+    focusHandledRef.current = focus;
+    if (order) loadOrderDetail(order);
+    else { toast.error("Inkooporder niet gevonden of geen toegang"); clearFocus(); }
+  }, [focus, orders, loading, clearFocus]);
 
   const filteredOrders = useMemo(() => {
     let result = orders;

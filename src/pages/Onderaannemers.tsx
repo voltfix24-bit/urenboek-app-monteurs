@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -87,6 +88,9 @@ export default function Onderaannemers() {
   const [selected, setSelected] = useState<Onderaannemer | null>(null);
   const [showAddOA, setShowAddOA] = useState(false);
   const [showAddMonteur, setShowAddMonteur] = useState(false);
+  const { focus, clear: clearFocus } = useFocusParam();
+  useClearFocusOnClose(selected !== null);
+  const focusHandledRef = useRef<string | null>(null);
 
   // Onderaannemer form
   const [oaVoornaam, setOaVoornaam] = useState("");
@@ -414,6 +418,15 @@ export default function Onderaannemers() {
 
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    if (!focus || loading) return;
+    if (focusHandledRef.current === focus) return;
+    const oa = onderaannemers.find(o => o.id === focus);
+    focusHandledRef.current = focus;
+    if (oa) setSelected(oa);
+    else { toast.error("Onderaannemer niet gevonden of geen toegang"); clearFocus(); }
+  }, [focus, onderaannemers, loading, clearFocus]);
 
   const monteursVoor = (oaId: string) => monteurs.filter((m) => m.onderaannemer_id === oaId);
 

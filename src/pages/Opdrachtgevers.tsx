@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -19,6 +20,24 @@ export default function Opdrachtgevers() {
   const fetchItems = useCallback(async () => { const { data } = await supabase.from("opdrachtgevers").select("id, naam, contactpersoon, telefoon, email").order("naam"); if (data) setItems(data); setLoading(false); }, []);
   useEffect(() => { fetchItems(); }, [fetchItems]);
   useEffect(() => { if (!isManager) navigate("/"); }, [isManager, navigate]);
+
+  const { focus, clear: clearFocus } = useFocusParam();
+  useClearFocusOnClose(editId !== null);
+  const focusHandledRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focus || loading) return;
+    if (focusHandledRef.current === focus) return;
+    const item = items.find(i => i.id === focus);
+    focusHandledRef.current = focus;
+    if (item) {
+      setEditId(item.id);
+      setForm({ naam: item.naam, contactpersoon: item.contactpersoon, telefoon: item.telefoon, email: item.email });
+      setShowAdd(false);
+    } else {
+      toast.error("Opdrachtgever niet gevonden of geen toegang");
+      clearFocus();
+    }
+  }, [focus, items, loading, clearFocus]);
 
   async function handleAdd() { if (!form.naam.trim()) { toast.error("Vul een bedrijfsnaam in"); return; } if (!await mutate(supabase.from("opdrachtgevers").insert({ naam: form.naam.trim(), contactpersoon: form.contactpersoon.trim(), telefoon: form.telefoon.trim(), email: form.email.trim() }))) return; toast.success("Toegevoegd"); setForm(emptyForm); setShowAdd(false); fetchItems(); }
   async function handleUpdate(id: string) { if (!form.naam.trim()) { toast.error("Vul een bedrijfsnaam in"); return; } if (!await mutate(supabase.from("opdrachtgevers").update({ naam: form.naam.trim(), contactpersoon: form.contactpersoon.trim(), telefoon: form.telefoon.trim(), email: form.email.trim() }).eq("id", id))) return; toast.success("Gewijzigd"); setEditId(null); setForm(emptyForm); fetchItems(); }

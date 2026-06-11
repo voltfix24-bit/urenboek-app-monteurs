@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +53,22 @@ export default function Projecten() {
   const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
   const [statusFilter, setStatusFilter] = useState("alle");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const { focus, clear: clearFocus } = useFocusParam();
+  useClearFocusOnClose(selectedId !== null);
+  const focusHandledRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focus || projectsLoading) return;
+    if (focusHandledRef.current === focus) return;
+    const exists = projects.find(p => p.id === focus);
+    focusHandledRef.current = focus;
+    if (exists) {
+      setSelectedId(focus);
+      setDesktopMode("view");
+    } else {
+      toast.error("Project niet gevonden of geen toegang");
+      clearFocus();
+    }
+  }, [focus, projects, projectsLoading, clearFocus]);
 
   // Fetch opdrachtgevers + marge data separately
   const fetchExtra = useCallback(async () => {
