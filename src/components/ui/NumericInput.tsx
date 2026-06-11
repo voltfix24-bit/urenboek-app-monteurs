@@ -45,7 +45,9 @@ function parseRaw(raw: string, integer: boolean, allowNegative: boolean): number
   const normalized = trimmed.replace(",", ".");
   if (!allowNegative && normalized.startsWith("-")) return "invalid";
   // Regex die getallen valideert (incl. eindigend op `.` zoals "12.")
-  const re = allowNegative ? /^-?\d+(\.\d*)?$/ : /^\d+(\.\d*)?$/;
+  const re = integer
+    ? (allowNegative ? /^-?\d+$/ : /^\d+$/)
+    : (allowNegative ? /^-?\d+(\.\d*)?$/ : /^\d+(\.\d*)?$/);
   if (!re.test(normalized)) return "invalid";
   const num = integer ? parseInt(normalized, 10) : parseFloat(normalized);
   if (!Number.isFinite(num)) return "invalid";

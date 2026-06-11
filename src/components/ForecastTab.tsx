@@ -102,6 +102,10 @@ export function ForecastTab({ projectId }: { projectId: string }) {
           return regel;
         });
         setRegels(updatedRegels as any);
+        const decimalStuks = updatedRegels.filter((u: any) => u.type === "stuks" && u.aantal != null && Number(u.aantal) !== Math.trunc(Number(u.aantal)));
+        if (decimalStuks.length > 0) {
+          toast.warning(`${decimalStuks.length} bestekregel(s) hebben een decimaal aantal. Aantallen moeten gehele getallen zijn; pas deze handmatig aan.`);
+        }
         const changed = updatedRegels.filter((u: any, i: number) => Number(u.tarief) !== Number((r as any)[i].tarief));
         if (changed.length > 0) {
           for (const regel of changed) {
@@ -487,10 +491,14 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
     onUpdate([...regels, { type: "stuks", spec_code: sc.code, spec_omschrijving: sc.omschrijving, tarief: sc.tarief, eigen_kosten: 0, aantal: 1 }]);
   }
   function updateAantal(code: string, delta: number) {
-    onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0.5, (r.aantal || 1) + delta) } : r));
+    onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0, Math.trunc((r.aantal || 1) + delta)) } : r));
   }
   function setAantal(code: string, val: number) {
-    onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0.5, val) } : r));
+    if (!Number.isInteger(val)) {
+      toast.error("Aantal moet een geheel getal zijn");
+      return;
+    }
+    onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0, val) } : r));
   }
   function removeCode(code: string) {
     const r = regels.find(x => x.spec_code === code);
@@ -629,7 +637,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
                         </td>
                         <td className={`px-3 py-1.5 ${mono}`} style={{ color: "var(--text-muted)" }}>{eenheid}</td>
                         <td className="px-3 py-1.5">
-                          <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} />
+                          <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} integer step={1} />
                         </td>
                         <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{fmt(r.tarief || 0)}</td>
                         <td className={`px-3 py-1.5 text-right font-semibold ${mono}`} style={{ color: "var(--accent)" }}>{fmt(totaal)}</td>
@@ -663,7 +671,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
                       </button>
                     </div>
                     <div className="flex items-center justify-between">
-                      <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} />
+                      <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} integer step={1} />
                       <span className={`text-[14px] font-semibold ${mono}`} style={{ color: "var(--accent)" }}>{fmt(totaal)}</span>
                     </div>
                   </div>
@@ -763,11 +771,11 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
 
 // =================== Aantal control ===================
 
-function AantalControl({ value, onChange, onStep }: { value: number; onChange: (v: number) => void; onStep: (delta: number) => void }) {
+function AantalControl({ value, onChange, onStep, integer = false, step = 0.5 }: { value: number; onChange: (v: number) => void; onStep: (delta: number) => void; integer?: boolean; step?: number }) {
   return (
     <div className="inline-flex items-center rounded-[8px] overflow-hidden" style={{ border: "1px solid var(--planning-border-soft)", background: "var(--bg-surface)" }}>
       <button
-        onClick={() => onStep(-0.5)}
+        onClick={() => onStep(-step)}
         className="w-6 h-7 flex items-center justify-center transition-colors"
         style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}
         title="Verlagen"
@@ -776,16 +784,18 @@ function AantalControl({ value, onChange, onStep }: { value: number; onChange: (
       </button>
       <NumericInput
         value={value}
-        onChange={v => onChange(v ?? 1)}
+        onChange={v => onChange(v ?? (integer ? 0 : 1))}
         min={0}
-        emptyAs={1}
-        decimals={2}
+        emptyAs={integer ? 0 : 1}
+        integer={integer}
+        decimals={integer ? undefined : 2}
+        inputMode={integer ? "numeric" : "decimal"}
         selectOnFocus
         className={`w-14 h-7 text-center text-[12px] ${mono} bg-transparent outline-none focus:bg-[var(--bg-surface-2)]`}
         style={{ color: "var(--text-primary)" }}
       />
       <button
-        onClick={() => onStep(0.5)}
+        onClick={() => onStep(step)}
         className="w-6 h-7 flex items-center justify-center transition-colors"
         style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}
         title="Verhogen"
