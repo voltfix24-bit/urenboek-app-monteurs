@@ -6,7 +6,8 @@ import { SPEC_CODES, GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/sp
 import {
   Plus, Trash2, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock,
   Check, Info, Download, FileSpreadsheet, AlertTriangle, RefreshCw, CheckCircle2,
-  Layers, Hash, Tag,
+  Layers, Hash, Users,
+
 } from "lucide-react";
 
 import { euroDecimals as fmt } from "@/lib/formatting";
