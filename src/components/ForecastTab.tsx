@@ -705,7 +705,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
                 </thead>
                 <tbody>
                   {regels.map(r => {
-                    const totaal = (r.tarief || 0) * (r.aantal || 1);
+                    const totaal = (Number(r.tarief) || 0) * (r.aantal ?? 1);
                     const eenheid = codeMap.get(r.spec_code || "")?.eenheid || "st";
                     return (
                       <tr key={r.spec_code} style={{ borderTop: "1px solid var(--planning-border-soft)" }}>
