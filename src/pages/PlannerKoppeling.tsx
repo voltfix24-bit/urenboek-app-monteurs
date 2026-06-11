@@ -2,7 +2,37 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle2, Loader2, Link2, Send, Eye, RefreshCcw, XCircle, Plug, Info } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, Link2, Send, Eye, RefreshCcw, XCircle, Plug, Info, Search, HelpCircle } from "lucide-react";
+
+type AnalyseStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match";
+interface Afwijking { veld: string; urenapp: unknown; planner: unknown }
+interface AnalyseRow {
+  urenapp: any;
+  status: AnalyseStatus;
+  reden: string;
+  kandidaat: any | null;
+  bestaande_koppeling_urenapp: string | null;
+  bestaande_koppeling_planner: string | null;
+  afwijkingen: Afwijking[];
+}
+interface AnalyseResponse {
+  success: boolean;
+  projecten: { aantallen: Record<AnalyseStatus | "totaal", number>; resultaten: AnalyseRow[] };
+  monteurs: { aantallen: Record<AnalyseStatus | "totaal", number>; resultaten: AnalyseRow[] };
+  planner_aantallen: { projecten: number; monteurs: number };
+}
+const STATUS_LABEL: Record<AnalyseStatus, string> = {
+  exact: "Exact",
+  waarschijnlijk: "Waarschijnlijk",
+  conflict: "Conflict",
+  geen_match: "Geen match",
+};
+const STATUS_COLOR: Record<AnalyseStatus, { bg: string; fg: string }> = {
+  exact:         { bg: "var(--accent)",      fg: "white" },
+  waarschijnlijk:{ bg: "var(--warn-light)",  fg: "var(--warn-text)" },
+  conflict:      { bg: "#fee2e2",            fg: "#b91c1c" },
+  geen_match:    { bg: "var(--bg-surface-2)",fg: "var(--text-muted)" },
+};
 
 interface ResultaatItem {
   kind: "project" | "monteur";
