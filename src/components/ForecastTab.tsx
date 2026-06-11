@@ -767,7 +767,8 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
       <TotalsBlock
         rows={[
           { label: "Verwachte omzet (bestekcodes)", value: omzet, accent: true },
-          { label: "Personeelskosten (planning)", value: planningKostenTotaal },
+          { label: "Personeelskosten (planning, incl. 1 u pauze/dag)", value: planningKostenTotaal },
+          ...(reiskosten > 0 ? [{ label: "Reiskosten (inkooporders)", value: reiskosten }] : []),
         ]}
         margeFromOmzet
       />
