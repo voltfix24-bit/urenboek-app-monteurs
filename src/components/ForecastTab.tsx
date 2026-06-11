@@ -369,7 +369,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   let totaalOmzet = 0;
   let totaalKosten = 0;
   if (isStuks) {
-    totaalOmzet = regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0);
+    totaalOmzet = regels.reduce((s, r) => s + (Number(r.tarief) || 0) * (r.aantal ?? 1), 0);
     // Personeelskosten + reiskosten uit aangemaakte inkooporders.
     totaalKosten = planningKostenTotaal + reiskosten;
   } else {
