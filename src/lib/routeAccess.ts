@@ -28,6 +28,7 @@ export const ROUTE_ACCESS: Record<string, AccessCheck> = {
   "/beheer/intake-regels": (p) => p.zietBeheer,
   "/beheer/tarieven": (p) => p.zietBeheer,
   "/beheer/bedrijf": (p) => p.zietBeheer,
+  "/beheer/planner-koppeling": (p) => p.zietBeheer,
 
   "/kandidaten": (p) => p.zietKandidaten,
   "/kandidaten/:kandidaatId/contract": (p) => p.magContractenBeheren,
