@@ -855,7 +855,7 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
         </div>
       )}
       <p className="text-[10px] mt-1.5 flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
-        <Info className="h-3 w-3" /> Reiskosten worden (nog) niet automatisch in de Forecast opgenomen.
+        <Info className="h-3 w-3" /> Uren zijn netto: 1 u pauze per monteur (of ploegdag) is afgetrokken. Reiskosten worden automatisch toegevoegd zodra een inkooporder met km-regels is aangemaakt.
       </p>
     </div>
   );
