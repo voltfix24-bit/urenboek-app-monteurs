@@ -8,7 +8,7 @@ import { GlobalSearch } from "./GlobalSearch";
 import terrevoltLogo from "@/assets/terrevolt-logo.svg";
 import {
   LayoutDashboard, CheckCircle, CalendarDays, FolderOpen, Users,
-  BarChart3, Bell, LogOut, Search, AlertTriangle, Settings, Receipt,
+  BarChart3, Bell, LogOut, Search, AlertTriangle, Receipt,
   Building2, Cpu, Euro, UserPlus, type LucideIcon,
 } from "lucide-react";
 
