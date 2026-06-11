@@ -150,3 +150,96 @@ Deno.test("monteur: accenten gelijkgesteld", () => {
   );
   assertEquals(r[0].status, "exact");
 });
+
+// ── Regressietests fase 1.1 ─────────────────────────────────────────────────
+
+Deno.test("project: wederzijdse ID-koppeling → exact, ook bij afwijkend nummer", () => {
+  const r = matchProjecten(
+    [P({ id: "u1", nummer: "0295591", naam: "Clakenweg", planner_project_id: "p1" })],
+    [PP({ planner_id: "p1", urenapp_project_id: "u1", nummer: "TOTAAL-ANDERS", naam: "x" })],
+  );
+  assertEquals(r[0].status, "exact");
+  assertEquals(r[0].reden, "Wederzijdse ID-koppeling");
+});
+
+Deno.test("project: eenzijdige ID (urenapp→Planner), Planner-kant leeg → exact (herstel)", () => {
+  const r = matchProjecten(
+    [P({ id: "u1", nummer: "100", planner_project_id: "p1" })],
+    [PP({ planner_id: "p1", urenapp_project_id: null, nummer: "100" })],
+  );
+  assertEquals(r[0].status, "exact");
+});
+
+Deno.test("project: eenzijdige ID (Planner→urenapp), urenapp-kant leeg → exact (herstel)", () => {
+  const r = matchProjecten(
+    [P({ id: "u1", nummer: "100", planner_project_id: null })],
+    [PP({ planner_id: "p1", urenapp_project_id: "u1", nummer: "100" })],
+  );
+  assertEquals(r[0].status, "exact");
+});
+
+Deno.test("project: afwijkende ID-koppeling (planner wijst naar andere urenapp) → conflict", () => {
+  const r = matchProjecten(
+    [P({ id: "u1", nummer: "100", planner_project_id: "p1" })],
+    [PP({ planner_id: "p1", urenapp_project_id: "ander", nummer: "100" })],
+  );
+  assertEquals(r[0].status, "conflict");
+});
+
+Deno.test("project: urenapp.planner_project_id verwijst naar onbekend Planner-record → conflict", () => {
+  const r = matchProjecten(
+    [P({ id: "u1", nummer: "100", planner_project_id: "ontbreekt" })],
+    [PP({ planner_id: "p1", nummer: "100" })],
+  );
+  assertEquals(r[0].status, "conflict");
+});
+
+Deno.test("project: DTO-veldnamen (nummer/naam/locatie/jaar) worden gebruikt — niet case_nummer", () => {
+  // Als de matcher DB-kolomnamen zou lezen zou nummer "" zijn → geen match.
+  // Hier valideren we dat een correcte DTO matched op nummer.
+  const r = matchProjecten(
+    [P({ nummer: "0295591", naam: "Clakenweg" })],
+    [PP({ planner_id: "p1", nummer: "295591", naam: "Clakenweg", locatie: "Elburg", jaar: 2026 })],
+  );
+  assertEquals(r[0].status, "exact");
+});
+
+Deno.test("monteur: rolmapping — urenapp 'montagemonteur' matched Planner 'montagemonteur' exact (Ali Sabri)", () => {
+  const r = matchMonteurs(
+    [M({ full_name: "Ali Sabri", type: "montagemonteur" })],
+    [PM({ naam: "Ali Sabri", type: "montagemonteur" })],
+  );
+  assertEquals(r[0].status, "exact");
+});
+
+Deno.test("monteur: rolmapping — urenapp 'schakelmonteur' bij Planner 'schakelmonteur' → exact", () => {
+  const r = matchMonteurs(
+    [M({ full_name: "Yazan Jaber", type: "schakelmonteur" })],
+    [PM({ naam: "Yazan Jaber", type: "schakelmonteur" })],
+  );
+  assertEquals(r[0].status, "exact");
+});
+
+Deno.test("monteur: typeverschil montagemonteur vs schakelmonteur → waarschijnlijk", () => {
+  const r = matchMonteurs(
+    [M({ full_name: "Mohammed Aamarou", type: "montagemonteur" })],
+    [PM({ naam: "Mohammed Aamarou", type: "schakelmonteur" })],
+  );
+  assertEquals(r[0].status, "waarschijnlijk");
+});
+
+Deno.test("monteur: wederzijdse ID-koppeling → exact, ook bij naamverschil", () => {
+  const r = matchMonteurs(
+    [M({ id: "u1", full_name: "Jan", planner_monteur_id: "p1" })],
+    [PM({ planner_id: "p1", urenapp_profile_id: "u1", naam: "Jan-Anders" })],
+  );
+  assertEquals(r[0].status, "exact");
+});
+
+Deno.test("monteur: eenzijdige ID (Planner→urenapp) → exact (herstel)", () => {
+  const r = matchMonteurs(
+    [M({ id: "u1", full_name: "Jan" })],
+    [PM({ planner_id: "p1", urenapp_profile_id: "u1", naam: "Jan" })],
+  );
+  assertEquals(r[0].status, "exact");
+});

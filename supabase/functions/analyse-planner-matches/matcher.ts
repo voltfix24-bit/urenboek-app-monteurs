@@ -91,8 +91,92 @@ export function matchProjecten(
 ): MatchResult<UrenappProject, PlannerProject>[] {
   const byNum = groupBy(planner, (p) => normalizeNummer(p.nummer));
   const byName = groupBy(planner, (p) => normalizeText(p.naam));
+  const byPlannerId = new Map(planner.map((p) => [p.planner_id, p] as const));
+  const byUrenappLink = new Map<string, PlannerProject[]>();
+  for (const p of planner) {
+    if (p.urenapp_project_id) {
+      const a = byUrenappLink.get(p.urenapp_project_id) ?? [];
+      a.push(p);
+      byUrenappLink.set(p.urenapp_project_id, a);
+    }
+  }
 
   return urenapp.map((u) => {
+    // (1) Prioriteit: bestaande ID-koppeling van urenapp-kant
+    if (u.planner_project_id) {
+      const c = byPlannerId.get(u.planner_project_id) ?? null;
+      if (c) {
+        if (c.urenapp_project_id === u.id) {
+          return {
+            urenapp: u,
+            status: "exact",
+            reden: "Wederzijdse ID-koppeling",
+            kandidaat: c,
+            bestaande_koppeling_urenapp: u.planner_project_id,
+            bestaande_koppeling_planner: c.urenapp_project_id,
+            afwijkingen: diffsProject(u, c),
+          };
+        }
+        if (c.urenapp_project_id == null) {
+          return {
+            urenapp: u,
+            status: "exact",
+            reden: "Eenzijdige ID-koppeling (urenapp → Planner); Planner-kant nog leeg",
+            kandidaat: c,
+            bestaande_koppeling_urenapp: u.planner_project_id,
+            bestaande_koppeling_planner: null,
+            afwijkingen: diffsProject(u, c),
+          };
+        }
+        return {
+          urenapp: u,
+          status: "conflict",
+          reden: "Urenapp verwijst naar Planner-record dat al aan een ander urenapp-record is gekoppeld",
+          kandidaat: c,
+          bestaande_koppeling_urenapp: u.planner_project_id,
+          bestaande_koppeling_planner: c.urenapp_project_id,
+          afwijkingen: diffsProject(u, c),
+        };
+      }
+      // urenapp wijst naar onbestaand Planner-id → conflict
+      return {
+        urenapp: u,
+        status: "conflict",
+        reden: "Urenapp.planner_project_id verwijst naar onbekend Planner-record",
+        kandidaat: null,
+        bestaande_koppeling_urenapp: u.planner_project_id,
+        bestaande_koppeling_planner: null,
+        afwijkingen: [],
+      };
+    }
+
+    // (2) Eenzijdige koppeling vanaf Planner-kant
+    const back = byUrenappLink.get(u.id) ?? [];
+    if (back.length === 1) {
+      const c = back[0];
+      return {
+        urenapp: u,
+        status: "exact",
+        reden: "Eenzijdige ID-koppeling (Planner → urenapp); urenapp-kant nog leeg",
+        kandidaat: c,
+        bestaande_koppeling_urenapp: null,
+        bestaande_koppeling_planner: c.urenapp_project_id,
+        afwijkingen: diffsProject(u, c),
+      };
+    }
+    if (back.length > 1) {
+      return {
+        urenapp: u,
+        status: "conflict",
+        reden: `Meerdere Planner-records verwijzen naar dit urenapp-project (${back.length})`,
+        kandidaat: back[0],
+        bestaande_koppeling_urenapp: null,
+        bestaande_koppeling_planner: back[0].urenapp_project_id,
+        afwijkingen: diffsProject(u, back[0]),
+      };
+    }
+
+    // (3) Geen bestaande ID-koppeling → match op nummer / naam
     const normNum = normalizeNummer(u.nummer);
     const numMatches = (normNum ? byNum.get(normNum) : []) ?? [];
 
@@ -103,7 +187,7 @@ export function matchProjecten(
         status: "conflict",
         reden: `Meerdere Planner-projecten met nummer "${u.nummer}" (${numMatches.length})`,
         kandidaat: c,
-        bestaande_koppeling_urenapp: u.planner_project_id,
+        bestaande_koppeling_urenapp: null,
         bestaande_koppeling_planner: c.urenapp_project_id,
         afwijkingen: diffsProject(u, c),
       };
@@ -111,17 +195,13 @@ export function matchProjecten(
 
     if (numMatches.length === 1) {
       const c = numMatches[0];
-      const urenappMismatch = u.planner_project_id && u.planner_project_id !== c.planner_id;
-      const plannerMismatch = c.urenapp_project_id && c.urenapp_project_id !== u.id;
-      if (urenappMismatch || plannerMismatch) {
+      if (c.urenapp_project_id && c.urenapp_project_id !== u.id) {
         return {
           urenapp: u,
           status: "conflict",
-          reden: urenappMismatch
-            ? "Urenapp-project is al gekoppeld aan een ander Planner-record"
-            : "Planner-project is al gekoppeld aan een ander urenapp-record",
+          reden: "Planner-project is al gekoppeld aan een ander urenapp-record",
           kandidaat: c,
-          bestaande_koppeling_urenapp: u.planner_project_id,
+          bestaande_koppeling_urenapp: null,
           bestaande_koppeling_planner: c.urenapp_project_id,
           afwijkingen: diffsProject(u, c),
         };
@@ -131,7 +211,7 @@ export function matchProjecten(
         status: "exact",
         reden: "Exact projectnummer",
         kandidaat: c,
-        bestaande_koppeling_urenapp: u.planner_project_id,
+        bestaande_koppeling_urenapp: null,
         bestaande_koppeling_planner: c.urenapp_project_id,
         afwijkingen: diffsProject(u, c),
       };
@@ -142,15 +222,13 @@ export function matchProjecten(
     const nameMatches = (normName ? byName.get(normName) : []) ?? [];
     if (nameMatches.length === 1) {
       const c = nameMatches[0];
-      const urenappMismatch = u.planner_project_id && u.planner_project_id !== c.planner_id;
-      const plannerMismatch = c.urenapp_project_id && c.urenapp_project_id !== u.id;
-      if (urenappMismatch || plannerMismatch) {
+      if (c.urenapp_project_id && c.urenapp_project_id !== u.id) {
         return {
           urenapp: u,
           status: "conflict",
-          reden: "Naamovereenkomst maar bestaande afwijkende koppeling",
+          reden: "Naamovereenkomst maar Planner is al aan ander urenapp-record gekoppeld",
           kandidaat: c,
-          bestaande_koppeling_urenapp: u.planner_project_id,
+          bestaande_koppeling_urenapp: null,
           bestaande_koppeling_planner: c.urenapp_project_id,
           afwijkingen: diffsProject(u, c),
         };
@@ -160,7 +238,7 @@ export function matchProjecten(
         status: "waarschijnlijk",
         reden: "Sterke naamovereenkomst zonder nummermatch",
         kandidaat: c,
-        bestaande_koppeling_urenapp: u.planner_project_id,
+        bestaande_koppeling_urenapp: null,
         bestaande_koppeling_planner: c.urenapp_project_id,
         afwijkingen: diffsProject(u, c),
       };
@@ -171,7 +249,7 @@ export function matchProjecten(
       status: "geen_match",
       reden: "Geen Planner-record met overeenkomstig nummer of naam",
       kandidaat: null,
-      bestaande_koppeling_urenapp: u.planner_project_id,
+      bestaande_koppeling_urenapp: null,
       bestaande_koppeling_planner: null,
       afwijkingen: [],
     };
@@ -192,8 +270,90 @@ export function matchMonteurs(
   planner: PlannerMonteur[],
 ): MatchResult<UrenappMonteur, PlannerMonteur>[] {
   const byName = groupBy(planner, (p) => normalizeText(p.naam));
+  const byPlannerId = new Map(planner.map((p) => [p.planner_id, p] as const));
+  const byUrenappLink = new Map<string, PlannerMonteur[]>();
+  for (const p of planner) {
+    if (p.urenapp_profile_id) {
+      const a = byUrenappLink.get(p.urenapp_profile_id) ?? [];
+      a.push(p);
+      byUrenappLink.set(p.urenapp_profile_id, a);
+    }
+  }
 
   return urenapp.map((u) => {
+    // (1) Wederzijdse of eenzijdige ID-koppeling heeft prioriteit
+    if (u.planner_monteur_id) {
+      const c = byPlannerId.get(u.planner_monteur_id) ?? null;
+      if (c) {
+        if (c.urenapp_profile_id === u.id) {
+          return {
+            urenapp: u,
+            status: "exact",
+            reden: "Wederzijdse ID-koppeling",
+            kandidaat: c,
+            bestaande_koppeling_urenapp: u.planner_monteur_id,
+            bestaande_koppeling_planner: c.urenapp_profile_id,
+            afwijkingen: diffsMonteur(u, c),
+          };
+        }
+        if (c.urenapp_profile_id == null) {
+          return {
+            urenapp: u,
+            status: "exact",
+            reden: "Eenzijdige ID-koppeling (urenapp → Planner); Planner-kant nog leeg",
+            kandidaat: c,
+            bestaande_koppeling_urenapp: u.planner_monteur_id,
+            bestaande_koppeling_planner: null,
+            afwijkingen: diffsMonteur(u, c),
+          };
+        }
+        return {
+          urenapp: u,
+          status: "conflict",
+          reden: "Urenapp verwijst naar Planner-monteur die al aan ander urenapp-record gekoppeld is",
+          kandidaat: c,
+          bestaande_koppeling_urenapp: u.planner_monteur_id,
+          bestaande_koppeling_planner: c.urenapp_profile_id,
+          afwijkingen: diffsMonteur(u, c),
+        };
+      }
+      return {
+        urenapp: u,
+        status: "conflict",
+        reden: "Urenapp.planner_monteur_id verwijst naar onbekend Planner-record",
+        kandidaat: null,
+        bestaande_koppeling_urenapp: u.planner_monteur_id,
+        bestaande_koppeling_planner: null,
+        afwijkingen: [],
+      };
+    }
+
+    const back = byUrenappLink.get(u.id) ?? [];
+    if (back.length === 1) {
+      const c = back[0];
+      return {
+        urenapp: u,
+        status: "exact",
+        reden: "Eenzijdige ID-koppeling (Planner → urenapp); urenapp-kant nog leeg",
+        kandidaat: c,
+        bestaande_koppeling_urenapp: null,
+        bestaande_koppeling_planner: c.urenapp_profile_id,
+        afwijkingen: diffsMonteur(u, c),
+      };
+    }
+    if (back.length > 1) {
+      return {
+        urenapp: u,
+        status: "conflict",
+        reden: `Meerdere Planner-monteurs verwijzen naar dit urenapp-profiel (${back.length})`,
+        kandidaat: back[0],
+        bestaande_koppeling_urenapp: null,
+        bestaande_koppeling_planner: back[0].urenapp_profile_id,
+        afwijkingen: diffsMonteur(u, back[0]),
+      };
+    }
+
+    // (2) Match op naam
     const normName = normalizeText(u.full_name);
     const matches = (normName ? byName.get(normName) : []) ?? [];
 
@@ -204,7 +364,7 @@ export function matchMonteurs(
         status: "conflict",
         reden: `Meerdere Planner-monteurs met naam "${u.full_name}" (${matches.length})`,
         kandidaat: c,
-        bestaande_koppeling_urenapp: u.planner_monteur_id,
+        bestaande_koppeling_urenapp: null,
         bestaande_koppeling_planner: c.urenapp_profile_id,
         afwijkingen: diffsMonteur(u, c),
       };
@@ -212,17 +372,13 @@ export function matchMonteurs(
 
     if (matches.length === 1) {
       const c = matches[0];
-      const urenappMismatch = u.planner_monteur_id && u.planner_monteur_id !== c.planner_id;
-      const plannerMismatch = c.urenapp_profile_id && c.urenapp_profile_id !== u.id;
-      if (urenappMismatch || plannerMismatch) {
+      if (c.urenapp_profile_id && c.urenapp_profile_id !== u.id) {
         return {
           urenapp: u,
           status: "conflict",
-          reden: urenappMismatch
-            ? "Urenapp-monteur is al gekoppeld aan een ander Planner-record"
-            : "Planner-monteur is al gekoppeld aan een ander urenapp-record",
+          reden: "Planner-monteur is al gekoppeld aan een ander urenapp-record",
           kandidaat: c,
-          bestaande_koppeling_urenapp: u.planner_monteur_id,
+          bestaande_koppeling_urenapp: null,
           bestaande_koppeling_planner: c.urenapp_profile_id,
           afwijkingen: diffsMonteur(u, c),
         };
@@ -233,7 +389,7 @@ export function matchMonteurs(
         status: typesGelijk ? "exact" : "waarschijnlijk",
         reden: typesGelijk ? "Unieke naam en passend type" : "Unieke naam, maar typeverschil",
         kandidaat: c,
-        bestaande_koppeling_urenapp: u.planner_monteur_id,
+        bestaande_koppeling_urenapp: null,
         bestaande_koppeling_planner: c.urenapp_profile_id,
         afwijkingen: diffsMonteur(u, c),
       };
@@ -244,7 +400,7 @@ export function matchMonteurs(
       status: "geen_match",
       reden: "Geen Planner-monteur met overeenkomstige naam",
       kandidaat: null,
-      bestaande_koppeling_urenapp: u.planner_monteur_id,
+      bestaande_koppeling_urenapp: null,
       bestaande_koppeling_planner: null,
       afwijkingen: [],
     };
