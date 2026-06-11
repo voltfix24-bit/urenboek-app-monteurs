@@ -20,7 +20,7 @@ import { ProjectFormFields, FormState, emptyForm } from "@/components/projecten/
 import { ProjectCard } from "@/components/projecten/ProjectCard";
 import { DesktopProjectLijst } from "@/components/projecten/DesktopProjectLijst";
 import { DesktopProjectDetail, DesktopFormPanel } from "@/components/projecten/DesktopProjectDetail";
-import { valideer, projectSchema } from "@/lib/validatie";
+import { valideer, projectSchema, projectEditSchema } from "@/lib/validatie";
 import { ListSkeleton, ProjectCardSkeleton } from "@/components/ui/Skeletons";
 
 interface Opdrachtgever { id: string; naam: string; }
