@@ -84,11 +84,38 @@ export default function ManagerPlanning() {
   const [editId, setEditId] = useState<string | null>(null);
   const [expandedMedewerker, setExpandedMedewerker] = useState<string | null>(null);
   const [planningView, setPlanningView] = useState<'grid' | 'klus'>('grid');
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   const weekNumber = getISOWeek(weekStart);
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
   const weekDateStrings = useMemo(() => weekDates.map(d => format(d, "yyyy-MM-dd")), [weekStart]);
   const overplanned = useMemo(() => getOverplannedMedewerkers(entries, medewerkers, weekDateStrings), [entries, medewerkers, weekDateStrings]);
+
+  // Projecten met planning in deze week (voor filterchips)
+  const weekProjectChips = useMemo(() => {
+    const map = new Map<string, { id: string; naam: string; nummer: string; days: number }>();
+    entries.forEach(e => {
+      if (!weekDateStrings.includes(e.datum)) return;
+      const p = projects.find(pp => pp.id === e.project_id);
+      if (!p) return;
+      const cur = map.get(p.id) || { id: p.id, naam: p.naam, nummer: p.nummer, days: 0 };
+      cur.days++;
+      map.set(p.id, cur);
+    });
+    return Array.from(map.values()).sort((a, b) => b.days - a.days);
+  }, [entries, projects, weekDateStrings]);
+
+  // Reset filter als het geselecteerde project geen planning meer heeft in deze week
+  useEffect(() => {
+    if (selectedProjectId && !weekProjectChips.some(c => c.id === selectedProjectId)) {
+      setSelectedProjectId(null);
+    }
+  }, [selectedProjectId, weekProjectChips]);
+
+  const visibleEntries = useMemo(
+    () => selectedProjectId ? entries.filter(e => e.project_id === selectedProjectId) : entries,
+    [entries, selectedProjectId],
+  );
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -310,7 +337,7 @@ export default function ManagerPlanning() {
         <div className="text-center">
           <p className="text-lg font-extrabold" style={{ color: "var(--text-primary)" }}>Week {weekNumber}</p>
           <p className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-            {format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 4), "d MMM", { locale: nl })}
+            {format(weekStart, "d MMM", { locale: nl })} â€“ {format(addDays(weekStart, 4), "d MMM", { locale: nl })}
           </p>
         </div>
         <button onClick={() => setWeekStart(p => addWeeks(p, 1))} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--planning-button)", color: "var(--text-secondary)" }}>
@@ -337,7 +364,7 @@ export default function ManagerPlanning() {
               <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                 {Array.from(projectDays.entries()).map(([id, { name, days }]) => (
                   <span key={id} className="shrink-0 px-2.5 py-1 rounded-full whitespace-nowrap" style={{ background: "var(--planning-card)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontSize: 11, fontWeight: 500 }}>
-                    {name.length > 12 ? name.slice(0, 12) + "…" : name} · {days}d
+                    {name.length > 12 ? name.slice(0, 12) + "â€¦" : name} Â· {days}d
                   </span>
                 ))}
               </div>
@@ -492,16 +519,56 @@ export default function ManagerPlanning() {
 
           {planningView === 'grid' && (<>
           {/* PROJECT FILTER CHIPS */}
-          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none", marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
-            <button style={{ padding: "8px 16px", borderRadius: 9999, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 12px var(--accent-border)" }}>
-              Alle projecten
-            </button>
-            {projects.slice(0, 3).map(p => (
-              <button key={p.id} style={{ padding: "8px 16px", borderRadius: 9999, background: "var(--planning-button)", border: "none", color: "var(--text-secondary)", fontFamily: "Hanken Grotesk", fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
-                {p.naam || p.nummer}
-              </button>
-            ))}
-          </div>
+          {weekProjectChips.length > 0 && (
+            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none", marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
+              {(() => {
+                const allActive = selectedProjectId === null;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProjectId(null)}
+                    aria-pressed={allActive}
+                    style={{
+                      padding: "8px 16px", borderRadius: 9999,
+                      background: allActive ? "var(--accent)" : "var(--planning-button)",
+                      border: allActive ? "none" : "1px solid var(--planning-border-soft)",
+                      color: allActive ? "var(--on-accent)" : "var(--text-secondary)",
+                      fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13,
+                      cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
+                      boxShadow: allActive ? "0 0 12px var(--accent-border)" : "none",
+                    }}
+                  >
+                    Alle projecten
+                  </button>
+                );
+              })()}
+              {weekProjectChips.map(chip => {
+                const active = selectedProjectId === chip.id;
+                const label = chip.naam || chip.nummer || "Project";
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    title={label}
+                    aria-pressed={active}
+                    onClick={() => setSelectedProjectId(prev => prev === chip.id ? null : chip.id)}
+                    style={{
+                      padding: "8px 16px", borderRadius: 9999,
+                      background: active ? "var(--accent)" : "var(--planning-button)",
+                      border: active ? "none" : "1px solid var(--planning-border-soft)",
+                      color: active ? "var(--on-accent)" : "var(--text-secondary)",
+                      fontFamily: "Hanken Grotesk", fontWeight: active ? 700 : 600, fontSize: 13,
+                      cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
+                      maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis",
+                      boxShadow: active ? "0 0 12px var(--accent-border)" : "none",
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* DAY HEADERS */}
           <div style={{
@@ -585,7 +652,7 @@ export default function ManagerPlanning() {
 
                       {weekDates.map((date, i) => {
                         const dateStr = format(date, "yyyy-MM-dd");
-                        const entry = entries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
+                        const entry = visibleEntries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
                         const heeftEntry = !!entry;
                         const verlof = beschikbaarheid.find(b => b.medewerker_id === med.id && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
                         const proj = entry ? projMap.get(entry.project_id) : null;
@@ -621,7 +688,7 @@ export default function ManagerPlanning() {
                                   overflow: "hidden", overflowWrap: "anywhere", wordBreak: "break-word",
                                   lineHeight: 1.1,
                                 }}>
-                                  {proj?.naam || "—"}
+                                  {proj?.naam || "â€”"}
                                 </span>
                                 <span style={{ fontSize: 9, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 3, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
                                   {berekenUren(entry?.starttijd || null, entry?.eindtijd || null)}u
@@ -667,7 +734,7 @@ export default function ManagerPlanning() {
                       {weekDates.map((date, i) => {
                         const dateStr = format(date, 'yyyy-MM-dd');
                         const DAGEN_LBL = ['Ma','Di','Wo','Do','Vr'];
-                        const dayEntries = entries.filter(e => e.medewerker_id === med.id && e.datum === dateStr);
+                        const dayEntries = visibleEntries.filter(e => e.medewerker_id === med.id && e.datum === dateStr);
 
                         if (dayEntries.length === 0) {
                           return (
@@ -757,7 +824,7 @@ export default function ManagerPlanning() {
                         </span>
                         <div style={{ padding: '4px 12px', borderRadius: 9999, background: 'var(--accent)', flexShrink: 0 }}>
                           <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Hanken Grotesk', color: 'var(--on-accent)' }}>
-                            {entries
+                            {visibleEntries
                               .filter(e => e.medewerker_id === med.id && weekDateStrings.includes(e.datum))
                               .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0)}u
                           </span>
@@ -773,12 +840,12 @@ export default function ManagerPlanning() {
 
           {/* CAPACITEIT CARD */}
           {!loading && (() => {
-            const totalGeplandUren = entries
+            const totalGeplandUren = visibleEntries
               .filter(e => weekDateStrings.includes(e.datum))
               .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
             const maxUren = medewerkers.length * 5 * 8;
             const capaciteitPct = maxUren > 0 ? Math.round((totalGeplandUren / maxUren) * 100) : 0;
-            const activeProjects = new Set(entries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)).size;
+            const activeProjects = new Set(visibleEntries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)).size;
             return (
             <div style={{ marginTop: 24, background: "var(--planning-card)", borderRadius: 18, padding: "18px 20px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, border: "1px solid var(--planning-border-soft)" }}>
               <div>
@@ -790,7 +857,7 @@ export default function ManagerPlanning() {
               <div style={{ borderLeft: "1px solid var(--planning-border-soft)", borderRight: "1px solid var(--planning-border-soft)", paddingLeft: 16, paddingRight: 16 }}>
                 <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Capaciteit</p>
                 <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 26, color: capaciteitPct > 100 ? "var(--danger)" : "var(--accent)" }}>
-                  {medewerkers.length > 0 ? `${capaciteitPct}%` : "—"}
+                  {medewerkers.length > 0 ? `${capaciteitPct}%` : "â€”"}
                 </span>
                 <div style={{ height: 4, marginTop: 8, background: "var(--planning-button)", borderRadius: 9999, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, capaciteitPct) : 0}%`, background: capaciteitPct > 100 ? "var(--danger)" : "var(--accent)", transition: "width 0.3s" }} />
@@ -808,10 +875,10 @@ export default function ManagerPlanning() {
           {planningView === 'klus' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {Array.from(new Set(
-                entries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)
+                visibleEntries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)
               )).map((projectId) => {
                 const project = projects.find(p => p.id === projectId);
-                const projectEntries = entries.filter(e => e.project_id === projectId && weekDateStrings.includes(e.datum));
+                const projectEntries = visibleEntries.filter(e => e.project_id === projectId && weekDateStrings.includes(e.datum));
                 const totalUren = projectEntries.reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
                 const DAGEN_LBL = ['Ma','Di','Wo','Do','Vr'];
                 return (
@@ -833,7 +900,7 @@ export default function ManagerPlanning() {
                     }}>
                       <div>
                         <p style={{ fontSize: 10, fontWeight: 700, fontFamily: 'Hanken Grotesk', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-secondary)', marginBottom: 2 }}>
-                          {project?.nummer || '—'}
+                          {project?.nummer || 'â€”'}
                         </p>
                         <h3 style={{ fontFamily: 'Hanken Grotesk', fontWeight: 800, fontSize: 16, color: 'var(--text-primary)' }}>
                           {project?.naam || 'Onbekend project'}
@@ -968,7 +1035,7 @@ export default function ManagerPlanning() {
           <>
             <div style={{ width: 48, height: 6, borderRadius: 9999, background: "var(--planning-border-soft)", margin: "0 auto 20px" }} />
             <h2 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 20, color: "var(--text-primary)", marginBottom: 4 }}>
-              {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
+              {editId ? "Planning bewerken" : "Inplannen"} Â· {medName(modalForm.medewerker_id)}
             </h2>
             <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Hanken Grotesk", marginBottom: 16 }}>
               {editId
@@ -1040,7 +1107,7 @@ export default function ManagerPlanning() {
               <div>
                 <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Project</label>
                 <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", outline: "none" }}>
-                  {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
+                  {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} â€“ {p.naam}</option>)}
                 </select>
                 {(() => {
                   const selProj = projects.find(p => p.id === modalForm.project_id);
