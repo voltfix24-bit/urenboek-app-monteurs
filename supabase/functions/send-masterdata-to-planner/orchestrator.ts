@@ -138,7 +138,7 @@ export async function sendOne(
           "content-type": "application/json",
           "x-urenapp-secret": opts.secret,
         },
-        body: JSON.stringify({ kind, payload }),
+        body: JSON.stringify({ type: kind === "project" ? "project" : "monteur", data: payload }),
       });
     } catch (e) {
       return { ok: false, status: 0, error: `Netwerkfout: ${(e as Error).message}` };

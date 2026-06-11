@@ -201,7 +201,7 @@ Deno.test("succesvolle sync → schrijft planner_id terug via callback", async (
       endpoint: "x", secret: "s",
       fetchImpl: async (_u, init) => {
         const body = JSON.parse(init.body as string);
-        const id = body.kind === "project" ? body.payload.urenapp_project_id : body.payload.urenapp_profile_id;
+        const id = body.type === "project" ? body.data.urenapp_project_id : body.data.urenapp_profile_id;
         return new Response(JSON.stringify({ planner_id: "pl-" + id, urenapp_id: id, action: "created" }), {
           status: 200, headers: { "content-type": "application/json" },
         });
@@ -227,7 +227,7 @@ Deno.test("gedeeltelijke mislukking: één faalt, andere slaagt", async () => {
       fetchImpl: async (_u, init) => {
         n++;
         const body = JSON.parse(init.body as string);
-        const id = body.payload.urenapp_project_id;
+        const id = body.data.urenapp_project_id;
         if (id === "p2") return new Response(JSON.stringify({ error: "kapot" }), { status: 500, headers: { "content-type": "application/json" } });
         return new Response(JSON.stringify({ planner_id: "pl", urenapp_id: id, action: "created" }), { status: 200, headers: { "content-type": "application/json" } });
       },
@@ -239,4 +239,86 @@ Deno.test("gedeeltelijke mislukking: één faalt, andere slaagt", async () => {
   assertEquals(r.aantallen.mislukt, 1);
   assertEquals(r.fouten.length, 1);
   assertEquals(r.fouten[0].urenapp_id, "p2");
+});
+
+// ─── Regressie: exacte envelope { type, data } ────────────────────────────
+
+Deno.test("envelope: project gebruikt {type:'project', data:{...}} en niets anders top-level", async () => {
+  let captured: any = null;
+  const fetchImpl = async (_u: string, init: RequestInit) => {
+    captured = JSON.parse(init.body as string);
+    return new Response(JSON.stringify({ planner_id: "pl1", urenapp_id: "p1", action: "created" }), {
+      status: 200, headers: { "content-type": "application/json" },
+    });
+  };
+  await sendOne(
+    "project",
+    { urenapp_project_id: "p1", nummer: "0295591", naam: "Clakenweg 21 Elburg", stationsnaam: null, straat: "Clakenweg 21", postcode: "8081 LT", stad: "Elburg", jaar: 2026, actief: true },
+    { endpoint: "x", secret: "s", fetchImpl },
+  );
+  assertEquals(Object.keys(captured).sort(), ["data", "type"]);
+  assertEquals(captured.type, "project");
+  assertEquals(captured.data.urenapp_project_id, "p1");
+  assertEquals(captured.data.nummer, "0295591");
+  assertEquals(captured.data.jaar, 2026);
+  assertEquals(captured.data.actief, true);
+  // Geen oude envelope-velden
+  assertEquals((captured as any).kind, undefined);
+  assertEquals((captured as any).payload, undefined);
+});
+
+Deno.test("envelope: monteur gebruikt {type:'monteur', data:{...}} en niets anders top-level", async () => {
+  let captured: any = null;
+  const fetchImpl = async (_u: string, init: RequestInit) => {
+    captured = JSON.parse(init.body as string);
+    return new Response(JSON.stringify({ planner_id: "pl1", urenapp_id: "m1", action: "created" }), {
+      status: 200, headers: { "content-type": "application/json" },
+    });
+  };
+  await sendOne(
+    "monteur",
+    { urenapp_profile_id: "m1", naam: "Jan", type: "montagemonteur", actief: true, werkdagen: [1,2,3,4,5] },
+    { endpoint: "x", secret: "s", fetchImpl },
+  );
+  assertEquals(Object.keys(captured).sort(), ["data", "type"]);
+  assertEquals(captured.type, "monteur");
+  assertEquals(captured.data.urenapp_profile_id, "m1");
+  assertEquals(captured.data.type, "montagemonteur");
+  assertEquals(captured.data.werkdagen, [1,2,3,4,5]);
+  assertEquals((captured as any).kind, undefined);
+  assertEquals((captured as any).payload, undefined);
+});
+
+Deno.test("interne resultaatvelden behouden 'kind' en 'urenapp_id'", async () => {
+  const r = await synchroniseer(
+    [proj({ id: "p1" })],
+    [],
+    {
+      endpoint: "x", secret: "s",
+      fetchImpl: async () => new Response(JSON.stringify({ planner_id: "pl-p1", urenapp_id: "p1", action: "created" }), {
+        status: 200, headers: { "content-type": "application/json" },
+      }),
+      dryRun: false,
+    },
+  );
+  assertEquals(r.resultaten[0].kind, "project");
+  assertEquals(r.resultaten[0].urenapp_id, "p1");
+});
+
+Deno.test("planner_project_id wordt NIET geschreven bij foutieve response-ID", async () => {
+  const writes: string[] = [];
+  const r = await synchroniseer(
+    [proj({ id: "p1" })],
+    [],
+    {
+      endpoint: "x", secret: "s",
+      fetchImpl: async () => new Response(JSON.stringify({ planner_id: "pl", urenapp_id: "ANDERS", action: "created" }), {
+        status: 200, headers: { "content-type": "application/json" },
+      }),
+      dryRun: false,
+      writePlannerProjectId: async (u, _pl) => { writes.push(u); },
+    },
+  );
+  assertEquals(writes.length, 0);
+  assertEquals(r.aantallen.mislukt, 1);
 });
