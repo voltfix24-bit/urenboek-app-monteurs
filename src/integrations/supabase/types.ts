@@ -1216,6 +1216,121 @@ export type Database = {
           },
         ]
       }
+      onderaannemer_koppeling_audit: {
+        Row: {
+          created_at: string
+          id: string
+          monteur_id: string
+          nieuwe_onderaannemer_id: string | null
+          oude_onderaannemer_id: string | null
+          reden: string | null
+          uitgevoerd_door: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          monteur_id: string
+          nieuwe_onderaannemer_id?: string | null
+          oude_onderaannemer_id?: string | null
+          reden?: string | null
+          uitgevoerd_door?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          monteur_id?: string
+          nieuwe_onderaannemer_id?: string | null
+          oude_onderaannemer_id?: string | null
+          reden?: string | null
+          uitgevoerd_door?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_monteur_id_fkey"
+            columns: ["monteur_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_monteur_id_fkey"
+            columns: ["monteur_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_monteur_id_fkey"
+            columns: ["monteur_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_nieuwe_onderaannemer_id_fkey"
+            columns: ["nieuwe_onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_nieuwe_onderaannemer_id_fkey"
+            columns: ["nieuwe_onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_nieuwe_onderaannemer_id_fkey"
+            columns: ["nieuwe_onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_oude_onderaannemer_id_fkey"
+            columns: ["oude_onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_oude_onderaannemer_id_fkey"
+            columns: ["oude_onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_oude_onderaannemer_id_fkey"
+            columns: ["oude_onderaannemer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_uitgevoerd_door_fkey"
+            columns: ["uitgevoerd_door"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_uitgevoerd_door_fkey"
+            columns: ["uitgevoerd_door"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onderaannemer_koppeling_audit_uitgevoerd_door_fkey"
+            columns: ["uitgevoerd_door"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opdrachtgevers: {
         Row: {
           contactpersoon: string
@@ -2448,6 +2563,14 @@ export type Database = {
       is_onderaannemer_van: {
         Args: { _profile_id: string; _user_id: string }
         Returns: boolean
+      }
+      koppel_monteur_aan_onderaannemer: {
+        Args: {
+          _monteur_id: string
+          _nieuwe_onderaannemer_id: string
+          _reden?: string
+        }
+        Returns: Json
       }
       next_contract_nummer: { Args: never; Returns: string }
       next_inkooporder_nummer: { Args: never; Returns: string }

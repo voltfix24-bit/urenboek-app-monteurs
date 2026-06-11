@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { generateEmailSuffix, generateTemporaryPassword } from "@/lib/passwords";
 import {
   ArrowLeft, Plus, X, Building2, Users, Copy, Eye, EyeOff,
-  Phone, Mail, ChevronRight, Pencil, Trash2, Check,
+  Phone, Mail, ChevronRight, Pencil, Trash2, Check, Link2, Unlink, Search,
 } from "lucide-react";
 
 interface Onderaannemer {
@@ -88,6 +88,11 @@ export default function Onderaannemers() {
   const [selected, setSelected] = useState<Onderaannemer | null>(null);
   const [showAddOA, setShowAddOA] = useState(false);
   const [showAddMonteur, setShowAddMonteur] = useState(false);
+  const [showLinkMonteur, setShowLinkMonteur] = useState(false);
+  const [linkSearch, setLinkSearch] = useState("");
+  const [linkSelected, setLinkSelected] = useState<Set<string>>(new Set());
+  const [linkSaving, setLinkSaving] = useState(false);
+  const [linkConfirm, setLinkConfirm] = useState<{ moveCount: number; freeCount: number } | null>(null);
   const { focus, clear: clearFocus } = useFocusParam();
   useClearFocusOnClose(selected !== null);
   const focusHandledRef = useRef<string | null>(null);
@@ -406,7 +411,8 @@ export default function Onderaannemers() {
       const ppi = (p.planning_partner_ids as string[] | null) || [];
       if (p.is_onderaannemer) {
         oa.push({ ...p, planning_partner_ids: ppi });
-      } else if (p.onderaannemer_id) {
+      } else {
+        // alle niet-onderaannemer profielen, ook losse (voor koppelmodal)
         mt.push({ ...p, role: rolMap.get(p.user_id), planning_partner_ids: ppi });
       }
     });
@@ -522,6 +528,98 @@ export default function Onderaannemers() {
     load();
     setMSaving(false);
   };
+
+  // === Bestaande monteurs koppelen / loskoppelen / overplaatsen via RPC ===
+  const callKoppelRpc = async (monteurId: string, nieuweOaId: string | null, reden?: string) => {
+    const { data, error } = await supabase.rpc("koppel_monteur_aan_onderaannemer", {
+      _monteur_id: monteurId,
+      _nieuwe_onderaannemer_id: nieuweOaId,
+      _reden: reden ?? null,
+    });
+    if (error) throw new Error(error.message);
+    return data as { changed: boolean };
+  };
+
+  const linkableMonteurs = useMemo(() => {
+    if (!selected) return [];
+    const q = linkSearch.trim().toLowerCase();
+    return monteurs
+      .filter((m) => m.id !== selected.id && m.onderaannemer_id !== selected.id)
+      .filter((m) => !q || m.full_name.toLowerCase().includes(q) || (m.email || "").toLowerCase().includes(q))
+      .sort((a, b) => {
+        // Vrij eerst, dan op naam
+        const af = a.onderaannemer_id ? 1 : 0;
+        const bf = b.onderaannemer_id ? 1 : 0;
+        if (af !== bf) return af - bf;
+        return a.full_name.localeCompare(b.full_name);
+      });
+  }, [monteurs, selected, linkSearch]);
+
+  const openLinkModal = () => {
+    setLinkSelected(new Set());
+    setLinkSearch("");
+    setShowLinkMonteur(true);
+  };
+
+  const toggleLinkSelect = (id: string) => {
+    setLinkSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const requestLink = () => {
+    if (!selected || linkSelected.size === 0) return;
+    let moveCount = 0;
+    let freeCount = 0;
+    monteurs.forEach((m) => {
+      if (!linkSelected.has(m.id)) return;
+      if (m.onderaannemer_id && m.onderaannemer_id !== selected.id) moveCount++;
+      else freeCount++;
+    });
+    if (moveCount > 0) {
+      setLinkConfirm({ moveCount, freeCount });
+    } else {
+      void confirmLink();
+    }
+  };
+
+  const confirmLink = async () => {
+    if (!selected || linkSelected.size === 0) return;
+    setLinkSaving(true);
+    setLinkConfirm(null);
+    const ids = Array.from(linkSelected);
+    let ok = 0;
+    let fail = 0;
+    for (const id of ids) {
+      try {
+        await callKoppelRpc(id, selected.id, "Handmatige koppeling via beheerscherm");
+        ok++;
+      } catch (e: any) {
+        console.error("Koppelen mislukt", id, e);
+        fail++;
+      }
+    }
+    if (ok > 0) toast.success(`${ok} monteur(s) gekoppeld aan ${selected.full_name}`);
+    if (fail > 0) toast.error(`${fail} koppeling(en) mislukt`);
+    setLinkSelected(new Set());
+    setShowLinkMonteur(false);
+    setLinkSaving(false);
+    await load();
+  };
+
+  const unlinkMonteur = async (m: Monteur) => {
+    if (!confirm(`${m.full_name} loskoppelen van deze onderaannemer? Planning en uren blijven behouden.`)) return;
+    try {
+      await callKoppelRpc(m.id, null, "Losgekoppeld via beheerscherm");
+      toast.success(`${m.full_name} losgekoppeld`);
+      await load();
+    } catch (e: any) {
+      toast.error(e.message || "Loskoppelen mislukt");
+    }
+  };
+
 
   const copyCreds = (email: string, pw: string) => {
     navigator.clipboard.writeText(
@@ -770,9 +868,24 @@ export default function Onderaannemers() {
               <p style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.2em", textTransform: "uppercase" }}>
                 Monteurs onder deze onderaannemer ({mList.length})
               </p>
-              <button onClick={() => { setShowAddMonteur(!showAddMonteur); if (showAddMonteur) resetMonteurForm(); }} style={{ width: 32, height: 32, borderRadius: "50%", background: showAddMonteur ? "rgba(255,113,108,0.15)" : "var(--accent-light)", border: showAddMonteur ? "1px solid var(--danger-border)" : "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAddMonteur ? "var(--danger)" : "var(--accent)" }}>
-                {showAddMonteur ? <X size={16} /> : <Plus size={16} />}
-              </button>
+              <div style={{ display: "flex", gap: 6 }}>
+                <button
+                  type="button"
+                  onClick={openLinkModal}
+                  title="Bestaande monteurs koppelen"
+                  style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--accent-light)", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--accent)" }}
+                >
+                  <Link2 size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowAddMonteur(!showAddMonteur); if (showAddMonteur) resetMonteurForm(); }}
+                  title={showAddMonteur ? "Annuleren" : "Nieuwe monteur aanmaken"}
+                  style={{ width: 32, height: 32, borderRadius: "50%", background: showAddMonteur ? "rgba(255,113,108,0.15)" : "var(--accent-light)", border: showAddMonteur ? "1px solid var(--danger-border)" : "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAddMonteur ? "var(--danger)" : "var(--accent)" }}
+                >
+                  {showAddMonteur ? <X size={16} /> : <Plus size={16} />}
+                </button>
+              </div>
             </div>
 
             {showAddMonteur && (
@@ -846,6 +959,9 @@ export default function Onderaannemers() {
                       <button type="button" onClick={() => startEdit(m)} title="Bewerken" style={{ width: 32, height: 32, borderRadius: 10, background: "var(--planning-border-soft)", border: "1px solid var(--border-strong)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-muted)" }}>
                         <Pencil size={14} />
                       </button>
+                      <button type="button" onClick={() => unlinkMonteur(m)} title="Loskoppelen van deze onderaannemer" style={{ width: 32, height: 32, borderRadius: 10, background: "var(--planning-border-soft)", border: "1px solid var(--border-strong)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-muted)" }}>
+                        <Unlink size={14} />
+                      </button>
                       <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} title="Verwijderen" style={{ width: 32, height: 32, borderRadius: 10, background: "var(--danger-light)", border: "1px solid rgba(255,113,108,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--danger)", opacity: deletingId === m.id ? 0.5 : 1 }}>
                         <Trash2 size={14} />
                       </button>
@@ -889,6 +1005,120 @@ export default function Onderaannemers() {
               })}
 
             </div>
+
+            {/* === Bestaande monteurs koppelen modal === */}
+            {showLinkMonteur && selected && (
+              <div
+                onClick={() => !linkSaving && setShowLinkMonteur(false)}
+                style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ width: "100%", maxWidth: 480, background: "var(--bg-surface)", borderRadius: "20px 20px 0 0", padding: 20, display: "flex", flexDirection: "column", gap: 14, maxHeight: "85vh" }}
+                >
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    <div style={{ width: 40, height: 4, borderRadius: 999, background: "var(--border-strong)" }} />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.2em", textTransform: "uppercase" }}>Koppelen</p>
+                    <h3 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 18, color: "var(--text-primary)" }}>
+                      Bestaande monteurs koppelen aan {selected.bedrijfsnaam || selected.full_name}
+                    </h3>
+                    <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                      Bestaande planning, uren, certificaten en accounts blijven volledig behouden.
+                    </p>
+                  </div>
+                  <div style={{ position: "relative" }}>
+                    <Search size={14} style={{ position: "absolute", left: 12, top: 11, color: "var(--text-muted)" }} />
+                    <input
+                      placeholder="Zoek op naam of e-mail…"
+                      value={linkSearch}
+                      onChange={(e) => setLinkSearch(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px 9px 34px", borderRadius: 10, border: "1px solid var(--border-strong)", background: "var(--app-navy)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", fontSize: 13 }}
+                    />
+                  </div>
+                  <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 6, paddingRight: 2 }}>
+                    {linkableMonteurs.length === 0 ? (
+                      <p style={{ fontSize: 12, color: "var(--text-muted)", padding: 16, textAlign: "center" }}>
+                        Geen kandidaten gevonden.
+                      </p>
+                    ) : (
+                      linkableMonteurs.map((m) => {
+                        const checked = linkSelected.has(m.id);
+                        const otherOa = m.onderaannemer_id
+                          ? onderaannemers.find((o) => o.id === m.onderaannemer_id)
+                          : null;
+                        return (
+                          <label
+                            key={m.id}
+                            style={{
+                              display: "flex", alignItems: "center", gap: 10,
+                              padding: "10px 12px", borderRadius: 12, cursor: "pointer",
+                              background: checked ? "var(--accent-light)" : "var(--app-navy)",
+                              border: `1px solid ${checked ? "var(--accent-border)" : "var(--planning-border-soft)"}`,
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleLinkSelect(m.id)}
+                              style={{ width: 16, height: 16, accentColor: "var(--accent)" }}
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{m.full_name}</p>
+                              <p style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                                {m.email || m.telefoon || "—"}
+                                {otherOa && (
+                                  <span style={{ color: "var(--warn-text)", fontWeight: 700, marginLeft: 6 }}>
+                                    • nu bij {otherOa.bedrijfsnaam || otherOa.full_name}
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </label>
+                        );
+                      })
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button type="button" onClick={() => setShowLinkMonteur(false)} disabled={linkSaving} style={secondaryBtn}>
+                      Annuleren
+                    </button>
+                    <button
+                      type="button"
+                      onClick={requestLink}
+                      disabled={linkSaving || linkSelected.size === 0}
+                      style={{ ...primaryBtn, opacity: linkSelected.size === 0 ? 0.5 : 1 }}
+                    >
+                      {linkSaving ? "Bezig…" : `Koppel ${linkSelected.size || ""}`}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bevestiging overplaatsing */}
+            {linkConfirm && selected && (
+              <div
+                onClick={() => setLinkConfirm(null)}
+                style={{ position: "fixed", inset: 0, zIndex: 250, background: "rgba(15,23,42,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+              >
+                <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-surface)", borderRadius: 16, padding: 20, maxWidth: 380, display: "flex", flexDirection: "column", gap: 12 }}>
+                  <h4 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 16, color: "var(--text-primary)" }}>
+                    {linkConfirm.moveCount} monteur(s) overplaatsen?
+                  </h4>
+                  <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+                    {linkConfirm.moveCount} geselecteerde monteur(s) zijn al gekoppeld aan een andere onderaannemer. Ze worden overgeplaatst naar <strong>{selected.bedrijfsnaam || selected.full_name}</strong>.
+                    {linkConfirm.freeCount > 0 && ` Daarnaast worden ${linkConfirm.freeCount} losse monteur(s) gekoppeld.`}
+                    {" "}Planning, uren en certificaten blijven behouden.
+                  </p>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button type="button" onClick={() => setLinkConfirm(null)} style={secondaryBtn}>Annuleren</button>
+                    <button type="button" onClick={confirmLink} style={primaryBtn}>Overplaatsen</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </main>
         </div>
       </PageShell>
