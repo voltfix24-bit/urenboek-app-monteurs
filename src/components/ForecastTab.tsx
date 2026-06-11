@@ -444,7 +444,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
       {/* ============ Body ============ */}
       {isStuks ? (
-        <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} planningKosten={planningKosten} planningKostenTotaal={planningKostenTotaal} />
+        <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} planningKosten={planningKosten} planningKostenTotaal={planningKostenTotaal} reiskosten={reiskosten} />
       ) : (
 
         <UrenEditor
