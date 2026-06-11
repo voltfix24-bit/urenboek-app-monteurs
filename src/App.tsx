@@ -43,6 +43,7 @@ const TarievenBeheer = lazy(() => import("./pages/TarievenBeheer"));
 const Inkooporders = lazy(() => import("./pages/Inkooporders"));
 const MijnOrders = lazy(() => import("./pages/MijnOrders"));
 const BedrijfsgegevensBeheer = lazy(() => import("./pages/BedrijfsgegevensBeheer"));
+const PlannerKoppeling = lazy(() => import("./pages/PlannerKoppeling"));
 const Kandidaten = lazy(() => import("./pages/Kandidaten"));
 const ContractAanmaken = lazy(() => import("./pages/ContractAanmaken"));
 const ContractOndertekenen = lazy(() => import("./pages/ContractOndertekenen"));
@@ -163,6 +164,7 @@ const App = () => (
               <Route path="/beheer/intake-regels" element={<RoleRoute check={ROUTE_ACCESS["/beheer/intake-regels"]}><L><IntakeRegelBeheer /></L></RoleRoute>} />
               <Route path="/beheer/tarieven" element={<RoleRoute check={ROUTE_ACCESS["/beheer/tarieven"]}><L><TarievenBeheer /></L></RoleRoute>} />
               <Route path="/beheer/bedrijf" element={<RoleRoute check={ROUTE_ACCESS["/beheer/bedrijf"]}><L><BedrijfsgegevensBeheer /></L></RoleRoute>} />
+              <Route path="/beheer/planner-koppeling" element={<RoleRoute check={ROUTE_ACCESS["/beheer/planner-koppeling"]}><L><PlannerKoppeling /></L></RoleRoute>} />
 
               <Route path="/kandidaten" element={<RoleRoute check={ROUTE_ACCESS["/kandidaten"]}><L><Kandidaten /></L></RoleRoute>} />
               <Route path="/kandidaten/:kandidaatId/contract" element={<RoleRoute check={ROUTE_ACCESS["/kandidaten/:kandidaatId/contract"]}><L><ContractAanmaken /></L></RoleRoute>} />

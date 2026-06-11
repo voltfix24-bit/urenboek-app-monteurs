@@ -68,6 +68,7 @@ const MANAGER_GROEPEN: NavGroep[] = [
 const BEHEER_ITEMS: NavItem[] = [
   { path: "/beheer/intake-regels", icon: Cpu, label: "Intake-instellingen" },
   { path: "/beheer/bedrijf", icon: Building2, label: "Bedrijfsgegevens" },
+  { path: "/beheer/planner-koppeling", icon: Cpu, label: "Planner-koppeling" },
 ];
 
 const PATH_PERMISSION_MAP: Record<string, keyof RolPermissies> = {
@@ -86,6 +87,7 @@ const PATH_PERMISSION_MAP: Record<string, keyof RolPermissies> = {
   "/kandidaten": "zietKandidaten",
   "/beheer/intake-regels": "zietBeheer",
   "/beheer/bedrijf": "zietBeheer",
+  "/beheer/planner-koppeling": "zietBeheer",
 };
 
 function isItemZichtbaar(path: string, p: RolPermissies): boolean {
