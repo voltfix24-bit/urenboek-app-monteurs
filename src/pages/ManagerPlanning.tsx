@@ -519,16 +519,56 @@ export default function ManagerPlanning() {
 
           {planningView === 'grid' && (<>
           {/* PROJECT FILTER CHIPS */}
-          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none", marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
-            <button style={{ padding: "8px 16px", borderRadius: 9999, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 12px var(--accent-border)" }}>
-              Alle projecten
-            </button>
-            {projects.slice(0, 3).map(p => (
-              <button key={p.id} style={{ padding: "8px 16px", borderRadius: 9999, background: "var(--planning-button)", border: "none", color: "var(--text-secondary)", fontFamily: "Hanken Grotesk", fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
-                {p.naam || p.nummer}
-              </button>
-            ))}
-          </div>
+          {weekProjectChips.length > 0 && (
+            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none", marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
+              {(() => {
+                const allActive = selectedProjectId === null;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProjectId(null)}
+                    aria-pressed={allActive}
+                    style={{
+                      padding: "8px 16px", borderRadius: 9999,
+                      background: allActive ? "var(--accent)" : "var(--planning-button)",
+                      border: allActive ? "none" : "1px solid var(--planning-border-soft)",
+                      color: allActive ? "var(--on-accent)" : "var(--text-secondary)",
+                      fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13,
+                      cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
+                      boxShadow: allActive ? "0 0 12px var(--accent-border)" : "none",
+                    }}
+                  >
+                    Alle projecten
+                  </button>
+                );
+              })()}
+              {weekProjectChips.map(chip => {
+                const active = selectedProjectId === chip.id;
+                const label = chip.naam || chip.nummer || "Project";
+                return (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    title={label}
+                    aria-pressed={active}
+                    onClick={() => setSelectedProjectId(prev => prev === chip.id ? null : chip.id)}
+                    style={{
+                      padding: "8px 16px", borderRadius: 9999,
+                      background: active ? "var(--accent)" : "var(--planning-button)",
+                      border: active ? "none" : "1px solid var(--planning-border-soft)",
+                      color: active ? "var(--on-accent)" : "var(--text-secondary)",
+                      fontFamily: "Hanken Grotesk", fontWeight: active ? 700 : 600, fontSize: 13,
+                      cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
+                      maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis",
+                      boxShadow: active ? "0 0 12px var(--accent-border)" : "none",
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* DAY HEADERS */}
           <div style={{
