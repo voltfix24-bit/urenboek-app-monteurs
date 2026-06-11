@@ -7,6 +7,7 @@ import {
   IntakeAntwoorden, RmuConfiguratie, BerekendeRegel, IntakeRegel,
   LEGE_ANTWOORDEN, initAntwoorden, berekenRegels, suggesteerEindsluitingen,
 } from "@/lib/forecastIntake";
+import { NumericInput } from "@/components/ui/NumericInput";
 
 interface Props {
   projectId: string;
@@ -274,7 +275,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
                         </div>
                         <div className="w-20">
                           <label className="text-[10px] block mb-1" style={{ color: "var(--text-muted)" }}>Velden</label>
-                          <input type="number" value={newRmu.velden} onChange={e => setNewRmu(p => ({ ...p, velden: parseInt(e.target.value) || 3 }))} min={2} max={12} className="w-full px-2 py-1.5 rounded-lg text-xs text-center" style={inputStyle} />
+                          <NumericInput integer value={newRmu.velden} emptyAs={3} selectOnFocus onChange={v => setNewRmu(p => ({ ...p, velden: v ?? 3 }))} min={2} max={12} className="w-full px-2 py-1.5 rounded-lg text-xs text-center" style={inputStyle} />
                         </div>
                         <button onClick={handleAddRmu} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: "var(--accent)" }}>Toevoegen</button>
                       </div>

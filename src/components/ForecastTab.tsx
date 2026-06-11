@@ -7,6 +7,7 @@ import { Plus, X, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock, C
 
 import { euroDecimals as fmt } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
+import { NumericInput } from "@/components/ui/NumericInput";
 import { generateForecastPdf } from "@/lib/forecastPdf";
 import { generatePrijzenbladExcel } from "@/lib/prijzenbladExcel";
 
@@ -379,7 +380,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, saved }: { regels: Fo
                   <span className="truncate" style={{ color: "var(--text-primary)" }}>{r.spec_omschrijving}</span>
                   <div className="flex items-center gap-0.5">
                     <button onClick={() => updateAantal(r.spec_code!, -0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Minus className="h-3 w-3" style={{ color: "var(--text-muted)" }} /></button>
-                    <input type="number" value={r.aantal || 1} onChange={e => setAantal(r.spec_code!, parseFloat(e.target.value) || 1)} className={`w-8 text-center text-[11px] ${mono} bg-transparent`} style={{ color: "var(--text-primary)" }} />
+                    <NumericInput value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v ?? 1)} min={0} emptyAs={1} selectOnFocus className={`w-8 text-center text-[11px] ${mono} bg-transparent`} style={{ color: "var(--text-primary)" }} />
                     <button onClick={() => updateAantal(r.spec_code!, 0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Plus className="h-3 w-3" style={{ color: "var(--text-muted)" }} /></button>
                   </div>
                   <span className={mono} style={{ color: "var(--accent)" }}>{fmt(omzet)}</span>
@@ -492,7 +493,7 @@ function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, verwachteOmzet,
                 <div key={r.medewerker_id} className="grid grid-cols-[1fr_70px_70px_80px_32px] items-center px-3 py-1.5 text-[12px]" style={{ borderTop: "1px solid var(--planning-border-soft)" }}>
                   <span className="truncate" style={{ color: "var(--text-primary)" }}>{m?.full_name || alleProfielen.get(r.medewerker_id || '') || r.medewerker_id?.slice(0, 8) || "?"}</span>
                   <span className={mono} style={{ color: "var(--text-muted)" }}>€ {r.uurtarief_snap || 0}</span>
-                  <input type="number" value={r.geplande_uren || 0} onChange={e => updateUren(r.medewerker_id!, parseFloat(e.target.value) || 0)} className={`w-14 text-center bg-transparent text-[12px] ${mono}`} style={{ color: "var(--text-primary)" }} min={0} />
+                  <NumericInput value={r.geplande_uren ?? 0} onChange={v => updateUren(r.medewerker_id!, v ?? 0)} min={0} emptyAs={0} selectOnFocus className={`w-14 text-center bg-transparent text-[12px] ${mono}`} style={{ color: "var(--text-primary)" }} />
                   <span className={mono} style={{ color: "var(--text-primary)" }}>{fmt(kosten)}</span>
                   <button onClick={() => removeMonteur(r.medewerker_id!)} className="w-5 h-5 rounded flex items-center justify-center" style={{ color: "var(--danger)" }}><X className="h-3.5 w-3.5" /></button>
                 </div>
@@ -515,11 +516,11 @@ function UrenEditor({ regels, monteurs, alleProfielen, onUpdate, verwachteOmzet,
                 <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
                   Wat factureert TerreVolt aan Van Gelder voor dit project? Dit staat in de opdrachtbevestiging of is op basis van stuksprijzen afgesproken.
                 </p>
-                <input type="number" value={verwachteOmzet || ""} onChange={e => {
-                  const val = parseFloat(e.target.value) || 0;
+                <NumericInput value={verwachteOmzet} onChange={v => {
+                  const val = v ?? 0;
                   setVerwachteOmzet(val);
                   saveVerwachteOmzet(val);
-                }} placeholder="bijv. 25000" className={`w-full mt-1 px-3 py-2 rounded-xl text-sm ${mono}`} style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }} />
+                }} min={0} emptyAs={0} placeholder="bijv. 25000" className={`w-full mt-1 px-3 py-2 rounded-xl text-sm ${mono}`} style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }} />
               </div>
             </div>
             {verwachteOmzet === 0 && (

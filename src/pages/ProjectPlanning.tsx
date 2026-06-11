@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
 import { ArrowLeft, X, Save, Check, Plus, Minus, GripVertical, FileText, Trash2, Download, Pencil } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
+import { NumericInput } from "@/components/ui/NumericInput";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
@@ -682,10 +683,12 @@ export default function ProjectPlanning() {
               {state.weekNrs.map((wn, wi) => (
                 <div key={wi} style={{ width: 5 * CELL_SIZE }}>
                   <div className="text-center py-1 text-[10px] font-semibold" style={{ background: "var(--accent-light)", color: "var(--text-primary)", borderBottom: "1px solid var(--planning-border-soft)" }}>
-                    Week <input type="number" value={wn} min={1} max={53}
-                      onChange={e => updateState(s => {
+                    Week <NumericInput integer min={1} max={53} value={wn}
+                      emptyAs={wn}
+                      selectOnFocus
+                      onChange={v => updateState(s => {
                         const nrs = [...s.weekNrs];
-                        nrs[wi] = Math.max(1, Math.min(53, Number(e.target.value)));
+                        nrs[wi] = v ?? wn;
                         return { ...s, weekNrs: nrs };
                       })}
                       className="w-8 bg-transparent text-center font-bold outline-none" style={{ color: "var(--accent)" }} />
