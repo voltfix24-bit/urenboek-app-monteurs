@@ -72,6 +72,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const isSavingRef = useRef(false);
   const [project, setProject] = useState<ProjectInfo>({ nummer: null, naam: null });
   const [planningKosten, setPlanningKosten] = useState<PlanningKostRegel[]>([]);
+  const [reiskosten, setReiskosten] = useState<number>(0);
 
 
   const loadForecast = useCallback(async () => {
@@ -183,24 +184,27 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
       const planKosten: PlanningKostRegel[] = [];
 
-      // Individuele monteurs én onderaannemers die zelf staan ingepland
+      // Individuele monteurs én onderaannemers die zelf staan ingepland.
+      // PAUZE: 1 uur pauze per monteur per dag van planninguren aftrekken (min 0).
       for (const [mid, agg] of perMon.entries()) {
         const tarief = tariefMap.get(mid) ?? null;
         const isOnderaannemerZelf = isOnderaannemerMap.get(mid) || false;
+        const netUren = Math.max(0, agg.uren - agg.dagen.size); // 1 u pauze p/dag
         planKosten.push({
           medewerker_id: mid,
           full_name: (namenMap.get(mid) || "Onbekend") + (isOnderaannemerZelf ? " (ploeg)" : ""),
           rol: isOnderaannemerZelf ? "onderaannemer" : (profielRolMap.get(mid) || ''),
           uurtarief: tarief,
           dagen: agg.dagen.size,
-          uren: agg.uren,
-          kosten: tarief != null ? agg.uren * tarief : 0,
+          uren: netUren,
+          kosten: tarief != null ? netUren * tarief : 0,
           zonderTarief: tarief == null || tarief === 0,
           isPloeg: isOnderaannemerZelf,
         });
       }
 
-      // Onderaannemerploegen (parent + gekoppelde monteurs)
+      // Onderaannemerploegen (parent + gekoppelde monteurs).
+      // PAUZE: per ploegdag 1 u pauze aftrekken (ploeg lunch tegelijk).
       for (const [parentId, dagMap] of perPloegDag.entries()) {
         const ploegTarief = tariefMap.get(parentId) ?? null;
         let ploegUren = 0;
@@ -213,7 +217,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
           const maxUren = Math.max(...ledenUren);
           const minUren = Math.min(...ledenUren);
           if (Math.abs(maxUren - minUren) > 0.01) warning = true;
-          ploegUren += maxUren; // ploeg telt 1× per dag, niet per monteur
+          ploegUren += Math.max(0, maxUren - 1); // 1 u pauze per ploegdag
         }
         planKosten.push({
           medewerker_id: parentId,
@@ -232,6 +236,18 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
       planKosten.sort((a, b) => b.kosten - a.kosten);
       setPlanningKosten(planKosten);
+
+      // ── Reiskosten uit aangemaakte inkooporders ──────────────
+      const { data: reiskostenRows } = await supabase
+        .from("inkooporder_regels")
+        .select("bedrag")
+        .eq("project_id", projectId)
+        .eq("regel_type", "reiskosten");
+      const reiskostenTotaal = (reiskostenRows || []).reduce(
+        (s, r: any) => s + Number(r.bedrag || 0),
+        0
+      );
+      setReiskosten(reiskostenTotaal);
     }
     setLoading(false);
   }, [projectId]);
@@ -354,11 +370,11 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   let totaalKosten = 0;
   if (isStuks) {
     totaalOmzet = regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0);
-    // Personeelskosten komen uit de projectplanning, niet uit SPEC-codes.
-    totaalKosten = planningKostenTotaal;
+    // Personeelskosten + reiskosten uit aangemaakte inkooporders.
+    totaalKosten = planningKostenTotaal + reiskosten;
   } else {
     totaalOmzet = verwachteOmzet;
-    totaalKosten = regels.reduce((s, r) => s + (r.geplande_uren || 0) * (r.uurtarief_snap || 0), 0);
+    totaalKosten = regels.reduce((s, r) => s + (r.geplande_uren || 0) * (r.uurtarief_snap || 0), 0) + reiskosten;
   }
   const margeEuro = totaalOmzet - totaalKosten;
   const margePerc = totaalOmzet > 0 ? (margeEuro / totaalOmzet) * 100 : 0;
@@ -428,7 +444,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
       {/* ============ Body ============ */}
       {isStuks ? (
-        <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} planningKosten={planningKosten} planningKostenTotaal={planningKostenTotaal} />
+        <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} planningKosten={planningKosten} planningKostenTotaal={planningKostenTotaal} reiskosten={reiskosten} />
       ) : (
 
         <UrenEditor
@@ -509,9 +525,9 @@ function FilterChip({ active, onClick, icon: Icon, label, count }: { active: boo
 
 // =================== Stuksprijzen editor ===================
 
-function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, planningKostenTotaal }: {
+function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, planningKostenTotaal, reiskosten }: {
   regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; specCodes: SpecCode[];
-  planningKosten: PlanningKostRegel[]; planningKostenTotaal: number;
+  planningKosten: PlanningKostRegel[]; planningKostenTotaal: number; reiskosten: number;
 }) {
   const [search, setSearch] = useState("");
   const [browserOpen, setBrowserOpen] = useState(true);
@@ -751,7 +767,8 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
       <TotalsBlock
         rows={[
           { label: "Verwachte omzet (bestekcodes)", value: omzet, accent: true },
-          { label: "Personeelskosten (planning)", value: planningKostenTotaal },
+          { label: "Personeelskosten (planning, incl. 1 u pauze/dag)", value: planningKostenTotaal },
+          ...(reiskosten > 0 ? [{ label: "Reiskosten (inkooporders)", value: reiskosten }] : []),
         ]}
         margeFromOmzet
       />
@@ -838,7 +855,7 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
         </div>
       )}
       <p className="text-[10px] mt-1.5 flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
-        <Info className="h-3 w-3" /> Reiskosten worden (nog) niet automatisch in de Forecast opgenomen.
+        <Info className="h-3 w-3" /> Uren zijn netto: 1 u pauze per monteur (of ploegdag) is afgetrokken. Reiskosten worden automatisch toegevoegd zodra een inkooporder met km-regels is aangemaakt.
       </p>
     </div>
   );
