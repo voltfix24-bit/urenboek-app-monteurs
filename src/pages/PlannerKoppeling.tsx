@@ -614,7 +614,16 @@ export default function PlannerKoppeling() {
         </>
       )}
 
-      {confirm && (
+      {confirm && confirm.kind === "exclusion" && (
+        <ExclusionDialog
+          row={confirm.row}
+          busy={busy !== null}
+          onClose={() => setConfirm(null)}
+          onSave={(enabled, reason) => saveExclusion(confirm.row.id, enabled, reason)}
+        />
+      )}
+
+      {confirm && confirm.kind !== "exclusion" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setConfirm(null)}>
           <div className="rounded-xl p-5 max-w-sm w-full" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }} onClick={e => e.stopPropagation()}>
             <h3 className="font-bold text-base mb-3" style={{ color: "var(--text-primary)" }}>Bevestig synchronisatie</h3>
@@ -638,7 +647,7 @@ export default function PlannerKoppeling() {
             {confirm.kind === "bulk" && (
               <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
                 {confirm.actie === "projecten"
-                  ? `Verstuur ${stats!.projectenTotaal - stats!.projectenZonderJaar} project(en) naar Planner?`
+                  ? `Verstuur ${stats!.projectenTotaal - stats!.projectenZonderJaar - stats!.projectenUitgesloten} project(en) naar Planner? (${stats!.projectenUitgesloten} uitgesloten, ${stats!.projectenZonderJaar} zonder jaar worden overgeslagen)`
                   : `Verstuur ${stats!.monteursPlanbaar} monteur(s) naar Planner?`}
               </p>
             )}
@@ -648,7 +657,7 @@ export default function PlannerKoppeling() {
               <button
                 onClick={() => {
                   if (confirm.kind === "bulk") runBulk(confirm.actie, false);
-                  else runSingle(confirm.kind, confirm.row.id);
+                  else if (confirm.kind === "project" || confirm.kind === "monteur") runSingle(confirm.kind, confirm.row.id);
                 }}
                 className="px-3 py-2 rounded-lg text-xs font-semibold text-white"
                 style={{ background: "var(--accent)" }}
@@ -659,6 +668,57 @@ export default function PlannerKoppeling() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ExclusionDialog({ row, busy, onClose, onSave }: {
+  row: ProjectRow;
+  busy: boolean;
+  onClose: () => void;
+  onSave: (enabled: boolean, reason: PlannerExclusionReason | null) => void;
+}) {
+  const startEnabled = row.planner_sync_enabled !== false;
+  const [enabled, setEnabled] = useState(startEnabled);
+  const [reason, setReason] = useState<PlannerExclusionReason>(
+    (row.planner_sync_exclusion_reason as PlannerExclusionReason) ?? "urenregistratie"
+  );
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={onClose}>
+      <div className="rounded-xl p-5 max-w-sm w-full space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }} onClick={e => e.stopPropagation()}>
+        <h3 className="font-bold text-base" style={{ color: "var(--text-primary)" }}>Sync-uitsluiting beheren</h3>
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          <span style={{ fontFamily: "DM Mono, monospace" }}>{row.nummer}</span> — {row.naam}
+        </p>
+        <label className="flex items-center gap-2 text-sm" style={{ color: "var(--text-primary)" }}>
+          <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} />
+          Project meenemen in Planner-synchronisatie
+        </label>
+        {!enabled && (
+          <div className="space-y-2">
+            <label className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Reden van uitsluiting (verplicht)</label>
+            <div className="space-y-1">
+              {PLANNER_EXCLUSION_REASONS.map(r => (
+                <label key={r} className="flex items-start gap-2 text-xs p-2 rounded cursor-pointer" style={{ background: reason === r ? "var(--bg-surface-2)" : "transparent", border: "1px solid var(--planning-border-soft)" }}>
+                  <input type="radio" name="reason" checked={reason === r} onChange={() => setReason(r)} className="mt-0.5" />
+                  <span style={{ color: "var(--text-primary)" }}>{PLANNER_EXCLUSION_LABEL[r]}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="flex gap-2 justify-end pt-2">
+          <button onClick={onClose} disabled={busy} className="px-3 py-2 rounded-lg text-xs font-semibold" style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>Annuleren</button>
+          <button
+            disabled={busy || (!enabled && !reason)}
+            onClick={() => onSave(enabled, enabled ? null : reason)}
+            className="px-3 py-2 rounded-lg text-xs font-semibold text-white"
+            style={{ background: "var(--accent)", opacity: busy ? 0.5 : 1 }}
+          >
+            Opslaan
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
