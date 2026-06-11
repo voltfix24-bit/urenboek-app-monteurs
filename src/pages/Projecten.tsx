@@ -31,6 +31,7 @@ interface Project {
   straat: string | null; postcode: string | null; stad: string | null;
   intake_gedaan: boolean; rmu_merk: string | null; rmu_configuratie_id: string | null;
   status: string;
+  projectjaar: number | null;
 }
 
 export default function Projecten() {

@@ -11,12 +11,13 @@ interface Project {
   straat: string | null; postcode: string | null; stad: string | null;
   intake_gedaan: boolean; rmu_merk: string | null; rmu_configuratie_id: string | null;
   status: string;
+  projectjaar: number | null;
 }
 
 async function fetchProjecten(): Promise<Project[]> {
   const { data, error } = await supabase
     .from("projects")
-    .select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id, status")
+    .select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id, status, projectjaar")
     .order("nummer");
   if (error) throw error;
   const projects = (data ?? []) as Project[];
