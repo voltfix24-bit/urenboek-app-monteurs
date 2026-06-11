@@ -543,7 +543,7 @@ export default function Onderaannemers() {
     if (!selected) return [];
     const q = linkSearch.trim().toLowerCase();
     return monteurs
-      .filter((m) => m.id !== selected.id && !m.is_onderaannemer && m.onderaannemer_id !== selected.id)
+      .filter((m) => m.id !== selected.id && m.onderaannemer_id !== selected.id)
       .filter((m) => !q || m.full_name.toLowerCase().includes(q) || (m.email || "").toLowerCase().includes(q))
       .sort((a, b) => {
         // Vrij eerst, dan op naam
