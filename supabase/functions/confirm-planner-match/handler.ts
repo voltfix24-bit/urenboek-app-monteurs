@@ -229,7 +229,7 @@ export function createHandler(deps: Deps) {
             type,
           } as UrenappMonteur;
         })
-        .filter((x): x is UrenappMonteur => x !== null);
+        .filter((x: UrenappMonteur | null): x is UrenappMonteur => x !== null);
       analyseRow = matchMonteurs(urenappMonteurs, plannerMonteurs).find(
         (r) => r.urenapp.id === urenapp_id,
       ) as any;
