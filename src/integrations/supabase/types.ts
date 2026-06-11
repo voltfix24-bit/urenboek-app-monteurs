@@ -2008,6 +2008,7 @@ export type Database = {
           opdrachtgever_id: string | null
           planner_project_id: string | null
           postcode: string | null
+          projectjaar: number | null
           rmu_configuratie_id: string | null
           rmu_merk: string | null
           stad: string | null
@@ -2033,6 +2034,7 @@ export type Database = {
           opdrachtgever_id?: string | null
           planner_project_id?: string | null
           postcode?: string | null
+          projectjaar?: number | null
           rmu_configuratie_id?: string | null
           rmu_merk?: string | null
           stad?: string | null
@@ -2058,6 +2060,7 @@ export type Database = {
           opdrachtgever_id?: string | null
           planner_project_id?: string | null
           postcode?: string | null
+          projectjaar?: number | null
           rmu_configuratie_id?: string | null
           rmu_merk?: string | null
           stad?: string | null
