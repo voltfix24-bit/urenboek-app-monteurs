@@ -600,7 +600,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
     return map;
   }, [regels, specCodes]);
 
-  const omzet = regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0);
+  const omzet = regels.reduce((s, r) => s + (Number(r.tarief) || 0) * (r.aantal ?? 1), 0);
 
   return (
     <div className="space-y-3">
