@@ -33,20 +33,26 @@ const MANAGER_GROEPEN: NavGroep[] = [
     ],
   },
   {
-    label: "Uren & Goedkeuring",
-    items: [
-      { path: "/goedkeuring", icon: CheckCircle, label: "Goedkeuring", badgeKey: "openGoedkeuringen" },
-      { path: "/overuren", icon: AlertTriangle, label: "Overuren", badgeKey: "openOveruren" },
-      { path: "/rapportage", icon: BarChart3, label: "Rapportage" },
-      { path: "/inkooporders", icon: Receipt, label: "Inkooporders", badgeKey: "openOrders" },
-    ],
-  },
-  {
-    label: "Planning & Projecten",
+    label: "Planning",
     items: [
       { path: "/manager-planning", icon: CalendarDays, label: "Weekplanning" },
       { path: "/projecten", icon: FolderOpen, label: "Projecten" },
       { path: "/opdrachtgevers", icon: Building2, label: "Opdrachtgevers" },
+    ],
+  },
+  {
+    label: "Uren",
+    items: [
+      { path: "/goedkeuring", icon: CheckCircle, label: "Goedkeuring", badgeKey: "openGoedkeuringen" },
+      { path: "/overuren", icon: AlertTriangle, label: "Overuren", badgeKey: "openOveruren" },
+      { path: "/rapportage", icon: BarChart3, label: "Rapportage" },
+    ],
+  },
+  {
+    label: "Financiën",
+    items: [
+      { path: "/inkooporders", icon: Receipt, label: "Inkooporders", badgeKey: "openOrders" },
+      { path: "/beheer/tarieven", icon: Euro, label: "Tarieven" },
     ],
   },
   {
@@ -57,12 +63,10 @@ const MANAGER_GROEPEN: NavGroep[] = [
       { path: "/kandidaten", icon: UserPlus, label: "Kandidaten" },
     ],
   },
-
 ];
 
 const BEHEER_ITEMS: NavItem[] = [
-  { path: "/beheer/intake-regels", icon: Cpu, label: "Intake regelmotor" },
-  { path: "/beheer/tarieven", icon: Euro, label: "Tarieven" },
+  { path: "/beheer/intake-regels", icon: Cpu, label: "Intake-instellingen" },
   { path: "/beheer/bedrijf", icon: Building2, label: "Bedrijfsgegevens" },
 ];
 
@@ -73,12 +77,15 @@ const PATH_PERMISSION_MAP: Record<string, keyof RolPermissies> = {
   "/overuren": "zietOveruren",
   "/rapportage": "zietRapportage",
   "/inkooporders": "zietAlleInkooporders",
+  "/beheer/tarieven": "zietBeheer",
   "/manager-planning": "zietManagerPlanning",
   "/projecten": "zietProjecten",
   "/opdrachtgevers": "magTeamBeheren",
   "/medewerkers": "zietTeam",
   "/onderaannemers": "zietTeam",
   "/kandidaten": "zietKandidaten",
+  "/beheer/intake-regels": "zietBeheer",
+  "/beheer/bedrijf": "zietBeheer",
 };
 
 function isItemZichtbaar(path: string, p: RolPermissies): boolean {
@@ -117,7 +124,7 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
 
   const getBadgeCount = (item: NavItem): number => {
     if (!item.badgeKey) return 0;
-    if (item.badgeKey === "verlofAanvragen") return 0; // rendered as dot
+    if (item.badgeKey === "verlofAanvragen") return 0;
     return (badges as any)[item.badgeKey] || 0;
   };
 
@@ -128,9 +135,10 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
   return (
     <>
       <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 z-40" style={{ width: 240, background: "var(--sidebar-shell-bg)", borderRight: "1px solid var(--sidebar-shell-border)" }}>
-        <div className="px-5 py-5">
+        {/* Top section — always visible */}
+        <div className="shrink-0 px-5 py-5">
           <button onClick={() => navigate(permissies.zietDashboard ? "/dashboard" : "/")} className="focus:outline-none">
-            <img src={terrevoltLogo} alt="TerreVolt" className="h-8" />
+            <img src={terrevoltLogo} alt="TerreVolt" className="h-8" style={{ filter: "brightness(1.05) contrast(1.05)" }} />
           </button>
           <div className="mt-2">
             <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "var(--sidebar-shell-subtle-bg)", color: "var(--sidebar-shell-fg)" }}>
@@ -140,17 +148,20 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
         </div>
 
         {/* Search button */}
-        <button onClick={() => setShowSearch(true)} className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors" style={{ background: "#ffffff", border: "1px solid #e5e7eb", color: "#6c7a71" }}>
-          <Search className="h-4 w-4" />
-          <span className="text-xs">Zoeken...</span>
-          <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "#eff4ff", color: "#3c4a42" }}>Ctrl K</span>
-        </button>
+        <div className="shrink-0 px-3 pb-2">
+          <button onClick={() => setShowSearch(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors" style={{ background: "#ffffff", border: "1px solid #e5e7eb", color: "#6c7a71" }}>
+            <Search className="h-4 w-4" />
+            <span className="text-xs">Zoeken...</span>
+            <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "#eff4ff", color: "#3c4a42" }}>Ctrl K</span>
+          </button>
+        </div>
 
-        <nav className="flex-1 px-3 overflow-y-auto">
+        {/* Scrollable menu area */}
+        <div className="flex-1 overflow-y-auto px-3">
           {zichtbareGroepen.map((groep, gi) => (
             <div key={groep.label}>
               {gi > 0 && <div className="my-1.5" style={{ borderTop: "1px solid var(--sidebar-shell-border)" }} />}
-              <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5 mt-1" style={{ color: "var(--sidebar-shell-muted)" }}>
+              <p className="text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 mt-1" style={{ color: "#c5cbd3" }}>
                 {groep.label}
               </p>
               {groep.items.map(item => {
@@ -177,28 +188,29 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
               })}
             </div>
           ))}
-        </nav>
 
-        {/* Beheer section */}
-        {permissies.zietBeheer && (
-          <div className="px-3 pb-2">
-            <div className="mb-1 mt-1" style={{ borderTop: "1px solid var(--sidebar-shell-border)" }} />
-            <p className="text-[10px] uppercase tracking-wider font-semibold px-3 py-1.5" style={{ color: "var(--sidebar-shell-muted)" }}>Instellingen</p>
-            {BEHEER_ITEMS.map(item => (
-              <button key={item.path} onClick={() => navigate(item.path)}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-colors text-left"
-                style={{
-                  background: isActive(item.path) ? "var(--sidebar-shell-active-bg)" : "transparent",
-                  color: isActive(item.path) ? "var(--sidebar-shell-active-fg)" : "var(--sidebar-shell-muted)",
-                }}>
-                <item.icon style={{ width: 14, height: 14 }} />
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
+          {/* Beheer section inside scrollable area */}
+          {permissies.zietBeheer && (
+            <div className="mt-1">
+              <div className="my-1.5" style={{ borderTop: "1px solid var(--sidebar-shell-border)" }} />
+              <p className="text-[10px] uppercase tracking-wider font-bold px-3 py-1.5" style={{ color: "#c5cbd3" }}>Beheer</p>
+              {BEHEER_ITEMS.filter(item => isItemZichtbaar(item.path, permissies)).map(item => (
+                <button key={item.path} onClick={() => navigate(item.path)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-colors text-left"
+                  style={{
+                    background: isActive(item.path) ? "var(--sidebar-shell-active-bg)" : "transparent",
+                    color: isActive(item.path) ? "var(--sidebar-shell-active-fg)" : "var(--sidebar-shell-muted)",
+                  }}>
+                  <item.icon style={{ width: 14, height: 14 }} />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid var(--sidebar-shell-border)" }}>
+        {/* Bottom profile + logout — always visible */}
+        <div className="shrink-0 px-4 py-4 space-y-3" style={{ borderTop: "1px solid var(--sidebar-shell-border)" }}>
           <button
             onClick={() => navigate("/profiel")}
             className="w-full flex items-center gap-2.5 px-1 py-1 rounded-lg transition-colors hover:bg-white/5 text-left"
