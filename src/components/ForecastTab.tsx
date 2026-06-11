@@ -102,6 +102,10 @@ export function ForecastTab({ projectId }: { projectId: string }) {
           return regel;
         });
         setRegels(updatedRegels as any);
+        const decimalStuks = updatedRegels.filter((u: any) => u.type === "stuks" && u.aantal != null && Number(u.aantal) !== Math.trunc(Number(u.aantal)));
+        if (decimalStuks.length > 0) {
+          toast.warning(`${decimalStuks.length} bestekregel(s) hebben een decimaal aantal. Aantallen moeten gehele getallen zijn; pas deze handmatig aan.`);
+        }
         const changed = updatedRegels.filter((u: any, i: number) => Number(u.tarief) !== Number((r as any)[i].tarief));
         if (changed.length > 0) {
           for (const regel of changed) {
