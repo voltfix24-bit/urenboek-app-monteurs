@@ -90,6 +90,18 @@ export default function Inkooporders() {
     }
   }, [searchParams, medewerkers]);
 
+  const { focus, clear: clearFocus } = useFocusParam();
+  useClearFocusOnClose(selectedOrder !== null);
+  const focusHandledRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focus || loading) return;
+    if (focusHandledRef.current === focus) return;
+    const order = orders.find(o => o.id === focus);
+    focusHandledRef.current = focus;
+    if (order) loadOrderDetail(order);
+    else { toast.error("Inkooporder niet gevonden of geen toegang"); clearFocus(); }
+  }, [focus, orders, loading, clearFocus]);
+
   const filteredOrders = useMemo(() => {
     let result = orders;
     if (statusFilter !== "alle") result = result.filter(o => o.status === statusFilter);

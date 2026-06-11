@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/PageShell";
@@ -6,6 +6,8 @@ import { euroDecimals as euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 import { useNavigate } from "react-router-dom";
 import { WeekDownloadList } from "@/components/WeekDownloadList";
+import { useFocusParam } from "@/hooks/useFocusParam";
+import { toast } from "sonner";
 
 export default function MijnOrders() {
   const { profileId } = useProfile();
@@ -25,6 +27,23 @@ export default function MijnOrders() {
   }, [profileId]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  // MijnOrders heeft geen per-order detailpaneel — we valideren alleen of de focus
+  // bestaat (RLS dekt zichtbaarheid) en wissen anders de parameter zodat hij niet
+  // achterblijft in de URL.
+  const { focus, clear: clearFocus } = useFocusParam();
+  const focusHandledRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focus || loading) return;
+    if (focusHandledRef.current === focus) return;
+    focusHandledRef.current = focus;
+    const exists = orders.find(o => o.id === focus);
+    if (!exists) {
+      toast.error("Order niet gevonden of geen toegang");
+    }
+    clearFocus();
+  }, [focus, orders, loading, clearFocus]);
+
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--app-navy)' }}><Spinner /></div>;
 

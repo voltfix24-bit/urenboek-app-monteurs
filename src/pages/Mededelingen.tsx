@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
+import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -190,6 +191,20 @@ export default function Mededelingen() {
     setActiveGesprek(g);
     fetchBerichten(g.id);
   };
+
+  /* ─── focus param ─── */
+  const { focus, clear: clearFocus } = useFocusParam();
+  useClearFocusOnClose(activeGesprek !== null);
+  const focusHandledRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focus || loading) return;
+    if (focusHandledRef.current === focus) return;
+    const g = gesprekken.find(x => x.id === focus);
+    focusHandledRef.current = focus;
+    if (g) openGesprek(g);
+    else { toast.error("Bericht niet gevonden of geen toegang"); clearFocus(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus, gesprekken, loading, clearFocus]);
 
   /* ─── send message ─── */
   const sendBericht = async () => {
