@@ -875,10 +875,10 @@ export default function ManagerPlanning() {
           {planningView === 'klus' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {Array.from(new Set(
-                entries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)
+                visibleEntries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)
               )).map((projectId) => {
                 const project = projects.find(p => p.id === projectId);
-                const projectEntries = entries.filter(e => e.project_id === projectId && weekDateStrings.includes(e.datum));
+                const projectEntries = visibleEntries.filter(e => e.project_id === projectId && weekDateStrings.includes(e.datum));
                 const totalUren = projectEntries.reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
                 const DAGEN_LBL = ['Ma','Di','Wo','Do','Vr'];
                 return (
