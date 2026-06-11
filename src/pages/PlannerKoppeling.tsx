@@ -448,8 +448,8 @@ export default function PlannerKoppeling() {
 
             {analyse && (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
-                  {(["exact","waarschijnlijk","conflict","geen_match"] as AnalyseStatus[]).map(s => {
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-xs">
+                  {(["exact","waarschijnlijk","conflict","geen_match","uitgesloten"] as AnalyseStatus[]).map(s => {
                     const c = (analyseTab === "projecten" ? analyse.projecten : analyse.monteurs).aantallen[s] ?? 0;
                     return (
                       <button key={s} onClick={() => setAnalyseStatusFilter(analyseStatusFilter === s ? "alle" : s)}
