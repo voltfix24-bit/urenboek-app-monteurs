@@ -120,7 +120,7 @@ export default function PlannerKoppeling() {
   async function loadStats() {
     setLoading(true);
     const [{ data: projs }, { data: profs }, { data: rollen }] = await Promise.all([
-      supabase.from("projects").select("id, nummer, naam, projectjaar, planner_project_id, active").order("nummer"),
+      supabase.from("projects").select("id, nummer, naam, projectjaar, planner_project_id, active, planner_sync_enabled, planner_sync_exclusion_reason").order("nummer"),
       supabase.from("profiles").select("id, user_id, full_name, account_status, is_onderaannemer, planner_monteur_id").order("full_name"),
       supabase.from("user_roles").select("user_id, role"),
     ]);
@@ -149,14 +149,17 @@ export default function PlannerKoppeling() {
       };
     });
 
-    setProjecten((projs ?? []) as ProjectRow[]);
+    const projectenList = (projs ?? []) as ProjectRow[];
+    setProjecten(projectenList);
     setMonteurs(monteursList);
     setStats({
-      projectenTotaal: projs?.length ?? 0,
-      projectenZonderJaar: (projs ?? []).filter((p: any) => p.projectjaar == null).length,
-      projectenGekoppeld: (projs ?? []).filter((p: any) => p.planner_project_id != null).length,
-      monteursPlanbaar: monteursList.filter((m) => m.planbaar).length,
-      monteursGekoppeld: monteursList.filter((m) => m.planbaar && m.planner_monteur_id != null).length,
+      projectenTotaal: projectenList.length,
+      // Jaar telt alleen voor niet-uitgesloten projecten
+      projectenZonderJaar: projectenList.filter(p => p.planner_sync_enabled !== false && p.projectjaar == null).length,
+      projectenGekoppeld: projectenList.filter(p => p.planner_project_id != null).length,
+      projectenUitgesloten: projectenList.filter(p => p.planner_sync_enabled === false).length,
+      monteursPlanbaar: monteursList.filter(m => m.planbaar).length,
+      monteursGekoppeld: monteursList.filter(m => m.planbaar && m.planner_monteur_id != null).length,
     });
     setLoading(false);
   }
