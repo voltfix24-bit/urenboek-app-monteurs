@@ -208,6 +208,7 @@ export default function PlannerKoppeling() {
     }
   }
 
+  async function runSingle(kind: "project" | "monteur", id: string) {
     setBusy("single");
     setResponse(null);
     try {
