@@ -100,7 +100,8 @@ Deno.serve(async (req) => {
         !roles.includes("manager") &&
         (roles.includes("monteur") || roles.includes("schakelmonteur"));
       if (!planbaar) return null;
-      const type = roles.includes("schakelmonteur") ? "schakelmonteur" : "monteur";
+      // Rol-mapping urenapp → Planner taxonomie (monteur ↔ montagemonteur).
+      const type = roles.includes("schakelmonteur") ? "schakelmonteur" : "montagemonteur";
       return {
         id: p.id,
         full_name: p.full_name ?? "",
@@ -128,10 +129,24 @@ Deno.serve(async (req) => {
       return json(502, { error: "Planner-endpoint gaf een fout" });
     }
     const payload = await resp.json();
-    plannerProjects = Array.isArray(payload?.projecten) ? payload.projecten : [];
-    plannerMonteurs = Array.isArray(payload?.monteurs) ? payload.monteurs : [];
-    console.log("DEBUG first planner project:", JSON.stringify(plannerProjects[0] ?? null));
-    console.log("DEBUG first planner monteur:", JSON.stringify(plannerMonteurs[0] ?? null));
+    // Normaliseer naar afgesproken DTO. Planner mag DB-kolomnamen retourneren
+    // (case_nummer/station_naam/stad); de matcher werkt uitsluitend met
+    // nummer/naam/locatie/jaar.
+    plannerProjects = (Array.isArray(payload?.projecten) ? payload.projecten : []).map((p: any) => ({
+      planner_id: p.planner_id,
+      urenapp_project_id: p.urenapp_project_id ?? null,
+      nummer: String(p.nummer ?? p.case_nummer ?? ""),
+      naam: String(p.naam ?? p.station_naam ?? ""),
+      locatie: p.locatie ?? p.stad ?? null,
+      jaar: p.jaar ?? null,
+    }));
+    plannerMonteurs = (Array.isArray(payload?.monteurs) ? payload.monteurs : []).map((m: any) => ({
+      planner_id: m.planner_id,
+      urenapp_profile_id: m.urenapp_profile_id ?? null,
+      naam: String(m.naam ?? ""),
+      type: m.type ?? null,
+      actief: m.actief ?? true,
+    }));
   } catch (e) {
     console.error("Planner endpoint onbereikbaar:", (e as Error).message);
     return json(502, { error: "Planner-endpoint onbereikbaar" });
