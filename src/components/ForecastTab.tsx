@@ -760,7 +760,6 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
   );
 }
 
-}
 
 // =================== Aantal control ===================
 
