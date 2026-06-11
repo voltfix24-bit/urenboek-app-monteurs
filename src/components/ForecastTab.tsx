@@ -72,6 +72,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const isSavingRef = useRef(false);
   const [project, setProject] = useState<ProjectInfo>({ nummer: null, naam: null });
   const [planningKosten, setPlanningKosten] = useState<PlanningKostRegel[]>([]);
+  const [reiskosten, setReiskosten] = useState<number>(0);
 
 
   const loadForecast = useCallback(async () => {
