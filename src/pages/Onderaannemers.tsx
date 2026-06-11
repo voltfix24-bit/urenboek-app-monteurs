@@ -411,7 +411,8 @@ export default function Onderaannemers() {
       const ppi = (p.planning_partner_ids as string[] | null) || [];
       if (p.is_onderaannemer) {
         oa.push({ ...p, planning_partner_ids: ppi });
-      } else if (p.onderaannemer_id) {
+      } else {
+        // alle niet-onderaannemer profielen, ook losse (voor koppelmodal)
         mt.push({ ...p, role: rolMap.get(p.user_id), planning_partner_ids: ppi });
       }
     });
