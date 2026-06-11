@@ -589,15 +589,65 @@ export default function Onderaannemers() {
             </div>
 
 
-            {/* Contact info */}
-            <div style={{ background: "var(--bg-surface)", borderRadius: 16, padding: 18, marginBottom: 20, border: "1px solid var(--planning-border-soft)" }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#6a768c", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>Bedrijfsgegevens</p>
-              <Row label="E-mail" value={selected.email || "—"} icon={<Mail size={14} />} />
-              <Row label="Telefoon" value={selected.telefoon || "—"} icon={<Phone size={14} />} />
-              <Row label="KvK" value={selected.kvk_nummer || "—"} />
-              <Row label="IBAN" value={selected.iban || "—"} />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid color-mix(in srgb, var(--planning-border-soft) 60%, transparent)" }}>
-                <span style={{ fontSize: 12, color: "#6a768c" }}>Uurtarief</span>
+            {/* Bedrijfs- en factuurgegevens */}
+            <div style={{ background: "var(--bg-surface)", borderRadius: 16, padding: 18, marginBottom: 20, border: bedrijfDirty ? "1px solid var(--accent-border)" : "1px solid var(--planning-border-soft)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#6a768c", letterSpacing: "0.15em", textTransform: "uppercase" }}>Bedrijfs- en factuurgegevens</p>
+                {!bedrijfEdit ? (
+                  <button type="button" onClick={() => setBedrijfEdit(true)} style={{ ...secondaryBtn, height: 32, padding: "0 12px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <Pencil size={12} /> Bewerken
+                  </button>
+                ) : (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: bedrijfDirty ? "var(--accent)" : "#6a768c", textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                    {bedrijfDirty ? "Niet opgeslagen" : "Geen wijzigingen"}
+                  </span>
+                )}
+              </div>
+
+              {!bedrijfEdit ? (
+                <>
+                  <Row label="Bedrijfsnaam" value={selected.bedrijfsnaam || "—"} icon={<Building2 size={14} />} />
+                  <Row label="Contactpersoon" value={selected.contactpersoon || "—"} />
+                  <Row label="E-mail" value={selected.email || "—"} icon={<Mail size={14} />} />
+                  <Row label="Telefoon" value={selected.telefoon || "—"} icon={<Phone size={14} />} />
+                  <Row label="Factuuradres" value={selected.factuuradres || "—"} />
+                  <Row label="KvK" value={selected.kvk_nummer || "—"} />
+                  <Row label="BTW" value={selected.btw_nummer || "—"} />
+                  <Row label="IBAN" value={selected.iban || "—"} />
+                  <Row label="Betalingstermijn" value={`${selected.betalingstermijn ?? 30} dagen`} />
+                  {(selected.bedrijfsgegevens_updated_at || bedrijfUpdatedByName) && (
+                    <p style={{ fontSize: 10, color: "#6a768c", marginTop: 10, fontStyle: "italic" }}>
+                      Laatst gewijzigd
+                      {selected.bedrijfsgegevens_updated_at && ` op ${new Date(selected.bedrijfsgegevens_updated_at).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" })}`}
+                      {bedrijfUpdatedByName && ` door ${bedrijfUpdatedByName}`}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <label style={fieldLabel}>Bedrijfsnaam *<input style={inputStyle} value={bedrijfForm.bedrijfsnaam} onChange={(e) => setBF("bedrijfsnaam", e.target.value)} /></label>
+                  <label style={fieldLabel}>Contactpersoon<input style={inputStyle} value={bedrijfForm.contactpersoon} onChange={(e) => setBF("contactpersoon", e.target.value)} /></label>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <label style={fieldLabel}>E-mail<input type="email" style={inputStyle} value={bedrijfForm.email} onChange={(e) => setBF("email", e.target.value)} /></label>
+                    <label style={fieldLabel}>Telefoon<input style={inputStyle} value={bedrijfForm.telefoon} onChange={(e) => setBF("telefoon", e.target.value)} /></label>
+                  </div>
+                  <label style={fieldLabel}>Factuuradres<input style={inputStyle} value={bedrijfForm.factuuradres} onChange={(e) => setBF("factuuradres", e.target.value)} placeholder="Straat 1, 1234 AB Stad" /></label>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <label style={fieldLabel}>KvK<input style={{ ...inputStyle, fontFamily: "DM Mono, monospace" }} value={bedrijfForm.kvk_nummer} onChange={(e) => setBF("kvk_nummer", e.target.value)} placeholder="12345678" /></label>
+                    <label style={fieldLabel}>BTW<input style={{ ...inputStyle, fontFamily: "DM Mono, monospace" }} value={bedrijfForm.btw_nummer} onChange={(e) => setBF("btw_nummer", e.target.value)} placeholder="NL123456789B01" /></label>
+                  </div>
+                  <label style={fieldLabel}>IBAN<input style={{ ...inputStyle, fontFamily: "DM Mono, monospace" }} value={bedrijfForm.iban} onChange={(e) => setBF("iban", e.target.value)} placeholder="NL00BANK0000000000" /></label>
+                  <label style={fieldLabel}>Betalingstermijn (dagen)<input type="number" style={{ ...inputStyle, fontFamily: "DM Mono, monospace" }} value={bedrijfForm.betalingstermijn} onChange={(e) => setBF("betalingstermijn", e.target.value)} /></label>
+                  <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                    <button type="button" onClick={cancelBedrijfEdit} style={secondaryBtn}>Annuleren</button>
+                    <button type="button" onClick={saveBedrijf} disabled={bedrijfSaving || !bedrijfDirty} style={{ ...primaryBtn, opacity: (bedrijfSaving || !bedrijfDirty) ? 0.6 : 1 }}>{bedrijfSaving ? "Bezig…" : "Opslaan"}</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Uurtarief blijft manager-only en wordt direct opgeslagen */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0 0", marginTop: 12, borderTop: "1px solid color-mix(in srgb, var(--planning-border-soft) 60%, transparent)" }}>
+                <span style={{ fontSize: 12, color: "#6a768c" }}>Uurtarief / ploegtarief</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ fontSize: 13, color: "var(--text-muted)" }}>€</span>
                   <input
@@ -608,10 +658,7 @@ export default function Onderaannemers() {
                       const v = e.target.value;
                       const num = v ? Number(v.replace(",", ".")) : null;
                       if ((selected.uurtarief ?? null) === num) return;
-                      const { error } = await supabase
-                        .from("profiles")
-                        .update({ uurtarief: num })
-                        .eq("id", selected.id);
+                      const { error } = await supabase.from("profiles").update({ uurtarief: num }).eq("id", selected.id);
                       if (error) { toast.error("Opslaan mislukt"); return; }
                       toast.success("Uurtarief opgeslagen");
                       load();
