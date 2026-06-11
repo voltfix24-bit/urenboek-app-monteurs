@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -80,6 +81,23 @@ export default function Kandidaten() {
   const [editFields, setEditFields] = useState<Record<string, string>>({});
   const [resending, setResending] = useState(false);
   const [invitingId, setInvitingId] = useState<string | null>(null);
+
+  const { focus, clear: clearFocus } = useFocusParam();
+  useClearFocusOnClose(bewerkKandidaat !== null);
+  const focusHandledRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focus || loading) return;
+    if (focusHandledRef.current === focus) return;
+    const k = kandidaten.find(x => x.id === focus);
+    focusHandledRef.current = focus;
+    if (k) {
+      setBewerkKandidaat(k);
+      setBewerkForm({ voornaam: k.voornaam, achternaam: k.achternaam, email: k.email, telefoon: k.telefoon || "" });
+    } else {
+      toast.error("Kandidaat niet gevonden of geen toegang");
+      clearFocus();
+    }
+  }, [focus, kandidaten, loading, clearFocus]);
 
   async function inviteAccount(k: Kandidaat) {
     if (k.profiel_id) { toast.info("Deze kandidaat heeft al een account"); return; }

@@ -11,6 +11,7 @@ import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { Plus, Download, FileText, Trash2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
 import { euroDecimals as euro } from "@/lib/formatting";
 import { downloadInkooporderPdf } from "@/components/InkooporderPdf";
 import { Spinner } from "@/components/ui/Spinner";

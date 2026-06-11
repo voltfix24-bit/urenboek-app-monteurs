@@ -419,6 +419,15 @@ export default function Onderaannemers() {
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    if (!focus || loading) return;
+    if (focusHandledRef.current === focus) return;
+    const oa = onderaannemers.find(o => o.id === focus);
+    focusHandledRef.current = focus;
+    if (oa) setSelected(oa);
+    else { toast.error("Onderaannemer niet gevonden of geen toegang"); clearFocus(); }
+  }, [focus, onderaannemers, loading, clearFocus]);
+
   const monteursVoor = (oaId: string) => monteurs.filter((m) => m.onderaannemer_id === oaId);
 
   const resetOaForm = () => {
