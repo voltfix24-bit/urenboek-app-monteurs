@@ -48,6 +48,69 @@ Deno.test("projectjaar null blokkeert sync", () => {
   assertEquals(magProjectSync(proj({ projectjaar: 2026 })), true);
 });
 
+Deno.test("uitgesloten project (planner_sync_enabled=false) blokkeert sync ondanks geldig jaar", () => {
+  assertEquals(magProjectSync(proj({ projectjaar: 2026, planner_sync_enabled: false })), false);
+});
+
+Deno.test("uitgesloten project bij gewone synchronisatie → overgeslagen met reden uitgesloten:<reden>", async () => {
+  let fetchCalls = 0;
+  const r = await synchroniseer(
+    [proj({ id: "p1", planner_sync_enabled: false, planner_sync_exclusion_reason: "urenregistratie" })],
+    [],
+    {
+      endpoint: "x", secret: "s",
+      fetchImpl: async () => { fetchCalls++; return new Response(JSON.stringify({ planner_id: "x", urenapp_id: "p1", action: "created" }), { status: 200, headers: { "content-type": "application/json" } }); },
+      dryRun: false,
+    },
+  );
+  assertEquals(fetchCalls, 0);
+  assertEquals(r.aantallen.overgeslagen, 1);
+  assertEquals(r.aantallen.gesynchroniseerd, 0);
+  assertEquals(r.resultaten[0].reden, "uitgesloten:urenregistratie");
+});
+
+Deno.test("uitgesloten project blijft overgeslagen ook als alleen dat project in ids meegegeven wordt", async () => {
+  // De edge-function geeft hier alleen `ids: [p1]` mee → projects-array bevat enkel dit project.
+  // De orchestrator moet het sowieso overslaan, zelfs als de aanroep expliciet is.
+  let fetchCalls = 0;
+  const r = await synchroniseer(
+    [proj({ id: "p1", planner_sync_enabled: false, planner_sync_exclusion_reason: "historisch_afgerond" })],
+    [],
+    { endpoint: "x", secret: "s", fetchImpl: async () => { fetchCalls++; return new Response("", { status: 200 }); }, dryRun: false },
+  );
+  assertEquals(fetchCalls, 0);
+  assertEquals(r.resultaten[0].status, "overgeslagen");
+  assertEquals(r.resultaten[0].reden, "uitgesloten:historisch_afgerond");
+});
+
+Deno.test("'alles': uitgesloten projecten worden overgeslagen, andere projecten + monteurs wel verzonden", async () => {
+  let calls = 0;
+  const r = await synchroniseer(
+    [
+      proj({ id: "ok",  planner_sync_enabled: true }),
+      proj({ id: "uit", planner_sync_enabled: false, planner_sync_exclusion_reason: "anders" }),
+    ],
+    [mon({ id: "m1" })],
+    {
+      endpoint: "x", secret: "s",
+      fetchImpl: async (_u, init) => {
+        calls++;
+        const body = JSON.parse(init.body as string);
+        const id = body.type === "project" ? body.data.urenapp_project_id : body.data.urenapp_profile_id;
+        return new Response(JSON.stringify({ planner_id: "pl-" + id, urenapp_id: id, action: "created" }), {
+          status: 200, headers: { "content-type": "application/json" },
+        });
+      },
+      dryRun: false,
+    },
+  );
+  assertEquals(calls, 2); // ok-project + m1-monteur; uitgesloten is overgeslagen
+  assertEquals(r.aantallen.gesynchroniseerd, 2);
+  assertEquals(r.aantallen.overgeslagen, 1);
+  const uitRes = r.resultaten.find(x => x.urenapp_id === "uit");
+  assertEquals(uitRes?.reden, "uitgesloten:anders");
+});
+
 // ─── sendOne (response-vorm + retry) ───────────────────────────────────────
 
 function mockFetch(responses: { status: number; body?: any }[]): { fn: any; calls: number } {
