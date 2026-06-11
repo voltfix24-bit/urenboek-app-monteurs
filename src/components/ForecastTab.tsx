@@ -771,11 +771,11 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
 
 // =================== Aantal control ===================
 
-function AantalControl({ value, onChange, onStep }: { value: number; onChange: (v: number) => void; onStep: (delta: number) => void }) {
+function AantalControl({ value, onChange, onStep, integer = false, step = 0.5 }: { value: number; onChange: (v: number) => void; onStep: (delta: number) => void; integer?: boolean; step?: number }) {
   return (
     <div className="inline-flex items-center rounded-[8px] overflow-hidden" style={{ border: "1px solid var(--planning-border-soft)", background: "var(--bg-surface)" }}>
       <button
-        onClick={() => onStep(-0.5)}
+        onClick={() => onStep(-step)}
         className="w-6 h-7 flex items-center justify-center transition-colors"
         style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}
         title="Verlagen"
@@ -784,16 +784,18 @@ function AantalControl({ value, onChange, onStep }: { value: number; onChange: (
       </button>
       <NumericInput
         value={value}
-        onChange={v => onChange(v ?? 1)}
+        onChange={v => onChange(v ?? (integer ? 0 : 1))}
         min={0}
-        emptyAs={1}
-        decimals={2}
+        emptyAs={integer ? 0 : 1}
+        integer={integer}
+        decimals={integer ? undefined : 2}
+        inputMode={integer ? "numeric" : "decimal"}
         selectOnFocus
         className={`w-14 h-7 text-center text-[12px] ${mono} bg-transparent outline-none focus:bg-[var(--bg-surface-2)]`}
         style={{ color: "var(--text-primary)" }}
       />
       <button
-        onClick={() => onStep(0.5)}
+        onClick={() => onStep(step)}
         className="w-6 h-7 flex items-center justify-center transition-colors"
         style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}
         title="Verhogen"
