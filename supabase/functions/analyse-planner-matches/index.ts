@@ -130,6 +130,8 @@ Deno.serve(async (req) => {
     const payload = await resp.json();
     plannerProjects = Array.isArray(payload?.projecten) ? payload.projecten : [];
     plannerMonteurs = Array.isArray(payload?.monteurs) ? payload.monteurs : [];
+    console.log("DEBUG first planner project:", JSON.stringify(plannerProjects[0] ?? null));
+    console.log("DEBUG first planner monteur:", JSON.stringify(plannerMonteurs[0] ?? null));
   } catch (e) {
     console.error("Planner endpoint onbereikbaar:", (e as Error).message);
     return json(502, { error: "Planner-endpoint onbereikbaar" });
