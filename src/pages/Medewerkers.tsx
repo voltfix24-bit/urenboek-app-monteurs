@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
 import { valideer, nieuweMedewerkerSchema } from "@/lib/validatie";
 import { useMedewerkers } from "@/hooks/useMedewerkers";
 import { HeaderLogo } from "@/components/HeaderLogo";
@@ -83,6 +84,18 @@ export default function Medewerkers() {
       });
     }
   }, [medewerkersData]);
+
+  const { focus, clear: clearFocus } = useFocusParam();
+  useClearFocusOnClose(selectedEmployee !== null);
+  const focusHandledRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focus || medewerkersLoading) return;
+    if (focusHandledRef.current === focus) return;
+    const emp = employees.find(e => e.id === focus);
+    focusHandledRef.current = focus;
+    if (emp) selectEmployee(emp);
+    else { toast.error("Medewerker niet gevonden of geen toegang"); clearFocus(); }
+  }, [focus, employees, medewerkersLoading, clearFocus]);
 
   const loadEmployeeCerts = async (profileId: string) => {
     const { data } = await supabase.from("certificaten").select("*").eq("medewerker_id", profileId);

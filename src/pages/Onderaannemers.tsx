@@ -87,6 +87,9 @@ export default function Onderaannemers() {
   const [selected, setSelected] = useState<Onderaannemer | null>(null);
   const [showAddOA, setShowAddOA] = useState(false);
   const [showAddMonteur, setShowAddMonteur] = useState(false);
+  const { focus, clear: clearFocus } = useFocusParam();
+  useClearFocusOnClose(selected !== null);
+  const focusHandledRef = useRef<string | null>(null);
 
   // Onderaannemer form
   const [oaVoornaam, setOaVoornaam] = useState("");
