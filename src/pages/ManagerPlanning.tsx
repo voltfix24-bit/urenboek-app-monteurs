@@ -824,7 +824,7 @@ export default function ManagerPlanning() {
                         </span>
                         <div style={{ padding: '4px 12px', borderRadius: 9999, background: 'var(--accent)', flexShrink: 0 }}>
                           <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Hanken Grotesk', color: 'var(--on-accent)' }}>
-                            {entries
+                            {visibleEntries
                               .filter(e => e.medewerker_id === med.id && weekDateStrings.includes(e.datum))
                               .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0)}u
                           </span>
