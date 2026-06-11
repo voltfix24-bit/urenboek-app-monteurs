@@ -328,24 +328,40 @@ export default function PlannerKoppeling() {
 
             <ul className="space-y-1 max-h-96 overflow-y-auto">
               {tab === "projecten" && filteredProjecten.map(p => {
+                const uitgesloten = p.planner_sync_enabled === false;
                 const jaarOk = p.projectjaar != null;
                 const gekoppeld = p.planner_project_id != null;
+                const syncBaar = !uitgesloten && jaarOk;
                 return (
                   <li key={p.id} className="flex items-center gap-2 text-xs py-2 px-2 rounded" style={{ background: "var(--bg-surface-2)" }}>
                     <span style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)", minWidth: 70 }}>{p.nummer}</span>
                     <span className="flex-1 truncate" style={{ color: "var(--text-primary)" }}>{p.naam}</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold" style={{ background: jaarOk ? "var(--bg-surface)" : "var(--warn-light)", color: jaarOk ? "var(--text-muted)" : "var(--warn-text)" }}>
-                      {jaarOk ? `Jaar ${p.projectjaar}` : "Jaar ontbreekt"}
-                    </span>
+                    {uitgesloten ? (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1" style={{ background: "#e0e7ff", color: "#3730a3" }} title={exclusionLabel(p.planner_sync_exclusion_reason)}>
+                        <Ban className="h-3 w-3" /> Uitgesloten
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold" style={{ background: jaarOk ? "var(--bg-surface)" : "var(--warn-light)", color: jaarOk ? "var(--text-muted)" : "var(--warn-text)" }}>
+                        {jaarOk ? `Jaar ${p.projectjaar}` : "Jaar ontbreekt"}
+                      </span>
+                    )}
                     <span className="px-2 py-0.5 rounded text-[10px] font-semibold" style={{ background: gekoppeld ? "var(--accent)" : "var(--bg-surface)", color: gekoppeld ? "white" : "var(--text-muted)" }}>
                       {gekoppeld ? "Gekoppeld" : "Niet gekoppeld"}
                     </span>
                     <button
-                      disabled={busy !== null || !jaarOk}
+                      onClick={() => setConfirm({ kind: "exclusion", row: p })}
+                      className="p-1 rounded"
+                      style={{ background: "var(--bg-surface)", color: "var(--text-muted)" }}
+                      title="Uitsluiting beheren"
+                    >
+                      <Settings2 className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      disabled={busy !== null || !syncBaar}
                       onClick={() => setConfirm({ kind: "project", row: p })}
                       className="px-2 py-1 rounded text-[11px] font-semibold"
-                      style={{ background: jaarOk ? "var(--accent)" : "var(--bg-surface)", color: jaarOk ? "white" : "var(--text-muted)", opacity: busy || !jaarOk ? 0.5 : 1 }}
-                      title={jaarOk ? "Synchroniseer dit project" : "Vul eerst het projectjaar in"}
+                      style={{ background: syncBaar ? "var(--accent)" : "var(--bg-surface)", color: syncBaar ? "white" : "var(--text-muted)", opacity: busy || !syncBaar ? 0.5 : 1 }}
+                      title={uitgesloten ? `Uitgesloten van sync — ${exclusionLabel(p.planner_sync_exclusion_reason)}` : jaarOk ? "Synchroniseer dit project" : "Vul eerst het projectjaar in"}
                     >
                       Sync
                     </button>
