@@ -961,6 +961,7 @@ export default function Onderaannemers() {
                       </button>
                       <button type="button" onClick={() => unlinkMonteur(m)} title="Loskoppelen van deze onderaannemer" style={{ width: 32, height: 32, borderRadius: 10, background: "var(--planning-border-soft)", border: "1px solid var(--border-strong)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-muted)" }}>
                         <Unlink size={14} />
+                      </button>
                       <button type="button" onClick={() => deleteMonteur(m)} disabled={deletingId === m.id} title="Verwijderen" style={{ width: 32, height: 32, borderRadius: 10, background: "var(--danger-light)", border: "1px solid rgba(255,113,108,0.25)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--danger)", opacity: deletingId === m.id ? 0.5 : 1 }}>
                         <Trash2 size={14} />
                       </button>
