@@ -445,6 +445,11 @@ export default function Onderaannemers() {
       toast.error("Vul voornaam, achternaam, e-mail en wachtwoord in");
       return;
     }
+    const emailTrim = oaEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+      toast.error("Ongeldig e-mailadres (voorbeeld: naam@bedrijf.nl)");
+      return;
+    }
     if (oaPw.length < 8) { toast.error("Wachtwoord min. 8 tekens"); return; }
     setOaSaving(true);
     const fullName = `${oaVoornaam.trim()} ${oaAchternaam.trim()}`.trim();
