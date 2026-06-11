@@ -1495,6 +1495,8 @@ export type Database = {
           activated_at: string | null
           adres: string
           avatar_url: string | null
+          bedrijfsgegevens_updated_at: string | null
+          bedrijfsgegevens_updated_by: string | null
           bedrijfsnaam: string | null
           betalingstermijn: number
           btw_nummer: string | null
@@ -1534,6 +1536,8 @@ export type Database = {
           activated_at?: string | null
           adres?: string
           avatar_url?: string | null
+          bedrijfsgegevens_updated_at?: string | null
+          bedrijfsgegevens_updated_by?: string | null
           bedrijfsnaam?: string | null
           betalingstermijn?: number
           btw_nummer?: string | null
@@ -1573,6 +1577,8 @@ export type Database = {
           activated_at?: string | null
           adres?: string
           avatar_url?: string | null
+          bedrijfsgegevens_updated_at?: string | null
+          bedrijfsgegevens_updated_by?: string | null
           bedrijfsnaam?: string | null
           betalingstermijn?: number
           btw_nummer?: string | null
@@ -1608,6 +1614,27 @@ export type Database = {
           vaste_vrije_dagen?: number[]
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_bedrijfsgegevens_updated_by_fkey"
+            columns: ["bedrijfsgegevens_updated_by"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_bedrijfsgegevens_updated_by_fkey"
+            columns: ["bedrijfsgegevens_updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_bedrijfsgegevens_updated_by_fkey"
+            columns: ["bedrijfsgegevens_updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_geverifieerd_door_fkey"
             columns: ["geverifieerd_door"]
