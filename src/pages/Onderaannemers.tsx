@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { generateEmailSuffix, generateTemporaryPassword } from "@/lib/passwords";
 import {
   ArrowLeft, Plus, X, Building2, Users, Copy, Eye, EyeOff,
-  Phone, Mail, ChevronRight, Pencil, Trash2, Check,
+  Phone, Mail, ChevronRight, Pencil, Trash2, Check, Link2, Unlink, Search,
 } from "lucide-react";
 
 interface Onderaannemer {
