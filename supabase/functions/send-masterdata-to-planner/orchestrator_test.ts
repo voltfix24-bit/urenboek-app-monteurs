@@ -201,7 +201,7 @@ Deno.test("succesvolle sync → schrijft planner_id terug via callback", async (
       endpoint: "x", secret: "s",
       fetchImpl: async (_u, init) => {
         const body = JSON.parse(init.body as string);
-        const id = body.kind === "project" ? body.payload.urenapp_project_id : body.payload.urenapp_profile_id;
+        const id = body.type === "project" ? body.data.urenapp_project_id : body.data.urenapp_profile_id;
         return new Response(JSON.stringify({ planner_id: "pl-" + id, urenapp_id: id, action: "created" }), {
           status: 200, headers: { "content-type": "application/json" },
         });
