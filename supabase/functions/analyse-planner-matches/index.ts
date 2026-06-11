@@ -177,15 +177,19 @@ Deno.serve(async (req) => {
     return json(502, { error: "Planner-endpoint onbereikbaar" });
   }
 
-  // 6) Match (puur, in-memory)
-  const projectResultaten = matchProjecten(urenappProjects, plannerProjects);
+  // 6) Match (puur, in-memory) — uitgesloten projecten worden NIET gematcht
+  const projectMatchResultaten = matchProjecten(urenappProjects, plannerProjects);
   const monteurResultaten = matchMonteurs(urenappMonteurs, plannerMonteurs);
+
+  // Voeg uitgesloten projecten als aparte categorie toe aan de resultatenlijst
+  const projectResultaten = [...projectMatchResultaten, ...uitgeslotenResultaten];
 
   const telling = (arr: { status: string }[]) => ({
     exact: arr.filter((r) => r.status === "exact").length,
     waarschijnlijk: arr.filter((r) => r.status === "waarschijnlijk").length,
     conflict: arr.filter((r) => r.status === "conflict").length,
     geen_match: arr.filter((r) => r.status === "geen_match").length,
+    uitgesloten: arr.filter((r) => r.status === "uitgesloten").length,
     totaal: arr.length,
   });
 
