@@ -60,6 +60,8 @@ interface ProjectRow {
   projectjaar: number | null;
   planner_project_id: string | null;
   active: boolean;
+  planner_sync_enabled: boolean;
+  planner_sync_exclusion_reason: string | null;
 }
 interface MonteurRow {
   id: string;
@@ -74,6 +76,7 @@ interface Stats {
   projectenTotaal: number;
   projectenZonderJaar: number;
   projectenGekoppeld: number;
+  projectenUitgesloten: number;
   monteursPlanbaar: number;
   monteursGekoppeld: number;
 }
