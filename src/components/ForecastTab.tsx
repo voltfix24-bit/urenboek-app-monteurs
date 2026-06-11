@@ -491,10 +491,14 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
     onUpdate([...regels, { type: "stuks", spec_code: sc.code, spec_omschrijving: sc.omschrijving, tarief: sc.tarief, eigen_kosten: 0, aantal: 1 }]);
   }
   function updateAantal(code: string, delta: number) {
-    onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0.5, (r.aantal || 1) + delta) } : r));
+    onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0, Math.trunc((r.aantal || 1) + delta)) } : r));
   }
   function setAantal(code: string, val: number) {
-    onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0.5, val) } : r));
+    if (!Number.isInteger(val)) {
+      toast.error("Aantal moet een geheel getal zijn");
+      return;
+    }
+    onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0, val) } : r));
   }
   function removeCode(code: string) {
     const r = regels.find(x => x.spec_code === code);
