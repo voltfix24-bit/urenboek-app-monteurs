@@ -443,11 +443,13 @@ function FilterChip({ active, onClick, icon: Icon, label, count }: { active: boo
 
 // =================== Stuksprijzen editor ===================
 
-function StuksprijzenEditor({ regels, onUpdate, specCodes }: { regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; specCodes: SpecCode[] }) {
+function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, planningKostenTotaal }: {
+  regels: ForecastRegel[]; onUpdate: (r: ForecastRegel[]) => void; specCodes: SpecCode[];
+  planningKosten: PlanningKostRegel[]; planningKostenTotaal: number;
+}) {
   const [search, setSearch] = useState("");
-  const [browserOpen, setBrowserOpen] = useState(false);
+  const [browserOpen, setBrowserOpen] = useState(true);
   const [openGroepen, setOpenGroepen] = useState<Set<string>>(new Set());
-  const [filter, setFilter] = useState<"alle" | "materiaal">("alle");
   const searchRef = useRef<HTMLInputElement>(null);
 
   const groepen = useMemo(() => {
@@ -461,18 +463,29 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes }: { regels: ForecastR
     return specCodes.filter(s => s.code.toLowerCase().includes(q) || s.omschrijving.toLowerCase().includes(q));
   }, [search, specCodes]);
 
-  // Auto-open groups that match the search
+  const selectedCodes = useMemo(() => new Set(regels.map(r => r.spec_code)), [regels]);
+
+  // Auto-open groups that match the search or contain selected codes
   useEffect(() => {
-    if (!search.trim()) return;
-    const groups = new Set(filteredCodes.map(c => c.groep));
-    setOpenGroepen(groups);
-  }, [search, filteredCodes]);
+    setOpenGroepen(prev => {
+      const n = new Set(prev);
+      if (search.trim()) {
+        filteredCodes.forEach(c => n.add(c.groep));
+      }
+      // Open groups containing selected codes by default
+      regels.forEach(r => {
+        const sc = specCodes.find(s => s.code === r.spec_code);
+        if (sc) n.add(sc.groep);
+      });
+      return n;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, regels.length, specCodes]);
 
   function addCode(sc: SpecCode) {
     if (regels.find(r => r.spec_code === sc.code)) return;
-    onUpdate([...regels, { type: "stuks", spec_code: sc.code, spec_omschrijving: sc.omschrijving, tarief: sc.tarief, eigen_kosten: sc.eigen_kosten || 0, aantal: 1 }]);
+    onUpdate([...regels, { type: "stuks", spec_code: sc.code, spec_omschrijving: sc.omschrijving, tarief: sc.tarief, eigen_kosten: 0, aantal: 1 }]);
   }
-
   function updateAantal(code: string, delta: number) {
     onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0.5, (r.aantal || 1) + delta) } : r));
   }
@@ -481,183 +494,272 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes }: { regels: ForecastR
   }
   function removeCode(code: string) {
     const r = regels.find(x => x.spec_code === code);
-    if (!window.confirm(`Regel "${r?.spec_code} — ${r?.spec_omschrijving}" verwijderen?`)) return;
+    if (!window.confirm(`Bestekregel "${r?.spec_code} — ${r?.spec_omschrijving}" verwijderen?`)) return;
     onUpdate(regels.filter(r => r.spec_code !== code));
   }
 
-  const selectedCodes = new Set(regels.map(r => r.spec_code));
-  const visibleRegels = regels; // filter "alle" / "materiaal" → identiek voor stuks
-
-  // Per-row spec lookup (eenheid)
   const codeMap = useMemo(() => new Map(specCodes.map(c => [c.code, c])), [specCodes]);
+
+  // Per-groep selecties (aantallen + subtotaal)
+  const selectiePerGroep = useMemo(() => {
+    const map = new Map<string, { count: number; subtotaal: number }>();
+    for (const r of regels) {
+      const sc = specCodes.find(s => s.code === r.spec_code);
+      if (!sc) continue;
+      const cur = map.get(sc.groep) || { count: 0, subtotaal: 0 };
+      cur.count += 1;
+      cur.subtotaal += (r.tarief || 0) * (r.aantal || 1);
+      map.set(sc.groep, cur);
+    }
+    return map;
+  }, [regels, specCodes]);
+
+  const omzet = regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0);
 
   return (
     <div className="space-y-3">
-      {/* Toolbar */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: "var(--text-muted)" }} />
-          <input
-            ref={searchRef}
-            value={search}
-            onChange={e => { setSearch(e.target.value); if (!browserOpen) setBrowserOpen(true); }}
-            placeholder="Zoek op code of omschrijving"
-            className="w-full pl-8 pr-3 py-1.5 rounded-[8px] text-[13px]"
-            style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }}
-          />
-        </div>
-        <button
-          onClick={() => { setBrowserOpen(o => !o); setTimeout(() => searchRef.current?.focus(), 50); }}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[8px] text-[12px] font-semibold"
-          style={{ background: "var(--accent)", color: "#fff", border: "1px solid var(--accent)" }}
-          title="SPEC-code zoeken en toevoegen"
-        >
-          <Plus className="h-3.5 w-3.5" /> Regel toevoegen
-        </button>
-      </div>
-
-      {/* Filter chips */}
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <FilterChip active={filter === "alle"} onClick={() => setFilter("alle")} icon={Layers} label="Alle" count={regels.length} />
-        <FilterChip active={filter === "materiaal"} onClick={() => setFilter("materiaal")} icon={Tag} label="Materiaal" count={regels.length} />
-      </div>
-
-      {/* SPEC code browser (collapsible) */}
-      {browserOpen && (
-        <div className="rounded-[8px] overflow-hidden" style={{ border: "1px solid var(--planning-border-soft)" }}>
-          <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
-            <span>SPEC-codes</span>
-            <button onClick={() => setBrowserOpen(false)} className="text-[11px] font-medium normal-case" style={{ color: "var(--text-muted)" }}>verbergen</button>
+      {/* ───────────── Bestekcode-zoeker (codekiezer) ───────────── */}
+      <div className="rounded-[8px] overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
+        <div className="flex items-center gap-2 px-3 py-2 flex-wrap" style={{ background: "var(--bg-surface-2)" }}>
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: "var(--text-muted)" }} />
+            <input
+              ref={searchRef}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Zoek bestekcode of werkzaamheden"
+              className="w-full pl-8 pr-3 py-1.5 rounded-[8px] text-[13px]"
+              style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }}
+            />
           </div>
-          <div className="max-h-[260px] overflow-y-auto">
+          <button
+            onClick={() => setBrowserOpen(o => !o)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[8px] text-[12px] font-semibold"
+            style={{ background: "var(--bg-surface)", color: "var(--text-muted)", border: "1px solid var(--planning-border-soft)" }}
+          >
+            {browserOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            {browserOpen ? "Inklappen" : "Uitklappen"}
+          </button>
+        </div>
+        {browserOpen && (
+          <div className="max-h-[360px] overflow-y-auto">
             {groepen.map(g => {
               const codes = filteredCodes.filter(s => s.groep === g);
               if (codes.length === 0) return null;
               const open = openGroepen.has(g);
               const label = GROEP_LABELS[g] || g;
+              const sel = selectiePerGroep.get(g);
               return (
-                <div key={g}>
-                  <button onClick={() => { const n = new Set(openGroepen); open ? n.delete(g) : n.add(g); setOpenGroepen(n); }} className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-semibold" style={{ background: "var(--bg-surface)", color: "var(--text-primary)", borderTop: "1px solid var(--planning-border-soft)" }}>
-                    <span>{label}</span>
-                    {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                <div key={g} style={{ borderTop: "1px solid var(--planning-border-soft)" }}>
+                  <button
+                    onClick={() => { const n = new Set(openGroepen); open ? n.delete(g) : n.add(g); setOpenGroepen(n); }}
+                    className="w-full flex items-center justify-between gap-3 px-3 py-2 text-[12px] font-semibold"
+                    style={{ background: "var(--bg-surface)", color: "var(--text-primary)" }}
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      {open ? <ChevronUp className="h-3.5 w-3.5 shrink-0" /> : <ChevronDown className="h-3.5 w-3.5 shrink-0" />}
+                      <span className="truncate">{label}</span>
+                    </span>
+                    {sel && sel.count > 0 && (
+                      <span className="flex items-center gap-2 shrink-0">
+                        <span className="px-1.5 py-0.5 rounded-[8px] text-[10px] font-semibold" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>{sel.count} gekozen</span>
+                        <span className={`${mono} text-[11px]`} style={{ color: "var(--accent)" }}>{fmt(sel.subtotaal)}</span>
+                      </span>
+                    )}
                   </button>
-                  {open && codes.map(sc => (
-                    <div key={sc.code} className="flex items-center gap-2 px-3 py-1.5 text-[12px]" style={{ background: "var(--bg-surface)", borderTop: "1px solid var(--planning-border-soft)" }}>
-                      <button
-                        onClick={() => addCode(sc)}
-                        disabled={selectedCodes.has(sc.code)}
-                        className="w-6 h-6 rounded-[8px] flex items-center justify-center shrink-0 text-xs"
-                        style={{ background: selectedCodes.has(sc.code) ? "var(--bg-surface-2)" : "var(--accent-light)", color: selectedCodes.has(sc.code) ? "var(--text-muted)" : "var(--accent)" }}
-                      >
-                        {selectedCodes.has(sc.code) ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-                      </button>
-                      <span className={`${mono} w-16 shrink-0`} style={{ color: "var(--accent)" }}>{sc.code}</span>
-                      <span className="flex-1 truncate" style={{ color: "var(--text-primary)" }}>{sc.omschrijving}</span>
-                      <span className={`${mono} shrink-0 text-[11px]`} style={{ color: "var(--text-muted)" }}>{fmt(sc.tarief)} / {sc.eenheid}</span>
-                    </div>
-                  ))}
+                  {open && codes.map(sc => {
+                    const isSel = selectedCodes.has(sc.code);
+                    return (
+                      <div key={sc.code} className="flex items-center gap-2 px-3 py-1.5 text-[12px]" style={{ background: isSel ? "var(--accent-light)" : "var(--bg-surface)", borderTop: "1px solid var(--planning-border-soft)" }}>
+                        <button
+                          onClick={() => addCode(sc)}
+                          disabled={isSel}
+                          className="w-6 h-6 rounded-[8px] flex items-center justify-center shrink-0 text-xs"
+                          style={{ background: isSel ? "var(--accent)" : "var(--accent-light)", color: isSel ? "#fff" : "var(--accent)" }}
+                          title={isSel ? "Al toegevoegd" : "Toevoegen"}
+                        >
+                          {isSel ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                        </button>
+                        <span className={`${mono} w-16 shrink-0`} style={{ color: "var(--accent)" }}>{sc.code}</span>
+                        <span className="flex-1 truncate" style={{ color: "var(--text-primary)" }}>{sc.omschrijving}</span>
+                        <span className={`${mono} shrink-0 text-[11px]`} style={{ color: "var(--text-muted)" }}>{fmt(sc.tarief)} / {sc.eenheid}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
             {filteredCodes.length === 0 && (
-              <div className="px-3 py-6 text-center text-[12px]" style={{ color: "var(--text-muted)" }}>Geen SPEC-codes gevonden voor “{search}”</div>
+              <div className="px-3 py-6 text-center text-[12px]" style={{ color: "var(--text-muted)" }}>Geen bestekcodes gevonden voor "{search}"</div>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* ───────────── Geselecteerde bestekregels ───────────── */}
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "var(--text-muted)" }}>Geselecteerde bestekregels</p>
+        {regels.length === 0 ? (
+          <EmptyState text="Nog geen bestekregels — open hierboven een hoofdstuk en kies de werkzaamheden." />
+        ) : (
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block rounded-[8px] overflow-hidden overflow-x-auto" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
+              <table className="w-full text-[12px]" style={{ minWidth: 700 }}>
+                <thead>
+                  <tr style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
+                    <th className="text-left font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[90px]">Bestekcode</th>
+                    <th className="text-left font-semibold uppercase tracking-wider text-[10px] px-3 py-2">Werkzaamheden</th>
+                    <th className="text-left font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[60px]">Eenheid</th>
+                    <th className="text-center font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[130px]">Aantal</th>
+                    <th className="text-right font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[110px]">Opbrengst / eenheid</th>
+                    <th className="text-right font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[110px]">Totale opbrengst</th>
+                    <th className="px-3 py-2 w-[40px]"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {regels.map(r => {
+                    const totaal = (r.tarief || 0) * (r.aantal || 1);
+                    const eenheid = codeMap.get(r.spec_code || "")?.eenheid || "st";
+                    return (
+                      <tr key={r.spec_code} style={{ borderTop: "1px solid var(--planning-border-soft)" }}>
+                        <td className={`px-3 py-1.5 ${mono}`} style={{ color: "var(--accent)" }}>{r.spec_code}</td>
+                        <td className="px-3 py-1.5" style={{ color: "var(--text-primary)" }}>
+                          <div className="truncate max-w-[340px]" title={r.spec_omschrijving}>{r.spec_omschrijving}</div>
+                        </td>
+                        <td className={`px-3 py-1.5 ${mono}`} style={{ color: "var(--text-muted)" }}>{eenheid}</td>
+                        <td className="px-3 py-1.5">
+                          <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} />
+                        </td>
+                        <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{fmt(r.tarief || 0)}</td>
+                        <td className={`px-3 py-1.5 text-right font-semibold ${mono}`} style={{ color: "var(--accent)" }}>{fmt(totaal)}</td>
+                        <td className="px-3 py-1.5 text-right">
+                          <button onClick={() => removeCode(r.spec_code!)} className="w-6 h-6 rounded-[8px] inline-flex items-center justify-center" style={{ color: "var(--danger)" }} title="Verwijderen">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="md:hidden space-y-2">
+              {regels.map(r => {
+                const totaal = (r.tarief || 0) * (r.aantal || 1);
+                const eenheid = codeMap.get(r.spec_code || "")?.eenheid || "st";
+                return (
+                  <div key={r.spec_code} className="rounded-[8px] p-2.5 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className={`${mono} text-[12px]`} style={{ color: "var(--accent)" }}>{r.spec_code}</span>
+                        <p className="text-[12px] mt-0.5" style={{ color: "var(--text-primary)" }}>{r.spec_omschrijving}</p>
+                        <p className={`text-[11px] mt-0.5 ${mono}`} style={{ color: "var(--text-muted)" }}>{fmt(r.tarief || 0)} / {eenheid}</p>
+                      </div>
+                      <button onClick={() => removeCode(r.spec_code!)} className="w-7 h-7 rounded-[8px] inline-flex items-center justify-center shrink-0" style={{ color: "var(--danger)" }}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} />
+                      <span className={`text-[14px] font-semibold ${mono}`} style={{ color: "var(--accent)" }}>{fmt(totaal)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* ───────────── Geplande inzet en personeelskosten ───────────── */}
+      <GeplandeInzetSectie planningKosten={planningKosten} />
+
+      {/* ───────────── Totalen ───────────── */}
+      <TotalsBlock
+        rows={[
+          { label: "Verwachte omzet (bestekcodes)", value: omzet, accent: true },
+          { label: "Personeelskosten (planning)", value: planningKostenTotaal },
+        ]}
+        margeFromOmzet
+      />
+    </div>
+  );
+}
+
+// =================== Geplande inzet sectie ===================
+
+function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostRegel[] }) {
+  const totaal = planningKosten.reduce((s, r) => s + r.kosten, 0);
+  const totaalUren = planningKosten.reduce((s, r) => s + r.uren, 0);
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <p className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+          <Users className="h-3 w-3" /> Geplande inzet en kosten
+        </p>
+        {planningKosten.length > 0 && (
+          <span className={`text-[11px] ${mono}`} style={{ color: "var(--text-muted)" }}>
+            {totaalUren.toFixed(1)} u · {fmt(totaal)}
+          </span>
+        )}
+      </div>
+      {planningKosten.length === 0 ? (
+        <EmptyState text="Nog geen monteurs ingepland op dit project. Plan inzet in via Planning om personeelskosten te berekenen." />
+      ) : (
+        <div className="rounded-[8px] overflow-hidden" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
+          {/* Desktop */}
+          <table className="hidden md:table w-full text-[12px]">
+            <thead>
+              <tr style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
+                <th className="text-left font-semibold uppercase tracking-wider text-[10px] px-3 py-2">Naam</th>
+                <th className="text-left font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[90px]">Rol</th>
+                <th className="text-right font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[70px]">Dagen</th>
+                <th className="text-right font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[80px]">Uren</th>
+                <th className="text-right font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[100px]">Kostentarief</th>
+                <th className="text-right font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[110px]">Personeelskosten</th>
+              </tr>
+            </thead>
+            <tbody>
+              {planningKosten.map(r => (
+                <tr key={r.medewerker_id} style={{ borderTop: "1px solid var(--planning-border-soft)" }}>
+                  <td className="px-3 py-1.5" style={{ color: "var(--text-primary)" }}>
+                    {r.full_name}
+                    {r.zonderTarief && (
+                      <span className="ml-2 inline-flex items-center gap-1 text-[10px]" style={{ color: "var(--warn-text)" }}>
+                        <AlertTriangle className="h-3 w-3" /> geen tarief
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-1.5 text-[11px]" style={{ color: "var(--text-muted)" }}>{r.rol || "monteur"}</td>
+                  <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{r.dagen}</td>
+                  <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-primary)" }}>{r.uren.toFixed(1)}</td>
+                  <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{r.uurtarief != null ? fmt(r.uurtarief) : "—"}</td>
+                  <td className={`px-3 py-1.5 text-right font-semibold ${mono}`} style={{ color: r.zonderTarief ? "var(--warn-text)" : "var(--text-primary)" }}>{fmt(r.kosten)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {/* Mobile */}
+          <div className="md:hidden divide-y" style={{ borderColor: "var(--planning-border-soft)" } as any}>
+            {planningKosten.map(r => (
+              <div key={r.medewerker_id} className="px-3 py-2 flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[12px] truncate" style={{ color: "var(--text-primary)" }}>{r.full_name}</p>
+                  <p className={`text-[11px] ${mono}`} style={{ color: "var(--text-muted)" }}>{r.dagen}d · {r.uren.toFixed(1)} u · {r.uurtarief != null ? fmt(r.uurtarief) + "/u" : "geen tarief"}</p>
+                </div>
+                <span className={`text-[13px] font-semibold ${mono} shrink-0`} style={{ color: r.zonderTarief ? "var(--warn-text)" : "var(--text-primary)" }}>{fmt(r.kosten)}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
-
-      {/* Selected rows */}
-      {visibleRegels.length === 0 ? (
-        <EmptyState text="Nog geen regels — open de SPEC-codezoeker om de eerste regel toe te voegen." />
-      ) : (
-        <>
-          {/* Desktop table */}
-          <div className="hidden md:block rounded-[8px] overflow-hidden overflow-x-auto" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
-            <table className="w-full text-[12px]" style={{ minWidth: 720 }}>
-              <thead>
-                <tr style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
-                  <th className="text-left font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[90px]">Code</th>
-                  <th className="text-left font-semibold uppercase tracking-wider text-[10px] px-3 py-2">Omschrijving</th>
-                  <th className="text-left font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[90px]">Categorie</th>
-                  <th className="text-left font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[60px]">Eenheid</th>
-                  <th className="text-center font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[130px]">Aantal</th>
-                  <th className="text-right font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[90px]">Prijs</th>
-                  <th className="text-right font-semibold uppercase tracking-wider text-[10px] px-3 py-2 w-[110px]">Totaal</th>
-                  <th className="px-3 py-2 w-[40px]"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleRegels.map(r => {
-                  const totaal = (r.tarief || 0) * (r.aantal || 1);
-                  const eenheid = codeMap.get(r.spec_code || "")?.eenheid || "st";
-                  return (
-                    <tr key={r.spec_code} style={{ borderTop: "1px solid var(--planning-border-soft)" }}>
-                      <td className={`px-3 py-1.5 ${mono}`} style={{ color: "var(--accent)" }}>{r.spec_code}</td>
-                      <td className="px-3 py-1.5" style={{ color: "var(--text-primary)" }}>
-                        <div className="truncate max-w-[320px]" title={r.spec_omschrijving}>{r.spec_omschrijving}</div>
-                      </td>
-                      <td className="px-3 py-1.5">
-                        <span className="px-1.5 py-0.5 rounded-[8px] text-[10px] font-semibold" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>Materiaal</span>
-                      </td>
-                      <td className={`px-3 py-1.5 ${mono}`} style={{ color: "var(--text-muted)" }}>{eenheid}</td>
-                      <td className="px-3 py-1.5">
-                        <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} />
-                      </td>
-                      <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{fmt(r.tarief || 0)}</td>
-                      <td className={`px-3 py-1.5 text-right font-semibold ${mono}`} style={{ color: "var(--accent)" }}>{fmt(totaal)}</td>
-                      <td className="px-3 py-1.5 text-right">
-                        <button onClick={() => removeCode(r.spec_code!)} className="w-6 h-6 rounded-[8px] inline-flex items-center justify-center" style={{ color: "var(--danger)" }} title="Regel verwijderen">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile card list */}
-          <div className="md:hidden space-y-2">
-            {visibleRegels.map(r => {
-              const totaal = (r.tarief || 0) * (r.aantal || 1);
-              const eenheid = codeMap.get(r.spec_code || "")?.eenheid || "st";
-              return (
-                <div key={r.spec_code} className="rounded-[8px] p-2.5 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className={`${mono} text-[12px]`} style={{ color: "var(--accent)" }}>{r.spec_code}</span>
-                        <span className="px-1.5 py-0.5 rounded-[8px] text-[9px] font-semibold uppercase" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>Materiaal</span>
-                      </div>
-                      <p className="text-[12px] mt-0.5" style={{ color: "var(--text-primary)" }}>{r.spec_omschrijving}</p>
-                      <p className={`text-[11px] mt-0.5 ${mono}`} style={{ color: "var(--text-muted)" }}>{fmt(r.tarief || 0)} / {eenheid}</p>
-                    </div>
-                    <button onClick={() => removeCode(r.spec_code!)} className="w-7 h-7 rounded-[8px] inline-flex items-center justify-center shrink-0" style={{ color: "var(--danger)" }} title="Verwijderen">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} />
-                    <span className={`text-[14px] font-semibold ${mono}`} style={{ color: "var(--accent)" }}>{fmt(totaal)}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Totals block */}
-          <TotalsBlock
-            rows={[
-              { label: "Verwachte omzet", value: regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0), accent: true },
-              { label: "Totale eigen kosten", value: regels.reduce((s, r) => s + (r.eigen_kosten || 0) * (r.aantal || 1), 0) },
-            ]}
-            margeFromOmzet
-          />
-        </>
-      )}
     </div>
   );
+}
+
 }
 
 // =================== Aantal control ===================
