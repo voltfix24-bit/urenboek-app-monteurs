@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle2, Loader2, Link2, Send, Eye, RefreshCcw, XCircle, Plug, Info, Search, HelpCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, Link2, Send, Eye, RefreshCcw, XCircle, Plug, Info, Search, HelpCircle, Ban, Settings2 } from "lucide-react";
+import { PLANNER_EXCLUSION_REASONS, PLANNER_EXCLUSION_LABEL, exclusionLabel, type PlannerExclusionReason } from "@/lib/plannerExclusion";
 
-type AnalyseStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match";
+type AnalyseStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match" | "uitgesloten";
 interface Afwijking { veld: string; urenapp: unknown; planner: unknown }
 interface AnalyseRow {
   urenapp: any;
@@ -26,12 +27,14 @@ const STATUS_LABEL: Record<AnalyseStatus, string> = {
   waarschijnlijk: "Waarschijnlijk",
   conflict: "Conflict",
   geen_match: "Geen match",
+  uitgesloten: "Uitgesloten",
 };
 const STATUS_COLOR: Record<AnalyseStatus, { bg: string; fg: string }> = {
   exact:         { bg: "var(--accent)",      fg: "white" },
   waarschijnlijk:{ bg: "var(--warn-light)",  fg: "var(--warn-text)" },
   conflict:      { bg: "#fee2e2",            fg: "#b91c1c" },
   geen_match:    { bg: "var(--bg-surface-2)",fg: "var(--text-muted)" },
+  uitgesloten:   { bg: "#e0e7ff",            fg: "#3730a3" },
 };
 
 interface ResultaatItem {
