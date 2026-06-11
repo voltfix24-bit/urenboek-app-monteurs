@@ -734,7 +734,7 @@ export default function ManagerPlanning() {
                       {weekDates.map((date, i) => {
                         const dateStr = format(date, 'yyyy-MM-dd');
                         const DAGEN_LBL = ['Ma','Di','Wo','Do','Vr'];
-                        const dayEntries = entries.filter(e => e.medewerker_id === med.id && e.datum === dateStr);
+                        const dayEntries = visibleEntries.filter(e => e.medewerker_id === med.id && e.datum === dateStr);
 
                         if (dayEntries.length === 0) {
                           return (
