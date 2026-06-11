@@ -121,6 +121,8 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       const namenMap = new Map(profiles.map(p => [p.id, p.full_name]));
       setAlleProfielen(namenMap);
       const rolMap = new Map((roles || []).map(r => [r.user_id, r.role]));
+      const tariefMap = new Map(profiles.map(p => [p.id, (p as any).uurtarief != null ? Number((p as any).uurtarief) : null] as [string, number | null]));
+      const profielRolMap = new Map(profiles.map(p => [p.id, rolMap.get(p.user_id) || ''] as [string, string]));
       const beschikbaar = profiles
         .filter(p => (p as any).uurtarief != null && Number((p as any).uurtarief) > 0)
         .map(p => ({
@@ -130,9 +132,44 @@ export function ForecastTab({ projectId }: { projectId: string }) {
           rol: rolMap.get(p.user_id) || '',
         }));
       setMonteurs(beschikbaar);
+
+      // ── Geplande inzet (planning) → personeelskosten ──────────────
+      const { data: planRows } = await supabase
+        .from("planning")
+        .select("medewerker_id, datum, starttijd, eindtijd")
+        .eq("project_id", projectId);
+      const seen = new Set<string>();
+      const perMon = new Map<string, { dagen: Set<string>; uren: number }>();
+      for (const row of planRows || []) {
+        const key = `${row.medewerker_id}|${row.datum}|${row.starttijd}|${row.eindtijd}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const start = String(row.starttijd || "00:00").slice(0, 5).split(":").map(Number);
+        const eind = String(row.eindtijd || "00:00").slice(0, 5).split(":").map(Number);
+        const uren = Math.max(0, (eind[0] + eind[1] / 60) - (start[0] + start[1] / 60));
+        const agg = perMon.get(row.medewerker_id) || { dagen: new Set(), uren: 0 };
+        agg.dagen.add(row.datum);
+        agg.uren += uren;
+        perMon.set(row.medewerker_id, agg);
+      }
+      const planKosten: PlanningKostRegel[] = Array.from(perMon.entries()).map(([mid, agg]) => {
+        const tarief = tariefMap.get(mid) ?? null;
+        return {
+          medewerker_id: mid,
+          full_name: namenMap.get(mid) || "Onbekend",
+          rol: profielRolMap.get(mid) || '',
+          uurtarief: tarief,
+          dagen: agg.dagen.size,
+          uren: agg.uren,
+          kosten: tarief != null ? agg.uren * tarief : 0,
+          zonderTarief: tarief == null || tarief === 0,
+        };
+      }).sort((a, b) => b.kosten - a.kosten);
+      setPlanningKosten(planKosten);
     }
     setLoading(false);
   }, [projectId]);
+
 
   useEffect(() => { loadForecast(); }, [loadForecast]);
 
