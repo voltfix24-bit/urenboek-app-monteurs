@@ -90,6 +90,27 @@ export default function PlannerKoppeling() {
   const [tab, setTab] = useState<"projecten" | "monteurs">("projecten");
   const [filter, setFilter] = useState("");
 
+  // Analyse (read-only koppelwizard fase 1)
+  const [analyse, setAnalyse] = useState<AnalyseResponse | null>(null);
+  const [analyseBusy, setAnalyseBusy] = useState(false);
+  const [analyseTab, setAnalyseTab] = useState<"projecten" | "monteurs">("projecten");
+  const [analyseStatusFilter, setAnalyseStatusFilter] = useState<AnalyseStatus | "alle">("alle");
+  const [analyseQuery, setAnalyseQuery] = useState("");
+
+  async function runAnalyse() {
+    setAnalyseBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyse-planner-matches", { body: {} });
+      if (error) throw error;
+      setAnalyse(data as AnalyseResponse);
+      toast.success("Analyse klaar");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Analyse mislukt");
+    } finally {
+      setAnalyseBusy(false);
+    }
+  }
+
   async function loadStats() {
     setLoading(true);
     const [{ data: projs }, { data: profs }, { data: rollen }] = await Promise.all([
