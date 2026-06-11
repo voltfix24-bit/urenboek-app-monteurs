@@ -753,7 +753,56 @@ export default function PlannerKoppeling() {
           </div>
         </div>
       )}
+
+      {koppelConfirm && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => !koppelBusyKey && setKoppelConfirm(null)}>
+          <div className="bg-white w-full max-w-md rounded-t-2xl md:rounded-2xl p-4 space-y-3" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-5 w-5 mt-0.5" style={{ color: "var(--warn-text)" }} />
+              <div>
+                <h3 className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>Controleer voor koppelen</h3>
+                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                  Dit is een <strong>waarschijnlijke</strong> match. Bevestig alleen wanneer u zeker weet dat dit hetzelfde {koppelConfirm.kind} is.
+                </p>
+              </div>
+            </div>
+            <div className="p-3 rounded-lg text-xs" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)" }}>
+              <div style={{ color: "var(--text-primary)" }}><strong>{koppelConfirm.label}</strong></div>
+              <div className="mt-1" style={{ color: "var(--text-muted)" }}>
+                Planner-ID: <code style={{ fontFamily: "DM Mono, monospace" }}>{koppelConfirm.planner_id.slice(0, 12)}…</code>
+              </div>
+            </div>
+            {koppelConfirm.afwijkingen.length > 0 && (
+              <div className="p-3 rounded-lg text-xs" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-text)" }}>
+                <div className="font-semibold mb-1" style={{ color: "var(--warn-text)" }}>Zichtbare afwijkingen:</div>
+                <ul className="space-y-0.5" style={{ color: "var(--text-primary)" }}>
+                  {koppelConfirm.afwijkingen.map((a, i) => (
+                    <li key={i}>
+                      <strong>{a.veld}:</strong> urenapp <code style={{ fontFamily: "DM Mono, monospace" }}>{String(a.urenapp ?? "—")}</code> ≠ planner <code style={{ fontFamily: "DM Mono, monospace" }}>{String(a.planner ?? "—")}</code>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="flex gap-2 justify-end pt-1">
+              <button onClick={() => setKoppelConfirm(null)} disabled={!!koppelBusyKey} className="px-3 py-2 rounded-lg text-xs font-semibold" style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>
+                Annuleren
+              </button>
+              <button
+                onClick={() => doKoppel(koppelConfirm.kind, koppelConfirm.urenapp_id, koppelConfirm.planner_id)}
+                disabled={!!koppelBusyKey}
+                className="px-3 py-2 rounded-lg text-xs font-bold text-white inline-flex items-center gap-1.5"
+                style={{ background: "var(--accent)", opacity: koppelBusyKey ? 0.5 : 1 }}
+              >
+                {koppelBusyKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Link2 className="h-3 w-3" />}
+                Bevestig en koppel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+
   );
 }
 
