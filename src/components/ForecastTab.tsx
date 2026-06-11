@@ -369,7 +369,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   let totaalOmzet = 0;
   let totaalKosten = 0;
   if (isStuks) {
-    totaalOmzet = regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0);
+    totaalOmzet = regels.reduce((s, r) => s + (Number(r.tarief) || 0) * (r.aantal ?? 1), 0);
     // Personeelskosten + reiskosten uit aangemaakte inkooporders.
     totaalKosten = planningKostenTotaal + reiskosten;
   } else {
@@ -569,7 +569,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
     onUpdate([...regels, { type: "stuks", spec_code: sc.code, spec_omschrijving: sc.omschrijving, tarief: sc.tarief, eigen_kosten: 0, aantal: 1 }]);
   }
   function updateAantal(code: string, delta: number) {
-    onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0, Math.trunc((r.aantal || 1) + delta)) } : r));
+    onUpdate(regels.map(r => r.spec_code === code ? { ...r, aantal: Math.max(0, Math.trunc((r.aantal ?? 1) + delta)) } : r));
   }
   function setAantal(code: string, val: number) {
     if (!Number.isInteger(val)) {
@@ -594,13 +594,13 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
       if (!sc) continue;
       const cur = map.get(sc.groep) || { count: 0, subtotaal: 0 };
       cur.count += 1;
-      cur.subtotaal += (r.tarief || 0) * (r.aantal || 1);
+      cur.subtotaal += (Number(r.tarief) || 0) * (r.aantal ?? 1);
       map.set(sc.groep, cur);
     }
     return map;
   }, [regels, specCodes]);
 
-  const omzet = regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0);
+  const omzet = regels.reduce((s, r) => s + (Number(r.tarief) || 0) * (r.aantal ?? 1), 0);
 
   return (
     <div className="space-y-3">
@@ -705,7 +705,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
                 </thead>
                 <tbody>
                   {regels.map(r => {
-                    const totaal = (r.tarief || 0) * (r.aantal || 1);
+                    const totaal = (Number(r.tarief) || 0) * (r.aantal ?? 1);
                     const eenheid = codeMap.get(r.spec_code || "")?.eenheid || "st";
                     return (
                       <tr key={r.spec_code} style={{ borderTop: "1px solid var(--planning-border-soft)" }}>
@@ -734,7 +734,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
             {/* Mobile card list */}
             <div className="md:hidden space-y-2">
               {regels.map(r => {
-                const totaal = (r.tarief || 0) * (r.aantal || 1);
+                const totaal = (Number(r.tarief) || 0) * (r.aantal ?? 1);
                 const eenheid = codeMap.get(r.spec_code || "")?.eenheid || "st";
                 return (
                   <div key={r.spec_code} className="rounded-[8px] p-2.5 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
