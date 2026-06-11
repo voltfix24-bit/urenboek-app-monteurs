@@ -528,6 +528,98 @@ export default function Onderaannemers() {
     setMSaving(false);
   };
 
+  // === Bestaande monteurs koppelen / loskoppelen / overplaatsen via RPC ===
+  const callKoppelRpc = async (monteurId: string, nieuweOaId: string | null, reden?: string) => {
+    const { data, error } = await supabase.rpc("koppel_monteur_aan_onderaannemer", {
+      _monteur_id: monteurId,
+      _nieuwe_onderaannemer_id: nieuweOaId,
+      _reden: reden ?? null,
+    });
+    if (error) throw new Error(error.message);
+    return data as { changed: boolean };
+  };
+
+  const linkableMonteurs = useMemo(() => {
+    if (!selected) return [];
+    const q = linkSearch.trim().toLowerCase();
+    return monteurs
+      .filter((m) => m.id !== selected.id && !m.is_onderaannemer && m.onderaannemer_id !== selected.id)
+      .filter((m) => !q || m.full_name.toLowerCase().includes(q) || (m.email || "").toLowerCase().includes(q))
+      .sort((a, b) => {
+        // Vrij eerst, dan op naam
+        const af = a.onderaannemer_id ? 1 : 0;
+        const bf = b.onderaannemer_id ? 1 : 0;
+        if (af !== bf) return af - bf;
+        return a.full_name.localeCompare(b.full_name);
+      });
+  }, [monteurs, selected, linkSearch]);
+
+  const openLinkModal = () => {
+    setLinkSelected(new Set());
+    setLinkSearch("");
+    setShowLinkMonteur(true);
+  };
+
+  const toggleLinkSelect = (id: string) => {
+    setLinkSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const requestLink = () => {
+    if (!selected || linkSelected.size === 0) return;
+    let moveCount = 0;
+    let freeCount = 0;
+    monteurs.forEach((m) => {
+      if (!linkSelected.has(m.id)) return;
+      if (m.onderaannemer_id && m.onderaannemer_id !== selected.id) moveCount++;
+      else freeCount++;
+    });
+    if (moveCount > 0) {
+      setLinkConfirm({ moveCount, freeCount });
+    } else {
+      void confirmLink();
+    }
+  };
+
+  const confirmLink = async () => {
+    if (!selected || linkSelected.size === 0) return;
+    setLinkSaving(true);
+    setLinkConfirm(null);
+    const ids = Array.from(linkSelected);
+    let ok = 0;
+    let fail = 0;
+    for (const id of ids) {
+      try {
+        await callKoppelRpc(id, selected.id, "Handmatige koppeling via beheerscherm");
+        ok++;
+      } catch (e: any) {
+        console.error("Koppelen mislukt", id, e);
+        fail++;
+      }
+    }
+    if (ok > 0) toast.success(`${ok} monteur(s) gekoppeld aan ${selected.full_name}`);
+    if (fail > 0) toast.error(`${fail} koppeling(en) mislukt`);
+    setLinkSelected(new Set());
+    setShowLinkMonteur(false);
+    setLinkSaving(false);
+    await load();
+  };
+
+  const unlinkMonteur = async (m: Monteur) => {
+    if (!confirm(`${m.full_name} loskoppelen van deze onderaannemer? Planning en uren blijven behouden.`)) return;
+    try {
+      await callKoppelRpc(m.id, null, "Losgekoppeld via beheerscherm");
+      toast.success(`${m.full_name} losgekoppeld`);
+      await load();
+    } catch (e: any) {
+      toast.error(e.message || "Loskoppelen mislukt");
+    }
+  };
+
+
   const copyCreds = (email: string, pw: string) => {
     navigator.clipboard.writeText(
       `Inloggegevens TerreVolt:\nGebruikersnaam: ${email}\nE-mail: ${email}\nWachtwoord: ${pw}\n\nLog in op: ${window.location.origin}`
