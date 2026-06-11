@@ -52,6 +52,9 @@ export interface PlanningKostRegel {
   uren: number;
   kosten: number;
   zonderTarief: boolean;
+  isPloeg?: boolean;
+  ploegLeden?: string[];
+  ploegWarning?: boolean;
 }
 
 type SaveState = "idle" | "saving" | "saved" | "error";
