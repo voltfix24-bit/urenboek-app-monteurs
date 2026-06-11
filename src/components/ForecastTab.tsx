@@ -370,11 +370,11 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   let totaalKosten = 0;
   if (isStuks) {
     totaalOmzet = regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0);
-    // Personeelskosten komen uit de projectplanning, niet uit SPEC-codes.
-    totaalKosten = planningKostenTotaal;
+    // Personeelskosten + reiskosten uit aangemaakte inkooporders.
+    totaalKosten = planningKostenTotaal + reiskosten;
   } else {
     totaalOmzet = verwachteOmzet;
-    totaalKosten = regels.reduce((s, r) => s + (r.geplande_uren || 0) * (r.uurtarief_snap || 0), 0);
+    totaalKosten = regels.reduce((s, r) => s + (r.geplande_uren || 0) * (r.uurtarief_snap || 0), 0) + reiskosten;
   }
   const margeEuro = totaalOmzet - totaalKosten;
   const margePerc = totaalOmzet > 0 ? (margeEuro / totaalOmzet) * 100 : 0;
