@@ -74,15 +74,18 @@ Deno.serve(async (req) => {
     } = await req.json();
 
 
-    if (
-      typeof email !== "string" ||
-      !emailRegex.test(email) ||
-      typeof fullName !== "string" ||
-      fullName.trim().length < 2 ||
-      typeof role !== "string" ||
-      !allowedRoles.has(role)
-    ) {
-      return new Response(JSON.stringify({ error: "Email, naam en rol zijn verplicht" }), {
+    const missing: string[] = [];
+    if (typeof email !== "string" || !emailRegex.test(email)) {
+      missing.push(`email (ontvangen: ${JSON.stringify(email)})`);
+    }
+    if (typeof fullName !== "string" || fullName.trim().length < 2) {
+      missing.push(`fullName (ontvangen: ${JSON.stringify(fullName)})`);
+    }
+    if (typeof role !== "string" || !allowedRoles.has(role)) {
+      missing.push(`role (ontvangen: ${JSON.stringify(role)}, toegestaan: ${[...allowedRoles].join(", ")})`);
+    }
+    if (missing.length > 0) {
+      return new Response(JSON.stringify({ error: `Ongeldig of ontbrekend: ${missing.join("; ")}` }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
