@@ -17,8 +17,12 @@ interface Onderaannemer {
   email: string | null;
   telefoon: string | null;
   bedrijfsnaam: string | null;
+  contactpersoon: string | null;
+  factuuradres: string | null;
   kvk_nummer: string | null;
+  btw_nummer: string | null;
   iban: string | null;
+  betalingstermijn: number | null;
   uurtarief: number | null;
   onderaannemer_startlocatie: string | null;
   onderaannemer_vrije_km_per_dag: number;
@@ -26,7 +30,33 @@ interface Onderaannemer {
   onderaannemer_reiskosten_per_ploeg: boolean;
   account_status: string;
   planning_partner_ids: string[];
+  bedrijfsgegevens_updated_at: string | null;
+  bedrijfsgegevens_updated_by: string | null;
 }
+
+const BEDRIJF_FIELDS = [
+  "bedrijfsnaam", "contactpersoon", "email", "telefoon",
+  "factuuradres", "kvk_nummer", "btw_nummer", "iban", "betalingstermijn",
+] as const;
+type BedrijfForm = {
+  bedrijfsnaam: string; contactpersoon: string; email: string; telefoon: string;
+  factuuradres: string; kvk_nummer: string; btw_nummer: string; iban: string; betalingstermijn: string;
+};
+const emptyBedrijfForm = (): BedrijfForm => ({
+  bedrijfsnaam: "", contactpersoon: "", email: "", telefoon: "",
+  factuuradres: "", kvk_nummer: "", btw_nummer: "", iban: "", betalingstermijn: "30",
+});
+const oaToBedrijfForm = (o: Onderaannemer): BedrijfForm => ({
+  bedrijfsnaam: o.bedrijfsnaam || "",
+  contactpersoon: o.contactpersoon || "",
+  email: o.email || "",
+  telefoon: o.telefoon || "",
+  factuuradres: o.factuuradres || "",
+  kvk_nummer: o.kvk_nummer || "",
+  btw_nummer: o.btw_nummer || "",
+  iban: o.iban || "",
+  betalingstermijn: String(o.betalingstermijn ?? 30),
+});
 
 interface Monteur {
   id: string;
