@@ -52,6 +52,9 @@ export interface PlanningKostRegel {
   uren: number;
   kosten: number;
   zonderTarief: boolean;
+  isPloeg?: boolean;
+  ploegLeden?: string[];
+  ploegWarning?: boolean;
 }
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -118,7 +121,9 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       setMethode(null);
       setRegels([]);
     }
-    const { data: profiles } = await supabase.from("profiles").select("id, user_id, full_name, uurtarief");
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, user_id, full_name, uurtarief, is_onderaannemer, onderaannemer_id");
     const { data: roles } = await supabase.from("user_roles").select("user_id, role");
 
     if (profiles) {
@@ -127,6 +132,8 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       const rolMap = new Map((roles || []).map(r => [r.user_id, r.role]));
       const tariefMap = new Map(profiles.map(p => [p.id, (p as any).uurtarief != null ? Number((p as any).uurtarief) : null] as [string, number | null]));
       const profielRolMap = new Map(profiles.map(p => [p.id, rolMap.get(p.user_id) || ''] as [string, string]));
+      const isOnderaannemerMap = new Map(profiles.map(p => [p.id, !!(p as any).is_onderaannemer] as [string, boolean]));
+      const parentMap = new Map(profiles.map(p => [p.id, (p as any).onderaannemer_id as string | null] as [string, string | null]));
       const beschikbaar = profiles
         .filter(p => (p as any).uurtarief != null && Number((p as any).uurtarief) > 0)
         .map(p => ({
@@ -142,8 +149,14 @@ export function ForecastTab({ projectId }: { projectId: string }) {
         .from("planning")
         .select("medewerker_id, datum, starttijd, eindtijd")
         .eq("project_id", projectId);
+
       const seen = new Set<string>();
+      // Per monteur (gewone monteurs én onderaannemer-zelf): individuele aggregatie
       const perMon = new Map<string, { dagen: Set<string>; uren: number }>();
+      // Per ploeg: groepeer per (parent_id, datum) en houd uren per lid bij om afwijkingen te detecteren
+      const perPloegDag = new Map<string, Map<string, Map<string, number>>>();
+      // ploegKey → datum → medewerker_id → uren
+
       for (const row of planRows || []) {
         const key = `${row.medewerker_id}|${row.datum}|${row.starttijd}|${row.eindtijd}`;
         if (seen.has(key)) continue;
@@ -151,24 +164,73 @@ export function ForecastTab({ projectId }: { projectId: string }) {
         const start = String(row.starttijd || "00:00").slice(0, 5).split(":").map(Number);
         const eind = String(row.eindtijd || "00:00").slice(0, 5).split(":").map(Number);
         const uren = Math.max(0, (eind[0] + eind[1] / 60) - (start[0] + start[1] / 60));
-        const agg = perMon.get(row.medewerker_id) || { dagen: new Set(), uren: 0 };
-        agg.dagen.add(row.datum);
-        agg.uren += uren;
-        perMon.set(row.medewerker_id, agg);
+
+        const parentId = parentMap.get(row.medewerker_id) || null;
+        if (parentId) {
+          // submonteur van een onderaannemer → tellen op de ploeg
+          let dagMap = perPloegDag.get(parentId);
+          if (!dagMap) { dagMap = new Map(); perPloegDag.set(parentId, dagMap); }
+          let ledenMap = dagMap.get(row.datum);
+          if (!ledenMap) { ledenMap = new Map(); dagMap.set(row.datum, ledenMap); }
+          ledenMap.set(row.medewerker_id, (ledenMap.get(row.medewerker_id) || 0) + uren);
+        } else {
+          const agg = perMon.get(row.medewerker_id) || { dagen: new Set(), uren: 0 };
+          agg.dagen.add(row.datum);
+          agg.uren += uren;
+          perMon.set(row.medewerker_id, agg);
+        }
       }
-      const planKosten: PlanningKostRegel[] = Array.from(perMon.entries()).map(([mid, agg]) => {
+
+      const planKosten: PlanningKostRegel[] = [];
+
+      // Individuele monteurs én onderaannemers die zelf staan ingepland
+      for (const [mid, agg] of perMon.entries()) {
         const tarief = tariefMap.get(mid) ?? null;
-        return {
+        const isOnderaannemerZelf = isOnderaannemerMap.get(mid) || false;
+        planKosten.push({
           medewerker_id: mid,
-          full_name: namenMap.get(mid) || "Onbekend",
-          rol: profielRolMap.get(mid) || '',
+          full_name: (namenMap.get(mid) || "Onbekend") + (isOnderaannemerZelf ? " (ploeg)" : ""),
+          rol: isOnderaannemerZelf ? "onderaannemer" : (profielRolMap.get(mid) || ''),
           uurtarief: tarief,
           dagen: agg.dagen.size,
           uren: agg.uren,
           kosten: tarief != null ? agg.uren * tarief : 0,
           zonderTarief: tarief == null || tarief === 0,
-        };
-      }).sort((a, b) => b.kosten - a.kosten);
+          isPloeg: isOnderaannemerZelf,
+        });
+      }
+
+      // Onderaannemerploegen (parent + gekoppelde monteurs)
+      for (const [parentId, dagMap] of perPloegDag.entries()) {
+        const ploegTarief = tariefMap.get(parentId) ?? null;
+        let ploegUren = 0;
+        let warning = false;
+        const leden = new Set<string>();
+        for (const [, ledenMap] of dagMap.entries()) {
+          const ledenUren = Array.from(ledenMap.values());
+          ledenUren.forEach((_, idx) => leden.add(Array.from(ledenMap.keys())[idx]));
+          if (ledenUren.length === 0) continue;
+          const maxUren = Math.max(...ledenUren);
+          const minUren = Math.min(...ledenUren);
+          if (Math.abs(maxUren - minUren) > 0.01) warning = true;
+          ploegUren += maxUren; // ploeg telt 1× per dag, niet per monteur
+        }
+        planKosten.push({
+          medewerker_id: parentId,
+          full_name: (namenMap.get(parentId) || "Onderaannemer") + " (ploeg)",
+          rol: "onderaannemer",
+          uurtarief: ploegTarief,
+          dagen: dagMap.size,
+          uren: ploegUren,
+          kosten: ploegTarief != null ? ploegUren * ploegTarief : 0,
+          zonderTarief: ploegTarief == null || ploegTarief === 0,
+          isPloeg: true,
+          ploegLeden: Array.from(leden).map(id => namenMap.get(id) || "?"),
+          ploegWarning: warning,
+        });
+      }
+
+      planKosten.sort((a, b) => b.kosten - a.kosten);
       setPlanningKosten(planKosten);
     }
     setLoading(false);
@@ -740,11 +802,21 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
                         <AlertTriangle className="h-3 w-3" /> geen tarief
                       </span>
                     )}
+                    {r.ploegWarning && (
+                      <span className="ml-2 inline-flex items-center gap-1 text-[10px]" style={{ color: "var(--warn-text)" }} title="Ploegleden hebben afwijkende tijden op dezelfde dag — controleer de planning.">
+                        <AlertTriangle className="h-3 w-3" /> afwijkende ploegtijden
+                      </span>
+                    )}
+                    {r.ploegLeden && r.ploegLeden.length > 0 && (
+                      <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                        Leden: {r.ploegLeden.join(", ")}
+                      </p>
+                    )}
                   </td>
                   <td className="px-3 py-1.5 text-[11px]" style={{ color: "var(--text-muted)" }}>{r.rol || "monteur"}</td>
                   <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{r.dagen}</td>
                   <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-primary)" }}>{r.uren.toFixed(1)}</td>
-                  <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{r.uurtarief != null ? fmt(r.uurtarief) : "—"}</td>
+                  <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{r.uurtarief != null ? fmt(r.uurtarief) + (r.isPloeg ? "/ploeg-u" : "") : "—"}</td>
                   <td className={`px-3 py-1.5 text-right font-semibold ${mono}`} style={{ color: r.zonderTarief ? "var(--warn-text)" : "var(--text-primary)" }}>{fmt(r.kosten)}</td>
                 </tr>
               ))}
@@ -756,7 +828,8 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
               <div key={r.medewerker_id} className="px-3 py-2 flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-[12px] truncate" style={{ color: "var(--text-primary)" }}>{r.full_name}</p>
-                  <p className={`text-[11px] ${mono}`} style={{ color: "var(--text-muted)" }}>{r.dagen}d · {r.uren.toFixed(1)} u · {r.uurtarief != null ? fmt(r.uurtarief) + "/u" : "geen tarief"}</p>
+                  <p className={`text-[11px] ${mono}`} style={{ color: "var(--text-muted)" }}>{r.dagen}d · {r.uren.toFixed(1)} u · {r.uurtarief != null ? fmt(r.uurtarief) + (r.isPloeg ? "/ploeg-u" : "/u") : "geen tarief"}</p>
+                  {r.ploegWarning && <p className="text-[10px]" style={{ color: "var(--warn-text)" }}>⚠ afwijkende ploegtijden</p>}
                 </div>
                 <span className={`text-[13px] font-semibold ${mono} shrink-0`} style={{ color: r.zonderTarief ? "var(--warn-text)" : "var(--text-primary)" }}>{fmt(r.kosten)}</span>
               </div>
@@ -764,6 +837,9 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
           </div>
         </div>
       )}
+      <p className="text-[10px] mt-1.5 flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+        <Info className="h-3 w-3" /> Reiskosten worden (nog) niet automatisch in de Forecast opgenomen.
+      </p>
     </div>
   );
 }
