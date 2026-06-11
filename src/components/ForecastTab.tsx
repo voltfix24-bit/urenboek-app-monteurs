@@ -802,11 +802,21 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
                         <AlertTriangle className="h-3 w-3" /> geen tarief
                       </span>
                     )}
+                    {r.ploegWarning && (
+                      <span className="ml-2 inline-flex items-center gap-1 text-[10px]" style={{ color: "var(--warn-text)" }} title="Ploegleden hebben afwijkende tijden op dezelfde dag — controleer de planning.">
+                        <AlertTriangle className="h-3 w-3" /> afwijkende ploegtijden
+                      </span>
+                    )}
+                    {r.ploegLeden && r.ploegLeden.length > 0 && (
+                      <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                        Leden: {r.ploegLeden.join(", ")}
+                      </p>
+                    )}
                   </td>
                   <td className="px-3 py-1.5 text-[11px]" style={{ color: "var(--text-muted)" }}>{r.rol || "monteur"}</td>
                   <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{r.dagen}</td>
                   <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-primary)" }}>{r.uren.toFixed(1)}</td>
-                  <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{r.uurtarief != null ? fmt(r.uurtarief) : "—"}</td>
+                  <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{r.uurtarief != null ? fmt(r.uurtarief) + (r.isPloeg ? "/ploeg-u" : "") : "—"}</td>
                   <td className={`px-3 py-1.5 text-right font-semibold ${mono}`} style={{ color: r.zonderTarief ? "var(--warn-text)" : "var(--text-primary)" }}>{fmt(r.kosten)}</td>
                 </tr>
               ))}
@@ -818,7 +828,8 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
               <div key={r.medewerker_id} className="px-3 py-2 flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-[12px] truncate" style={{ color: "var(--text-primary)" }}>{r.full_name}</p>
-                  <p className={`text-[11px] ${mono}`} style={{ color: "var(--text-muted)" }}>{r.dagen}d · {r.uren.toFixed(1)} u · {r.uurtarief != null ? fmt(r.uurtarief) + "/u" : "geen tarief"}</p>
+                  <p className={`text-[11px] ${mono}`} style={{ color: "var(--text-muted)" }}>{r.dagen}d · {r.uren.toFixed(1)} u · {r.uurtarief != null ? fmt(r.uurtarief) + (r.isPloeg ? "/ploeg-u" : "/u") : "geen tarief"}</p>
+                  {r.ploegWarning && <p className="text-[10px]" style={{ color: "var(--warn-text)" }}>⚠ afwijkende ploegtijden</p>}
                 </div>
                 <span className={`text-[13px] font-semibold ${mono} shrink-0`} style={{ color: r.zonderTarief ? "var(--warn-text)" : "var(--text-primary)" }}>{fmt(r.kosten)}</span>
               </div>
@@ -826,6 +837,9 @@ function GeplandeInzetSectie({ planningKosten }: { planningKosten: PlanningKostR
           </div>
         </div>
       )}
+      <p className="text-[10px] mt-1.5 flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+        <Info className="h-3 w-3" /> Reiskosten worden (nog) niet automatisch in de Forecast opgenomen.
+      </p>
     </div>
   );
 }
