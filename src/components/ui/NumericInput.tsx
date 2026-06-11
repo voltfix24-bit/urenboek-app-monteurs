@@ -153,9 +153,17 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(func
         // pijltjes uit, voorkomt onbedoelde grote sprongen
         e.preventDefault();
       }
+      if (e.key === "Escape") {
+        // herstel vorige (externe) waarde en blur
+        setText(toDisplay(value));
+        (e.target as HTMLInputElement).blur();
+      }
+      if (e.key === "Enter") {
+        (e.target as HTMLInputElement).blur();
+      }
       onKeyDown?.(e);
     },
-    [onKeyDown],
+    [onKeyDown, value],
   );
 
   return (
