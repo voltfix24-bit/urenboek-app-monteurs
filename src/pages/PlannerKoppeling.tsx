@@ -611,7 +611,54 @@ export default function PlannerKoppeling() {
                               </ul>
                             </div>
                           )}
+                          {(() => {
+                            if (!c) return null;
+                            const kind: "project" | "monteur" = isProj ? "project" : "monteur";
+                            const key = `${kind}:${u.id}`;
+                            const busy = koppelBusyKey === key;
+                            const reedsWederzijds =
+                              r.bestaande_koppeling_urenapp === c.planner_id &&
+                              r.bestaande_koppeling_planner === u.id;
+                            if (reedsWederzijds) {
+                              return (
+                                <div className="mt-2 pt-2 flex justify-end" style={{ borderTop: "1px solid var(--planning-border-soft)" }}>
+                                  <span className="px-2 py-1 rounded text-[11px] font-semibold inline-flex items-center gap-1"
+                                    style={{ background: "var(--accent)", color: "white" }}>
+                                    <CheckCircle2 className="h-3 w-3" /> Al gekoppeld
+                                  </span>
+                                </div>
+                              );
+                            }
+                            if (r.status !== "exact" && r.status !== "waarschijnlijk") return null;
+                            const label = isProj ? `${u.nummer} — ${u.naam}` : u.full_name;
+                            return (
+                              <div className="mt-2 pt-2 flex justify-end" style={{ borderTop: "1px solid var(--planning-border-soft)" }}>
+                                {r.status === "exact" ? (
+                                  <button
+                                    onClick={() => doKoppel(kind, u.id, c.planner_id)}
+                                    disabled={busy || !!koppelBusyKey}
+                                    className="px-3 py-1.5 rounded text-xs font-bold inline-flex items-center gap-1.5"
+                                    style={{ background: "var(--accent)", color: "white", opacity: busy ? 0.5 : 1 }}
+                                  >
+                                    {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Link2 className="h-3 w-3" />}
+                                    Koppelen
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => setKoppelConfirm({ kind, urenapp_id: u.id, planner_id: c.planner_id, label, afwijkingen: r.afwijkingen })}
+                                    disabled={busy || !!koppelBusyKey}
+                                    className="px-3 py-1.5 rounded text-xs font-bold inline-flex items-center gap-1.5"
+                                    style={{ background: "var(--warn-light)", color: "var(--warn-text)", opacity: busy ? 0.5 : 1 }}
+                                  >
+                                    {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Eye className="h-3 w-3" />}
+                                    Controleren en koppelen
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </li>
+
                       );
                     })}
                 </ul>
