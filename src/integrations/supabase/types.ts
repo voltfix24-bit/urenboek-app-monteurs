@@ -1449,6 +1449,42 @@ export type Database = {
           },
         ]
       }
+      planner_match_audit: {
+        Row: {
+          created_at: string
+          fout_reden: string | null
+          id: string
+          kind: string
+          manager_user_id: string
+          planner_id: string
+          status: string
+          uitkomst: string
+          urenapp_id: string
+        }
+        Insert: {
+          created_at?: string
+          fout_reden?: string | null
+          id?: string
+          kind: string
+          manager_user_id: string
+          planner_id: string
+          status: string
+          uitkomst: string
+          urenapp_id: string
+        }
+        Update: {
+          created_at?: string
+          fout_reden?: string | null
+          id?: string
+          kind?: string
+          manager_user_id?: string
+          planner_id?: string
+          status?: string
+          uitkomst?: string
+          urenapp_id?: string
+        }
+        Relationships: []
+      }
       planning: {
         Row: {
           activiteit: string | null
