@@ -379,7 +379,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, saved }: { regels: Fo
                   <span className="truncate" style={{ color: "var(--text-primary)" }}>{r.spec_omschrijving}</span>
                   <div className="flex items-center gap-0.5">
                     <button onClick={() => updateAantal(r.spec_code!, -0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Minus className="h-3 w-3" style={{ color: "var(--text-muted)" }} /></button>
-                    <input type="number" value={r.aantal || 1} onChange={e => setAantal(r.spec_code!, parseFloat(e.target.value) || 1)} className={`w-8 text-center text-[11px] ${mono} bg-transparent`} style={{ color: "var(--text-primary)" }} />
+                    <NumericInput value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v ?? 1)} min={0} emptyAs={1} selectOnFocus className={`w-8 text-center text-[11px] ${mono} bg-transparent`} style={{ color: "var(--text-primary)" }} />
                     <button onClick={() => updateAantal(r.spec_code!, 0.5)} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }}><Plus className="h-3 w-3" style={{ color: "var(--text-muted)" }} /></button>
                   </div>
                   <span className={mono} style={{ color: "var(--accent)" }}>{fmt(omzet)}</span>
