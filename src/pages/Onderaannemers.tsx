@@ -1005,6 +1005,120 @@ export default function Onderaannemers() {
               })}
 
             </div>
+
+            {/* === Bestaande monteurs koppelen modal === */}
+            {showLinkMonteur && selected && (
+              <div
+                onClick={() => !linkSaving && setShowLinkMonteur(false)}
+                style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ width: "100%", maxWidth: 480, background: "var(--bg-surface)", borderRadius: "20px 20px 0 0", padding: 20, display: "flex", flexDirection: "column", gap: 14, maxHeight: "85vh" }}
+                >
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    <div style={{ width: 40, height: 4, borderRadius: 999, background: "var(--border-strong)" }} />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.2em", textTransform: "uppercase" }}>Koppelen</p>
+                    <h3 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 18, color: "var(--text-primary)" }}>
+                      Bestaande monteurs koppelen aan {selected.bedrijfsnaam || selected.full_name}
+                    </h3>
+                    <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                      Bestaande planning, uren, certificaten en accounts blijven volledig behouden.
+                    </p>
+                  </div>
+                  <div style={{ position: "relative" }}>
+                    <Search size={14} style={{ position: "absolute", left: 12, top: 11, color: "var(--text-muted)" }} />
+                    <input
+                      placeholder="Zoek op naam of e-mail…"
+                      value={linkSearch}
+                      onChange={(e) => setLinkSearch(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px 9px 34px", borderRadius: 10, border: "1px solid var(--border-strong)", background: "var(--app-navy)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", fontSize: 13 }}
+                    />
+                  </div>
+                  <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 6, paddingRight: 2 }}>
+                    {linkableMonteurs.length === 0 ? (
+                      <p style={{ fontSize: 12, color: "var(--text-muted)", padding: 16, textAlign: "center" }}>
+                        Geen kandidaten gevonden.
+                      </p>
+                    ) : (
+                      linkableMonteurs.map((m) => {
+                        const checked = linkSelected.has(m.id);
+                        const otherOa = m.onderaannemer_id
+                          ? onderaannemers.find((o) => o.id === m.onderaannemer_id)
+                          : null;
+                        return (
+                          <label
+                            key={m.id}
+                            style={{
+                              display: "flex", alignItems: "center", gap: 10,
+                              padding: "10px 12px", borderRadius: 12, cursor: "pointer",
+                              background: checked ? "var(--accent-light)" : "var(--app-navy)",
+                              border: `1px solid ${checked ? "var(--accent-border)" : "var(--planning-border-soft)"}`,
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleLinkSelect(m.id)}
+                              style={{ width: 16, height: 16, accentColor: "var(--accent)" }}
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{m.full_name}</p>
+                              <p style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                                {m.email || m.telefoon || "—"}
+                                {otherOa && (
+                                  <span style={{ color: "var(--warn-text)", fontWeight: 700, marginLeft: 6 }}>
+                                    • nu bij {otherOa.bedrijfsnaam || otherOa.full_name}
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </label>
+                        );
+                      })
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button type="button" onClick={() => setShowLinkMonteur(false)} disabled={linkSaving} style={secondaryBtn}>
+                      Annuleren
+                    </button>
+                    <button
+                      type="button"
+                      onClick={requestLink}
+                      disabled={linkSaving || linkSelected.size === 0}
+                      style={{ ...primaryBtn, opacity: linkSelected.size === 0 ? 0.5 : 1 }}
+                    >
+                      {linkSaving ? "Bezig…" : `Koppel ${linkSelected.size || ""}`}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bevestiging overplaatsing */}
+            {linkConfirm && selected && (
+              <div
+                onClick={() => setLinkConfirm(null)}
+                style={{ position: "fixed", inset: 0, zIndex: 250, background: "rgba(15,23,42,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+              >
+                <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-surface)", borderRadius: 16, padding: 20, maxWidth: 380, display: "flex", flexDirection: "column", gap: 12 }}>
+                  <h4 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 16, color: "var(--text-primary)" }}>
+                    {linkConfirm.moveCount} monteur(s) overplaatsen?
+                  </h4>
+                  <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5 }}>
+                    {linkConfirm.moveCount} geselecteerde monteur(s) zijn al gekoppeld aan een andere onderaannemer. Ze worden overgeplaatst naar <strong>{selected.bedrijfsnaam || selected.full_name}</strong>.
+                    {linkConfirm.freeCount > 0 && ` Daarnaast worden ${linkConfirm.freeCount} losse monteur(s) gekoppeld.`}
+                    {" "}Planning, uren en certificaten blijven behouden.
+                  </p>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button type="button" onClick={() => setLinkConfirm(null)} style={secondaryBtn}>Annuleren</button>
+                    <button type="button" onClick={confirmLink} style={primaryBtn}>Overplaatsen</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </main>
         </div>
       </PageShell>
