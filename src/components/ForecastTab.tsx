@@ -637,7 +637,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
                         </td>
                         <td className={`px-3 py-1.5 ${mono}`} style={{ color: "var(--text-muted)" }}>{eenheid}</td>
                         <td className="px-3 py-1.5">
-                          <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} />
+                          <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} integer step={1} />
                         </td>
                         <td className={`px-3 py-1.5 text-right ${mono}`} style={{ color: "var(--text-muted)" }}>{fmt(r.tarief || 0)}</td>
                         <td className={`px-3 py-1.5 text-right font-semibold ${mono}`} style={{ color: "var(--accent)" }}>{fmt(totaal)}</td>
