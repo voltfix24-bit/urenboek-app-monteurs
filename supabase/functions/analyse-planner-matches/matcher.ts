@@ -2,7 +2,7 @@
 // Vergelijkt urenapp-data met Planner-data en produceert voorstellen.
 // Normalisatie alleen voor vergelijking; opgeslagen data wordt nooit gewijzigd.
 
-export type MatchStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match";
+export type MatchStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match" | "uitgesloten";
 
 export interface UrenappProject {
   id: string;

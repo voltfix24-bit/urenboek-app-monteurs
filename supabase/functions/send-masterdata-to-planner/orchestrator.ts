@@ -39,6 +39,12 @@ export interface ProjectRow {
   stad: string | null;
   active: boolean;
   projectjaar: number | null;
+  planner_sync_enabled?: boolean;
+  planner_sync_exclusion_reason?: string | null;
+}
+
+export function isProjectUitgesloten(p: ProjectRow): boolean {
+  return p.planner_sync_enabled === false;
 }
 
 export interface MonteurRow {
@@ -70,6 +76,7 @@ export function isPlanbareMonteur(m: MonteurRow): boolean {
 }
 
 export function magProjectSync(p: ProjectRow): boolean {
+  if (isProjectUitgesloten(p)) return false;
   return p.projectjaar != null && p.projectjaar >= 2000 && p.projectjaar <= 2100;
 }
 
@@ -242,14 +249,22 @@ export async function synchroniseer(
 
   // ── Projecten ──
   const projectJobs = projects.map(p => {
+    if (isProjectUitgesloten(p)) {
+      resultaten.push({
+        kind: "project",
+        urenapp_id: p.id,
+        status: "overgeslagen",
+        reden: `uitgesloten:${p.planner_sync_exclusion_reason ?? "anders"}`,
+      });
+      return null;
+    }
     if (!magProjectSync(p)) {
-      const item: ResultaatItem = {
+      resultaten.push({
         kind: "project",
         urenapp_id: p.id,
         status: "overgeslagen",
         reden: "projectjaar_ontbreekt",
-      };
-      resultaten.push(item);
+      });
       return null;
     }
     return p;

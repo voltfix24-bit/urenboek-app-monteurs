@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle2, Loader2, Link2, Send, Eye, RefreshCcw, XCircle, Plug, Info, Search, HelpCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, Link2, Send, Eye, RefreshCcw, XCircle, Plug, Info, Search, HelpCircle, Ban, Settings2 } from "lucide-react";
+import { PLANNER_EXCLUSION_REASONS, PLANNER_EXCLUSION_LABEL, exclusionLabel, type PlannerExclusionReason } from "@/lib/plannerExclusion";
 
-type AnalyseStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match";
+type AnalyseStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match" | "uitgesloten";
 interface Afwijking { veld: string; urenapp: unknown; planner: unknown }
 interface AnalyseRow {
   urenapp: any;
@@ -26,12 +27,14 @@ const STATUS_LABEL: Record<AnalyseStatus, string> = {
   waarschijnlijk: "Waarschijnlijk",
   conflict: "Conflict",
   geen_match: "Geen match",
+  uitgesloten: "Uitgesloten",
 };
 const STATUS_COLOR: Record<AnalyseStatus, { bg: string; fg: string }> = {
   exact:         { bg: "var(--accent)",      fg: "white" },
   waarschijnlijk:{ bg: "var(--warn-light)",  fg: "var(--warn-text)" },
   conflict:      { bg: "#fee2e2",            fg: "#b91c1c" },
   geen_match:    { bg: "var(--bg-surface-2)",fg: "var(--text-muted)" },
+  uitgesloten:   { bg: "#e0e7ff",            fg: "#3730a3" },
 };
 
 interface ResultaatItem {
@@ -57,6 +60,8 @@ interface ProjectRow {
   projectjaar: number | null;
   planner_project_id: string | null;
   active: boolean;
+  planner_sync_enabled: boolean;
+  planner_sync_exclusion_reason: string | null;
 }
 interface MonteurRow {
   id: string;
@@ -71,11 +76,12 @@ interface Stats {
   projectenTotaal: number;
   projectenZonderJaar: number;
   projectenGekoppeld: number;
+  projectenUitgesloten: number;
   monteursPlanbaar: number;
   monteursGekoppeld: number;
 }
 
-type SelectieMode = null | { kind: "project"; row: ProjectRow } | { kind: "monteur"; row: MonteurRow } | { kind: "bulk"; actie: "projecten" | "monteurs" };
+type SelectieMode = null | { kind: "project"; row: ProjectRow } | { kind: "monteur"; row: MonteurRow } | { kind: "exclusion"; row: ProjectRow } | { kind: "bulk"; actie: "projecten" | "monteurs" };
 
 export default function PlannerKoppeling() {
   const { isManager } = useAuth();
@@ -114,7 +120,7 @@ export default function PlannerKoppeling() {
   async function loadStats() {
     setLoading(true);
     const [{ data: projs }, { data: profs }, { data: rollen }] = await Promise.all([
-      supabase.from("projects").select("id, nummer, naam, projectjaar, planner_project_id, active").order("nummer"),
+      supabase.from("projects").select("id, nummer, naam, projectjaar, planner_project_id, active, planner_sync_enabled, planner_sync_exclusion_reason").order("nummer"),
       supabase.from("profiles").select("id, user_id, full_name, account_status, is_onderaannemer, planner_monteur_id").order("full_name"),
       supabase.from("user_roles").select("user_id, role"),
     ]);
@@ -143,14 +149,17 @@ export default function PlannerKoppeling() {
       };
     });
 
-    setProjecten((projs ?? []) as ProjectRow[]);
+    const projectenList = (projs ?? []) as ProjectRow[];
+    setProjecten(projectenList);
     setMonteurs(monteursList);
     setStats({
-      projectenTotaal: projs?.length ?? 0,
-      projectenZonderJaar: (projs ?? []).filter((p: any) => p.projectjaar == null).length,
-      projectenGekoppeld: (projs ?? []).filter((p: any) => p.planner_project_id != null).length,
-      monteursPlanbaar: monteursList.filter((m) => m.planbaar).length,
-      monteursGekoppeld: monteursList.filter((m) => m.planbaar && m.planner_monteur_id != null).length,
+      projectenTotaal: projectenList.length,
+      // Jaar telt alleen voor niet-uitgesloten projecten
+      projectenZonderJaar: projectenList.filter(p => p.planner_sync_enabled !== false && p.projectjaar == null).length,
+      projectenGekoppeld: projectenList.filter(p => p.planner_project_id != null).length,
+      projectenUitgesloten: projectenList.filter(p => p.planner_sync_enabled === false).length,
+      monteursPlanbaar: monteursList.filter(m => m.planbaar).length,
+      monteursGekoppeld: monteursList.filter(m => m.planbaar && m.planner_monteur_id != null).length,
     });
     setLoading(false);
   }
@@ -171,6 +180,31 @@ export default function PlannerKoppeling() {
     } finally {
       setBusy(null);
       setConfirm(null);
+    }
+  }
+
+  async function saveExclusion(projectId: string, enabled: boolean, reason: PlannerExclusionReason | null) {
+    if (!enabled && !reason) {
+      toast.error("Kies een uitsluitingsreden");
+      return;
+    }
+    setBusy("single");
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({
+          planner_sync_enabled: enabled,
+          planner_sync_exclusion_reason: enabled ? null : reason,
+        })
+        .eq("id", projectId);
+      if (error) throw error;
+      toast.success(enabled ? "Project weer ingeschakeld" : "Project uitgesloten");
+      setConfirm(null);
+      await loadStats();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Wijzigen mislukt");
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -233,6 +267,7 @@ export default function PlannerKoppeling() {
         <>
           <section className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {statBox("Projecten totaal", stats.projectenTotaal)}
+            {statBox("Uitgesloten van sync", stats.projectenUitgesloten)}
             {statBox("Zonder projectjaar", stats.projectenZonderJaar, stats.projectenZonderJaar > 0)}
             {statBox("Gekoppeld aan Planner", `${stats.projectenGekoppeld}/${stats.projectenTotaal}`)}
             {statBox("Planbare monteurs", stats.monteursPlanbaar)}
@@ -319,24 +354,40 @@ export default function PlannerKoppeling() {
 
             <ul className="space-y-1 max-h-96 overflow-y-auto">
               {tab === "projecten" && filteredProjecten.map(p => {
+                const uitgesloten = p.planner_sync_enabled === false;
                 const jaarOk = p.projectjaar != null;
                 const gekoppeld = p.planner_project_id != null;
+                const syncBaar = !uitgesloten && jaarOk;
                 return (
                   <li key={p.id} className="flex items-center gap-2 text-xs py-2 px-2 rounded" style={{ background: "var(--bg-surface-2)" }}>
                     <span style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)", minWidth: 70 }}>{p.nummer}</span>
                     <span className="flex-1 truncate" style={{ color: "var(--text-primary)" }}>{p.naam}</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold" style={{ background: jaarOk ? "var(--bg-surface)" : "var(--warn-light)", color: jaarOk ? "var(--text-muted)" : "var(--warn-text)" }}>
-                      {jaarOk ? `Jaar ${p.projectjaar}` : "Jaar ontbreekt"}
-                    </span>
+                    {uitgesloten ? (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1" style={{ background: "#e0e7ff", color: "#3730a3" }} title={exclusionLabel(p.planner_sync_exclusion_reason)}>
+                        <Ban className="h-3 w-3" /> Uitgesloten
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold" style={{ background: jaarOk ? "var(--bg-surface)" : "var(--warn-light)", color: jaarOk ? "var(--text-muted)" : "var(--warn-text)" }}>
+                        {jaarOk ? `Jaar ${p.projectjaar}` : "Jaar ontbreekt"}
+                      </span>
+                    )}
                     <span className="px-2 py-0.5 rounded text-[10px] font-semibold" style={{ background: gekoppeld ? "var(--accent)" : "var(--bg-surface)", color: gekoppeld ? "white" : "var(--text-muted)" }}>
                       {gekoppeld ? "Gekoppeld" : "Niet gekoppeld"}
                     </span>
                     <button
-                      disabled={busy !== null || !jaarOk}
+                      onClick={() => setConfirm({ kind: "exclusion", row: p })}
+                      className="p-1 rounded"
+                      style={{ background: "var(--bg-surface)", color: "var(--text-muted)" }}
+                      title="Uitsluiting beheren"
+                    >
+                      <Settings2 className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      disabled={busy !== null || !syncBaar}
                       onClick={() => setConfirm({ kind: "project", row: p })}
                       className="px-2 py-1 rounded text-[11px] font-semibold"
-                      style={{ background: jaarOk ? "var(--accent)" : "var(--bg-surface)", color: jaarOk ? "white" : "var(--text-muted)", opacity: busy || !jaarOk ? 0.5 : 1 }}
-                      title={jaarOk ? "Synchroniseer dit project" : "Vul eerst het projectjaar in"}
+                      style={{ background: syncBaar ? "var(--accent)" : "var(--bg-surface)", color: syncBaar ? "white" : "var(--text-muted)", opacity: busy || !syncBaar ? 0.5 : 1 }}
+                      title={uitgesloten ? `Uitgesloten van sync — ${exclusionLabel(p.planner_sync_exclusion_reason)}` : jaarOk ? "Synchroniseer dit project" : "Vul eerst het projectjaar in"}
                     >
                       Sync
                     </button>
@@ -397,8 +448,8 @@ export default function PlannerKoppeling() {
 
             {analyse && (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
-                  {(["exact","waarschijnlijk","conflict","geen_match"] as AnalyseStatus[]).map(s => {
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-xs">
+                  {(["exact","waarschijnlijk","conflict","geen_match","uitgesloten"] as AnalyseStatus[]).map(s => {
                     const c = (analyseTab === "projecten" ? analyse.projecten : analyse.monteurs).aantallen[s] ?? 0;
                     return (
                       <button key={s} onClick={() => setAnalyseStatusFilter(analyseStatusFilter === s ? "alle" : s)}
@@ -457,7 +508,7 @@ export default function PlannerKoppeling() {
                         <li key={i} className="p-3 rounded-lg" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)" }}>
                           <div className="flex items-center gap-2 flex-wrap mb-2">
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase" style={{ background: col.bg, color: col.fg }}>{STATUS_LABEL[r.status]}</span>
-                            <span className="text-xs" style={{ color: "var(--text-muted)" }}>{r.reden}</span>
+                            <span className="text-xs" style={{ color: "var(--text-muted)" }}>{r.status === "uitgesloten" ? exclusionLabel(r.reden) : r.reden}</span>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                             <div>
@@ -564,7 +615,16 @@ export default function PlannerKoppeling() {
         </>
       )}
 
-      {confirm && (
+      {confirm && confirm.kind === "exclusion" && (
+        <ExclusionDialog
+          row={confirm.row}
+          busy={busy !== null}
+          onClose={() => setConfirm(null)}
+          onSave={(enabled, reason) => saveExclusion(confirm.row.id, enabled, reason)}
+        />
+      )}
+
+      {confirm && confirm.kind !== "exclusion" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setConfirm(null)}>
           <div className="rounded-xl p-5 max-w-sm w-full" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }} onClick={e => e.stopPropagation()}>
             <h3 className="font-bold text-base mb-3" style={{ color: "var(--text-primary)" }}>Bevestig synchronisatie</h3>
@@ -588,7 +648,7 @@ export default function PlannerKoppeling() {
             {confirm.kind === "bulk" && (
               <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
                 {confirm.actie === "projecten"
-                  ? `Verstuur ${stats!.projectenTotaal - stats!.projectenZonderJaar} project(en) naar Planner?`
+                  ? `Verstuur ${stats!.projectenTotaal - stats!.projectenZonderJaar - stats!.projectenUitgesloten} project(en) naar Planner? (${stats!.projectenUitgesloten} uitgesloten, ${stats!.projectenZonderJaar} zonder jaar worden overgeslagen)`
                   : `Verstuur ${stats!.monteursPlanbaar} monteur(s) naar Planner?`}
               </p>
             )}
@@ -598,7 +658,7 @@ export default function PlannerKoppeling() {
               <button
                 onClick={() => {
                   if (confirm.kind === "bulk") runBulk(confirm.actie, false);
-                  else runSingle(confirm.kind, confirm.row.id);
+                  else if (confirm.kind === "project" || confirm.kind === "monteur") runSingle(confirm.kind, confirm.row.id);
                 }}
                 className="px-3 py-2 rounded-lg text-xs font-semibold text-white"
                 style={{ background: "var(--accent)" }}
@@ -609,6 +669,57 @@ export default function PlannerKoppeling() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ExclusionDialog({ row, busy, onClose, onSave }: {
+  row: ProjectRow;
+  busy: boolean;
+  onClose: () => void;
+  onSave: (enabled: boolean, reason: PlannerExclusionReason | null) => void;
+}) {
+  const startEnabled = row.planner_sync_enabled !== false;
+  const [enabled, setEnabled] = useState(startEnabled);
+  const [reason, setReason] = useState<PlannerExclusionReason>(
+    (row.planner_sync_exclusion_reason as PlannerExclusionReason) ?? "urenregistratie"
+  );
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={onClose}>
+      <div className="rounded-xl p-5 max-w-sm w-full space-y-3" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }} onClick={e => e.stopPropagation()}>
+        <h3 className="font-bold text-base" style={{ color: "var(--text-primary)" }}>Sync-uitsluiting beheren</h3>
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          <span style={{ fontFamily: "DM Mono, monospace" }}>{row.nummer}</span> — {row.naam}
+        </p>
+        <label className="flex items-center gap-2 text-sm" style={{ color: "var(--text-primary)" }}>
+          <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} />
+          Project meenemen in Planner-synchronisatie
+        </label>
+        {!enabled && (
+          <div className="space-y-2">
+            <label className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Reden van uitsluiting (verplicht)</label>
+            <div className="space-y-1">
+              {PLANNER_EXCLUSION_REASONS.map(r => (
+                <label key={r} className="flex items-start gap-2 text-xs p-2 rounded cursor-pointer" style={{ background: reason === r ? "var(--bg-surface-2)" : "transparent", border: "1px solid var(--planning-border-soft)" }}>
+                  <input type="radio" name="reason" checked={reason === r} onChange={() => setReason(r)} className="mt-0.5" />
+                  <span style={{ color: "var(--text-primary)" }}>{PLANNER_EXCLUSION_LABEL[r]}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="flex gap-2 justify-end pt-2">
+          <button onClick={onClose} disabled={busy} className="px-3 py-2 rounded-lg text-xs font-semibold" style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>Annuleren</button>
+          <button
+            disabled={busy || (!enabled && !reason)}
+            onClick={() => onSave(enabled, enabled ? null : reason)}
+            className="px-3 py-2 rounded-lg text-xs font-semibold text-white"
+            style={{ background: "var(--accent)", opacity: busy ? 0.5 : 1 }}
+          >
+            Opslaan
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

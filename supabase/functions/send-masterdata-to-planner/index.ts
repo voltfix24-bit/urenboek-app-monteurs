@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
 
   if (parsed.actie === "projecten" || parsed.actie === "alles") {
     let q = supaAdmin.from("projects").select(
-      "id, nummer, naam, stationsnaam, straat, postcode, stad, active, projectjaar"
+      "id, nummer, naam, stationsnaam, straat, postcode, stad, active, projectjaar, planner_sync_enabled, planner_sync_exclusion_reason"
     );
     if (parsed.ids?.length) q = q.in("id", parsed.ids);
     const { data, error } = await q;

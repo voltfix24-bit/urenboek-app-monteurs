@@ -243,3 +243,20 @@ Deno.test("monteur: eenzijdige ID (Planner→urenapp) → exact (herstel)", () =
   );
   assertEquals(r[0].status, "exact");
 });
+
+Deno.test("matcher emit nooit status 'uitgesloten' (filtering vóór matcher)", () => {
+  const r = matchProjecten(
+    [{ id: "u1", nummer: "001", naam: "Test", projectjaar: 2026, planner_project_id: null }],
+    [{ planner_id: "p1", urenapp_project_id: null, nummer: "001", naam: "Test", locatie: null, jaar: 2026 }],
+  );
+  for (const item of r) {
+    if (item.status === "uitgesloten") throw new Error("matcher mag geen 'uitgesloten' produceren");
+  }
+});
+
+Deno.test("matcher geeft geen_match alleen op basis van urenapp-input (uitgesloten worden vooraf gefilterd)", () => {
+  // Simuleer dat het project NIET als urenapp-input wordt aangeboden (omdat uitgesloten).
+  // Resultaat: geen rij in matcher-output → kan dus niet als geen_match worden geteld.
+  const r = matchProjecten([], [{ planner_id: "p1", urenapp_project_id: null, nummer: "999", naam: "X", locatie: null, jaar: 2026 }]);
+  assertEquals(r.length, 0);
+});

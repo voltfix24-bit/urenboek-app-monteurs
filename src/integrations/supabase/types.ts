@@ -2007,6 +2007,8 @@ export type Database = {
           nummer: string
           opdrachtgever_id: string | null
           planner_project_id: string | null
+          planner_sync_enabled: boolean
+          planner_sync_exclusion_reason: string | null
           postcode: string | null
           projectjaar: number | null
           rmu_configuratie_id: string | null
@@ -2033,6 +2035,8 @@ export type Database = {
           nummer: string
           opdrachtgever_id?: string | null
           planner_project_id?: string | null
+          planner_sync_enabled?: boolean
+          planner_sync_exclusion_reason?: string | null
           postcode?: string | null
           projectjaar?: number | null
           rmu_configuratie_id?: string | null
@@ -2059,6 +2063,8 @@ export type Database = {
           nummer?: string
           opdrachtgever_id?: string | null
           planner_project_id?: string | null
+          planner_sync_enabled?: boolean
+          planner_sync_exclusion_reason?: string | null
           postcode?: string | null
           projectjaar?: number | null
           rmu_configuratie_id?: string | null
