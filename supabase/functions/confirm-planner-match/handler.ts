@@ -8,7 +8,7 @@ import {
   type PlannerProject,
   type UrenappMonteur,
   type UrenappProject,
-} from "../analyse-planner-matches/matcher.ts";
+} from "./matcher.ts";
 
 export interface SupabaseLikeClient {
   // We gebruiken alleen .from(table).{select,update,insert,eq,is,maybeSingle}
