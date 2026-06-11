@@ -84,6 +84,7 @@ export default function ManagerPlanning() {
   const [editId, setEditId] = useState<string | null>(null);
   const [expandedMedewerker, setExpandedMedewerker] = useState<string | null>(null);
   const [planningView, setPlanningView] = useState<'grid' | 'klus'>('grid');
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   const weekNumber = getISOWeek(weekStart);
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
