@@ -490,8 +490,8 @@ export function InkooporderDocument({
           );
         })}
 
-        {/* FINANCIEEL */}
-        <View style={styles.financieelWrap}>
+        {/* FINANCIEEL — ondeelbaar */}
+        <View style={styles.financieelWrap} wrap={false} minPresenceAhead={80}>
           <View style={styles.finBlok}>
             <View style={styles.finRij}>
               <Text style={styles.finLabel}>Subtotaal</Text>
@@ -516,23 +516,25 @@ export function InkooporderDocument({
           </View>
         </View>
 
-        {/* FOOTER */}
-        <View style={styles.footerLijn}>
+        {/* FOOTER — twee kolommen samen ondeelbaar */}
+        <View style={styles.footerLijn} wrap={false} minPresenceAhead={120}>
           {/* LEFT — Facturatie instructies */}
           <View style={styles.footerBlok}>
-            <Text style={styles.footerLabel}>Facturatie-instructies</Text>
-            <Text style={styles.footerTekst}>
-              {"Stuur je factuur naar "}
-              <Text style={styles.footerStrong}>{email}</Text>
-              {". Zet op je factuur het ordernummer "}
-              <Text style={styles.footerStrong}>{order.order_nummer}</Text>
-              {". Wij betalen binnen "}
-              <Text style={styles.footerStrong}>{termijn} dagen</Text>
-              {" nadat wij je factuur hebben ontvangen."}
-            </Text>
+            <View wrap={false}>
+              <Text style={styles.footerLabel}>Facturatie-instructies</Text>
+              <Text style={styles.footerTekst}>
+                {"Stuur je factuur naar "}
+                <Text style={styles.footerStrong}>{email}</Text>
+                {". Zet op je factuur het ordernummer "}
+                <Text style={styles.footerStrong}>{order.order_nummer}</Text>
+                {". Wij betalen binnen "}
+                <Text style={styles.footerStrong}>{termijn} dagen</Text>
+                {" nadat wij je factuur hebben ontvangen."}
+              </Text>
+            </View>
 
-            {/* BTW verlegd wettelijke tekst */}
-            <View style={{
+            {/* BTW verlegd wettelijke tekst — kader + inhoud samen */}
+            <View wrap={false} style={{
               backgroundColor: "#fffbeb",
               borderWidth: 0.5,
               borderColor: "#fcd34d",
@@ -548,7 +550,7 @@ export function InkooporderDocument({
               </Text>
             </View>
 
-            <Text style={styles.geenFactuur}>
+            <Text style={styles.geenFactuur} wrap={false}>
               {"Dit document is geen factuur. Gebruik het als basis voor je factuur aan "}
               <Text style={styles.footerStrong}>{bNaam}</Text>
               {"."}
@@ -556,7 +558,7 @@ export function InkooporderDocument({
           </View>
 
           {/* RIGHT — Betaling naar */}
-          <View style={styles.footerBlok}>
+          <View style={styles.footerBlok} wrap={false}>
             <Text style={styles.footerLabel}>Betaling naar</Text>
             <Text style={styles.footerTekst}>
               {"Zet dit op je factuur:\n"}
@@ -573,10 +575,15 @@ export function InkooporderDocument({
           </View>
         </View>
 
-        {/* DOC FOOTER */}
-        <View style={styles.docFooter}>
+        {/* VASTE PAGINA-FOOTER met dynamisch paginanummer */}
+        <View style={styles.pageFooter} fixed>
           <Text style={styles.docFooterTekst}>Doc: {order.order_nummer} · Week {periodeStr}</Text>
-          <Text style={styles.docFooterTekst}>Goedgekeurd voor factuur · Pagina 1 van 1</Text>
+          <Text
+            style={styles.docFooterTekst}
+            render={({ pageNumber, totalPages }) =>
+              `Goedgekeurd voor factuur · Pagina ${pageNumber} van ${totalPages}`
+            }
+          />
         </View>
       </Page>
     </Document>
