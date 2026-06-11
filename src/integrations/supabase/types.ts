@@ -1458,12 +1458,16 @@ export type Database = {
           created_by: string
           datum: string
           eindtijd: string
+          external_id: string | null
+          external_source: string | null
+          external_updated_at: string | null
           id: string
           medewerker_id: string
           notitie: string
           planning_group_id: string | null
           project_id: string
           starttijd: string
+          sync_locked: boolean
           updated_at: string
           week_opmerking: string | null
         }
@@ -1475,12 +1479,16 @@ export type Database = {
           created_by: string
           datum: string
           eindtijd?: string
+          external_id?: string | null
+          external_source?: string | null
+          external_updated_at?: string | null
           id?: string
           medewerker_id: string
           notitie?: string
           planning_group_id?: string | null
           project_id: string
           starttijd?: string
+          sync_locked?: boolean
           updated_at?: string
           week_opmerking?: string | null
         }
@@ -1492,12 +1500,16 @@ export type Database = {
           created_by?: string
           datum?: string
           eindtijd?: string
+          external_id?: string | null
+          external_source?: string | null
+          external_updated_at?: string | null
           id?: string
           medewerker_id?: string
           notitie?: string
           planning_group_id?: string | null
           project_id?: string
           starttijd?: string
+          sync_locked?: boolean
           updated_at?: string
           week_opmerking?: string | null
         }
@@ -1638,6 +1650,7 @@ export type Database = {
           onderaannemer_reiskosten_per_ploeg: boolean
           onderaannemer_startlocatie: string | null
           onderaannemer_vrije_km_per_dag: number
+          planner_monteur_id: string | null
           planning_partner_ids: string[]
           rijbewijs: boolean
           telefoon: string
@@ -1679,6 +1692,7 @@ export type Database = {
           onderaannemer_reiskosten_per_ploeg?: boolean
           onderaannemer_startlocatie?: string | null
           onderaannemer_vrije_km_per_dag?: number
+          planner_monteur_id?: string | null
           planning_partner_ids?: string[]
           rijbewijs?: boolean
           telefoon?: string
@@ -1720,6 +1734,7 @@ export type Database = {
           onderaannemer_reiskosten_per_ploeg?: boolean
           onderaannemer_startlocatie?: string | null
           onderaannemer_vrije_km_per_dag?: number
+          planner_monteur_id?: string | null
           planning_partner_ids?: string[]
           rijbewijs?: boolean
           telefoon?: string
@@ -1991,6 +2006,7 @@ export type Database = {
           naam: string
           nummer: string
           opdrachtgever_id: string | null
+          planner_project_id: string | null
           postcode: string | null
           rmu_configuratie_id: string | null
           rmu_merk: string | null
@@ -2015,6 +2031,7 @@ export type Database = {
           naam: string
           nummer: string
           opdrachtgever_id?: string | null
+          planner_project_id?: string | null
           postcode?: string | null
           rmu_configuratie_id?: string | null
           rmu_merk?: string | null
@@ -2039,6 +2056,7 @@ export type Database = {
           naam?: string
           nummer?: string
           opdrachtgever_id?: string | null
+          planner_project_id?: string | null
           postcode?: string | null
           rmu_configuratie_id?: string | null
           rmu_merk?: string | null
