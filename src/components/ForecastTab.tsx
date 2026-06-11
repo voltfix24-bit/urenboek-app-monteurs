@@ -184,24 +184,27 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
       const planKosten: PlanningKostRegel[] = [];
 
-      // Individuele monteurs én onderaannemers die zelf staan ingepland
+      // Individuele monteurs én onderaannemers die zelf staan ingepland.
+      // PAUZE: 1 uur pauze per monteur per dag van planninguren aftrekken (min 0).
       for (const [mid, agg] of perMon.entries()) {
         const tarief = tariefMap.get(mid) ?? null;
         const isOnderaannemerZelf = isOnderaannemerMap.get(mid) || false;
+        const netUren = Math.max(0, agg.uren - agg.dagen.size); // 1 u pauze p/dag
         planKosten.push({
           medewerker_id: mid,
           full_name: (namenMap.get(mid) || "Onbekend") + (isOnderaannemerZelf ? " (ploeg)" : ""),
           rol: isOnderaannemerZelf ? "onderaannemer" : (profielRolMap.get(mid) || ''),
           uurtarief: tarief,
           dagen: agg.dagen.size,
-          uren: agg.uren,
-          kosten: tarief != null ? agg.uren * tarief : 0,
+          uren: netUren,
+          kosten: tarief != null ? netUren * tarief : 0,
           zonderTarief: tarief == null || tarief === 0,
           isPloeg: isOnderaannemerZelf,
         });
       }
 
-      // Onderaannemerploegen (parent + gekoppelde monteurs)
+      // Onderaannemerploegen (parent + gekoppelde monteurs).
+      // PAUZE: per ploegdag 1 u pauze aftrekken (ploeg lunch tegelijk).
       for (const [parentId, dagMap] of perPloegDag.entries()) {
         const ploegTarief = tariefMap.get(parentId) ?? null;
         let ploegUren = 0;
@@ -214,7 +217,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
           const maxUren = Math.max(...ledenUren);
           const minUren = Math.min(...ledenUren);
           if (Math.abs(maxUren - minUren) > 0.01) warning = true;
-          ploegUren += maxUren; // ploeg telt 1× per dag, niet per monteur
+          ploegUren += Math.max(0, maxUren - 1); // 1 u pauze per ploegdag
         }
         planKosten.push({
           medewerker_id: parentId,
@@ -233,6 +236,18 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
       planKosten.sort((a, b) => b.kosten - a.kosten);
       setPlanningKosten(planKosten);
+
+      // ── Reiskosten uit aangemaakte inkooporders ──────────────
+      const { data: reiskostenRows } = await supabase
+        .from("inkooporder_regels")
+        .select("bedrag")
+        .eq("project_id", projectId)
+        .eq("regel_type", "reiskosten");
+      const reiskostenTotaal = (reiskostenRows || []).reduce(
+        (s, r: any) => s + Number(r.bedrag || 0),
+        0
+      );
+      setReiskosten(reiskostenTotaal);
     }
     setLoading(false);
   }, [projectId]);
