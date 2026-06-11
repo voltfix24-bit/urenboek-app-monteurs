@@ -51,13 +51,20 @@ export interface ProjectSyncInput {
   stad: string | null;
   active: boolean;
   projectjaar: number | null;
+  planner_sync_enabled?: boolean;
+  planner_sync_exclusion_reason?: string | null;
 }
 
 export function projectjaarOntbreekt(p: { projectjaar: number | null | undefined }): boolean {
   return p.projectjaar == null;
 }
 
+export function isProjectUitgesloten(p: { planner_sync_enabled?: boolean | null }): boolean {
+  return p.planner_sync_enabled === false;
+}
+
 export function magProjectSynchroniseren(p: ProjectSyncInput): boolean {
+  if (isProjectUitgesloten(p)) return false;
   return p.projectjaar != null && p.projectjaar >= 2000 && p.projectjaar <= 2100;
 }
 
