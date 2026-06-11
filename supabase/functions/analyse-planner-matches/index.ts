@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
   // 4) Haal urenapp-data op (read-only)
   const [{ data: projs, error: pErr }, { data: profs, error: prErr }, { data: rolesRows, error: rErr }] =
     await Promise.all([
-      supaAdmin.from("projects").select("id, nummer, naam, projectjaar, planner_project_id, stad"),
+      supaAdmin.from("projects").select("id, nummer, naam, projectjaar, planner_project_id, stad, planner_sync_enabled, planner_sync_exclusion_reason"),
       supaAdmin
         .from("profiles")
         .select("id, user_id, full_name, is_onderaannemer, planner_monteur_id"),
@@ -84,14 +84,39 @@ Deno.serve(async (req) => {
     a.push(r.role);
     rolesByUser.set(r.user_id, a);
   }
-  const urenappProjects: UrenappProject[] = (projs ?? []).map((p: any) => ({
-    id: p.id,
-    nummer: p.nummer ?? "",
-    naam: p.naam ?? "",
-    projectjaar: p.projectjaar ?? null,
-    planner_project_id: p.planner_project_id ?? null,
-    locatie: p.stad ?? null,
-  }));
+
+  // Split projecten in 'uitgesloten' (niet meematchen) en de rest.
+  const uitgeslotenResultaten: any[] = [];
+  const urenappProjects: UrenappProject[] = [];
+  for (const p of (projs ?? []) as any[]) {
+    if (p.planner_sync_enabled === false) {
+      uitgeslotenResultaten.push({
+        urenapp: {
+          id: p.id,
+          nummer: p.nummer ?? "",
+          naam: p.naam ?? "",
+          projectjaar: p.projectjaar ?? null,
+          planner_project_id: p.planner_project_id ?? null,
+          locatie: p.stad ?? null,
+        },
+        status: "uitgesloten",
+        reden: p.planner_sync_exclusion_reason ?? "anders",
+        kandidaat: null,
+        bestaande_koppeling_urenapp: p.planner_project_id ?? null,
+        bestaande_koppeling_planner: null,
+        afwijkingen: [],
+      });
+      continue;
+    }
+    urenappProjects.push({
+      id: p.id,
+      nummer: p.nummer ?? "",
+      naam: p.naam ?? "",
+      projectjaar: p.projectjaar ?? null,
+      planner_project_id: p.planner_project_id ?? null,
+      locatie: p.stad ?? null,
+    });
+  }
   const urenappMonteurs: UrenappMonteur[] = (profs ?? [])
     .map((p: any) => {
       const roles = rolesByUser.get(p.user_id) ?? [];
