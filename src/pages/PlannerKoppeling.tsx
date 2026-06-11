@@ -374,6 +374,165 @@ export default function PlannerKoppeling() {
             </ul>
           </section>
 
+          {/* Bestaande gegevens koppelen — fase 1 read-only */}
+          <section style={card} className="space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Search className="h-4 w-4" style={{ color: "var(--accent)" }} />
+              <h2 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Bestaande gegevens koppelen</h2>
+              <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>read-only — fase 1</span>
+              <button
+                onClick={runAnalyse}
+                disabled={analyseBusy}
+                className="ml-auto px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-white"
+                style={{ background: "var(--accent)", opacity: analyseBusy ? 0.5 : 1 }}
+              >
+                {analyseBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+                Analyseer bestaande Planner-data
+              </button>
+            </div>
+            <p className="text-xs flex items-start gap-1.5" style={{ color: "var(--text-muted)" }}>
+              <Info className="h-3 w-3 mt-0.5 shrink-0" />
+              Deze analyse vergelijkt urenapp-records met Planner-records. Er worden geen koppelingen gemaakt, geen records gewijzigd en geen secrets getoond.
+            </p>
+
+            {analyse && (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                  {(["exact","waarschijnlijk","conflict","geen_match"] as AnalyseStatus[]).map(s => {
+                    const c = (analyseTab === "projecten" ? analyse.projecten : analyse.monteurs).aantallen[s] ?? 0;
+                    return (
+                      <button key={s} onClick={() => setAnalyseStatusFilter(analyseStatusFilter === s ? "alle" : s)}
+                        className="px-2 py-2 rounded-lg text-left"
+                        style={{
+                          background: analyseStatusFilter === s ? STATUS_COLOR[s].bg : "var(--bg-surface-2)",
+                          color: analyseStatusFilter === s ? STATUS_COLOR[s].fg : "var(--text-primary)",
+                          border: "1px solid var(--planning-border-soft)",
+                        }}>
+                        <div className="text-[10px] uppercase tracking-wider opacity-80">{STATUS_LABEL[s]}</div>
+                        <div className="text-lg font-bold" style={{ fontFamily: "DM Mono, monospace" }}>{c}</div>
+                      </button>
+                    );
+                  })}
+                  <div className="px-2 py-2 rounded-lg" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)" }}>
+                    <div className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Planner totaal</div>
+                    <div className="text-lg font-bold" style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>
+                      {analyseTab === "projecten" ? analyse.planner_aantallen.projecten : analyse.planner_aantallen.monteurs}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid var(--planning-border-soft)" }}>
+                    <button onClick={() => { setAnalyseTab("projecten"); setAnalyseStatusFilter("alle"); }} className="px-3 py-1 text-xs font-semibold"
+                      style={{ background: analyseTab === "projecten" ? "var(--accent)" : "var(--bg-surface-2)", color: analyseTab === "projecten" ? "white" : "var(--text-primary)" }}>
+                      Projecten ({analyse.projecten.aantallen.totaal})
+                    </button>
+                    <button onClick={() => { setAnalyseTab("monteurs"); setAnalyseStatusFilter("alle"); }} className="px-3 py-1 text-xs font-semibold"
+                      style={{ background: analyseTab === "monteurs" ? "var(--accent)" : "var(--bg-surface-2)", color: analyseTab === "monteurs" ? "white" : "var(--text-primary)" }}>
+                      Monteurs ({analyse.monteurs.aantallen.totaal})
+                    </button>
+                  </div>
+                  <input value={analyseQuery} onChange={e => setAnalyseQuery(e.target.value)} placeholder="Filter op naam of nummer…"
+                    className="ml-auto px-3 py-1 text-xs rounded-lg"
+                    style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", minWidth: 200 }} />
+                </div>
+
+                <ul className="space-y-2 max-h-[480px] overflow-y-auto">
+                  {(analyseTab === "projecten" ? analyse.projecten.resultaten : analyse.monteurs.resultaten)
+                    .filter(r => analyseStatusFilter === "alle" || r.status === analyseStatusFilter)
+                    .filter(r => {
+                      const q = analyseQuery.trim().toLowerCase();
+                      if (!q) return true;
+                      const u = r.urenapp;
+                      const c = r.kandidaat ?? {};
+                      const hay = [u.naam, u.full_name, u.nummer, c.naam, c.nummer].filter(Boolean).join(" ").toLowerCase();
+                      return hay.includes(q);
+                    })
+                    .map((r, i) => {
+                      const isProj = analyseTab === "projecten";
+                      const u = r.urenapp;
+                      const c = r.kandidaat;
+                      const col = STATUS_COLOR[r.status];
+                      return (
+                        <li key={i} className="p-3 rounded-lg" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)" }}>
+                          <div className="flex items-center gap-2 flex-wrap mb-2">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase" style={{ background: col.bg, color: col.fg }}>{STATUS_LABEL[r.status]}</span>
+                            <span className="text-xs" style={{ color: "var(--text-muted)" }}>{r.reden}</span>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                            <div>
+                              <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>Urenapp</div>
+                              {isProj ? (
+                                <>
+                                  <div style={{ color: "var(--text-primary)" }}>
+                                    <span style={{ fontFamily: "DM Mono, monospace" }}>{u.nummer}</span> — {u.naam}
+                                  </div>
+                                  <div style={{ color: "var(--text-muted)" }}>Jaar {u.projectjaar ?? "—"} · {u.locatie ?? "—"}</div>
+                                  <div style={{ color: "var(--text-muted)" }}>
+                                    Koppeling: {r.bestaande_koppeling_urenapp ? <code style={{ fontFamily: "DM Mono, monospace" }}>{r.bestaande_koppeling_urenapp.slice(0,8)}…</code> : <em>geen</em>}
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div style={{ color: "var(--text-primary)" }}>{u.full_name}</div>
+                                  <div style={{ color: "var(--text-muted)" }}>Type: {u.type ?? "—"}</div>
+                                  <div style={{ color: "var(--text-muted)" }}>
+                                    Koppeling: {r.bestaande_koppeling_urenapp ? <code style={{ fontFamily: "DM Mono, monospace" }}>{r.bestaande_koppeling_urenapp.slice(0,8)}…</code> : <em>geen</em>}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            <div>
+                              <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>Planner kandidaat</div>
+                              {c ? (
+                                isProj ? (
+                                  <>
+                                    <div style={{ color: "var(--text-primary)" }}>
+                                      <span style={{ fontFamily: "DM Mono, monospace" }}>{c.nummer}</span> — {c.naam}
+                                    </div>
+                                    <div style={{ color: "var(--text-muted)" }}>Jaar {c.jaar ?? "—"} · {c.locatie ?? "—"}</div>
+                                    <div style={{ color: "var(--text-muted)" }}>
+                                      Koppeling: {r.bestaande_koppeling_planner ? <code style={{ fontFamily: "DM Mono, monospace" }}>{r.bestaande_koppeling_planner.slice(0,8)}…</code> : <em>geen</em>}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div style={{ color: "var(--text-primary)" }}>{c.naam}</div>
+                                    <div style={{ color: "var(--text-muted)" }}>Type: {c.type ?? "—"} · {c.actief ? "actief" : "inactief"}</div>
+                                    <div style={{ color: "var(--text-muted)" }}>
+                                      Koppeling: {r.bestaande_koppeling_planner ? <code style={{ fontFamily: "DM Mono, monospace" }}>{r.bestaande_koppeling_planner.slice(0,8)}…</code> : <em>geen</em>}
+                                    </div>
+                                  </>
+                                )
+                              ) : (
+                                <div style={{ color: "var(--text-muted)" }}><HelpCircle className="h-3 w-3 inline mr-1" />Geen kandidaat</div>
+                              )}
+                            </div>
+                          </div>
+                          {r.afwijkingen.length > 0 && (
+                            <div className="mt-2 pt-2" style={{ borderTop: "1px dashed var(--planning-border-soft)" }}>
+                              <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--warn-text)" }}>Afwijkingen</div>
+                              <ul className="text-[11px] space-y-0.5" style={{ color: "var(--text-muted)" }}>
+                                {r.afwijkingen.map((a, j) => (
+                                  <li key={j}>
+                                    <strong style={{ color: "var(--text-primary)" }}>{a.veld}:</strong>{" "}
+                                    urenapp <code style={{ fontFamily: "DM Mono, monospace" }}>{String(a.urenapp ?? "—")}</code>{" "}
+                                    ≠ planner <code style={{ fontFamily: "DM Mono, monospace" }}>{String(a.planner ?? "—")}</code>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                </ul>
+              </>
+            )}
+          </section>
+
+
+
           {response && (
             <section style={card}>
               <div className="flex items-center justify-between mb-3">
