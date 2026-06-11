@@ -671,7 +671,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
                       </button>
                     </div>
                     <div className="flex items-center justify-between">
-                      <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} />
+                      <AantalControl value={r.aantal ?? 1} onChange={v => setAantal(r.spec_code!, v)} onStep={d => updateAantal(r.spec_code!, d)} integer step={1} />
                       <span className={`text-[14px] font-semibold ${mono}`} style={{ color: "var(--accent)" }}>{fmt(totaal)}</span>
                     </div>
                   </div>
