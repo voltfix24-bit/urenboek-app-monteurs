@@ -121,7 +121,9 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       setMethode(null);
       setRegels([]);
     }
-    const { data: profiles } = await supabase.from("profiles").select("id, user_id, full_name, uurtarief");
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, user_id, full_name, uurtarief, is_onderaannemer, onderaannemer_id");
     const { data: roles } = await supabase.from("user_roles").select("user_id, role");
 
     if (profiles) {
@@ -130,6 +132,8 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       const rolMap = new Map((roles || []).map(r => [r.user_id, r.role]));
       const tariefMap = new Map(profiles.map(p => [p.id, (p as any).uurtarief != null ? Number((p as any).uurtarief) : null] as [string, number | null]));
       const profielRolMap = new Map(profiles.map(p => [p.id, rolMap.get(p.user_id) || ''] as [string, string]));
+      const isOnderaannemerMap = new Map(profiles.map(p => [p.id, !!(p as any).is_onderaannemer] as [string, boolean]));
+      const parentMap = new Map(profiles.map(p => [p.id, (p as any).onderaannemer_id as string | null] as [string, string | null]));
       const beschikbaar = profiles
         .filter(p => (p as any).uurtarief != null && Number((p as any).uurtarief) > 0)
         .map(p => ({
@@ -145,8 +149,14 @@ export function ForecastTab({ projectId }: { projectId: string }) {
         .from("planning")
         .select("medewerker_id, datum, starttijd, eindtijd")
         .eq("project_id", projectId);
+
       const seen = new Set<string>();
+      // Per monteur (gewone monteurs én onderaannemer-zelf): individuele aggregatie
       const perMon = new Map<string, { dagen: Set<string>; uren: number }>();
+      // Per ploeg: groepeer per (parent_id, datum) en houd uren per lid bij om afwijkingen te detecteren
+      const perPloegDag = new Map<string, Map<string, Map<string, number>>>();
+      // ploegKey → datum → medewerker_id → uren
+
       for (const row of planRows || []) {
         const key = `${row.medewerker_id}|${row.datum}|${row.starttijd}|${row.eindtijd}`;
         if (seen.has(key)) continue;
@@ -154,24 +164,73 @@ export function ForecastTab({ projectId }: { projectId: string }) {
         const start = String(row.starttijd || "00:00").slice(0, 5).split(":").map(Number);
         const eind = String(row.eindtijd || "00:00").slice(0, 5).split(":").map(Number);
         const uren = Math.max(0, (eind[0] + eind[1] / 60) - (start[0] + start[1] / 60));
-        const agg = perMon.get(row.medewerker_id) || { dagen: new Set(), uren: 0 };
-        agg.dagen.add(row.datum);
-        agg.uren += uren;
-        perMon.set(row.medewerker_id, agg);
+
+        const parentId = parentMap.get(row.medewerker_id) || null;
+        if (parentId) {
+          // submonteur van een onderaannemer → tellen op de ploeg
+          let dagMap = perPloegDag.get(parentId);
+          if (!dagMap) { dagMap = new Map(); perPloegDag.set(parentId, dagMap); }
+          let ledenMap = dagMap.get(row.datum);
+          if (!ledenMap) { ledenMap = new Map(); dagMap.set(row.datum, ledenMap); }
+          ledenMap.set(row.medewerker_id, (ledenMap.get(row.medewerker_id) || 0) + uren);
+        } else {
+          const agg = perMon.get(row.medewerker_id) || { dagen: new Set(), uren: 0 };
+          agg.dagen.add(row.datum);
+          agg.uren += uren;
+          perMon.set(row.medewerker_id, agg);
+        }
       }
-      const planKosten: PlanningKostRegel[] = Array.from(perMon.entries()).map(([mid, agg]) => {
+
+      const planKosten: PlanningKostRegel[] = [];
+
+      // Individuele monteurs én onderaannemers die zelf staan ingepland
+      for (const [mid, agg] of perMon.entries()) {
         const tarief = tariefMap.get(mid) ?? null;
-        return {
+        const isOnderaannemerZelf = isOnderaannemerMap.get(mid) || false;
+        planKosten.push({
           medewerker_id: mid,
-          full_name: namenMap.get(mid) || "Onbekend",
-          rol: profielRolMap.get(mid) || '',
+          full_name: (namenMap.get(mid) || "Onbekend") + (isOnderaannemerZelf ? " (ploeg)" : ""),
+          rol: isOnderaannemerZelf ? "onderaannemer" : (profielRolMap.get(mid) || ''),
           uurtarief: tarief,
           dagen: agg.dagen.size,
           uren: agg.uren,
           kosten: tarief != null ? agg.uren * tarief : 0,
           zonderTarief: tarief == null || tarief === 0,
-        };
-      }).sort((a, b) => b.kosten - a.kosten);
+          isPloeg: isOnderaannemerZelf,
+        });
+      }
+
+      // Onderaannemerploegen (parent + gekoppelde monteurs)
+      for (const [parentId, dagMap] of perPloegDag.entries()) {
+        const ploegTarief = tariefMap.get(parentId) ?? null;
+        let ploegUren = 0;
+        let warning = false;
+        const leden = new Set<string>();
+        for (const [, ledenMap] of dagMap.entries()) {
+          const ledenUren = Array.from(ledenMap.values());
+          ledenUren.forEach((_, idx) => leden.add(Array.from(ledenMap.keys())[idx]));
+          if (ledenUren.length === 0) continue;
+          const maxUren = Math.max(...ledenUren);
+          const minUren = Math.min(...ledenUren);
+          if (Math.abs(maxUren - minUren) > 0.01) warning = true;
+          ploegUren += maxUren; // ploeg telt 1× per dag, niet per monteur
+        }
+        planKosten.push({
+          medewerker_id: parentId,
+          full_name: (namenMap.get(parentId) || "Onderaannemer") + " (ploeg)",
+          rol: "onderaannemer",
+          uurtarief: ploegTarief,
+          dagen: dagMap.size,
+          uren: ploegUren,
+          kosten: ploegTarief != null ? ploegUren * ploegTarief : 0,
+          zonderTarief: ploegTarief == null || ploegTarief === 0,
+          isPloeg: true,
+          ploegLeden: Array.from(leden).map(id => namenMap.get(id) || "?"),
+          ploegWarning: warning,
+        });
+      }
+
+      planKosten.sort((a, b) => b.kosten - a.kosten);
       setPlanningKosten(planKosten);
     }
     setLoading(false);
