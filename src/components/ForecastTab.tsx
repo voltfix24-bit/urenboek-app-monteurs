@@ -594,7 +594,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
       if (!sc) continue;
       const cur = map.get(sc.groep) || { count: 0, subtotaal: 0 };
       cur.count += 1;
-      cur.subtotaal += (r.tarief || 0) * (r.aantal || 1);
+      cur.subtotaal += (Number(r.tarief) || 0) * (r.aantal ?? 1);
       map.set(sc.groep, cur);
     }
     return map;
