@@ -508,7 +508,7 @@ export default function PlannerKoppeling() {
                         <li key={i} className="p-3 rounded-lg" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)" }}>
                           <div className="flex items-center gap-2 flex-wrap mb-2">
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase" style={{ background: col.bg, color: col.fg }}>{STATUS_LABEL[r.status]}</span>
-                            <span className="text-xs" style={{ color: "var(--text-muted)" }}>{r.reden}</span>
+                            <span className="text-xs" style={{ color: "var(--text-muted)" }}>{r.status === "uitgesloten" ? exclusionLabel(r.reden) : r.reden}</span>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                             <div>
