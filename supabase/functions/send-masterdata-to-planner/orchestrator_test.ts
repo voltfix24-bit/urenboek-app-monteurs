@@ -129,11 +129,11 @@ Deno.test("sendOne: secret gaat in header x-urenapp-secret, niet in body", async
     { urenapp_project_id: "p1", nummer: "n", naam: "n", stationsnaam: null, straat: null, postcode: null, stad: null, jaar: 2026, actief: true },
     { endpoint: "x", secret: "GEHEIM123", fetchImpl },
   );
-  assert(capturedInit, "geen init opgevangen");
-  const headers = capturedInit!.headers as Record<string, string>;
+  const init = capturedInit as unknown as RequestInit;
+  assert(init, "geen init opgevangen");
+  const headers = init.headers as Record<string, string>;
   assertEquals(headers["x-urenapp-secret"], "GEHEIM123");
-  // body mag het geheim niet bevatten
-  const body = capturedInit!.body as string;
+  const body = init.body as string;
   assert(!body.includes("GEHEIM123"), "secret lekt in body");
 });
 
