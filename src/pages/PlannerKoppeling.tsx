@@ -267,6 +267,7 @@ export default function PlannerKoppeling() {
         <>
           <section className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {statBox("Projecten totaal", stats.projectenTotaal)}
+            {statBox("Uitgesloten van sync", stats.projectenUitgesloten)}
             {statBox("Zonder projectjaar", stats.projectenZonderJaar, stats.projectenZonderJaar > 0)}
             {statBox("Gekoppeld aan Planner", `${stats.projectenGekoppeld}/${stats.projectenTotaal}`)}
             {statBox("Planbare monteurs", stats.monteursPlanbaar)}
