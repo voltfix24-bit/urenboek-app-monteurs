@@ -734,7 +734,7 @@ function StuksprijzenEditor({ regels, onUpdate, specCodes, planningKosten, plann
             {/* Mobile card list */}
             <div className="md:hidden space-y-2">
               {regels.map(r => {
-                const totaal = (r.tarief || 0) * (r.aantal || 1);
+                const totaal = (Number(r.tarief) || 0) * (r.aantal ?? 1);
                 const eenheid = codeMap.get(r.spec_code || "")?.eenheid || "st";
                 return (
                   <div key={r.spec_code} className="rounded-[8px] p-2.5 space-y-2" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
