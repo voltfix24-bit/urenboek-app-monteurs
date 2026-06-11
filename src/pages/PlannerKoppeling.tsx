@@ -183,7 +183,31 @@ export default function PlannerKoppeling() {
     }
   }
 
-  async function runSingle(kind: "project" | "monteur", id: string) {
+  async function saveExclusion(projectId: string, enabled: boolean, reason: PlannerExclusionReason | null) {
+    if (!enabled && !reason) {
+      toast.error("Kies een uitsluitingsreden");
+      return;
+    }
+    setBusy("single");
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({
+          planner_sync_enabled: enabled,
+          planner_sync_exclusion_reason: enabled ? null : reason,
+        })
+        .eq("id", projectId);
+      if (error) throw error;
+      toast.success(enabled ? "Project weer ingeschakeld" : "Project uitgesloten");
+      setConfirm(null);
+      await loadStats();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Wijzigen mislukt");
+    } finally {
+      setBusy(null);
+    }
+  }
+
     setBusy("single");
     setResponse(null);
     try {
