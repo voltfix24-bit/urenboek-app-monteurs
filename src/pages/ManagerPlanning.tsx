@@ -91,6 +91,32 @@ export default function ManagerPlanning() {
   const weekDateStrings = useMemo(() => weekDates.map(d => format(d, "yyyy-MM-dd")), [weekStart]);
   const overplanned = useMemo(() => getOverplannedMedewerkers(entries, medewerkers, weekDateStrings), [entries, medewerkers, weekDateStrings]);
 
+  // Projecten met planning in deze week (voor filterchips)
+  const weekProjectChips = useMemo(() => {
+    const map = new Map<string, { id: string; naam: string; nummer: string; days: number }>();
+    entries.forEach(e => {
+      if (!weekDateStrings.includes(e.datum)) return;
+      const p = projects.find(pp => pp.id === e.project_id);
+      if (!p) return;
+      const cur = map.get(p.id) || { id: p.id, naam: p.naam, nummer: p.nummer, days: 0 };
+      cur.days++;
+      map.set(p.id, cur);
+    });
+    return Array.from(map.values()).sort((a, b) => b.days - a.days);
+  }, [entries, projects, weekDateStrings]);
+
+  // Reset filter als het geselecteerde project geen planning meer heeft in deze week
+  useEffect(() => {
+    if (selectedProjectId && !weekProjectChips.some(c => c.id === selectedProjectId)) {
+      setSelectedProjectId(null);
+    }
+  }, [selectedProjectId, weekProjectChips]);
+
+  const visibleEntries = useMemo(
+    () => selectedProjectId ? entries.filter(e => e.project_id === selectedProjectId) : entries,
+    [entries, selectedProjectId],
+  );
+
   const fetchAll = useCallback(async () => {
     setLoading(true);
     const startStr = format(weekStart, "yyyy-MM-dd");
