@@ -868,9 +868,24 @@ export default function Onderaannemers() {
               <p style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.2em", textTransform: "uppercase" }}>
                 Monteurs onder deze onderaannemer ({mList.length})
               </p>
-              <button onClick={() => { setShowAddMonteur(!showAddMonteur); if (showAddMonteur) resetMonteurForm(); }} style={{ width: 32, height: 32, borderRadius: "50%", background: showAddMonteur ? "rgba(255,113,108,0.15)" : "var(--accent-light)", border: showAddMonteur ? "1px solid var(--danger-border)" : "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAddMonteur ? "var(--danger)" : "var(--accent)" }}>
-                {showAddMonteur ? <X size={16} /> : <Plus size={16} />}
-              </button>
+              <div style={{ display: "flex", gap: 6 }}>
+                <button
+                  type="button"
+                  onClick={openLinkModal}
+                  title="Bestaande monteurs koppelen"
+                  style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--accent-light)", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--accent)" }}
+                >
+                  <Link2 size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowAddMonteur(!showAddMonteur); if (showAddMonteur) resetMonteurForm(); }}
+                  title={showAddMonteur ? "Annuleren" : "Nieuwe monteur aanmaken"}
+                  style={{ width: 32, height: 32, borderRadius: "50%", background: showAddMonteur ? "rgba(255,113,108,0.15)" : "var(--accent-light)", border: showAddMonteur ? "1px solid var(--danger-border)" : "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: showAddMonteur ? "var(--danger)" : "var(--accent)" }}
+                >
+                  {showAddMonteur ? <X size={16} /> : <Plus size={16} />}
+                </button>
+              </div>
             </div>
 
             {showAddMonteur && (
