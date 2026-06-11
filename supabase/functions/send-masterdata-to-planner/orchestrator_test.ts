@@ -227,7 +227,7 @@ Deno.test("gedeeltelijke mislukking: één faalt, andere slaagt", async () => {
       fetchImpl: async (_u, init) => {
         n++;
         const body = JSON.parse(init.body as string);
-        const id = body.payload.urenapp_project_id;
+        const id = body.data.urenapp_project_id;
         if (id === "p2") return new Response(JSON.stringify({ error: "kapot" }), { status: 500, headers: { "content-type": "application/json" } });
         return new Response(JSON.stringify({ planner_id: "pl", urenapp_id: id, action: "created" }), { status: 200, headers: { "content-type": "application/json" } });
       },
