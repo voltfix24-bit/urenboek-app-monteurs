@@ -143,6 +143,100 @@ export default function Onderaannemers() {
     setNewOaPw(null);
   }, [selected?.id]);
 
+  // ─── Bedrijfs- en factuurgegevens (manager-edit) ───
+  const [bedrijfEdit, setBedrijfEdit] = useState(false);
+  const [bedrijfForm, setBedrijfForm] = useState<BedrijfForm>(emptyBedrijfForm());
+  const [bedrijfInitial, setBedrijfInitial] = useState<BedrijfForm>(emptyBedrijfForm());
+  const [bedrijfSaving, setBedrijfSaving] = useState(false);
+  const [bedrijfUpdatedByName, setBedrijfUpdatedByName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selected) {
+      const form = oaToBedrijfForm(selected);
+      setBedrijfForm(form);
+      setBedrijfInitial(form);
+    } else {
+      setBedrijfForm(emptyBedrijfForm());
+      setBedrijfInitial(emptyBedrijfForm());
+    }
+    setBedrijfEdit(false);
+    setBedrijfUpdatedByName(null);
+    if (selected?.bedrijfsgegevens_updated_by) {
+      supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", selected.bedrijfsgegevens_updated_by)
+        .single()
+        .then(({ data }) => { if (data) setBedrijfUpdatedByName(data.full_name as string); });
+    }
+  }, [selected?.id]);
+
+  const bedrijfDirty = useMemo(
+    () => JSON.stringify(bedrijfForm) !== JSON.stringify(bedrijfInitial),
+    [bedrijfForm, bedrijfInitial],
+  );
+
+  useEffect(() => {
+    if (!bedrijfDirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [bedrijfDirty]);
+
+  const setBF = (k: keyof BedrijfForm, v: string) => setBedrijfForm(prev => ({ ...prev, [k]: v }));
+
+  const validateBedrijf = (): string | null => {
+    if (!bedrijfForm.bedrijfsnaam.trim()) return "Bedrijfsnaam is verplicht";
+    if (bedrijfForm.kvk_nummer && !/^\d{8}$/.test(bedrijfForm.kvk_nummer.trim())) return "KvK moet 8 cijfers zijn";
+    if (bedrijfForm.btw_nummer && !/^NL\d{9}B\d{2}$/.test(bedrijfForm.btw_nummer.trim())) return "BTW-formaat: NL123456789B01";
+    if (bedrijfForm.iban) {
+      const clean = bedrijfForm.iban.replace(/\s/g, "");
+      if (!/^NL[A-Z0-9]{16,30}$/.test(clean)) return "IBAN moet beginnen met NL";
+    }
+    if (bedrijfForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bedrijfForm.email.trim())) return "Ongeldig e-mailadres";
+    const bt = Number(bedrijfForm.betalingstermijn);
+    if (!Number.isFinite(bt) || bt < 0 || bt > 365) return "Betalingstermijn 0–365 dagen";
+    return null;
+  };
+
+  const saveBedrijf = async () => {
+    if (!selected) return;
+    const err = validateBedrijf();
+    if (err) { toast.error(err); return; }
+    setBedrijfSaving(true);
+    const now = new Date().toISOString();
+    // Allowlist — alleen bedrijfsvelden, geen tarief/rol/koppelingen.
+    const payload: Record<string, any> = {
+      bedrijfsnaam: bedrijfForm.bedrijfsnaam.trim() || null,
+      contactpersoon: bedrijfForm.contactpersoon.trim() || null,
+      email: bedrijfForm.email.trim() || null,
+      telefoon: bedrijfForm.telefoon.trim() || null,
+      factuuradres: bedrijfForm.factuuradres.trim() || null,
+      kvk_nummer: bedrijfForm.kvk_nummer.trim() || null,
+      btw_nummer: bedrijfForm.btw_nummer.trim() || null,
+      iban: bedrijfForm.iban.replace(/\s/g, "").trim() || null,
+      betalingstermijn: Number(bedrijfForm.betalingstermijn) || 30,
+      bedrijfsgegevens_updated_at: now,
+      bedrijfsgegevens_updated_by: profile?.id ?? null,
+    };
+    const { error } = await supabase.from("profiles").update(payload as any).eq("id", selected.id);
+    if (error) {
+      toast.error(error.message || "Opslaan mislukt");
+      setBedrijfSaving(false);
+      return;
+    }
+    toast.success("Bedrijfsgegevens opgeslagen");
+    setBedrijfEdit(false);
+    setBedrijfSaving(false);
+    await load();
+  };
+
+  const cancelBedrijfEdit = () => {
+    if (bedrijfDirty && !confirm("Er zijn niet-opgeslagen wijzigingen. Weggooien?")) return;
+    setBedrijfForm(bedrijfInitial);
+    setBedrijfEdit(false);
+  };
+
   const createOnderaannemerAccount = async () => {
     if (!selected) return;
     if (!oaAccountEmail.trim() || !oaAccountPw.trim()) {
