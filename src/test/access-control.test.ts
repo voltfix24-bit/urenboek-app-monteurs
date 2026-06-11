@@ -22,7 +22,7 @@ describe("monteur — minimale toegang", () => {
     "/dashboard", "/goedkeuring", "/rapportage", "/manager-planning",
     "/projecten", "/projecten/:projectId/planning",
     "/medewerkers", "/onderaannemers", "/kandidaten", "/inkooporders",
-    "/beheer/intake-regels", "/beheer/tarieven", "/beheer/bedrijf",
+    "/beheer/intake-regels", "/beheer/tarieven", "/beheer/bedrijf", "/beheer/planner-koppeling",
   ])("geen toegang tot %s", (r) => expect(allow(r, roles)).toBe(false));
 
   it.each(["/planning", "/mededelingen", "/mijn-orders"])(
