@@ -283,11 +283,13 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const otherLabel = otherMethode === "stuksprijzen" ? "Stuksprijzen" : "Op uren";
 
   // ----- Totals (single source of truth) -----
+  const planningKostenTotaal = planningKosten.reduce((s, r) => s + r.kosten, 0);
   let totaalOmzet = 0;
   let totaalKosten = 0;
   if (isStuks) {
     totaalOmzet = regels.reduce((s, r) => s + (r.tarief || 0) * (r.aantal || 1), 0);
-    totaalKosten = regels.reduce((s, r) => s + (r.eigen_kosten || 0) * (r.aantal || 1), 0);
+    // Personeelskosten komen uit de projectplanning, niet uit SPEC-codes.
+    totaalKosten = planningKostenTotaal;
   } else {
     totaalOmzet = verwachteOmzet;
     totaalKosten = regels.reduce((s, r) => s + (r.geplande_uren || 0) * (r.uurtarief_snap || 0), 0);
@@ -297,7 +299,8 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const margeColor = totaalOmzet === 0 ? "var(--text-muted)" : margePerc > 30 ? "var(--accent)" : margePerc >= 15 ? "var(--warn-text)" : "var(--danger)";
 
   const showOmzetWarn = totaalOmzet <= 0;
-  const showKostenWarn = totaalKosten <= 0 && regels.length > 0;
+  const showKostenWarn = isStuks ? planningKosten.length === 0 : totaalKosten <= 0 && regels.length > 0;
+
 
   return (
     <div className="space-y-4">
