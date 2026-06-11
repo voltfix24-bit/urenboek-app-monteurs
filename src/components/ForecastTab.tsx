@@ -355,15 +355,16 @@ export function ForecastTab({ projectId }: { projectId: string }) {
       {/* ============ Summary ============ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <SummaryCard label="Verwachte omzet" value={fmt(totaalOmzet)} warn={showOmzetWarn} warnText="Vul omzet in" />
-        <SummaryCard label="Totale kosten" value={fmt(totaalKosten)} warn={showKostenWarn} warnText="Geen kosten" />
+        <SummaryCard label="Personeelskosten (planning)" value={fmt(totaalKosten)} warn={showKostenWarn} warnText={isStuks ? "Geen planning" : "Geen kosten"} />
         <SummaryCard label="Brutomarge" value={fmt(margeEuro)} accent={totaalOmzet > 0 ? margeColor : undefined} />
         <SummaryCard label="Marge %" value={totaalOmzet > 0 ? `${margePerc.toFixed(1)}%` : "—"} accent={totaalOmzet > 0 ? margeColor : undefined} />
       </div>
 
       {/* ============ Body ============ */}
       {isStuks ? (
-        <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} />
+        <StuksprijzenEditor regels={regels} onUpdate={updateRegels} specCodes={specCodes} planningKosten={planningKosten} planningKostenTotaal={planningKostenTotaal} />
       ) : (
+
         <UrenEditor
           regels={regels}
           monteurs={monteurs}
