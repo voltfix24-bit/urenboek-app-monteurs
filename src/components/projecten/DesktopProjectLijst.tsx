@@ -8,6 +8,7 @@ interface Project {
   case_type: string | null; stationsnaam: string | null;
   opdrachtgever_id: string | null; straat: string | null; stad: string | null;
   status?: string;
+  projectjaar?: number | null;
 }
 
 function DesktopListCard({ project, ogNaam, selected, onClick, marge }: {
@@ -36,6 +37,11 @@ function DesktopListCard({ project, ogNaam, selected, onClick, marge }: {
       <div className="flex items-center justify-between gap-2 mt-0.5">
         <span className="text-[11px] font-mono" style={{ color: "var(--accent)" }}>{project.nummer}</span>
         <div className="flex items-center gap-1.5">
+          {project.projectjaar == null && (
+            <span title="Projectjaar ontbreekt — sync naar Planner geblokkeerd" className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "var(--warn-light)", color: "var(--warn-text)", border: "1px solid var(--warn-border)" }}>
+              Jaar ontbreekt
+            </span>
+          )}
           {project.status && <StatusBadge status={(project.status as ProjectStatus)} size="sm" />}
           {ogNaam && <span className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{ogNaam}</span>}
         </div>
