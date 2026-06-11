@@ -652,7 +652,7 @@ export default function ManagerPlanning() {
 
                       {weekDates.map((date, i) => {
                         const dateStr = format(date, "yyyy-MM-dd");
-                        const entry = entries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
+                        const entry = visibleEntries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
                         const heeftEntry = !!entry;
                         const verlof = beschikbaarheid.find(b => b.medewerker_id === med.id && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
                         const proj = entry ? projMap.get(entry.project_id) : null;
