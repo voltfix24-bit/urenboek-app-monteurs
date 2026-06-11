@@ -17,8 +17,12 @@ interface Onderaannemer {
   email: string | null;
   telefoon: string | null;
   bedrijfsnaam: string | null;
+  contactpersoon: string | null;
+  factuuradres: string | null;
   kvk_nummer: string | null;
+  btw_nummer: string | null;
   iban: string | null;
+  betalingstermijn: number | null;
   uurtarief: number | null;
   onderaannemer_startlocatie: string | null;
   onderaannemer_vrije_km_per_dag: number;
@@ -26,7 +30,33 @@ interface Onderaannemer {
   onderaannemer_reiskosten_per_ploeg: boolean;
   account_status: string;
   planning_partner_ids: string[];
+  bedrijfsgegevens_updated_at: string | null;
+  bedrijfsgegevens_updated_by: string | null;
 }
+
+const BEDRIJF_FIELDS = [
+  "bedrijfsnaam", "contactpersoon", "email", "telefoon",
+  "factuuradres", "kvk_nummer", "btw_nummer", "iban", "betalingstermijn",
+] as const;
+type BedrijfForm = {
+  bedrijfsnaam: string; contactpersoon: string; email: string; telefoon: string;
+  factuuradres: string; kvk_nummer: string; btw_nummer: string; iban: string; betalingstermijn: string;
+};
+const emptyBedrijfForm = (): BedrijfForm => ({
+  bedrijfsnaam: "", contactpersoon: "", email: "", telefoon: "",
+  factuuradres: "", kvk_nummer: "", btw_nummer: "", iban: "", betalingstermijn: "30",
+});
+const oaToBedrijfForm = (o: Onderaannemer): BedrijfForm => ({
+  bedrijfsnaam: o.bedrijfsnaam || "",
+  contactpersoon: o.contactpersoon || "",
+  email: o.email || "",
+  telefoon: o.telefoon || "",
+  factuuradres: o.factuuradres || "",
+  kvk_nummer: o.kvk_nummer || "",
+  btw_nummer: o.btw_nummer || "",
+  iban: o.iban || "",
+  betalingstermijn: String(o.betalingstermijn ?? 30),
+});
 
 interface Monteur {
   id: string;
@@ -112,6 +142,100 @@ export default function Onderaannemers() {
     setOaAccountShowPw(false);
     setNewOaPw(null);
   }, [selected?.id]);
+
+  // ─── Bedrijfs- en factuurgegevens (manager-edit) ───
+  const [bedrijfEdit, setBedrijfEdit] = useState(false);
+  const [bedrijfForm, setBedrijfForm] = useState<BedrijfForm>(emptyBedrijfForm());
+  const [bedrijfInitial, setBedrijfInitial] = useState<BedrijfForm>(emptyBedrijfForm());
+  const [bedrijfSaving, setBedrijfSaving] = useState(false);
+  const [bedrijfUpdatedByName, setBedrijfUpdatedByName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selected) {
+      const form = oaToBedrijfForm(selected);
+      setBedrijfForm(form);
+      setBedrijfInitial(form);
+    } else {
+      setBedrijfForm(emptyBedrijfForm());
+      setBedrijfInitial(emptyBedrijfForm());
+    }
+    setBedrijfEdit(false);
+    setBedrijfUpdatedByName(null);
+    if (selected?.bedrijfsgegevens_updated_by) {
+      supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", selected.bedrijfsgegevens_updated_by)
+        .single()
+        .then(({ data }) => { if (data) setBedrijfUpdatedByName(data.full_name as string); });
+    }
+  }, [selected?.id]);
+
+  const bedrijfDirty = useMemo(
+    () => JSON.stringify(bedrijfForm) !== JSON.stringify(bedrijfInitial),
+    [bedrijfForm, bedrijfInitial],
+  );
+
+  useEffect(() => {
+    if (!bedrijfDirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [bedrijfDirty]);
+
+  const setBF = (k: keyof BedrijfForm, v: string) => setBedrijfForm(prev => ({ ...prev, [k]: v }));
+
+  const validateBedrijf = (): string | null => {
+    if (!bedrijfForm.bedrijfsnaam.trim()) return "Bedrijfsnaam is verplicht";
+    if (bedrijfForm.kvk_nummer && !/^\d{8}$/.test(bedrijfForm.kvk_nummer.trim())) return "KvK moet 8 cijfers zijn";
+    if (bedrijfForm.btw_nummer && !/^NL\d{9}B\d{2}$/.test(bedrijfForm.btw_nummer.trim())) return "BTW-formaat: NL123456789B01";
+    if (bedrijfForm.iban) {
+      const clean = bedrijfForm.iban.replace(/\s/g, "");
+      if (!/^NL[A-Z0-9]{16,30}$/.test(clean)) return "IBAN moet beginnen met NL";
+    }
+    if (bedrijfForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bedrijfForm.email.trim())) return "Ongeldig e-mailadres";
+    const bt = Number(bedrijfForm.betalingstermijn);
+    if (!Number.isFinite(bt) || bt < 0 || bt > 365) return "Betalingstermijn 0–365 dagen";
+    return null;
+  };
+
+  const saveBedrijf = async () => {
+    if (!selected) return;
+    const err = validateBedrijf();
+    if (err) { toast.error(err); return; }
+    setBedrijfSaving(true);
+    const now = new Date().toISOString();
+    // Allowlist — alleen bedrijfsvelden, geen tarief/rol/koppelingen.
+    const payload: Record<string, any> = {
+      bedrijfsnaam: bedrijfForm.bedrijfsnaam.trim() || null,
+      contactpersoon: bedrijfForm.contactpersoon.trim() || null,
+      email: bedrijfForm.email.trim() || null,
+      telefoon: bedrijfForm.telefoon.trim() || null,
+      factuuradres: bedrijfForm.factuuradres.trim() || null,
+      kvk_nummer: bedrijfForm.kvk_nummer.trim() || null,
+      btw_nummer: bedrijfForm.btw_nummer.trim() || null,
+      iban: bedrijfForm.iban.replace(/\s/g, "").trim() || null,
+      betalingstermijn: Number(bedrijfForm.betalingstermijn) || 30,
+      bedrijfsgegevens_updated_at: now,
+      bedrijfsgegevens_updated_by: profile?.id ?? null,
+    };
+    const { error } = await supabase.from("profiles").update(payload as any).eq("id", selected.id);
+    if (error) {
+      toast.error(error.message || "Opslaan mislukt");
+      setBedrijfSaving(false);
+      return;
+    }
+    toast.success("Bedrijfsgegevens opgeslagen");
+    setBedrijfEdit(false);
+    setBedrijfSaving(false);
+    await load();
+  };
+
+  const cancelBedrijfEdit = () => {
+    if (bedrijfDirty && !confirm("Er zijn niet-opgeslagen wijzigingen. Weggooien?")) return;
+    setBedrijfForm(bedrijfInitial);
+    setBedrijfEdit(false);
+  };
 
   const createOnderaannemerAccount = async () => {
     if (!selected) return;
@@ -267,7 +391,7 @@ export default function Onderaannemers() {
     setLoading(true);
     const { data: profielen } = await supabase
       .from("profiles")
-      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,kvk_nummer,iban,uurtarief,onderaannemer_startlocatie,onderaannemer_vrije_km_per_dag,onderaannemer_km_tarief,onderaannemer_reiskosten_per_ploeg,account_status,is_onderaannemer,onderaannemer_id,planning_partner_ids")
+      .select("id,user_id,full_name,email,telefoon,bedrijfsnaam,contactpersoon,factuuradres,kvk_nummer,btw_nummer,iban,betalingstermijn,uurtarief,onderaannemer_startlocatie,onderaannemer_vrije_km_per_dag,onderaannemer_km_tarief,onderaannemer_reiskosten_per_ploeg,account_status,is_onderaannemer,onderaannemer_id,planning_partner_ids,bedrijfsgegevens_updated_at,bedrijfsgegevens_updated_by")
       .order("full_name");
     const { data: rollen } = await supabase.from("user_roles").select("user_id,role");
     const rolMap = new Map((rollen || []).map((r) => [r.user_id, r.role]));
@@ -284,7 +408,6 @@ export default function Onderaannemers() {
     });
     setOnderaannemers(oa);
     setMonteurs(mt);
-    // sync selected
     setSelected((prev) => prev ? oa.find((o) => o.id === prev.id) ?? null : null);
     setLoading(false);
   };
@@ -466,15 +589,65 @@ export default function Onderaannemers() {
             </div>
 
 
-            {/* Contact info */}
-            <div style={{ background: "var(--bg-surface)", borderRadius: 16, padding: 18, marginBottom: 20, border: "1px solid var(--planning-border-soft)" }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#6a768c", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 12 }}>Bedrijfsgegevens</p>
-              <Row label="E-mail" value={selected.email || "—"} icon={<Mail size={14} />} />
-              <Row label="Telefoon" value={selected.telefoon || "—"} icon={<Phone size={14} />} />
-              <Row label="KvK" value={selected.kvk_nummer || "—"} />
-              <Row label="IBAN" value={selected.iban || "—"} />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid color-mix(in srgb, var(--planning-border-soft) 60%, transparent)" }}>
-                <span style={{ fontSize: 12, color: "#6a768c" }}>Uurtarief</span>
+            {/* Bedrijfs- en factuurgegevens */}
+            <div style={{ background: "var(--bg-surface)", borderRadius: 16, padding: 18, marginBottom: 20, border: bedrijfDirty ? "1px solid var(--accent-border)" : "1px solid var(--planning-border-soft)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#6a768c", letterSpacing: "0.15em", textTransform: "uppercase" }}>Bedrijfs- en factuurgegevens</p>
+                {!bedrijfEdit ? (
+                  <button type="button" onClick={() => setBedrijfEdit(true)} style={{ ...secondaryBtn, height: 32, padding: "0 12px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <Pencil size={12} /> Bewerken
+                  </button>
+                ) : (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: bedrijfDirty ? "var(--accent)" : "#6a768c", textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                    {bedrijfDirty ? "Niet opgeslagen" : "Geen wijzigingen"}
+                  </span>
+                )}
+              </div>
+
+              {!bedrijfEdit ? (
+                <>
+                  <Row label="Bedrijfsnaam" value={selected.bedrijfsnaam || "—"} icon={<Building2 size={14} />} />
+                  <Row label="Contactpersoon" value={selected.contactpersoon || "—"} />
+                  <Row label="E-mail" value={selected.email || "—"} icon={<Mail size={14} />} />
+                  <Row label="Telefoon" value={selected.telefoon || "—"} icon={<Phone size={14} />} />
+                  <Row label="Factuuradres" value={selected.factuuradres || "—"} />
+                  <Row label="KvK" value={selected.kvk_nummer || "—"} />
+                  <Row label="BTW" value={selected.btw_nummer || "—"} />
+                  <Row label="IBAN" value={selected.iban || "—"} />
+                  <Row label="Betalingstermijn" value={`${selected.betalingstermijn ?? 30} dagen`} />
+                  {(selected.bedrijfsgegevens_updated_at || bedrijfUpdatedByName) && (
+                    <p style={{ fontSize: 10, color: "#6a768c", marginTop: 10, fontStyle: "italic" }}>
+                      Laatst gewijzigd
+                      {selected.bedrijfsgegevens_updated_at && ` op ${new Date(selected.bedrijfsgegevens_updated_at).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" })}`}
+                      {bedrijfUpdatedByName && ` door ${bedrijfUpdatedByName}`}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <label style={fieldLabel}>Bedrijfsnaam *<input style={inputStyle} value={bedrijfForm.bedrijfsnaam} onChange={(e) => setBF("bedrijfsnaam", e.target.value)} /></label>
+                  <label style={fieldLabel}>Contactpersoon<input style={inputStyle} value={bedrijfForm.contactpersoon} onChange={(e) => setBF("contactpersoon", e.target.value)} /></label>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <label style={fieldLabel}>E-mail<input type="email" style={inputStyle} value={bedrijfForm.email} onChange={(e) => setBF("email", e.target.value)} /></label>
+                    <label style={fieldLabel}>Telefoon<input style={inputStyle} value={bedrijfForm.telefoon} onChange={(e) => setBF("telefoon", e.target.value)} /></label>
+                  </div>
+                  <label style={fieldLabel}>Factuuradres<input style={inputStyle} value={bedrijfForm.factuuradres} onChange={(e) => setBF("factuuradres", e.target.value)} placeholder="Straat 1, 1234 AB Stad" /></label>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <label style={fieldLabel}>KvK<input style={{ ...inputStyle, fontFamily: "DM Mono, monospace" }} value={bedrijfForm.kvk_nummer} onChange={(e) => setBF("kvk_nummer", e.target.value)} placeholder="12345678" /></label>
+                    <label style={fieldLabel}>BTW<input style={{ ...inputStyle, fontFamily: "DM Mono, monospace" }} value={bedrijfForm.btw_nummer} onChange={(e) => setBF("btw_nummer", e.target.value)} placeholder="NL123456789B01" /></label>
+                  </div>
+                  <label style={fieldLabel}>IBAN<input style={{ ...inputStyle, fontFamily: "DM Mono, monospace" }} value={bedrijfForm.iban} onChange={(e) => setBF("iban", e.target.value)} placeholder="NL00BANK0000000000" /></label>
+                  <label style={fieldLabel}>Betalingstermijn (dagen)<input type="number" style={{ ...inputStyle, fontFamily: "DM Mono, monospace" }} value={bedrijfForm.betalingstermijn} onChange={(e) => setBF("betalingstermijn", e.target.value)} /></label>
+                  <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                    <button type="button" onClick={cancelBedrijfEdit} style={secondaryBtn}>Annuleren</button>
+                    <button type="button" onClick={saveBedrijf} disabled={bedrijfSaving || !bedrijfDirty} style={{ ...primaryBtn, opacity: (bedrijfSaving || !bedrijfDirty) ? 0.6 : 1 }}>{bedrijfSaving ? "Bezig…" : "Opslaan"}</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Uurtarief blijft manager-only en wordt direct opgeslagen */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0 0", marginTop: 12, borderTop: "1px solid color-mix(in srgb, var(--planning-border-soft) 60%, transparent)" }}>
+                <span style={{ fontSize: 12, color: "#6a768c" }}>Uurtarief / ploegtarief</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ fontSize: 13, color: "var(--text-muted)" }}>€</span>
                   <input
@@ -485,10 +658,7 @@ export default function Onderaannemers() {
                       const v = e.target.value;
                       const num = v ? Number(v.replace(",", ".")) : null;
                       if ((selected.uurtarief ?? null) === num) return;
-                      const { error } = await supabase
-                        .from("profiles")
-                        .update({ uurtarief: num })
-                        .eq("id", selected.id);
+                      const { error } = await supabase.from("profiles").update({ uurtarief: num }).eq("id", selected.id);
                       if (error) { toast.error("Opslaan mislukt"); return; }
                       toast.success("Uurtarief opgeslagen");
                       load();
