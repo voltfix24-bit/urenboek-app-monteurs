@@ -12,7 +12,7 @@ import {
   type BestaandePlanningRow,
   type ProjectMini,
   type ProfileMini,
-} from "../preview-planner-planning/classifier.ts";
+} from "./classifier.ts";
 
 export interface SupabaseLikeClient {
   from: (table: string) => any;
