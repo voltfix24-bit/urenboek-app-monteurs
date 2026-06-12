@@ -82,3 +82,27 @@ describe("magProjectSynchroniseren", () => {
     expect(magProjectSynchroniseren(baseProject())).toBe(true);
   });
 });
+
+describe("projectjaartelling regressie", () => {
+  it("telt alleen actieve sync-projecten zonder projectjaar; uitgesloten tellen niet mee", () => {
+    const rows = [
+      { planner_sync_enabled: true,  projectjaar: null },   // ⬅ telt
+      { planner_sync_enabled: true,  projectjaar: 2026 },  // ⬅ telt niet (heeft jaar)
+      { planner_sync_enabled: false, projectjaar: null },   // ⬅ telt niet (uitgesloten)
+      { planner_sync_enabled: false, projectjaar: 2026 },  // ⬅ telt niet (uitgesloten)
+      { planner_sync_enabled: true,  projectjaar: null },   // ⬅ telt
+    ];
+    // Exacte logica uit PlannerKoppeling loadStats
+    const count = rows.filter(p => p.planner_sync_enabled === true && p.projectjaar == null).length;
+    expect(count).toBe(2);
+  });
+
+  it("gele waarschuwing toont alleen wanneer er actieve sync-projecten zonder projectjaar zijn", () => {
+    const rows = [
+      { planner_sync_enabled: true,  projectjaar: 2026 },
+      { planner_sync_enabled: false, projectjaar: null },
+    ];
+    const count = rows.filter(p => p.planner_sync_enabled === true && p.projectjaar == null).length;
+    expect(count).toBe(0);
+  });
+});

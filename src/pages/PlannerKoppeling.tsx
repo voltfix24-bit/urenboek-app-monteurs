@@ -191,8 +191,8 @@ export default function PlannerKoppeling() {
     setMonteurs(monteursList);
     setStats({
       projectenTotaal: projectenList.length,
-      // Jaar telt alleen voor niet-uitgesloten projecten
-      projectenZonderJaar: projectenList.filter(p => p.planner_sync_enabled !== false && p.projectjaar == null).length,
+      // Jaar telt alleen voor actief ingeschakelde sync-projecten (true), niet uitgesloten (false)
+      projectenZonderJaar: projectenList.filter(p => p.planner_sync_enabled === true && p.projectjaar == null).length,
       projectenGekoppeld: projectenList.filter(p => p.planner_project_id != null).length,
       projectenUitgesloten: projectenList.filter(p => p.planner_sync_enabled === false).length,
       monteursPlanbaar: monteursList.filter(m => m.planbaar).length,
