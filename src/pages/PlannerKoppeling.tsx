@@ -741,6 +741,146 @@ export default function PlannerKoppeling() {
             )}
           </section>
 
+          {/* Planning voorvertoning — fase 2 read-only */}
+          <section style={card} className="space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Calendar className="h-4 w-4" style={{ color: "var(--accent)" }} />
+              <h2 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>Planning voorvertoning</h2>
+              <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>read-only — fase 2</span>
+            </div>
+            <p className="text-xs flex items-start gap-1.5" style={{ color: "var(--text-muted)" }}>
+              <Info className="h-3 w-3 mt-0.5 shrink-0" />
+              Vergelijkt Planner-planning met de eigen planning binnen het opgegeven datumbereik (maximaal 93 dagen). Voorgestelde tijden 07:00 — 16:00. Er worden geen records gewijzigd, aangemaakt of verwijderd.
+            </p>
+            <div className="flex flex-wrap items-end gap-2">
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "var(--text-muted)" }}>Vanaf</label>
+                <input type="date" value={previewVanaf} onChange={e => setPreviewVanaf(e.target.value)}
+                  className="px-2 py-1 text-xs rounded-lg"
+                  style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }} />
+              </div>
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "var(--text-muted)" }}>T/m</label>
+                <input type="date" value={previewTot} onChange={e => setPreviewTot(e.target.value)}
+                  className="px-2 py-1 text-xs rounded-lg"
+                  style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }} />
+              </div>
+              <button onClick={runPreview} disabled={previewBusy}
+                className="ml-auto px-3 py-2 rounded-lg text-xs font-semibold inline-flex items-center gap-2 text-white"
+                style={{ background: "var(--accent)", opacity: previewBusy ? 0.5 : 1 }}>
+                {previewBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />}
+                Voorvertoning ophalen
+              </button>
+            </div>
+
+            {preview && (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-xs">
+                  {(["nieuw","ongewijzigd","gewijzigd","conflict","verwijderd_in_planner"] as PreviewStatus[]).map(s => {
+                    const c = preview.aantallen[s as keyof typeof preview.aantallen] as number;
+                    const col = PREVIEW_STATUS_COLOR[s];
+                    return (
+                      <button key={s} onClick={() => setPreviewStatusFilter(previewStatusFilter === s ? "alle" : s)}
+                        className="px-2 py-2 rounded-lg text-left"
+                        style={{
+                          background: previewStatusFilter === s ? col.bg : "var(--bg-surface-2)",
+                          color: previewStatusFilter === s ? col.fg : "var(--text-primary)",
+                          border: "1px solid var(--planning-border-soft)",
+                        }}>
+                        <div className="text-[10px] uppercase tracking-wider opacity-80">{PREVIEW_STATUS_LABEL[s]}</div>
+                        <div className="text-lg font-bold" style={{ fontFamily: "DM Mono, monospace" }}>{c}</div>
+                      </button>
+                    );
+                  })}
+                  <div className="px-2 py-2 rounded-lg" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)" }}>
+                    <div className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Planner totaal</div>
+                    <div className="text-lg font-bold" style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{preview.aantallen.totaal_planner}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-[11px]">
+                  <div className="px-3 py-2 rounded-lg" style={{ background: "#eef2ff", border: "1px solid #c7d2fe", color: "#3730a3" }}>
+                    <strong>{preview.aantallen.uitgesloten_info}</strong> uitgesloten Planner-toewijzingen (informatief, geen fout)
+                  </div>
+                  <div className="px-3 py-2 rounded-lg" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>
+                    Bestaande externe planning in bereik: <strong style={{ color: "var(--text-primary)" }}>{preview.aantallen.bestaande_extern}</strong>
+                  </div>
+                  <div className="px-3 py-2 rounded-lg" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>
+                    Bestaande handmatige planning in bereik: <strong style={{ color: "var(--text-primary)" }}>{preview.aantallen.bestaande_handmatig}</strong>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                    Bereik: <strong style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{preview.datum_vanaf}</strong>
+                    {" — "}
+                    <strong style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{preview.datum_tot}</strong>
+                  </span>
+                  <input value={previewQuery} onChange={e => setPreviewQuery(e.target.value)} placeholder="Filter op project, monteur of activiteit…"
+                    className="ml-auto px-3 py-1 text-xs rounded-lg"
+                    style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", minWidth: 240 }} />
+                </div>
+
+                <ul className="space-y-2 max-h-[480px] overflow-y-auto">
+                  {preview.regels
+                    .filter(r => previewStatusFilter === "alle" || r.status === previewStatusFilter)
+                    .filter(r => {
+                      const q = previewQuery.trim().toLowerCase();
+                      if (!q) return true;
+                      return [r.project_label, r.monteur_label, r.activiteit, r.datum].filter(Boolean).join(" ").toLowerCase().includes(q);
+                    })
+                    .map((r, i) => {
+                      const col = PREVIEW_STATUS_COLOR[r.status];
+                      return (
+                        <li key={`${r.external_id}-${i}`} className="p-3 rounded-lg" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)" }}>
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase" style={{ background: col.bg, color: col.fg }}>
+                              {r.status === "verwijderd_in_planner" && <Trash2 className="h-3 w-3 inline mr-1" />}
+                              {PREVIEW_STATUS_LABEL[r.status]}
+                            </span>
+                            <span className="text-xs font-semibold" style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{r.datum}</span>
+                            <span className="text-xs" style={{ color: "var(--text-muted)" }}>{r.voorgesteld.starttijd}–{r.voorgesteld.eindtijd}</span>
+                          </div>
+                          <div className="text-xs" style={{ color: "var(--text-primary)" }}>
+                            <strong>{r.monteur_label ?? <em style={{ color: "var(--warn-text)" }}>onbekende monteur</em>}</strong>
+                            {" · "}
+                            {r.project_label ?? <em style={{ color: "var(--warn-text)" }}>onbekend project</em>}
+                          </div>
+                          <div className="text-xs" style={{ color: "var(--text-muted)" }}>
+                            {r.activiteit ?? "—"}{r.kleur ? ` (${r.kleur})` : ""}{r.notitie ? ` · ${r.notitie}` : ""}
+                          </div>
+                          {r.conflict_redenen.length > 0 && (
+                            <ul className="mt-1 text-[11px]" style={{ color: "#b91c1c" }}>
+                              {r.conflict_redenen.map((c, j) => <li key={j}>• {c}</li>)}
+                            </ul>
+                          )}
+                          {r.verschillen.length > 0 && (
+                            <div className="mt-2 pt-2" style={{ borderTop: "1px dashed var(--planning-border-soft)" }}>
+                              <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: "var(--warn-text)" }}>Verschillen met bestaande externe regel</div>
+                              <ul className="text-[11px] space-y-0.5" style={{ color: "var(--text-muted)" }}>
+                                {r.verschillen.map((v, j) => (
+                                  <li key={j}>
+                                    <strong style={{ color: "var(--text-primary)" }}>{v.veld}:</strong>{" "}
+                                    huidig <code style={{ fontFamily: "DM Mono, monospace" }}>{String(v.huidig ?? "—")}</code>{" "}
+                                    → voorstel <code style={{ fontFamily: "DM Mono, monospace" }}>{String(v.voorgesteld ?? "—")}</code>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  {preview.regels.filter(r => previewStatusFilter === "alle" || r.status === previewStatusFilter).length === 0 && (
+                    <li className="text-xs italic text-center py-4" style={{ color: "var(--text-muted)" }}>Geen regels in deze filter.</li>
+                  )}
+                </ul>
+              </>
+            )}
+          </section>
+
+
+
 
 
           {response && (
