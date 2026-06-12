@@ -906,6 +906,26 @@ export default function PlannerKoppeling() {
                               </ul>
                             </div>
                           )}
+                          {r.status === "nieuw" && (
+                            <div className="mt-2 flex">
+                              <button
+                                onClick={() => setProefsyncConfirm(r)}
+                                disabled={proefsyncBusyKey === r.external_id}
+                                className="px-3 py-1 text-xs rounded-lg font-semibold inline-flex items-center gap-1.5"
+                                style={{
+                                  background: "var(--accent)",
+                                  color: "white",
+                                  opacity: proefsyncBusyKey === r.external_id ? 0.5 : 1,
+                                  cursor: proefsyncBusyKey === r.external_id ? "wait" : "pointer",
+                                }}
+                              >
+                                {proefsyncBusyKey === r.external_id
+                                  ? <Loader2 className="h-3 w-3 animate-spin" />
+                                  : <Send className="h-3 w-3" />}
+                                Proefsync
+                              </button>
+                            </div>
+                          )}
                         </li>
                       );
                     })}
