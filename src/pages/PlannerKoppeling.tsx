@@ -111,6 +111,81 @@ export default function PlannerKoppeling() {
     afwijkingen: Afwijking[];
   } | null>(null);
 
+  // Planning voorvertoning (fase 2)
+  type PreviewStatus = "nieuw" | "ongewijzigd" | "gewijzigd" | "conflict" | "verwijderd_in_planner";
+  interface PreviewRegel {
+    status: PreviewStatus;
+    external_id: string;
+    datum: string;
+    project_label: string | null;
+    monteur_label: string | null;
+    activiteit: string | null;
+    kleur: string | null;
+    notitie: string;
+    voorgesteld: { starttijd: string; eindtijd: string };
+    conflict_redenen: string[];
+    verschillen: { veld: string; huidig: unknown; voorgesteld: unknown }[];
+    bestaande_row: { starttijd: string; eindtijd: string; activiteit: string | null; activiteit_kleur: string | null; notitie: string } | null;
+  }
+  interface PreviewResponse {
+    success: boolean;
+    datum_vanaf: string;
+    datum_tot: string;
+    aantallen: {
+      totaal_planner: number; nieuw: number; ongewijzigd: number; gewijzigd: number;
+      conflict: number; verwijderd_in_planner: number; uitgesloten_info: number;
+      bestaande_handmatig: number; bestaande_extern: number;
+    };
+    regels: PreviewRegel[];
+    uitgesloten_info: { planner_monteur_id: string; planning_cel_id: string; datum: string; reden: string }[];
+  }
+  const PREVIEW_STATUS_LABEL: Record<PreviewStatus, string> = {
+    nieuw: "Nieuw",
+    ongewijzigd: "Ongewijzigd",
+    gewijzigd: "Gewijzigd",
+    conflict: "Conflict",
+    verwijderd_in_planner: "Verwijderd in Planner",
+  };
+  const PREVIEW_STATUS_COLOR: Record<PreviewStatus, { bg: string; fg: string }> = {
+    nieuw: { bg: "var(--accent)", fg: "white" },
+    ongewijzigd: { bg: "var(--bg-surface-2)", fg: "var(--text-muted)" },
+    gewijzigd: { bg: "var(--warn-light)", fg: "var(--warn-text)" },
+    conflict: { bg: "#fee2e2", fg: "#b91c1c" },
+    verwijderd_in_planner: { bg: "#fef3c7", fg: "#92400e" },
+  };
+  const today = new Date().toISOString().slice(0, 10);
+  const in28 = new Date(Date.now() + 27 * 86_400_000).toISOString().slice(0, 10);
+  const [previewVanaf, setPreviewVanaf] = useState(today);
+  const [previewTot, setPreviewTot] = useState(in28);
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const [preview, setPreview] = useState<PreviewResponse | null>(null);
+  const [previewStatusFilter, setPreviewStatusFilter] = useState<PreviewStatus | "alle">("alle");
+  const [previewQuery, setPreviewQuery] = useState("");
+
+  async function runPreview() {
+    setPreviewBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("preview-planner-planning", {
+        body: { datum_vanaf: previewVanaf, datum_tot: previewTot },
+      });
+      if (error) {
+        const ctx = (error as any)?.context;
+        let msg = (error as any)?.message ?? "Voorvertoning mislukt";
+        try {
+          const body = ctx && typeof ctx.json === "function" ? await ctx.json() : null;
+          if (body?.error) msg = body.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+      setPreview(data as PreviewResponse);
+      toast.success("Voorvertoning klaar");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Voorvertoning mislukt");
+    } finally {
+      setPreviewBusy(false);
+    }
+  }
+
   async function runAnalyse() {
     setAnalyseBusy(true);
     try {
