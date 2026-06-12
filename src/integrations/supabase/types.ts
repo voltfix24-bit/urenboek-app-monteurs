@@ -1485,6 +1485,39 @@ export type Database = {
         }
         Relationships: []
       }
+      planner_planning_sync_audit: {
+        Row: {
+          created_at: string
+          datum: string
+          external_id: string
+          fout_reden: string | null
+          id: string
+          manager_user_id: string
+          planning_id: string | null
+          uitkomst: string
+        }
+        Insert: {
+          created_at?: string
+          datum: string
+          external_id: string
+          fout_reden?: string | null
+          id?: string
+          manager_user_id: string
+          planning_id?: string | null
+          uitkomst: string
+        }
+        Update: {
+          created_at?: string
+          datum?: string
+          external_id?: string
+          fout_reden?: string | null
+          id?: string
+          manager_user_id?: string
+          planning_id?: string | null
+          uitkomst?: string
+        }
+        Relationships: []
+      }
       planning: {
         Row: {
           activiteit: string | null
@@ -2637,6 +2670,19 @@ export type Database = {
       }
       next_contract_nummer: { Args: never; Returns: string }
       next_inkooporder_nummer: { Args: never; Returns: string }
+      sync_planner_planning_item_v1: {
+        Args: {
+          _activiteit: string
+          _datum: string
+          _external_id: string
+          _kleur: string
+          _manager_profile_id: string
+          _medewerker_id: string
+          _notitie: string
+          _project_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "monteur" | "schakelmonteur" | "uitvoerder" | "wv" | "manager"
