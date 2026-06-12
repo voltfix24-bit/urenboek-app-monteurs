@@ -1074,7 +1074,43 @@ export default function PlannerKoppeling() {
           </div>
         </div>
       )}
+
+      {proefsyncConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setProefsyncConfirm(null)}>
+          <div className="rounded-xl p-5 max-w-sm w-full" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }} onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-base mb-3" style={{ color: "var(--text-primary)" }}>Bevestig proefsync</h3>
+            <dl className="text-xs space-y-1 mb-4" style={{ color: "var(--text-muted)" }}>
+              <div className="flex gap-2"><dt className="w-24">Datum</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{proefsyncConfirm.datum}</dd></div>
+              <div className="flex gap-2"><dt className="w-24">Project</dt><dd style={{ color: "var(--text-primary)" }}>{proefsyncConfirm.project_label ?? "—"}</dd></div>
+              <div className="flex gap-2"><dt className="w-24">Monteur</dt><dd style={{ color: "var(--text-primary)" }}>{proefsyncConfirm.monteur_label ?? "—"}</dd></div>
+              <div className="flex gap-2"><dt className="w-24">Activiteit</dt><dd style={{ color: "var(--text-primary)" }}>{proefsyncConfirm.activiteit ?? "—"}{proefsyncConfirm.kleur ? ` (${proefsyncConfirm.kleur})` : ""}</dd></div>
+              <div className="flex gap-2"><dt className="w-24">Tijden</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{proefsyncConfirm.voorgesteld.starttijd}–{proefsyncConfirm.voorgesteld.eindtijd}</dd></div>
+              {proefsyncConfirm.notitie && (
+                <div className="flex gap-2"><dt className="w-24">Notitie</dt><dd style={{ color: "var(--text-primary)" }}>{proefsyncConfirm.notitie}</dd></div>
+              )}
+            </dl>
+            <p className="text-[11px] mb-3" style={{ color: "var(--text-muted)" }}>
+              Eén regel wordt aangemaakt en gemarkeerd als sync-locked. Bestaande planning wordt niet gewijzigd.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setProefsyncConfirm(null)} className="px-3 py-1.5 text-xs rounded-lg"
+                style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>
+                Annuleer
+              </button>
+              <button
+                onClick={() => runProefsync(proefsyncConfirm)}
+                disabled={proefsyncBusyKey !== null}
+                className="px-3 py-1.5 text-xs rounded-lg font-semibold inline-flex items-center gap-1.5"
+                style={{ background: "var(--accent)", color: "white", opacity: proefsyncBusyKey ? 0.5 : 1 }}>
+                {proefsyncBusyKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                Start proefsync
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+
 
   );
 }
