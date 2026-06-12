@@ -161,6 +161,44 @@ export default function PlannerKoppeling() {
   const [preview, setPreview] = useState<PreviewResponse | null>(null);
   const [previewStatusFilter, setPreviewStatusFilter] = useState<PreviewStatus | "alle">("alle");
   const [previewQuery, setPreviewQuery] = useState("");
+  const [proefsyncBusyKey, setProefsyncBusyKey] = useState<string | null>(null);
+  const [proefsyncConfirm, setProefsyncConfirm] = useState<PreviewRegel | null>(null);
+
+  async function runProefsync(regel: PreviewRegel) {
+    if (regel.status !== "nieuw") return;
+    const key = regel.external_id;
+    setProefsyncBusyKey(key);
+    setProefsyncConfirm(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-planner-planning-item", {
+        body: {
+          datum_vanaf: preview?.datum_vanaf ?? regel.datum,
+          datum_tot: preview?.datum_tot ?? regel.datum,
+          external_id: regel.external_id,
+        },
+      });
+      if (error) {
+        const ctx = (error as any)?.context;
+        let msg = (error as any)?.message ?? "Proefsync mislukt";
+        try {
+          const body = ctx && typeof ctx.json === "function" ? await ctx.json() : null;
+          if (body?.error) msg = body.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+      const uitkomst = (data as any)?.uitkomst;
+      if (uitkomst === "reeds_gesynchroniseerd") {
+        toast.success("Was al gesynchroniseerd");
+      } else {
+        toast.success("Proefsync geslaagd");
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Proefsync mislukt");
+    } finally {
+      setProefsyncBusyKey(null);
+    }
+  }
 
   async function runPreview() {
     setPreviewBusy(true);
@@ -868,6 +906,26 @@ export default function PlannerKoppeling() {
                               </ul>
                             </div>
                           )}
+                          {r.status === "nieuw" && (
+                            <div className="mt-2 flex">
+                              <button
+                                onClick={() => setProefsyncConfirm(r)}
+                                disabled={proefsyncBusyKey === r.external_id}
+                                className="px-3 py-1 text-xs rounded-lg font-semibold inline-flex items-center gap-1.5"
+                                style={{
+                                  background: "var(--accent)",
+                                  color: "white",
+                                  opacity: proefsyncBusyKey === r.external_id ? 0.5 : 1,
+                                  cursor: proefsyncBusyKey === r.external_id ? "wait" : "pointer",
+                                }}
+                              >
+                                {proefsyncBusyKey === r.external_id
+                                  ? <Loader2 className="h-3 w-3 animate-spin" />
+                                  : <Send className="h-3 w-3" />}
+                                Proefsync
+                              </button>
+                            </div>
+                          )}
                         </li>
                       );
                     })}
@@ -1016,7 +1074,43 @@ export default function PlannerKoppeling() {
           </div>
         </div>
       )}
+
+      {proefsyncConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setProefsyncConfirm(null)}>
+          <div className="rounded-xl p-5 max-w-sm w-full" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }} onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-base mb-3" style={{ color: "var(--text-primary)" }}>Bevestig proefsync</h3>
+            <dl className="text-xs space-y-1 mb-4" style={{ color: "var(--text-muted)" }}>
+              <div className="flex gap-2"><dt className="w-24">Datum</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{proefsyncConfirm.datum}</dd></div>
+              <div className="flex gap-2"><dt className="w-24">Project</dt><dd style={{ color: "var(--text-primary)" }}>{proefsyncConfirm.project_label ?? "—"}</dd></div>
+              <div className="flex gap-2"><dt className="w-24">Monteur</dt><dd style={{ color: "var(--text-primary)" }}>{proefsyncConfirm.monteur_label ?? "—"}</dd></div>
+              <div className="flex gap-2"><dt className="w-24">Activiteit</dt><dd style={{ color: "var(--text-primary)" }}>{proefsyncConfirm.activiteit ?? "—"}{proefsyncConfirm.kleur ? ` (${proefsyncConfirm.kleur})` : ""}</dd></div>
+              <div className="flex gap-2"><dt className="w-24">Tijden</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{proefsyncConfirm.voorgesteld.starttijd}–{proefsyncConfirm.voorgesteld.eindtijd}</dd></div>
+              {proefsyncConfirm.notitie && (
+                <div className="flex gap-2"><dt className="w-24">Notitie</dt><dd style={{ color: "var(--text-primary)" }}>{proefsyncConfirm.notitie}</dd></div>
+              )}
+            </dl>
+            <p className="text-[11px] mb-3" style={{ color: "var(--text-muted)" }}>
+              Eén regel wordt aangemaakt en gemarkeerd als sync-locked. Bestaande planning wordt niet gewijzigd.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setProefsyncConfirm(null)} className="px-3 py-1.5 text-xs rounded-lg"
+                style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>
+                Annuleer
+              </button>
+              <button
+                onClick={() => runProefsync(proefsyncConfirm)}
+                disabled={proefsyncBusyKey !== null}
+                className="px-3 py-1.5 text-xs rounded-lg font-semibold inline-flex items-center gap-1.5"
+                style={{ background: "var(--accent)", color: "white", opacity: proefsyncBusyKey ? 0.5 : 1 }}>
+                {proefsyncBusyKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                Start proefsync
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+
 
   );
 }
