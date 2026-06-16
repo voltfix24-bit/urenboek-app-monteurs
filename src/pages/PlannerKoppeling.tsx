@@ -167,6 +167,13 @@ export default function PlannerKoppeling() {
   const [proefsyncConfirm, setProefsyncConfirm] = useState<PreviewRegel | null>(null);
   const [adoptBusyKey, setAdoptBusyKey] = useState<string | null>(null);
   const [adoptConfirm, setAdoptConfirm] = useState<PreviewRegel | null>(null);
+  const [batchBusy, setBatchBusy] = useState(false);
+  const [batchConfirm, setBatchConfirm] = useState(false);
+  const [batchResult, setBatchResult] = useState<null | {
+    aantallen: { gesynchroniseerd: number; reeds_gesynchroniseerd: number; geweigerd: number; fout: number };
+    verwerkt: number;
+  }>(null);
+  const BATCH_LIMIT = 25;
 
   function isAdopteerbaar(r: PreviewRegel): boolean {
     return (
@@ -247,6 +254,42 @@ export default function PlannerKoppeling() {
       toast.error(e?.message ?? "Proefsync mislukt");
     } finally {
       setProefsyncBusyKey(null);
+    }
+  }
+
+  async function runBatch() {
+    if (!preview) return;
+    setBatchBusy(true);
+    setBatchConfirm(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-planner-planning-batch", {
+        body: {
+          datum_vanaf: preview.datum_vanaf,
+          datum_tot: preview.datum_tot,
+          limit: BATCH_LIMIT,
+        },
+      });
+      if (error) {
+        const ctx = (error as any)?.context;
+        let msg = (error as any)?.message ?? "Batch-sync mislukt";
+        try {
+          const body = ctx && typeof ctx.json === "function" ? await ctx.json() : null;
+          if (body?.error) msg = body.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+      const d = data as any;
+      setBatchResult({ aantallen: d.aantallen, verwerkt: d.verwerkt });
+      if ((d.aantallen?.fout ?? 0) > 0 || (d.aantallen?.geweigerd ?? 0) > 0) {
+        toast.warning(`Batch klaar met ${d.aantallen.fout} fouten en ${d.aantallen.geweigerd} geweigerd`);
+      } else {
+        toast.success(`Batch klaar: ${d.aantallen.gesynchroniseerd} gesynchroniseerd`);
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Batch-sync mislukt");
+    } finally {
+      setBatchBusy(false);
     }
   }
 
@@ -898,6 +941,39 @@ export default function PlannerKoppeling() {
                   </div>
                 </div>
 
+                {(() => {
+                  const a = preview.aantallen;
+                  const kanBatch = a.nieuw > 0 && a.conflict === 0 && a.verwijderd_in_planner === 0 && a.gewijzigd === 0;
+                  if (!kanBatch) return null;
+                  const teVerwerken = Math.min(a.nieuw, BATCH_LIMIT);
+                  return (
+                    <div className="flex items-center gap-2 flex-wrap p-2 rounded-lg" style={{ background: "var(--accent-light, #ecfdf5)", border: "1px solid var(--accent)" }}>
+                      <span className="text-xs" style={{ color: "var(--text-primary)" }}>
+                        <strong>{a.nieuw}</strong> nieuwe Planner-regels gereed voor synchronisatie. Limiet per batch: <strong>{BATCH_LIMIT}</strong>.
+                      </span>
+                      <button
+                        onClick={() => setBatchConfirm(true)}
+                        disabled={batchBusy}
+                        className="ml-auto px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 text-white"
+                        style={{ background: "var(--accent)", opacity: batchBusy ? 0.5 : 1 }}
+                      >
+                        {batchBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                        Nieuwe regels synchroniseren ({teVerwerken})
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {batchResult && (
+                  <div className="p-2 rounded-lg text-xs" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }}>
+                    Laatste batch — verwerkt: <strong>{batchResult.verwerkt}</strong>{" · "}
+                    gesynchroniseerd: <strong>{batchResult.aantallen.gesynchroniseerd}</strong>{" · "}
+                    reeds: <strong>{batchResult.aantallen.reeds_gesynchroniseerd}</strong>{" · "}
+                    geweigerd: <strong style={{ color: batchResult.aantallen.geweigerd > 0 ? "#b91c1c" : undefined }}>{batchResult.aantallen.geweigerd}</strong>{" · "}
+                    fout: <strong style={{ color: batchResult.aantallen.fout > 0 ? "#b91c1c" : undefined }}>{batchResult.aantallen.fout}</strong>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                     Bereik: <strong style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{preview.datum_vanaf}</strong>
@@ -1139,6 +1215,37 @@ export default function PlannerKoppeling() {
               >
                 {koppelBusyKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Link2 className="h-3 w-3" />}
                 Bevestig en koppel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {batchConfirm && preview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setBatchConfirm(false)}>
+          <div className="rounded-2xl p-4 max-w-md w-full" style={{ background: "var(--bg-surface)" }} onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-bold text-base mb-3" style={{ color: "var(--text-primary)" }}>Bevestig batch-synchronisatie</h3>
+            <dl className="text-xs space-y-1.5" style={{ color: "var(--text-muted)" }}>
+              <div className="flex gap-2"><dt className="w-32">Bereik</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{preview.datum_vanaf} — {preview.datum_tot}</dd></div>
+              <div className="flex gap-2"><dt className="w-32">Nieuwe regels</dt><dd style={{ color: "var(--text-primary)" }}>{preview.aantallen.nieuw}</dd></div>
+              <div className="flex gap-2"><dt className="w-32">Te verwerken</dt><dd style={{ color: "var(--text-primary)" }}>{Math.min(preview.aantallen.nieuw, BATCH_LIMIT)} (limiet {BATCH_LIMIT})</dd></div>
+              <div className="flex gap-2"><dt className="w-32">Tijden</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>07:00–16:00</dd></div>
+            </dl>
+            <p className="text-[11px] mt-3" style={{ color: "var(--text-muted)" }}>
+              Alleen regels met status <strong>nieuw</strong> worden verwerkt. Bestaande externe en handmatige regels blijven ongewijzigd.
+            </p>
+            <div className="flex gap-2 mt-4 justify-end">
+              <button onClick={() => setBatchConfirm(false)} className="px-3 py-1.5 text-xs rounded-lg"
+                style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>
+                Annuleren
+              </button>
+              <button
+                onClick={() => runBatch()}
+                disabled={batchBusy}
+                className="px-3 py-1.5 text-xs rounded-lg font-bold inline-flex items-center gap-1.5"
+                style={{ background: "var(--accent)", color: "white", opacity: batchBusy ? 0.5 : 1 }}>
+                {batchBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                Start batch-sync
               </button>
             </div>
           </div>
