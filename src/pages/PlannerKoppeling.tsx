@@ -248,7 +248,42 @@ export default function PlannerKoppeling() {
         toast.success("Was al gesynchroniseerd");
       } else {
         toast.success("Proefsync geslaagd");
+  }
+
+  async function runBatch() {
+    if (!preview) return;
+    setBatchBusy(true);
+    setBatchConfirm(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-planner-planning-batch", {
+        body: {
+          datum_vanaf: preview.datum_vanaf,
+          datum_tot: preview.datum_tot,
+          limit: BATCH_LIMIT,
+        },
+      });
+      if (error) {
+        const ctx = (error as any)?.context;
+        let msg = (error as any)?.message ?? "Batch-sync mislukt";
+        try {
+          const body = ctx && typeof ctx.json === "function" ? await ctx.json() : null;
+          if (body?.error) msg = body.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
       }
+      const d = data as any;
+      setBatchResult({ aantallen: d.aantallen, verwerkt: d.verwerkt });
+      if ((d.aantallen?.fout ?? 0) > 0 || (d.aantallen?.geweigerd ?? 0) > 0) {
+        toast.warning(`Batch klaar met ${d.aantallen.fout} fouten en ${d.aantallen.geweigerd} geweigerd`);
+      } else {
+        toast.success(`Batch klaar: ${d.aantallen.gesynchroniseerd} gesynchroniseerd`);
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Batch-sync mislukt");
+    } finally {
+      setBatchBusy(false);
+    }
       await runPreview();
     } catch (e: any) {
       toast.error(e?.message ?? "Proefsync mislukt");
