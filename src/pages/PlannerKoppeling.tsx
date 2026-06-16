@@ -167,6 +167,13 @@ export default function PlannerKoppeling() {
   const [proefsyncConfirm, setProefsyncConfirm] = useState<PreviewRegel | null>(null);
   const [adoptBusyKey, setAdoptBusyKey] = useState<string | null>(null);
   const [adoptConfirm, setAdoptConfirm] = useState<PreviewRegel | null>(null);
+  const [batchBusy, setBatchBusy] = useState(false);
+  const [batchConfirm, setBatchConfirm] = useState(false);
+  const [batchResult, setBatchResult] = useState<null | {
+    aantallen: { gesynchroniseerd: number; reeds_gesynchroniseerd: number; geweigerd: number; fout: number };
+    verwerkt: number;
+  }>(null);
+  const BATCH_LIMIT = 25;
 
   function isAdopteerbaar(r: PreviewRegel): boolean {
     return (
