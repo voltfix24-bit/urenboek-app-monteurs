@@ -117,6 +117,8 @@ export default function PlannerKoppeling() {
     status: PreviewStatus;
     external_id: string;
     datum: string;
+    urenapp_project_id: string | null;
+    urenapp_profile_id: string | null;
     project_label: string | null;
     monteur_label: string | null;
     activiteit: string | null;
@@ -125,7 +127,7 @@ export default function PlannerKoppeling() {
     voorgesteld: { starttijd: string; eindtijd: string };
     conflict_redenen: string[];
     verschillen: { veld: string; huidig: unknown; voorgesteld: unknown }[];
-    bestaande_row: { starttijd: string; eindtijd: string; activiteit: string | null; activiteit_kleur: string | null; notitie: string } | null;
+    bestaande_row: { id?: string; datum?: string; starttijd: string; eindtijd: string; activiteit: string | null; activiteit_kleur: string | null; notitie: string; project_id?: string; medewerker_id?: string } | null;
   }
   interface PreviewResponse {
     success: boolean;
