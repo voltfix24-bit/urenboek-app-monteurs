@@ -275,6 +275,7 @@ export function classify(input: ClassifyInput): ClassifyResult {
     if (r.external_source !== "terrevolt_planner" || !r.external_id) continue;
     if (r.datum < datum_vanaf || r.datum > datum_tot) continue;
     if (plannerExternalIds.has(r.external_id)) continue;
+    if (r.external_deleted_at) continue; // al gemarkeerd verwijderd: niet opnieuw tellen
     const proj = projById.get(r.project_id) ?? null;
     const prof = profById.get(r.medewerker_id) ?? null;
     regels.push({
