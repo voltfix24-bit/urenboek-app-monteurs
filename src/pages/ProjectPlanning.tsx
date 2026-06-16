@@ -250,13 +250,15 @@ export default function ProjectPlanning() {
     }, { onConflict: "project_id" });
 
     // Verwijder alleen handmatige/interne planningregels voor dit project.
-    // Externe Planner-regels (external_source = 'terrevolt_planner') worden
-    // beheerd door de Planner-sync en mogen niet door publiceren verloren gaan.
+    // Externe Planner-regels (external_source = 'terrevolt_planner') én regels
+    // met sync_locked = true worden beheerd door de Planner-sync en mogen niet
+    // door publiceren verloren gaan.
     await supabase
       .from("planning")
       .delete()
       .eq("project_id", projectId)
-      .is("external_source", null);
+      .is("external_source", null)
+      .or("sync_locked.is.null,sync_locked.eq.false");
 
     // Build monteur-per-datum map for collega_ids
     const monteurPerDatum = new Map<string, string[]>();
@@ -286,7 +288,7 @@ export default function ProjectPlanning() {
       return true;
     });
 
-    const toInsert = unique.map(r => {
+    const kandidaten = unique.map(r => {
       const activiteitNaam = state.activities[r.actIdx] || "";
       const activiteitKleur = r.cell.color || "";
       const weekKey = `${state.weekNrs[r.weekIdx]}`;
@@ -309,8 +311,24 @@ export default function ProjectPlanning() {
       };
     });
 
+    // Filter kandidaten die zouden botsen met een bestaande externe Planner-regel.
+    const { toInsert, geblokkeerd } = splitsKandidatenOpExternePlannerBotsing(
+      kandidaten,
+      externePlannerRegels,
+    );
+
     if (toInsert.length > 0) {
       await supabase.from("planning").insert(toInsert as any);
+    }
+
+    if (geblokkeerd.length > 0) {
+      const monteurNamen = new Set(
+        geblokkeerd.map(g => monteurMap.get(g.medewerker_id)?.full_name ?? "Onbekend"),
+      );
+      toast.warning(
+        `${geblokkeerd.length} interne planningregel(s) overgeslagen — er bestaat al een Planner-regel voor ${Array.from(monteurNamen).join(", ")}.`,
+        { duration: 8000 },
+      );
     }
 
     // Auto-update project status to 'in_uitvoering' if currently 'gepland'
