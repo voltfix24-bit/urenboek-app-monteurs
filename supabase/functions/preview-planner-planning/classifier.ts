@@ -33,6 +33,7 @@ export interface BestaandePlanningRow {
   activiteit_kleur: string | null;
   external_source: string | null;
   external_id: string | null;
+  external_deleted_at?: string | null;
 }
 
 export interface ProjectMini {
