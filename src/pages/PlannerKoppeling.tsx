@@ -290,7 +290,43 @@ export default function PlannerKoppeling() {
         toast.warning(`Batch klaar met ${d.aantallen.fout} fouten en ${d.aantallen.geweigerd} geweigerd`);
       } else {
         toast.success(`Batch klaar: ${d.aantallen.gesynchroniseerd} gesynchroniseerd`);
+  }
+
+  async function runUpdates() {
+    if (!preview) return;
+    setUpdatesBusy(true);
+    setUpdatesConfirm(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-planner-planning-updates", {
+        body: {
+          datum_vanaf: preview.datum_vanaf,
+          datum_tot: preview.datum_tot,
+          limit: BATCH_LIMIT,
+        },
+      });
+      if (error) {
+        const ctx = (error as any)?.context;
+        let msg = (error as any)?.message ?? "Wijzigingen verwerken mislukt";
+        try {
+          const body = ctx && typeof ctx.json === "function" ? await ctx.json() : null;
+          if (body?.error) msg = body.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
       }
+      const d = data as any;
+      setUpdatesResult({ aantallen: d.aantallen, verwerkt: d.verwerkt });
+      if ((d.aantallen?.fout ?? 0) > 0 || (d.aantallen?.geweigerd ?? 0) > 0) {
+        toast.warning(`Update klaar: ${d.aantallen.bijgewerkt} bijgewerkt · ${d.aantallen.geweigerd} geweigerd · ${d.aantallen.fout} fout`);
+      } else {
+        toast.success(`Update klaar: ${d.aantallen.bijgewerkt} bijgewerkt`);
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Wijzigingen verwerken mislukt");
+    } finally {
+      setUpdatesBusy(false);
+    }
+  }
       await runPreview();
     } catch (e: any) {
       toast.error(e?.message ?? "Batch-sync mislukt");
