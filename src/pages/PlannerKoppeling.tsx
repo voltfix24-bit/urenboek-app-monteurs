@@ -179,6 +179,12 @@ export default function PlannerKoppeling() {
     aantallen: { bijgewerkt: number; overgeslagen: number; geweigerd: number; fout: number };
     verwerkt: number;
   }>(null);
+  const [deletionsBusy, setDeletionsBusy] = useState(false);
+  const [deletionsConfirm, setDeletionsConfirm] = useState(false);
+  const [deletionsResult, setDeletionsResult] = useState<null | {
+    aantallen: { verwijderd: number; gemarkeerd_verwijderd: number; overgeslagen: number; geweigerd: number; fout: number };
+    verwerkt: number;
+  }>(null);
   const BATCH_LIMIT = 25;
 
   function isAdopteerbaar(r: PreviewRegel): boolean {
