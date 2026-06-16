@@ -322,3 +322,42 @@ Deno.test("geen nieuwe regels -> 200 met lege resultaten", async () => {
   const j = await r.json();
   assertEquals(j.verwerkt, 0);
 });
+
+// --- Regressie: multi-monteur op zelfde project/datum ---
+
+Deno.test("multi-monteur batch: drie monteurs zelfde project/datum allen succesvol", async () => {
+  const PROF_2 = "44444444-4444-4444-4444-444444444444";
+  const PROF_3 = "55555555-5555-5555-5555-555555555555";
+  const PM_2 = "66666666-1111-1111-1111-111111111111";
+  const PM_3 = "77777777-2222-2222-2222-222222222222";
+  const EXT_1 = "cel-x:" + PLANNER_MONT;
+  const EXT_2 = "cel-x:" + PM_2;
+  const EXT_3 = "cel-x:" + PM_3;
+  const s = freshState({
+    planner: [
+      { external_id: EXT_1, planning_cel_id: "cel-x", planner_project_id: PLANNER_PROJ,
+        planner_monteur_id: PLANNER_MONT, urenapp_project_id: PROJ, urenapp_profile_id: PROFILE,
+        datum: DATUM_A, activiteit: "Montage", kleur: "c1", notitie: "" },
+      { external_id: EXT_2, planning_cel_id: "cel-x", planner_project_id: PLANNER_PROJ,
+        planner_monteur_id: PM_2, urenapp_project_id: PROJ, urenapp_profile_id: PROF_2,
+        datum: DATUM_A, activiteit: "Montage", kleur: "c1", notitie: "" },
+      { external_id: EXT_3, planning_cel_id: "cel-x", planner_project_id: PLANNER_PROJ,
+        planner_monteur_id: PM_3, urenapp_project_id: PROJ, urenapp_profile_id: PROF_3,
+        datum: DATUM_A, activiteit: "Montage", kleur: "c1", notitie: "" },
+    ],
+    profiles: [
+      { id: PROFILE, user_id: "m1", full_name: "Samir", planner_monteur_id: PLANNER_MONT },
+      { id: PROF_2,  user_id: "m2", full_name: "Ali",   planner_monteur_id: PM_2 },
+      { id: PROF_3,  user_id: "m3", full_name: "Yazan", planner_monteur_id: PM_3 },
+    ],
+  });
+  const h = createHandler(makeDeps(s));
+  const r = await h(authReq(JSON.stringify({ datum_vanaf: DATUM_A, datum_tot: DATUM_A })));
+  assertEquals(r.status, 200);
+  const j = await r.json();
+  assertEquals(j.verwerkt, 3);
+  assertEquals(j.aantallen.gesynchroniseerd, 3);
+  const monteurs = new Set(s.rpcCalls.map((c: any) => c._medewerker_id));
+  assertEquals(monteurs.size, 3);
+});
+

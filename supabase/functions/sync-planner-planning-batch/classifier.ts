@@ -166,14 +166,9 @@ export function classify(input: ClassifyInput): ClassifyResult {
   const externalIdTeller = new Map<string, number>();
   for (const it of planner) externalIdTeller.set(it.external_id, (externalIdTeller.get(it.external_id) ?? 0) + 1);
 
-  // Monteur op meerdere planner_projecten dezelfde dag
-  const monteurDatumProjecten = new Map<string, Set<string>>();
-  for (const it of planner) {
-    const k = `${it.planner_monteur_id}|${it.datum}`;
-    const s = monteurDatumProjecten.get(k) ?? new Set<string>();
-    s.add(it.planner_project_id);
-    monteurDatumProjecten.set(k, s);
-  }
+  // (Bewust verwijderd: monteur_meerdere_projecten_zelfde_datum)
+  // Planner mag een monteur op meerdere cellen of projecten op dezelfde dag plannen.
+  // Idempotentie wordt afgedwongen via de unieke combinatie external_source + external_id.
 
   const regels: PreviewRegel[] = [];
 
@@ -193,9 +188,7 @@ export function classify(input: ClassifyInput): ClassifyResult {
       conflict.push(`uitgesloten_project:${proj.planner_sync_exclusion_reason ?? "anders"}`);
     }
     if ((externalIdTeller.get(it.external_id) ?? 0) > 1) conflict.push("dubbele_external_id_in_planner");
-    if ((monteurDatumProjecten.get(`${it.planner_monteur_id}|${it.datum}`)?.size ?? 0) > 1) {
-      conflict.push("monteur_meerdere_projecten_zelfde_datum");
-    }
+
 
     // Overlap met handmatige planning op dezelfde monteur+datum
     if (prof) {

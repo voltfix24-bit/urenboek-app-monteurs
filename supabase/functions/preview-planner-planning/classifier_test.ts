@@ -63,13 +63,27 @@ Deno.test("conflict bij dubbele external_id binnen planner", () => {
   assertEquals(res.regels.every(r => r.conflict_redenen.includes("dubbele_external_id_in_planner")), true);
 });
 
-Deno.test("conflict bij monteur op meerdere projecten zelfde datum", () => {
+Deno.test("geen conflict bij zelfde monteur op meerdere projecten dezelfde datum (multi-cel toegestaan)", () => {
   const proj2: ProjectMini = { id:"P3", nummer:"0003", naam:"Gamma", planner_project_id:"pp3", planner_sync_enabled:true, planner_sync_exclusion_reason:null };
   const a = pItem({ external_id:"e-a", planner_project_id:"pp1", urenapp_project_id:"P1" });
   const b = pItem({ external_id:"e-b", planner_project_id:"pp3", urenapp_project_id:"P3" });
   const res = classify({ datum_vanaf:"2026-06-15", datum_tot:"2026-06-15", planner:[a,b], uitgesloten:[], bestaande:[], projecten:[proj, proj2], profielen:[monteur] });
-  assertEquals(res.regels.every(r => r.conflict_redenen.includes("monteur_meerdere_projecten_zelfde_datum")), true);
+  assertEquals(res.regels.every(r => r.status === "nieuw"), true);
+  assertEquals(res.aantallen.conflict, 0);
 });
+
+Deno.test("drie verschillende monteurs op hetzelfde project/datum: allemaal nieuw, geen conflict", () => {
+  const m3: ProfileMini = { id:"M3", full_name:"Cor", planner_monteur_id:"pm3" };
+  const a = pItem({ external_id:"cel:pm1", planner_monteur_id:"pm1", urenapp_profile_id:"M1" });
+  const b = pItem({ external_id:"cel:pm2", planner_monteur_id:"pm2", urenapp_profile_id:"M2" });
+  const c = pItem({ external_id:"cel:pm3", planner_monteur_id:"pm3", urenapp_profile_id:"M3" });
+  const res = classify({ datum_vanaf:"2026-06-15", datum_tot:"2026-06-15", planner:[a,b,c], uitgesloten:[], bestaande:[], projecten:[proj], profielen:[monteur, monteur2, m3] });
+  assertEquals(res.regels.length, 3);
+  assertEquals(res.regels.every(r => r.status === "nieuw"), true);
+  assertEquals(res.aantallen.nieuw, 3);
+  assertEquals(res.aantallen.conflict, 0);
+});
+
 
 Deno.test("conflict bij uitgesloten project", () => {
   const it = pItem({ planner_project_id:"pp2", urenapp_project_id:"P2" });
