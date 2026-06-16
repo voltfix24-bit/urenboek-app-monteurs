@@ -76,7 +76,7 @@ export function createHandler(deps: Deps) {
       supaAdmin.from("profiles").select("id, full_name, planner_monteur_id"),
       supaAdmin
         .from("planning")
-        .select("id, datum, starttijd, eindtijd, notitie, project_id, medewerker_id, activiteit, activiteit_kleur, external_source, external_id")
+        .select("id, datum, starttijd, eindtijd, notitie, project_id, medewerker_id, activiteit, activiteit_kleur, external_source, external_id, external_deleted_at")
         .gte("datum", datum_vanaf)
         .lte("datum", datum_tot),
     ]);
