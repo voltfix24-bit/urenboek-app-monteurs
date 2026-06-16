@@ -332,7 +332,43 @@ export default function PlannerKoppeling() {
         toast.warning(`Update klaar: ${d.aantallen.bijgewerkt} bijgewerkt · ${d.aantallen.geweigerd} geweigerd · ${d.aantallen.fout} fout`);
       } else {
         toast.success(`Update klaar: ${d.aantallen.bijgewerkt} bijgewerkt`);
+  }
+
+  async function runDeletions() {
+    if (!preview) return;
+    setDeletionsBusy(true);
+    setDeletionsConfirm(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-planner-planning-deletions", {
+        body: {
+          datum_vanaf: preview.datum_vanaf,
+          datum_tot: preview.datum_tot,
+          limit: BATCH_LIMIT,
+        },
+      });
+      if (error) {
+        const ctx = (error as any)?.context;
+        let msg = (error as any)?.message ?? "Verwijderingen verwerken mislukt";
+        try {
+          const body = ctx && typeof ctx.json === "function" ? await ctx.json() : null;
+          if (body?.error) msg = body.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
       }
+      const d = data as any;
+      setDeletionsResult({ aantallen: d.aantallen, verwerkt: d.verwerkt });
+      if ((d.aantallen?.fout ?? 0) > 0 || (d.aantallen?.geweigerd ?? 0) > 0) {
+        toast.warning(`Verwijderingen klaar: ${d.aantallen.verwijderd} verwijderd · ${d.aantallen.gemarkeerd_verwijderd} gemarkeerd · ${d.aantallen.fout} fout`);
+      } else {
+        toast.success(`Verwijderingen klaar: ${d.aantallen.verwijderd} verwijderd · ${d.aantallen.gemarkeerd_verwijderd} gemarkeerd`);
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Verwijderingen verwerken mislukt");
+    } finally {
+      setDeletionsBusy(false);
+    }
+  }
       await runPreview();
     } catch (e: any) {
       toast.error(e?.message ?? "Wijzigingen verwerken mislukt");
