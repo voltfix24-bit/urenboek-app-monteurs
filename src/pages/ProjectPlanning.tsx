@@ -671,6 +671,19 @@ export default function ProjectPlanning() {
         )}
       </header>
 
+      {/* Waarschuwing: project bevat externe Planner-regels */}
+      {externePlannerRegels.length > 0 && (
+        <div className="mx-4 mt-3 rounded-xl p-3 flex items-start gap-2"
+          style={{ background: "var(--warn-light)", border: "1px solid var(--warn-text)" }}>
+          <span className="text-base leading-none mt-0.5">⚠</span>
+          <div className="text-[12px]" style={{ color: "var(--warn-text)" }}>
+            <strong>Dit project bevat Planner-gekoppelde planning.</strong>{" "}
+            Externe regels ({externePlannerRegels.length}) blijven behouden bij publiceren of terug-naar-concept.
+            Interne regels voor dezelfde monteur/datum worden overgeslagen.
+          </div>
+        </div>
+      )}
+
       {/* Info grid */}
       <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 rounded-2xl p-4" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
