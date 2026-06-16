@@ -1124,14 +1124,6 @@ export default function PlannerKoppeling() {
                     fout: <strong style={{ color: deletionsResult.aantallen.fout > 0 ? "#b91c1c" : undefined }}>{deletionsResult.aantallen.fout}</strong>
                   </div>
                 )}
-                  <div className="p-2 rounded-lg text-xs" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }}>
-                    Laatste update — verwerkt: <strong>{updatesResult.verwerkt}</strong>{" · "}
-                    bijgewerkt: <strong>{updatesResult.aantallen.bijgewerkt}</strong>{" · "}
-                    overgeslagen: <strong>{updatesResult.aantallen.overgeslagen}</strong>{" · "}
-                    geweigerd: <strong style={{ color: updatesResult.aantallen.geweigerd > 0 ? "#b91c1c" : undefined }}>{updatesResult.aantallen.geweigerd}</strong>{" · "}
-                    fout: <strong style={{ color: updatesResult.aantallen.fout > 0 ? "#b91c1c" : undefined }}>{updatesResult.aantallen.fout}</strong>
-                  </div>
-                )}
 
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs" style={{ color: "var(--text-muted)" }}>
