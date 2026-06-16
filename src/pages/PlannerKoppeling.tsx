@@ -1433,6 +1433,37 @@ export default function PlannerKoppeling() {
         </div>
       )}
 
+      {deletionsConfirm && preview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setDeletionsConfirm(false)}>
+          <div className="rounded-2xl p-4 max-w-md w-full" style={{ background: "var(--bg-surface)" }} onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-bold text-base mb-3" style={{ color: "var(--text-primary)" }}>Bevestig verwijderingen</h3>
+            <dl className="text-xs space-y-1.5" style={{ color: "var(--text-muted)" }}>
+              <div className="flex gap-2"><dt className="w-32">Bereik</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{preview.datum_vanaf} — {preview.datum_tot}</dd></div>
+              <div className="flex gap-2"><dt className="w-32">Verwijderingen</dt><dd style={{ color: "var(--text-primary)" }}>{preview.aantallen.verwijderd_in_planner}</dd></div>
+              <div className="flex gap-2"><dt className="w-32">Te verwerken</dt><dd style={{ color: "var(--text-primary)" }}>{Math.min(preview.aantallen.verwijderd_in_planner, BATCH_LIMIT)} (limiet {BATCH_LIMIT})</dd></div>
+            </dl>
+            <p className="text-[11px] mt-3" style={{ color: "#991b1b", background: "#fef2f2", padding: "6px 8px", borderRadius: 6, border: "1px solid #fecaca" }}>
+              Regels zonder urenboekingen of time-entries worden hard verwijderd. Regels met boekingen worden gemarkeerd met external_deleted_at en blijven beschikbaar voor de mobiele planning en urencontrole.
+            </p>
+            <div className="flex gap-2 mt-4 justify-end">
+              <button onClick={() => setDeletionsConfirm(false)} className="px-3 py-1.5 text-xs rounded-lg"
+                style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>
+                Annuleren
+              </button>
+              <button
+                onClick={() => runDeletions()}
+                disabled={deletionsBusy}
+                className="px-3 py-1.5 text-xs rounded-lg font-bold inline-flex items-center gap-1.5 text-white"
+                style={{ background: "#ef4444", opacity: deletionsBusy ? 0.5 : 1 }}>
+                {deletionsBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                Start verwijderbatch
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
 
       {proefsyncConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setProefsyncConfirm(null)}>
