@@ -2696,6 +2696,21 @@ export type Database = {
         }
         Returns: Json
       }
+      sync_planner_planning_update_v1: {
+        Args: {
+          _activiteit: string
+          _datum: string
+          _eindtijd: string
+          _external_id: string
+          _kleur: string
+          _manager_profile_id: string
+          _medewerker_id: string
+          _notitie: string
+          _project_id: string
+          _starttijd: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "monteur" | "schakelmonteur" | "uitvoerder" | "wv" | "manager"

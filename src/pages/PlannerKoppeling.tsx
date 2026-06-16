@@ -173,6 +173,12 @@ export default function PlannerKoppeling() {
     aantallen: { gesynchroniseerd: number; reeds_gesynchroniseerd: number; geweigerd: number; fout: number };
     verwerkt: number;
   }>(null);
+  const [updatesBusy, setUpdatesBusy] = useState(false);
+  const [updatesConfirm, setUpdatesConfirm] = useState(false);
+  const [updatesResult, setUpdatesResult] = useState<null | {
+    aantallen: { bijgewerkt: number; overgeslagen: number; geweigerd: number; fout: number };
+    verwerkt: number;
+  }>(null);
   const BATCH_LIMIT = 25;
 
   function isAdopteerbaar(r: PreviewRegel): boolean {
@@ -290,6 +296,42 @@ export default function PlannerKoppeling() {
       toast.error(e?.message ?? "Batch-sync mislukt");
     } finally {
       setBatchBusy(false);
+    }
+  }
+
+  async function runUpdates() {
+    if (!preview) return;
+    setUpdatesBusy(true);
+    setUpdatesConfirm(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-planner-planning-updates", {
+        body: {
+          datum_vanaf: preview.datum_vanaf,
+          datum_tot: preview.datum_tot,
+          limit: BATCH_LIMIT,
+        },
+      });
+      if (error) {
+        const ctx = (error as any)?.context;
+        let msg = (error as any)?.message ?? "Wijzigingen verwerken mislukt";
+        try {
+          const body = ctx && typeof ctx.json === "function" ? await ctx.json() : null;
+          if (body?.error) msg = body.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+      const d = data as any;
+      setUpdatesResult({ aantallen: d.aantallen, verwerkt: d.verwerkt });
+      if ((d.aantallen?.fout ?? 0) > 0 || (d.aantallen?.geweigerd ?? 0) > 0) {
+        toast.warning(`Update klaar: ${d.aantallen.bijgewerkt} bijgewerkt · ${d.aantallen.geweigerd} geweigerd · ${d.aantallen.fout} fout`);
+      } else {
+        toast.success(`Update klaar: ${d.aantallen.bijgewerkt} bijgewerkt`);
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Wijzigingen verwerken mislukt");
+    } finally {
+      setUpdatesBusy(false);
     }
   }
 
@@ -964,6 +1006,29 @@ export default function PlannerKoppeling() {
                   );
                 })()}
 
+                {(() => {
+                  const a = preview.aantallen;
+                  const kanUpdates = a.gewijzigd > 0 && a.conflict === 0 && a.verwijderd_in_planner === 0;
+                  if (!kanUpdates) return null;
+                  const teVerwerken = Math.min(a.gewijzigd, BATCH_LIMIT);
+                  return (
+                    <div className="flex items-center gap-2 flex-wrap p-2 rounded-lg" style={{ background: "#fffbeb", border: "1px solid #f59e0b" }}>
+                      <span className="text-xs" style={{ color: "#92400e" }}>
+                        <strong>{a.gewijzigd}</strong> Planner-wijziging(en) gevonden voor bestaande regels. Limiet per batch: <strong>{BATCH_LIMIT}</strong>.
+                      </span>
+                      <button
+                        onClick={() => setUpdatesConfirm(true)}
+                        disabled={updatesBusy}
+                        className="ml-auto px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 text-white"
+                        style={{ background: "#f59e0b", opacity: updatesBusy ? 0.5 : 1 }}
+                      >
+                        {updatesBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                        Wijzigingen verwerken ({teVerwerken})
+                      </button>
+                    </div>
+                  );
+                })()}
+
                 {batchResult && (
                   <div className="p-2 rounded-lg text-xs" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }}>
                     Laatste batch — verwerkt: <strong>{batchResult.verwerkt}</strong>{" · "}
@@ -971,6 +1036,16 @@ export default function PlannerKoppeling() {
                     reeds: <strong>{batchResult.aantallen.reeds_gesynchroniseerd}</strong>{" · "}
                     geweigerd: <strong style={{ color: batchResult.aantallen.geweigerd > 0 ? "#b91c1c" : undefined }}>{batchResult.aantallen.geweigerd}</strong>{" · "}
                     fout: <strong style={{ color: batchResult.aantallen.fout > 0 ? "#b91c1c" : undefined }}>{batchResult.aantallen.fout}</strong>
+                  </div>
+                )}
+
+                {updatesResult && (
+                  <div className="p-2 rounded-lg text-xs" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }}>
+                    Laatste update — verwerkt: <strong>{updatesResult.verwerkt}</strong>{" · "}
+                    bijgewerkt: <strong>{updatesResult.aantallen.bijgewerkt}</strong>{" · "}
+                    overgeslagen: <strong>{updatesResult.aantallen.overgeslagen}</strong>{" · "}
+                    geweigerd: <strong style={{ color: updatesResult.aantallen.geweigerd > 0 ? "#b91c1c" : undefined }}>{updatesResult.aantallen.geweigerd}</strong>{" · "}
+                    fout: <strong style={{ color: updatesResult.aantallen.fout > 0 ? "#b91c1c" : undefined }}>{updatesResult.aantallen.fout}</strong>
                   </div>
                 )}
 
@@ -1251,6 +1326,37 @@ export default function PlannerKoppeling() {
           </div>
         </div>
       )}
+
+      {updatesConfirm && preview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setUpdatesConfirm(false)}>
+          <div className="rounded-2xl p-4 max-w-md w-full" style={{ background: "var(--bg-surface)" }} onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-bold text-base mb-3" style={{ color: "var(--text-primary)" }}>Bevestig Planner-wijzigingen</h3>
+            <dl className="text-xs space-y-1.5" style={{ color: "var(--text-muted)" }}>
+              <div className="flex gap-2"><dt className="w-32">Bereik</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{preview.datum_vanaf} — {preview.datum_tot}</dd></div>
+              <div className="flex gap-2"><dt className="w-32">Wijzigingen</dt><dd style={{ color: "var(--text-primary)" }}>{preview.aantallen.gewijzigd}</dd></div>
+              <div className="flex gap-2"><dt className="w-32">Te verwerken</dt><dd style={{ color: "var(--text-primary)" }}>{Math.min(preview.aantallen.gewijzigd, BATCH_LIMIT)} (limiet {BATCH_LIMIT})</dd></div>
+            </dl>
+            <p className="text-[11px] mt-3" style={{ color: "#92400e", background: "#fffbeb", padding: "6px 8px", borderRadius: 6, border: "1px solid #fde68a" }}>
+              Regels met bestaande urenboekingen, time-entries, of handmatige overlap op de doel-datum worden geweigerd of overgeslagen. Bestaande external_source en external_id blijven intact.
+            </p>
+            <div className="flex gap-2 mt-4 justify-end">
+              <button onClick={() => setUpdatesConfirm(false)} className="px-3 py-1.5 text-xs rounded-lg"
+                style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>
+                Annuleren
+              </button>
+              <button
+                onClick={() => runUpdates()}
+                disabled={updatesBusy}
+                className="px-3 py-1.5 text-xs rounded-lg font-bold inline-flex items-center gap-1.5 text-white"
+                style={{ background: "#f59e0b", opacity: updatesBusy ? 0.5 : 1 }}>
+                {updatesBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                Start update-batch
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {proefsyncConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setProefsyncConfirm(null)}>
