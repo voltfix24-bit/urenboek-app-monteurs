@@ -2639,6 +2639,19 @@ export type Database = {
       }
     }
     Functions: {
+      adopt_planner_planning_item_v1: {
+        Args: {
+          _activiteit: string
+          _datum: string
+          _external_id: string
+          _kleur: string
+          _manager_profile_id: string
+          _medewerker_id: string
+          _notitie: string
+          _project_id: string
+        }
+        Returns: Json
+      }
       check_rate_limit: {
         Args: {
           _endpoint: string

@@ -117,6 +117,8 @@ export default function PlannerKoppeling() {
     status: PreviewStatus;
     external_id: string;
     datum: string;
+    urenapp_project_id: string | null;
+    urenapp_profile_id: string | null;
     project_label: string | null;
     monteur_label: string | null;
     activiteit: string | null;
@@ -125,7 +127,7 @@ export default function PlannerKoppeling() {
     voorgesteld: { starttijd: string; eindtijd: string };
     conflict_redenen: string[];
     verschillen: { veld: string; huidig: unknown; voorgesteld: unknown }[];
-    bestaande_row: { starttijd: string; eindtijd: string; activiteit: string | null; activiteit_kleur: string | null; notitie: string } | null;
+    bestaande_row: { id?: string; datum?: string; starttijd: string; eindtijd: string; activiteit: string | null; activiteit_kleur: string | null; notitie: string; project_id?: string; medewerker_id?: string } | null;
   }
   interface PreviewResponse {
     success: boolean;
@@ -163,6 +165,54 @@ export default function PlannerKoppeling() {
   const [previewQuery, setPreviewQuery] = useState("");
   const [proefsyncBusyKey, setProefsyncBusyKey] = useState<string | null>(null);
   const [proefsyncConfirm, setProefsyncConfirm] = useState<PreviewRegel | null>(null);
+  const [adoptBusyKey, setAdoptBusyKey] = useState<string | null>(null);
+  const [adoptConfirm, setAdoptConfirm] = useState<PreviewRegel | null>(null);
+
+  function isAdopteerbaar(r: PreviewRegel): boolean {
+    return (
+      r.status === "conflict" &&
+      r.conflict_redenen.length === 1 &&
+      r.conflict_redenen[0] === "overlap_handmatige_planning" &&
+      !!r.urenapp_project_id &&
+      !!r.urenapp_profile_id
+    );
+  }
+
+  async function runAdoptie(regel: PreviewRegel) {
+    if (!isAdopteerbaar(regel)) return;
+    const key = regel.external_id;
+    setAdoptBusyKey(key);
+    setAdoptConfirm(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("adopt-planner-planning-item", {
+        body: {
+          datum_vanaf: preview?.datum_vanaf ?? regel.datum,
+          datum_tot: preview?.datum_tot ?? regel.datum,
+          external_id: regel.external_id,
+        },
+      });
+      if (error) {
+        const ctx = (error as any)?.context;
+        let msg = (error as any)?.message ?? "Adoptie mislukt";
+        try {
+          const body = ctx && typeof ctx.json === "function" ? await ctx.json() : null;
+          if (body?.error) msg = body.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+      const uitkomst = (data as any)?.uitkomst;
+      if (uitkomst === "reeds_geadopteerd") {
+        toast.success("Was al geadopteerd");
+      } else {
+        toast.success("Adoptie geslaagd");
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Adoptie mislukt");
+    } finally {
+      setAdoptBusyKey(null);
+    }
+  }
 
   async function runProefsync(regel: PreviewRegel) {
     if (regel.status !== "nieuw") return;
@@ -926,6 +976,26 @@ export default function PlannerKoppeling() {
                               </button>
                             </div>
                           )}
+                          {isAdopteerbaar(r) && (
+                            <div className="mt-2 flex">
+                              <button
+                                onClick={() => setAdoptConfirm(r)}
+                                disabled={adoptBusyKey === r.external_id}
+                                className="px-3 py-1 text-xs rounded-lg font-semibold inline-flex items-center gap-1.5"
+                                style={{
+                                  background: "var(--warn-text)",
+                                  color: "white",
+                                  opacity: adoptBusyKey === r.external_id ? 0.5 : 1,
+                                  cursor: adoptBusyKey === r.external_id ? "wait" : "pointer",
+                                }}
+                              >
+                                {adoptBusyKey === r.external_id
+                                  ? <Loader2 className="h-3 w-3 animate-spin" />
+                                  : <Send className="h-3 w-3" />}
+                                Adopteren
+                              </button>
+                            </div>
+                          )}
                         </li>
                       );
                     })}
@@ -1104,6 +1174,62 @@ export default function PlannerKoppeling() {
                 style={{ background: "var(--accent)", color: "white", opacity: proefsyncBusyKey ? 0.5 : 1 }}>
                 {proefsyncBusyKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
                 Start proefsync
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {adoptConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setAdoptConfirm(null)}>
+          <div className="rounded-xl p-5 max-w-md w-full" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }} onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-base mb-2" style={{ color: "var(--text-primary)" }}>Bevestig adoptie</h3>
+            <p className="text-[11px] mb-3" style={{ color: "var(--text-muted)" }}>
+              De bestaande handmatige regel blijft behouden (zelfde id, project, monteur, datum, tijden) en wordt onder Planner gehangen via external_source en external_id. Lege velden worden aangevuld vanuit Planner.
+            </p>
+            <div className="grid grid-cols-2 gap-3 text-[11px] mb-3">
+              <div className="rounded-lg p-2" style={{ background: "var(--bg-surface-2)" }}>
+                <div className="font-semibold mb-1" style={{ color: "var(--text-muted)" }}>Bestaande regel</div>
+                <div style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>
+                  {adoptConfirm.bestaande_row?.starttijd ?? "07:00"}–{adoptConfirm.bestaande_row?.eindtijd ?? "16:00"}
+                </div>
+                <div style={{ color: "var(--text-primary)" }}>
+                  {adoptConfirm.bestaande_row?.activiteit ?? <em style={{ color: "var(--text-muted)" }}>geen activiteit</em>}
+                </div>
+                <div style={{ color: "var(--text-muted)" }}>
+                  {adoptConfirm.bestaande_row?.notitie || <em>geen notitie</em>}
+                </div>
+              </div>
+              <div className="rounded-lg p-2" style={{ background: "var(--bg-surface-2)" }}>
+                <div className="font-semibold mb-1" style={{ color: "var(--text-muted)" }}>Planner</div>
+                <div style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>
+                  {adoptConfirm.voorgesteld.starttijd}–{adoptConfirm.voorgesteld.eindtijd}
+                </div>
+                <div style={{ color: "var(--text-primary)" }}>
+                  {adoptConfirm.activiteit ?? "—"}{adoptConfirm.kleur ? ` (${adoptConfirm.kleur})` : ""}
+                </div>
+                <div style={{ color: "var(--text-muted)" }}>
+                  {adoptConfirm.notitie || <em>geen notitie</em>}
+                </div>
+              </div>
+            </div>
+            <dl className="text-xs space-y-1 mb-4" style={{ color: "var(--text-muted)" }}>
+              <div className="flex gap-2"><dt className="w-20">Datum</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{adoptConfirm.datum}</dd></div>
+              <div className="flex gap-2"><dt className="w-20">Project</dt><dd style={{ color: "var(--text-primary)" }}>{adoptConfirm.project_label ?? "—"}</dd></div>
+              <div className="flex gap-2"><dt className="w-20">Monteur</dt><dd style={{ color: "var(--text-primary)" }}>{adoptConfirm.monteur_label ?? "—"}</dd></div>
+            </dl>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setAdoptConfirm(null)} className="px-3 py-1.5 text-xs rounded-lg"
+                style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>
+                Annuleer
+              </button>
+              <button
+                onClick={() => runAdoptie(adoptConfirm)}
+                disabled={adoptBusyKey !== null}
+                className="px-3 py-1.5 text-xs rounded-lg font-semibold inline-flex items-center gap-1.5"
+                style={{ background: "var(--warn-text)", color: "white", opacity: adoptBusyKey ? 0.5 : 1 }}>
+                {adoptBusyKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                Adopteren
               </button>
             </div>
           </div>
