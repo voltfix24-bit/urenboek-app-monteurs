@@ -41,7 +41,7 @@ export interface ExternePlannerSamenvatting {
  * dat we de manager tonen vóór publiceren.
  */
 export function vatExternePlannerRegelsSamen(
-  regels: readonly Array<{ external_source?: string | null; datum: string }>,
+  regels: ReadonlyArray<{ external_source?: string | null; datum: string }>,
 ): ExternePlannerSamenvatting {
   const externe = regels.filter(isExternePlannerRegel);
   const map = new Map<string, number>();
