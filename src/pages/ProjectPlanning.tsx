@@ -13,6 +13,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { getISOWeek, startOfISOWeek, addDays, format, getISOWeekYear } from "date-fns";
 import { nl } from "date-fns/locale";
+import { splitsKandidatenOpExternePlannerBotsing } from "@/lib/projectPlanningPublish";
 
 // ── Color palette ──
 const COLORS = [
@@ -97,6 +98,7 @@ export default function ProjectPlanning() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const [otherMatrices, setOtherMatrices] = useState<{ projectNaam: string; projectNummer: string; year: number; weekNrs: number[]; cells: Record<string, CellData> }[]>([]);
+  const [externePlannerRegels, setExternePlannerRegels] = useState<Array<{ medewerker_id: string; datum: string; external_source: string | null; sync_locked: boolean | null }>>([]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; key: string } | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDefinitiefDialog, setShowDefinitiefDialog] = useState(false);
@@ -152,6 +154,20 @@ export default function ProjectPlanning() {
           return { projectNaam: d.projects?.naam ?? "", projectNummer: d.projects?.nummer ?? "", year: s.year, weekNrs: s.weekNrs, cells: s.cells };
         }));
       }
+
+      // Externe Planner-regels voor dit project — beschermd tegen verwijderen
+      // en gebruikt om dubbele inserts bij publiceren te voorkomen.
+      const { data: externData } = await supabase
+        .from("planning")
+        .select("medewerker_id, datum, external_source, sync_locked")
+        .eq("project_id", projectId)
+        .or("external_source.eq.terrevolt_planner,sync_locked.eq.true");
+      setExternePlannerRegels((externData ?? []).map((r: any) => ({
+        medewerker_id: r.medewerker_id,
+        datum: r.datum,
+        external_source: r.external_source ?? null,
+        sync_locked: r.sync_locked ?? null,
+      })));
 
       setLoading(false);
     })();
@@ -234,13 +250,15 @@ export default function ProjectPlanning() {
     }, { onConflict: "project_id" });
 
     // Verwijder alleen handmatige/interne planningregels voor dit project.
-    // Externe Planner-regels (external_source = 'terrevolt_planner') worden
-    // beheerd door de Planner-sync en mogen niet door publiceren verloren gaan.
+    // Externe Planner-regels (external_source = 'terrevolt_planner') én regels
+    // met sync_locked = true worden beheerd door de Planner-sync en mogen niet
+    // door publiceren verloren gaan.
     await supabase
       .from("planning")
       .delete()
       .eq("project_id", projectId)
-      .is("external_source", null);
+      .is("external_source", null)
+      .or("sync_locked.is.null,sync_locked.eq.false");
 
     // Build monteur-per-datum map for collega_ids
     const monteurPerDatum = new Map<string, string[]>();
@@ -270,7 +288,7 @@ export default function ProjectPlanning() {
       return true;
     });
 
-    const toInsert = unique.map(r => {
+    const kandidaten = unique.map(r => {
       const activiteitNaam = state.activities[r.actIdx] || "";
       const activiteitKleur = r.cell.color || "";
       const weekKey = `${state.weekNrs[r.weekIdx]}`;
@@ -293,8 +311,24 @@ export default function ProjectPlanning() {
       };
     });
 
+    // Filter kandidaten die zouden botsen met een bestaande externe Planner-regel.
+    const { toInsert, geblokkeerd } = splitsKandidatenOpExternePlannerBotsing(
+      kandidaten,
+      externePlannerRegels,
+    );
+
     if (toInsert.length > 0) {
       await supabase.from("planning").insert(toInsert as any);
+    }
+
+    if (geblokkeerd.length > 0) {
+      const monteurNamen = new Set(
+        geblokkeerd.map(g => monteurMap.get(g.medewerker_id)?.full_name ?? "Onbekend"),
+      );
+      toast.warning(
+        `${geblokkeerd.length} interne planningregel(s) overgeslagen — er bestaat al een Planner-regel voor ${Array.from(monteurNamen).join(", ")}.`,
+        { duration: 8000 },
+      );
     }
 
     // Auto-update project status to 'in_uitvoering' if currently 'gepland'
@@ -316,12 +350,14 @@ export default function ProjectPlanning() {
 
   const makeConcept = async () => {
     if (!projectId) return;
-    // Alleen handmatige/interne planningregels opruimen — externe Planner-regels behouden.
+    // Alleen handmatige/interne planningregels opruimen — externe Planner-regels
+    // en sync_locked-regels blijven beschermd.
     await supabase
       .from("planning")
       .delete()
       .eq("project_id", projectId)
-      .is("external_source", null);
+      .is("external_source", null)
+      .or("sync_locked.is.null,sync_locked.eq.false");
     await supabase.from("project_planning_status").upsert({
       project_id: projectId,
       is_definitief: false,
@@ -634,6 +670,19 @@ export default function ProjectPlanning() {
           </button>
         )}
       </header>
+
+      {/* Waarschuwing: project bevat externe Planner-regels */}
+      {externePlannerRegels.length > 0 && (
+        <div className="mx-4 mt-3 rounded-xl p-3 flex items-start gap-2"
+          style={{ background: "var(--warn-light)", border: "1px solid var(--warn-text)" }}>
+          <span className="text-base leading-none mt-0.5">⚠</span>
+          <div className="text-[12px]" style={{ color: "var(--warn-text)" }}>
+            <strong>Dit project bevat Planner-gekoppelde planning.</strong>{" "}
+            Externe regels ({externePlannerRegels.length}) blijven behouden bij publiceren of terug-naar-concept.
+            Interne regels voor dezelfde monteur/datum worden overgeslagen.
+          </div>
+        </div>
+      )}
 
       {/* Info grid */}
       <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
