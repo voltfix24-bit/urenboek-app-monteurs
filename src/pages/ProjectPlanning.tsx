@@ -350,12 +350,14 @@ export default function ProjectPlanning() {
 
   const makeConcept = async () => {
     if (!projectId) return;
-    // Alleen handmatige/interne planningregels opruimen — externe Planner-regels behouden.
+    // Alleen handmatige/interne planningregels opruimen — externe Planner-regels
+    // en sync_locked-regels blijven beschermd.
     await supabase
       .from("planning")
       .delete()
       .eq("project_id", projectId)
-      .is("external_source", null);
+      .is("external_source", null)
+      .or("sync_locked.is.null,sync_locked.eq.false");
     await supabase.from("project_planning_status").upsert({
       project_id: projectId,
       is_definitief: false,
