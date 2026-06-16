@@ -341,7 +341,7 @@ export function NacalculatieTab({ projectId }: Props) {
         </div>
       )}
 
-      {!heeftForecast && (
+      {!heeftForecast && forecastRelevant && (
         <div className="rounded-xl p-4 text-center space-y-2" style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)" }}>
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>Nog geen forecast ingevuld. Voeg een forecast toe om de omzet te berekenen.</p>
           <button className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: "var(--accent)" }}>
