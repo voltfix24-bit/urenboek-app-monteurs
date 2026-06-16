@@ -1179,6 +1179,62 @@ export default function PlannerKoppeling() {
           </div>
         </div>
       )}
+
+      {adoptConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setAdoptConfirm(null)}>
+          <div className="rounded-xl p-5 max-w-md w-full" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }} onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-base mb-2" style={{ color: "var(--text-primary)" }}>Bevestig adoptie</h3>
+            <p className="text-[11px] mb-3" style={{ color: "var(--text-muted)" }}>
+              De bestaande handmatige regel blijft behouden (zelfde id, project, monteur, datum, tijden) en wordt onder Planner gehangen via external_source en external_id. Lege velden worden aangevuld vanuit Planner.
+            </p>
+            <div className="grid grid-cols-2 gap-3 text-[11px] mb-3">
+              <div className="rounded-lg p-2" style={{ background: "var(--bg-surface-2)" }}>
+                <div className="font-semibold mb-1" style={{ color: "var(--text-muted)" }}>Bestaande regel</div>
+                <div style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>
+                  {adoptConfirm.bestaande_row?.starttijd ?? "07:00"}–{adoptConfirm.bestaande_row?.eindtijd ?? "16:00"}
+                </div>
+                <div style={{ color: "var(--text-primary)" }}>
+                  {adoptConfirm.bestaande_row?.activiteit ?? <em style={{ color: "var(--text-muted)" }}>geen activiteit</em>}
+                </div>
+                <div style={{ color: "var(--text-muted)" }}>
+                  {adoptConfirm.bestaande_row?.notitie || <em>geen notitie</em>}
+                </div>
+              </div>
+              <div className="rounded-lg p-2" style={{ background: "var(--bg-surface-2)" }}>
+                <div className="font-semibold mb-1" style={{ color: "var(--text-muted)" }}>Planner</div>
+                <div style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>
+                  {adoptConfirm.voorgesteld.starttijd}–{adoptConfirm.voorgesteld.eindtijd}
+                </div>
+                <div style={{ color: "var(--text-primary)" }}>
+                  {adoptConfirm.activiteit ?? "—"}{adoptConfirm.kleur ? ` (${adoptConfirm.kleur})` : ""}
+                </div>
+                <div style={{ color: "var(--text-muted)" }}>
+                  {adoptConfirm.notitie || <em>geen notitie</em>}
+                </div>
+              </div>
+            </div>
+            <dl className="text-xs space-y-1 mb-4" style={{ color: "var(--text-muted)" }}>
+              <div className="flex gap-2"><dt className="w-20">Datum</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{adoptConfirm.datum}</dd></div>
+              <div className="flex gap-2"><dt className="w-20">Project</dt><dd style={{ color: "var(--text-primary)" }}>{adoptConfirm.project_label ?? "—"}</dd></div>
+              <div className="flex gap-2"><dt className="w-20">Monteur</dt><dd style={{ color: "var(--text-primary)" }}>{adoptConfirm.monteur_label ?? "—"}</dd></div>
+            </dl>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setAdoptConfirm(null)} className="px-3 py-1.5 text-xs rounded-lg"
+                style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>
+                Annuleer
+              </button>
+              <button
+                onClick={() => runAdoptie(adoptConfirm)}
+                disabled={adoptBusyKey !== null}
+                className="px-3 py-1.5 text-xs rounded-lg font-semibold inline-flex items-center gap-1.5"
+                style={{ background: "var(--warn-text)", color: "white", opacity: adoptBusyKey ? 0.5 : 1 }}>
+                {adoptBusyKey ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                Adopteren
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
 
