@@ -1006,6 +1006,29 @@ export default function PlannerKoppeling() {
                   );
                 })()}
 
+                {(() => {
+                  const a = preview.aantallen;
+                  const kanUpdates = a.gewijzigd > 0 && a.conflict === 0 && a.verwijderd_in_planner === 0;
+                  if (!kanUpdates) return null;
+                  const teVerwerken = Math.min(a.gewijzigd, BATCH_LIMIT);
+                  return (
+                    <div className="flex items-center gap-2 flex-wrap p-2 rounded-lg" style={{ background: "#fffbeb", border: "1px solid #f59e0b" }}>
+                      <span className="text-xs" style={{ color: "#92400e" }}>
+                        <strong>{a.gewijzigd}</strong> Planner-wijziging(en) gevonden voor bestaande regels. Limiet per batch: <strong>{BATCH_LIMIT}</strong>.
+                      </span>
+                      <button
+                        onClick={() => setUpdatesConfirm(true)}
+                        disabled={updatesBusy}
+                        className="ml-auto px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 text-white"
+                        style={{ background: "#f59e0b", opacity: updatesBusy ? 0.5 : 1 }}
+                      >
+                        {updatesBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                        Wijzigingen verwerken ({teVerwerken})
+                      </button>
+                    </div>
+                  );
+                })()}
+
                 {batchResult && (
                   <div className="p-2 rounded-lg text-xs" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }}>
                     Laatste batch — verwerkt: <strong>{batchResult.verwerkt}</strong>{" · "}
@@ -1013,6 +1036,16 @@ export default function PlannerKoppeling() {
                     reeds: <strong>{batchResult.aantallen.reeds_gesynchroniseerd}</strong>{" · "}
                     geweigerd: <strong style={{ color: batchResult.aantallen.geweigerd > 0 ? "#b91c1c" : undefined }}>{batchResult.aantallen.geweigerd}</strong>{" · "}
                     fout: <strong style={{ color: batchResult.aantallen.fout > 0 ? "#b91c1c" : undefined }}>{batchResult.aantallen.fout}</strong>
+                  </div>
+                )}
+
+                {updatesResult && (
+                  <div className="p-2 rounded-lg text-xs" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }}>
+                    Laatste update — verwerkt: <strong>{updatesResult.verwerkt}</strong>{" · "}
+                    bijgewerkt: <strong>{updatesResult.aantallen.bijgewerkt}</strong>{" · "}
+                    overgeslagen: <strong>{updatesResult.aantallen.overgeslagen}</strong>{" · "}
+                    geweigerd: <strong style={{ color: updatesResult.aantallen.geweigerd > 0 ? "#b91c1c" : undefined }}>{updatesResult.aantallen.geweigerd}</strong>{" · "}
+                    fout: <strong style={{ color: updatesResult.aantallen.fout > 0 ? "#b91c1c" : undefined }}>{updatesResult.aantallen.fout}</strong>
                   </div>
                 )}
 
