@@ -332,6 +332,13 @@ export default function PlannerKoppeling() {
         toast.warning(`Update klaar: ${d.aantallen.bijgewerkt} bijgewerkt · ${d.aantallen.geweigerd} geweigerd · ${d.aantallen.fout} fout`);
       } else {
         toast.success(`Update klaar: ${d.aantallen.bijgewerkt} bijgewerkt`);
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Wijzigingen verwerken mislukt");
+    } finally {
+      setUpdatesBusy(false);
+    }
   }
 
   async function runDeletions() {
@@ -367,13 +374,6 @@ export default function PlannerKoppeling() {
       toast.error(e?.message ?? "Verwijderingen verwerken mislukt");
     } finally {
       setDeletionsBusy(false);
-    }
-  }
-      await runPreview();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Wijzigingen verwerken mislukt");
-    } finally {
-      setUpdatesBusy(false);
     }
   }
 
