@@ -233,8 +233,14 @@ export default function ProjectPlanning() {
       definitief_door: myProfileId.current,
     }, { onConflict: "project_id" });
 
-    // Delete existing planning records for this project so we can re-create them
-    await supabase.from("planning").delete().eq("project_id", projectId);
+    // Verwijder alleen handmatige/interne planningregels voor dit project.
+    // Externe Planner-regels (external_source = 'terrevolt_planner') worden
+    // beheerd door de Planner-sync en mogen niet door publiceren verloren gaan.
+    await supabase
+      .from("planning")
+      .delete()
+      .eq("project_id", projectId)
+      .is("external_source", null);
 
     // Build monteur-per-datum map for collega_ids
     const monteurPerDatum = new Map<string, string[]>();
@@ -310,8 +316,12 @@ export default function ProjectPlanning() {
 
   const makeConcept = async () => {
     if (!projectId) return;
-    // Delete planning records for this project
-    await supabase.from("planning").delete().eq("project_id", projectId);
+    // Alleen handmatige/interne planningregels opruimen — externe Planner-regels behouden.
+    await supabase
+      .from("planning")
+      .delete()
+      .eq("project_id", projectId)
+      .is("external_source", null);
     await supabase.from("project_planning_status").upsert({
       project_id: projectId,
       is_definitief: false,
