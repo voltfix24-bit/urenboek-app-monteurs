@@ -337,3 +337,87 @@ Deno.test("datum buiten bereik -> 409", async () => {
   // Planner respons levert nog steeds DATUM=2026-06-22 → buiten bereik
   assertEquals(r.status, 409);
 });
+
+// --- Regressie: multi-monteur op zelfde project/datum ---
+
+const PROFILE_ID_2 = "44444444-4444-4444-4444-444444444444";
+const PROFILE_ID_3 = "55555555-5555-5555-5555-555555555555";
+const PLANNER_MONT_2 = "66666666-1111-1111-1111-111111111111";
+const PLANNER_MONT_3 = "77777777-2222-2222-2222-222222222222";
+const EXT_ID_2 = "a62d9771-9a2b-4a13-8b6e-ad01b87bf6a0:" + PLANNER_MONT_2;
+const EXT_ID_3 = "a62d9771-9a2b-4a13-8b6e-ad01b87bf6a0:" + PLANNER_MONT_3;
+
+function multiMonteurState(): State {
+  const s = freshState({
+    planner: [
+      { external_id: EXT_ID,  planning_cel_id: "cel-1", planner_project_id: PLANNER_PROJ, planner_monteur_id: PLANNER_MONT,
+        urenapp_project_id: PROJECT_ID, urenapp_profile_id: PROFILE_ID,
+        datum: DATUM, activiteit: "Montage", kleur: "c1", notitie: "" },
+      { external_id: EXT_ID_2, planning_cel_id: "cel-1", planner_project_id: PLANNER_PROJ, planner_monteur_id: PLANNER_MONT_2,
+        urenapp_project_id: PROJECT_ID, urenapp_profile_id: PROFILE_ID_2,
+        datum: DATUM, activiteit: "Montage", kleur: "c1", notitie: "" },
+      { external_id: EXT_ID_3, planning_cel_id: "cel-1", planner_project_id: PLANNER_PROJ, planner_monteur_id: PLANNER_MONT_3,
+        urenapp_project_id: PROJECT_ID, urenapp_profile_id: PROFILE_ID_3,
+        datum: DATUM, activiteit: "Montage", kleur: "c1", notitie: "" },
+    ],
+    profiles: [
+      { id: PROFILE_ID,   user_id: "m1", full_name: "Samir", planner_monteur_id: PLANNER_MONT },
+      { id: PROFILE_ID_2, user_id: "m2", full_name: "Ali",   planner_monteur_id: PLANNER_MONT_2 },
+      { id: PROFILE_ID_3, user_id: "m3", full_name: "Yazan", planner_monteur_id: PLANNER_MONT_3 },
+    ],
+  });
+  return s;
+}
+
+Deno.test("multi-monteur: drie verschillende monteurs op zelfde project/datum syncen elk succesvol", async () => {
+  for (const ext of [EXT_ID, EXT_ID_2, EXT_ID_3]) {
+    const s = multiMonteurState();
+    const h = createHandler(makeFullDeps(s));
+    const r = await h(authReq(JSON.stringify({ datum_vanaf: DATUM, datum_tot: DATUM, external_id: ext })));
+    assertEquals(r.status, 200, `verwacht 200 voor ${ext}`);
+    assertEquals(s.rpcCalls.length, 1);
+    assertEquals(s.rpcCalls[0]._external_id, ext);
+  }
+});
+
+Deno.test("multi-monteur: andere monteur al gesynchroniseerd voor zelfde datum/project blokkeert niet", async () => {
+  const s = multiMonteurState();
+  // Bestaande planner-regel voor monteur 1 al aanwezig (eerder gesynchroniseerd).
+  s.planning = [{
+    id: "p-bestaand", datum: DATUM, starttijd: "07:00:00", eindtijd: "16:00:00",
+    notitie: "", project_id: PROJECT_ID, medewerker_id: PROFILE_ID,
+    activiteit: "Montage", activiteit_kleur: "c1",
+    external_source: "terrevolt_planner", external_id: EXT_ID,
+  }];
+  const h = createHandler(makeFullDeps(s));
+  // Sync monteur 2 — moet gewoon doorgaan.
+  const r = await h(authReq(JSON.stringify({ datum_vanaf: DATUM, datum_tot: DATUM, external_id: EXT_ID_2 })));
+  assertEquals(r.status, 200);
+  assertEquals(s.rpcCalls.length, 1);
+  assertEquals(s.rpcCalls[0]._medewerker_id, PROFILE_ID_2);
+});
+
+Deno.test("multi-monteur: handmatige overlap bij eigen monteur blijft blokkeren", async () => {
+  const s = multiMonteurState();
+  s.planning = [{
+    id: "h2", datum: DATUM, starttijd: "07:00:00", eindtijd: "16:00:00",
+    notitie: "", project_id: PROJECT_ID, medewerker_id: PROFILE_ID_2,
+    activiteit: null, activiteit_kleur: null,
+    external_source: null, external_id: null,
+  }];
+  const h = createHandler(makeFullDeps(s));
+  const r = await h(authReq(JSON.stringify({ datum_vanaf: DATUM, datum_tot: DATUM, external_id: EXT_ID_2 })));
+  assertEquals(r.status, 409);
+  assertEquals(s.rpcCalls.length, 0);
+});
+
+Deno.test("multi-monteur: idempotentie blijft per external_id (reeds_gesynchroniseerd geeft 200)", async () => {
+  const s = multiMonteurState();
+  s.rpcResult = { data: { uitkomst: "reeds_gesynchroniseerd", planning_id: "p-bestaand" }, error: null };
+  const h = createHandler(makeFullDeps(s));
+  const r = await h(authReq(JSON.stringify({ datum_vanaf: DATUM, datum_tot: DATUM, external_id: EXT_ID })));
+  assertEquals(r.status, 200);
+  const j = await r.json();
+  assertEquals(j.uitkomst, "reeds_gesynchroniseerd");
+});
+
