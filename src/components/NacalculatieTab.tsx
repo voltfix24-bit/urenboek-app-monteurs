@@ -183,9 +183,14 @@ export function NacalculatieTab({ projectId }: Props) {
           <p className="text-2xl font-bold mt-1" style={{ ...mono, color: werkelijkOmzet > 0 ? "var(--accent)" : "var(--text-muted)" }}>
             {werkelijkOmzet > 0 ? euro(werkelijkOmzet) : "€ 0"}
           </p>
-          {!heeftForecast && (
+          {!heeftForecast && forecastRelevant && (
             <p className="text-[11px] mt-1" style={{ color: "var(--warn-text)" }}>
               ⚠ Voeg een forecast toe om de omzet te berekenen.
+            </p>
+          )}
+          {!heeftForecast && !forecastRelevant && (
+            <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>
+              Dit project draait op uren — forecast is niet vereist.
             </p>
           )}
         </div>
