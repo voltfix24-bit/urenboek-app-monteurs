@@ -163,6 +163,54 @@ export default function PlannerKoppeling() {
   const [previewQuery, setPreviewQuery] = useState("");
   const [proefsyncBusyKey, setProefsyncBusyKey] = useState<string | null>(null);
   const [proefsyncConfirm, setProefsyncConfirm] = useState<PreviewRegel | null>(null);
+  const [adoptBusyKey, setAdoptBusyKey] = useState<string | null>(null);
+  const [adoptConfirm, setAdoptConfirm] = useState<PreviewRegel | null>(null);
+
+  function isAdopteerbaar(r: PreviewRegel): boolean {
+    return (
+      r.status === "conflict" &&
+      r.conflict_redenen.length === 1 &&
+      r.conflict_redenen[0] === "overlap_handmatige_planning" &&
+      !!r.urenapp_project_id &&
+      !!r.urenapp_profile_id
+    );
+  }
+
+  async function runAdoptie(regel: PreviewRegel) {
+    if (!isAdopteerbaar(regel)) return;
+    const key = regel.external_id;
+    setAdoptBusyKey(key);
+    setAdoptConfirm(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("adopt-planner-planning-item", {
+        body: {
+          datum_vanaf: preview?.datum_vanaf ?? regel.datum,
+          datum_tot: preview?.datum_tot ?? regel.datum,
+          external_id: regel.external_id,
+        },
+      });
+      if (error) {
+        const ctx = (error as any)?.context;
+        let msg = (error as any)?.message ?? "Adoptie mislukt";
+        try {
+          const body = ctx && typeof ctx.json === "function" ? await ctx.json() : null;
+          if (body?.error) msg = body.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+      const uitkomst = (data as any)?.uitkomst;
+      if (uitkomst === "reeds_geadopteerd") {
+        toast.success("Was al geadopteerd");
+      } else {
+        toast.success("Adoptie geslaagd");
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Adoptie mislukt");
+    } finally {
+      setAdoptBusyKey(null);
+    }
+  }
 
   async function runProefsync(regel: PreviewRegel) {
     if (regel.status !== "nieuw") return;
