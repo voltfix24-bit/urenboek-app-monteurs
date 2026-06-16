@@ -248,6 +248,13 @@ export default function PlannerKoppeling() {
         toast.success("Was al gesynchroniseerd");
       } else {
         toast.success("Proefsync geslaagd");
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Proefsync mislukt");
+    } finally {
+      setProefsyncBusyKey(null);
+    }
   }
 
   async function runBatch() {
@@ -283,12 +290,6 @@ export default function PlannerKoppeling() {
       toast.error(e?.message ?? "Batch-sync mislukt");
     } finally {
       setBatchBusy(false);
-    }
-      await runPreview();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Proefsync mislukt");
-    } finally {
-      setProefsyncBusyKey(null);
     }
   }
 
