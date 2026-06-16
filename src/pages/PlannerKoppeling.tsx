@@ -173,6 +173,12 @@ export default function PlannerKoppeling() {
     aantallen: { gesynchroniseerd: number; reeds_gesynchroniseerd: number; geweigerd: number; fout: number };
     verwerkt: number;
   }>(null);
+  const [updatesBusy, setUpdatesBusy] = useState(false);
+  const [updatesConfirm, setUpdatesConfirm] = useState(false);
+  const [updatesResult, setUpdatesResult] = useState<null | {
+    aantallen: { bijgewerkt: number; overgeslagen: number; geweigerd: number; fout: number };
+    verwerkt: number;
+  }>(null);
   const BATCH_LIMIT = 25;
 
   function isAdopteerbaar(r: PreviewRegel): boolean {
