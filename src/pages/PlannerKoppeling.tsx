@@ -1327,6 +1327,37 @@ export default function PlannerKoppeling() {
         </div>
       )}
 
+      {updatesConfirm && preview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setUpdatesConfirm(false)}>
+          <div className="rounded-2xl p-4 max-w-md w-full" style={{ background: "var(--bg-surface)" }} onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-bold text-base mb-3" style={{ color: "var(--text-primary)" }}>Bevestig Planner-wijzigingen</h3>
+            <dl className="text-xs space-y-1.5" style={{ color: "var(--text-muted)" }}>
+              <div className="flex gap-2"><dt className="w-32">Bereik</dt><dd style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{preview.datum_vanaf} — {preview.datum_tot}</dd></div>
+              <div className="flex gap-2"><dt className="w-32">Wijzigingen</dt><dd style={{ color: "var(--text-primary)" }}>{preview.aantallen.gewijzigd}</dd></div>
+              <div className="flex gap-2"><dt className="w-32">Te verwerken</dt><dd style={{ color: "var(--text-primary)" }}>{Math.min(preview.aantallen.gewijzigd, BATCH_LIMIT)} (limiet {BATCH_LIMIT})</dd></div>
+            </dl>
+            <p className="text-[11px] mt-3" style={{ color: "#92400e", background: "#fffbeb", padding: "6px 8px", borderRadius: 6, border: "1px solid #fde68a" }}>
+              Regels met bestaande urenboekingen, time-entries, of handmatige overlap op de doel-datum worden geweigerd of overgeslagen. Bestaande external_source en external_id blijven intact.
+            </p>
+            <div className="flex gap-2 mt-4 justify-end">
+              <button onClick={() => setUpdatesConfirm(false)} className="px-3 py-1.5 text-xs rounded-lg"
+                style={{ background: "var(--bg-surface-2)", color: "var(--text-primary)" }}>
+                Annuleren
+              </button>
+              <button
+                onClick={() => runUpdates()}
+                disabled={updatesBusy}
+                className="px-3 py-1.5 text-xs rounded-lg font-bold inline-flex items-center gap-1.5 text-white"
+                style={{ background: "#f59e0b", opacity: updatesBusy ? 0.5 : 1 }}>
+                {updatesBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                Start update-batch
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {proefsyncConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setProefsyncConfirm(null)}>
           <div className="rounded-xl p-5 max-w-sm w-full" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }} onClick={e => e.stopPropagation()}>
