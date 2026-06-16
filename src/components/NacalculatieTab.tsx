@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown, Info, ArrowRight } from "lucide-react";
 import { euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { isProjectForecastRelevant } from "@/lib/forecastRelevant";
 
 interface Props { projectId: string }
 
@@ -21,15 +22,26 @@ export function NacalculatieTab({ projectId }: Props) {
   const [boekingen, setBoekingen] = useState<UrenBoeking[]>([]);
   const [profielMap, setProfielMap] = useState<Map<string, Profiel>>(new Map());
   const [verwachteOmzet, setVerwachteOmzet] = useState(0);
+  const [forecastRelevant, setForecastRelevant] = useState(true);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
 
     // Parallel fetch
-    const [fcRes, urenRes] = await Promise.all([
+    const [fcRes, urenRes, projRes] = await Promise.all([
       supabase.from("project_forecast").select("id, methode, verwachte_omzet").eq("project_id", projectId).maybeSingle(),
       supabase.from("uren_boekingen").select("medewerker_id, uren, status").eq("project_id", projectId),
+      supabase.from("projects").select("naam, planner_sync_enabled, opdrachtgever_id, opdrachtgevers(naam)").eq("id", projectId).maybeSingle(),
     ]);
+
+    if (projRes.data) {
+      const og = (projRes.data as any).opdrachtgevers?.naam ?? null;
+      setForecastRelevant(isProjectForecastRelevant({
+        naam: (projRes.data as any).naam,
+        opdrachtgever_naam: og,
+        planner_sync_enabled: (projRes.data as any).planner_sync_enabled,
+      }));
+    }
 
     const fc = fcRes.data;
     const allBoekingen: UrenBoeking[] = (urenRes.data || []).map((u: any) => ({
