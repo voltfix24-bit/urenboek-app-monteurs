@@ -100,6 +100,7 @@ export function createHandler(deps: Deps) {
       notitie: r.notitie ?? "", project_id: r.project_id, medewerker_id: r.medewerker_id,
       activiteit: r.activiteit ?? null, activiteit_kleur: r.activiteit_kleur ?? null,
       external_source: r.external_source ?? null, external_id: r.external_id ?? null,
+      external_deleted_at: r.external_deleted_at ?? null,
     }));
 
     const result = classify({
