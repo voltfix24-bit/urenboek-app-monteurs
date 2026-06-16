@@ -290,6 +290,13 @@ export default function PlannerKoppeling() {
         toast.warning(`Batch klaar met ${d.aantallen.fout} fouten en ${d.aantallen.geweigerd} geweigerd`);
       } else {
         toast.success(`Batch klaar: ${d.aantallen.gesynchroniseerd} gesynchroniseerd`);
+      }
+      await runPreview();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Batch-sync mislukt");
+    } finally {
+      setBatchBusy(false);
+    }
   }
 
   async function runUpdates() {
@@ -325,13 +332,6 @@ export default function PlannerKoppeling() {
       toast.error(e?.message ?? "Wijzigingen verwerken mislukt");
     } finally {
       setUpdatesBusy(false);
-    }
-  }
-      await runPreview();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Batch-sync mislukt");
-    } finally {
-      setBatchBusy(false);
     }
   }
 
