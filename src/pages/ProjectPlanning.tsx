@@ -97,6 +97,7 @@ export default function ProjectPlanning() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const [otherMatrices, setOtherMatrices] = useState<{ projectNaam: string; projectNummer: string; year: number; weekNrs: number[]; cells: Record<string, CellData> }[]>([]);
+  const [externePlannerRegels, setExternePlannerRegels] = useState<Array<{ medewerker_id: string; datum: string; external_source: string | null; sync_locked: boolean | null }>>([]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; key: string } | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDefinitiefDialog, setShowDefinitiefDialog] = useState(false);
@@ -152,6 +153,20 @@ export default function ProjectPlanning() {
           return { projectNaam: d.projects?.naam ?? "", projectNummer: d.projects?.nummer ?? "", year: s.year, weekNrs: s.weekNrs, cells: s.cells };
         }));
       }
+
+      // Externe Planner-regels voor dit project — beschermd tegen verwijderen
+      // en gebruikt om dubbele inserts bij publiceren te voorkomen.
+      const { data: externData } = await supabase
+        .from("planning")
+        .select("medewerker_id, datum, external_source, sync_locked")
+        .eq("project_id", projectId)
+        .or("external_source.eq.terrevolt_planner,sync_locked.eq.true");
+      setExternePlannerRegels((externData ?? []).map((r: any) => ({
+        medewerker_id: r.medewerker_id,
+        datum: r.datum,
+        external_source: r.external_source ?? null,
+        sync_locked: r.sync_locked ?? null,
+      })));
 
       setLoading(false);
     })();
