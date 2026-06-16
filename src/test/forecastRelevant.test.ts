@@ -42,10 +42,8 @@ describe("isProjectForecastRelevant", () => {
     expect(isProjectForecastRelevant({ naam: "MEELOOPUREN VAN GELDER" })).toBe(false);
   });
 
-  it("Naam die toevallig 'verleden' bevat ≠ Verlet, maar onze substring 'verlet' matcht — bewust scope: enkel exacte trefwoorden", () => {
-    // Documenteer huidig gedrag: substring 'verlet' matcht ook in 'verleden'.
-    // Dit is acceptabel — projectnamen bevatten in praktijk geen 'verleden'.
-    expect(isProjectForecastRelevant({ naam: "Verleden tijd" })).toBe(false);
+  it("naam zonder trefwoord → relevant (substring 'verlet' matcht niet in 'verleden')", () => {
+    expect(isProjectForecastRelevant({ naam: "Verleden tijd" })).toBe(true);
   });
 
   it("leeg/null → relevant (geen reden om uit te sluiten)", () => {
