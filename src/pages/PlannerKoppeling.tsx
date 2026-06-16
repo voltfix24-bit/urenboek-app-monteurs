@@ -1071,6 +1071,29 @@ export default function PlannerKoppeling() {
                   );
                 })()}
 
+                {(() => {
+                  const a = preview.aantallen;
+                  const kanDeletions = a.verwijderd_in_planner > 0 && a.conflict === 0;
+                  if (!kanDeletions) return null;
+                  const teVerwerken = Math.min(a.verwijderd_in_planner, BATCH_LIMIT);
+                  return (
+                    <div className="flex items-center gap-2 flex-wrap p-2 rounded-lg" style={{ background: "#fef2f2", border: "1px solid #ef4444" }}>
+                      <span className="text-xs" style={{ color: "#991b1b" }}>
+                        <strong>{a.verwijderd_in_planner}</strong> Planner-regel(s) verwijderd. Regels met urenboekingen worden gemarkeerd, andere worden hard verwijderd. Limiet per batch: <strong>{BATCH_LIMIT}</strong>.
+                      </span>
+                      <button
+                        onClick={() => setDeletionsConfirm(true)}
+                        disabled={deletionsBusy}
+                        className="ml-auto px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 text-white"
+                        style={{ background: "#ef4444", opacity: deletionsBusy ? 0.5 : 1 }}
+                      >
+                        {deletionsBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        Verwijderingen verwerken ({teVerwerken})
+                      </button>
+                    </div>
+                  );
+                })()}
+
                 {batchResult && (
                   <div className="p-2 rounded-lg text-xs" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }}>
                     Laatste batch — verwerkt: <strong>{batchResult.verwerkt}</strong>{" · "}
