@@ -976,6 +976,26 @@ export default function PlannerKoppeling() {
                               </button>
                             </div>
                           )}
+                          {isAdopteerbaar(r) && (
+                            <div className="mt-2 flex">
+                              <button
+                                onClick={() => setAdoptConfirm(r)}
+                                disabled={adoptBusyKey === r.external_id}
+                                className="px-3 py-1 text-xs rounded-lg font-semibold inline-flex items-center gap-1.5"
+                                style={{
+                                  background: "var(--warn-text)",
+                                  color: "white",
+                                  opacity: adoptBusyKey === r.external_id ? 0.5 : 1,
+                                  cursor: adoptBusyKey === r.external_id ? "wait" : "pointer",
+                                }}
+                              >
+                                {adoptBusyKey === r.external_id
+                                  ? <Loader2 className="h-3 w-3 animate-spin" />
+                                  : <Send className="h-3 w-3" />}
+                                Adopteren
+                              </button>
+                            </div>
+                          )}
                         </li>
                       );
                     })}
