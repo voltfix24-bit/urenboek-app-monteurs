@@ -13,6 +13,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { getISOWeek, startOfISOWeek, addDays, format, getISOWeekYear } from "date-fns";
 import { nl } from "date-fns/locale";
+import { splitsKandidatenOpExternePlannerBotsing } from "@/lib/projectPlanningPublish";
 
 // ── Color palette ──
 const COLORS = [
