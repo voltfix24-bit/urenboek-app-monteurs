@@ -1527,6 +1527,7 @@ export type Database = {
           created_by: string
           datum: string
           eindtijd: string
+          external_deleted_at: string | null
           external_id: string | null
           external_source: string | null
           external_updated_at: string | null
@@ -1548,6 +1549,7 @@ export type Database = {
           created_by: string
           datum: string
           eindtijd?: string
+          external_deleted_at?: string | null
           external_id?: string | null
           external_source?: string | null
           external_updated_at?: string | null
@@ -1569,6 +1571,7 @@ export type Database = {
           created_by?: string
           datum?: string
           eindtijd?: string
+          external_deleted_at?: string | null
           external_id?: string | null
           external_source?: string | null
           external_updated_at?: string | null
@@ -2683,6 +2686,10 @@ export type Database = {
       }
       next_contract_nummer: { Args: never; Returns: string }
       next_inkooporder_nummer: { Args: never; Returns: string }
+      sync_planner_planning_delete_v1: {
+        Args: { _external_id: string; _manager_profile_id: string }
+        Returns: Json
+      }
       sync_planner_planning_item_v1: {
         Args: {
           _activiteit: string

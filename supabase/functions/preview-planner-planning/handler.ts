@@ -76,7 +76,7 @@ export function createHandler(deps: Deps) {
       supaAdmin.from("profiles").select("id, full_name, planner_monteur_id"),
       supaAdmin
         .from("planning")
-        .select("id, datum, starttijd, eindtijd, notitie, project_id, medewerker_id, activiteit, activiteit_kleur, external_source, external_id")
+        .select("id, datum, starttijd, eindtijd, notitie, project_id, medewerker_id, activiteit, activiteit_kleur, external_source, external_id, external_deleted_at")
         .gte("datum", datum_vanaf)
         .lte("datum", datum_tot),
     ]);
@@ -100,6 +100,7 @@ export function createHandler(deps: Deps) {
       notitie: r.notitie ?? "", project_id: r.project_id, medewerker_id: r.medewerker_id,
       activiteit: r.activiteit ?? null, activiteit_kleur: r.activiteit_kleur ?? null,
       external_source: r.external_source ?? null, external_id: r.external_id ?? null,
+      external_deleted_at: r.external_deleted_at ?? null,
     }));
 
     const result = classify({
