@@ -941,6 +941,39 @@ export default function PlannerKoppeling() {
                   </div>
                 </div>
 
+                {(() => {
+                  const a = preview.aantallen;
+                  const kanBatch = a.nieuw > 0 && a.conflict === 0 && a.verwijderd_in_planner === 0 && a.gewijzigd === 0;
+                  if (!kanBatch) return null;
+                  const teVerwerken = Math.min(a.nieuw, BATCH_LIMIT);
+                  return (
+                    <div className="flex items-center gap-2 flex-wrap p-2 rounded-lg" style={{ background: "var(--accent-light, #ecfdf5)", border: "1px solid var(--accent)" }}>
+                      <span className="text-xs" style={{ color: "var(--text-primary)" }}>
+                        <strong>{a.nieuw}</strong> nieuwe Planner-regels gereed voor synchronisatie. Limiet per batch: <strong>{BATCH_LIMIT}</strong>.
+                      </span>
+                      <button
+                        onClick={() => setBatchConfirm(true)}
+                        disabled={batchBusy}
+                        className="ml-auto px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 text-white"
+                        style={{ background: "var(--accent)", opacity: batchBusy ? 0.5 : 1 }}
+                      >
+                        {batchBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                        Nieuwe regels synchroniseren ({teVerwerken})
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {batchResult && (
+                  <div className="p-2 rounded-lg text-xs" style={{ background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" }}>
+                    Laatste batch — verwerkt: <strong>{batchResult.verwerkt}</strong>{" · "}
+                    gesynchroniseerd: <strong>{batchResult.aantallen.gesynchroniseerd}</strong>{" · "}
+                    reeds: <strong>{batchResult.aantallen.reeds_gesynchroniseerd}</strong>{" · "}
+                    geweigerd: <strong style={{ color: batchResult.aantallen.geweigerd > 0 ? "#b91c1c" : undefined }}>{batchResult.aantallen.geweigerd}</strong>{" · "}
+                    fout: <strong style={{ color: batchResult.aantallen.fout > 0 ? "#b91c1c" : undefined }}>{batchResult.aantallen.fout}</strong>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                     Bereik: <strong style={{ color: "var(--text-primary)", fontFamily: "DM Mono, monospace" }}>{preview.datum_vanaf}</strong>
