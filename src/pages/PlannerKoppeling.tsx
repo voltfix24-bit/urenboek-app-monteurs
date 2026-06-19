@@ -613,6 +613,15 @@ export default function PlannerKoppeling() {
         </button>
       </header>
 
+      <PlannerSyncStatusBar
+        conflicten={preview?.aantallen.conflict ?? null}
+        verwijderingen={preview?.aantallen.verwijderd_in_planner ?? null}
+        refreshKey={auditRefreshKey}
+        onScrollNaarAudit={scrollNaarAudit}
+      />
+
+
+
       {loading || !stats ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--accent)" }} /></div>
       ) : (
