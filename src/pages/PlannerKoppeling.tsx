@@ -190,6 +190,28 @@ export default function PlannerKoppeling() {
   }>(null);
   const BATCH_LIMIT = 25;
 
+  // Fase A/B/C/D: audit refresh + conflict keuze
+  const [auditRefreshKey, setAuditRefreshKey] = useState(0);
+  const [keuzeBusyKey, setKeuzeBusyKey] = useState<string | null>(null);
+  const scrollNaarAudit = () => {
+    document.getElementById("planner-sync-audit")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  const logKeuze = async (external_id: string, datum: string, keuze: "terrevolt" | "planner" | "overslaan") => {
+    setKeuzeBusyKey(`${external_id}:${keuze}`);
+    try {
+      const { data, error } = await (supabase.rpc as any)("log_planner_conflict_keuze_v1", {
+        _external_id: external_id, _datum: datum, _keuze: keuze, _toelichting: null,
+      });
+      if (error) throw error;
+      toast.success(`Keuze vastgelegd: ${data?.uitkomst ?? keuze}`);
+      setAuditRefreshKey(k => k + 1);
+    } catch (e: any) {
+      toast.error(`Vastleggen mislukt: ${e?.message ?? "onbekend"}`);
+    } finally {
+      setKeuzeBusyKey(null);
+    }
+  };
+
   function isAdopteerbaar(r: PreviewRegel): boolean {
     return (
       r.status === "conflict" &&
