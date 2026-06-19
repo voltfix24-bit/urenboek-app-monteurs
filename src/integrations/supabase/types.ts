@@ -2665,6 +2665,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_rate_limit_log: { Args: never; Returns: undefined }
+      get_planner_sync_status_summary_v1: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2701,8 +2702,35 @@ export type Database = {
           uitkomst: string
         }[]
       }
+      list_planner_soft_deleted_planning_v1: {
+        Args: { _limit?: number }
+        Returns: {
+          activiteit: string
+          datum: string
+          external_deleted_at: string
+          external_id: string
+          monteur_naam: string
+          notitie: string
+          planning_id: string
+          project_naam: string
+          project_nummer: string
+        }[]
+      }
+      log_planner_conflict_keuze_v1: {
+        Args: {
+          _datum: string
+          _external_id: string
+          _keuze: string
+          _toelichting?: string
+        }
+        Returns: Json
+      }
       next_contract_nummer: { Args: never; Returns: string }
       next_inkooporder_nummer: { Args: never; Returns: string }
+      restore_planner_planning_soft_delete_v1: {
+        Args: { _external_id: string }
+        Returns: Json
+      }
       sync_planner_planning_delete_v1: {
         Args: { _external_id: string; _manager_profile_id: string }
         Returns: Json
