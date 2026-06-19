@@ -1217,6 +1217,32 @@ export default function PlannerKoppeling() {
                               </ul>
                             </div>
                           )}
+                          {r.status === "conflict" && (
+                            <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: "1px dashed var(--planning-border-soft)" }}>
+                              <div className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Manager-keuze (alleen vastleggen, geen automatische verwerking)</div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {([
+                                  { k: "terrevolt" as const, label: "TerreVolt behouden", bg: "var(--bg-surface-2)", fg: "var(--text-primary)" },
+                                  { k: "planner" as const,   label: "Planner overnemen",  bg: "var(--accent)",       fg: "white" },
+                                  { k: "overslaan" as const, label: "Overslaan",          bg: "#ede9fe",             fg: "#5b21b6" },
+                                ]).map(({ k, label, bg, fg }) => {
+                                  const busy = keuzeBusyKey === `${r.external_id}:${k}`;
+                                  return (
+                                    <button
+                                      key={k}
+                                      onClick={() => logKeuze(r.external_id, r.datum, k)}
+                                      disabled={keuzeBusyKey !== null}
+                                      className="px-2 py-1 text-[11px] rounded-lg font-semibold inline-flex items-center gap-1"
+                                      style={{ background: bg, color: fg, opacity: keuzeBusyKey && !busy ? 0.4 : 1 }}
+                                    >
+                                      {busy && <Loader2 className="h-3 w-3 animate-spin" />}
+                                      {label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                           {r.status === "nieuw" && (
                             <div className="mt-2 flex">
                               <button
