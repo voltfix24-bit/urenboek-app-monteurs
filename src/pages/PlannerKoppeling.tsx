@@ -1556,6 +1556,8 @@ export default function PlannerKoppeling() {
           </div>
         </div>
       )}
+
+      <PlannerSyncAuditPanel />
     </div>
 
 
