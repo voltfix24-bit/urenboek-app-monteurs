@@ -1616,7 +1616,8 @@ export default function PlannerKoppeling() {
         </div>
       )}
 
-      <PlannerSyncAuditPanel />
+      <PlannerSoftDeletedPanel onChange={() => setAuditRefreshKey(k => k + 1)} />
+      <PlannerSyncAuditPanel refreshKey={auditRefreshKey} />
     </div>
 
 
