@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { AlertTriangle, CheckCircle2, Loader2, Link2, Send, Eye, RefreshCcw, XCircle, Plug, Info, Search, HelpCircle, Ban, Settings2, Calendar, Trash2 } from "lucide-react";
 import { PLANNER_EXCLUSION_REASONS, PLANNER_EXCLUSION_LABEL, exclusionLabel, type PlannerExclusionReason } from "@/lib/plannerExclusion";
+import { PlannerSyncAuditPanel } from "@/components/PlannerSyncAuditPanel";
 
 type AnalyseStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match" | "uitgesloten";
 interface Afwijking { veld: string; urenapp: unknown; planner: unknown }
@@ -1555,6 +1556,8 @@ export default function PlannerKoppeling() {
           </div>
         </div>
       )}
+
+      <PlannerSyncAuditPanel />
     </div>
 
 
