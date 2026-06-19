@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { AlertTriangle, CheckCircle2, Loader2, Link2, Send, Eye, RefreshCcw, XCircle, Plug, Info, Search, HelpCircle, Ban, Settings2, Calendar, Trash2 } from "lucide-react";
 import { PLANNER_EXCLUSION_REASONS, PLANNER_EXCLUSION_LABEL, exclusionLabel, type PlannerExclusionReason } from "@/lib/plannerExclusion";
 import { PlannerSyncAuditPanel } from "@/components/PlannerSyncAuditPanel";
+import { PlannerSoftDeletedPanel } from "@/components/PlannerSoftDeletedPanel";
+import { PlannerSyncStatusBar } from "@/components/PlannerSyncStatusBar";
 
 type AnalyseStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match" | "uitgesloten";
 interface Afwijking { veld: string; urenapp: unknown; planner: unknown }
@@ -187,6 +189,28 @@ export default function PlannerKoppeling() {
     verwerkt: number;
   }>(null);
   const BATCH_LIMIT = 25;
+
+  // Fase A/B/C/D: audit refresh + conflict keuze
+  const [auditRefreshKey, setAuditRefreshKey] = useState(0);
+  const [keuzeBusyKey, setKeuzeBusyKey] = useState<string | null>(null);
+  const scrollNaarAudit = () => {
+    document.getElementById("planner-sync-audit")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  const logKeuze = async (external_id: string, datum: string, keuze: "terrevolt" | "planner" | "overslaan") => {
+    setKeuzeBusyKey(`${external_id}:${keuze}`);
+    try {
+      const { data, error } = await (supabase.rpc as any)("log_planner_conflict_keuze_v1", {
+        _external_id: external_id, _datum: datum, _keuze: keuze, _toelichting: null,
+      });
+      if (error) throw error;
+      toast.success(`Keuze vastgelegd: ${data?.uitkomst ?? keuze}`);
+      setAuditRefreshKey(k => k + 1);
+    } catch (e: any) {
+      toast.error(`Vastleggen mislukt: ${e?.message ?? "onbekend"}`);
+    } finally {
+      setKeuzeBusyKey(null);
+    }
+  };
 
   function isAdopteerbaar(r: PreviewRegel): boolean {
     return (
@@ -588,6 +612,15 @@ export default function PlannerKoppeling() {
           <RefreshCcw className="h-4 w-4" style={{ color: "var(--text-muted)" }} />
         </button>
       </header>
+
+      <PlannerSyncStatusBar
+        conflicten={preview?.aantallen.conflict ?? null}
+        verwijderingen={preview?.aantallen.verwijderd_in_planner ?? null}
+        refreshKey={auditRefreshKey}
+        onScrollNaarAudit={scrollNaarAudit}
+      />
+
+
 
       {loading || !stats ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--accent)" }} /></div>
@@ -1184,6 +1217,32 @@ export default function PlannerKoppeling() {
                               </ul>
                             </div>
                           )}
+                          {r.status === "conflict" && (
+                            <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: "1px dashed var(--planning-border-soft)" }}>
+                              <div className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Manager-keuze (alleen vastleggen, geen automatische verwerking)</div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {([
+                                  { k: "terrevolt" as const, label: "TerreVolt behouden", bg: "var(--bg-surface-2)", fg: "var(--text-primary)" },
+                                  { k: "planner" as const,   label: "Planner overnemen",  bg: "var(--accent)",       fg: "white" },
+                                  { k: "overslaan" as const, label: "Overslaan",          bg: "#ede9fe",             fg: "#5b21b6" },
+                                ]).map(({ k, label, bg, fg }) => {
+                                  const busy = keuzeBusyKey === `${r.external_id}:${k}`;
+                                  return (
+                                    <button
+                                      key={k}
+                                      onClick={() => logKeuze(r.external_id, r.datum, k)}
+                                      disabled={keuzeBusyKey !== null}
+                                      className="px-2 py-1 text-[11px] rounded-lg font-semibold inline-flex items-center gap-1"
+                                      style={{ background: bg, color: fg, opacity: keuzeBusyKey && !busy ? 0.4 : 1 }}
+                                    >
+                                      {busy && <Loader2 className="h-3 w-3 animate-spin" />}
+                                      {label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                           {r.status === "nieuw" && (
                             <div className="mt-2 flex">
                               <button
@@ -1557,7 +1616,8 @@ export default function PlannerKoppeling() {
         </div>
       )}
 
-      <PlannerSyncAuditPanel />
+      <PlannerSoftDeletedPanel onChange={() => setAuditRefreshKey(k => k + 1)} />
+      <PlannerSyncAuditPanel refreshKey={auditRefreshKey} />
     </div>
 
 
