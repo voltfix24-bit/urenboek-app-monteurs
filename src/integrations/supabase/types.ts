@@ -2684,6 +2684,23 @@ export type Database = {
         }
         Returns: Json
       }
+      list_planner_planning_sync_audit_v1: {
+        Args: { _limit?: number }
+        Returns: {
+          created_at: string
+          datum: string
+          external_id: string
+          fout_reden: string
+          id: string
+          manager_naam: string
+          manager_user_id: string
+          monteur_naam: string
+          planning_id: string
+          project_naam: string
+          project_nummer: string
+          uitkomst: string
+        }[]
+      }
       next_contract_nummer: { Args: never; Returns: string }
       next_inkooporder_nummer: { Args: never; Returns: string }
       sync_planner_planning_delete_v1: {
