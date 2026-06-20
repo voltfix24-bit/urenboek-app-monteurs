@@ -2727,6 +2727,16 @@ export type Database = {
       }
       next_contract_nummer: { Args: never; Returns: string }
       next_inkooporder_nummer: { Args: never; Returns: string }
+      planner_impact_check_v1: {
+        Args: { _external_ids: string[] }
+        Returns: {
+          external_id: string
+          has_planning: boolean
+          laatste_boeking_at: string
+          statussen: string[]
+          uren_totaal: number
+        }[]
+      }
       restore_planner_planning_soft_delete_v1: {
         Args: { _external_id: string }
         Returns: Json
