@@ -1,1 +1,4 @@
 project_id = "hdirtdkvlcegejxrmctj"
+
+[functions.planner-impact-check]
+verify_jwt = false
