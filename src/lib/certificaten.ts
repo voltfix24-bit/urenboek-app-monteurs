@@ -56,6 +56,13 @@ export const CERT_CONFIG: CertConfig[] = [
     info: null,
   },
   {
+    type: "VWLW",
+    label: "Veilig Werken Langs de Weg (VWLW)",
+    heeftNiveau: false,
+    heeftVervaldatum: true,
+    info: null,
+  },
+  {
     type: "POORT",
     label: "Poortinstructie",
     heeftNiveau: false,
