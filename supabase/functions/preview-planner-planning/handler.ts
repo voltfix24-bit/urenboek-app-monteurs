@@ -67,7 +67,7 @@ export function createHandler(deps: Deps) {
     const { datum_vanaf, datum_tot } = parsed.value;
 
     const plannerResp = await deps.fetchPlannerPlanning({ datum_vanaf, datum_tot });
-    if (!plannerResp.ok) return json(502, { error: "Planner-endpoint gaf een fout", status: plannerResp.status });
+    if (!plannerResp.ok) return json(502, { error: "Planner-endpoint gaf een fout", status: plannerResp.status, detail: (plannerResp as any).detail ?? null });
     const planner: PlannerPlanningItem[] = Array.isArray(plannerResp.payload?.planning) ? plannerResp.payload!.planning! : [];
     const uitgesloten: PlannerUitgeslotenItem[] = Array.isArray(plannerResp.payload?.uitgesloten) ? plannerResp.payload!.uitgesloten! : [];
 
