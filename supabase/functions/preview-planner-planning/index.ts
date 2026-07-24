@@ -28,8 +28,9 @@ const handler = createHandler({
         body: JSON.stringify(range),
       });
       if (!resp.ok) {
-        await resp.text().catch(() => "");
-        return { ok: false, status: resp.status, payload: null };
+        const bodyText = await resp.text().catch(() => "");
+        console.error("Planner planning fout", resp.status, bodyText.slice(0, 500), "range=", range);
+        return { ok: false, status: resp.status, payload: null, detail: bodyText.slice(0, 300) } as any;
       }
       return { ok: true, status: resp.status, payload: await resp.json() };
     } catch (e) {
