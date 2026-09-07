@@ -619,6 +619,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
 }
 
 .team-planning-person strong.team-planning-name-short { display: none; }
+.team-planning-swipe-hint { display: none; align-items: center; justify-content: center; gap: 6px; padding: 8px 2px 0; color: var(--text-muted); font-size: 12px; }
 
 @media (max-width: 640px) {
   .team-planning-grid { min-width: 660px; }
@@ -638,6 +639,4 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .team-planning-footer > div { font-size: 12px; text-align: center; }
   .team-planning-swipe-hint { display: flex; }
 }
-
-.team-planning-swipe-hint { display: none; align-items: center; justify-content: center; gap: 6px; padding: 8px 2px 0; color: var(--text-muted); font-size: 12px; }
 
