@@ -165,7 +165,8 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
 
         <footer className="planning-dialog-footer">
           {!editId ? <Button type="button" variant="ghost" className="planning-more-button" onClick={() => setShowExtra((value) => !value)}><Users aria-hidden="true" />Meer monteurs toevoegen</Button> : <Button type="button" variant="ghost" className="planning-delete-button" onClick={onDelete} disabled={saving}>Verwijderen</Button>}
-          <div><Button type="button" variant="outline" className="planning-footer-action" onClick={() => onOpenChange(false)} disabled={saving}>Annuleren</Button><Button type="button" className="planning-footer-action" onClick={onSave} disabled={saving || Boolean(timeError) || !form.project_id}>{saving ? "Opslaan…" : editId ? "Bijwerken" : "Inplannen"}</Button></div>
+          <div className="planning-footer-spacer" aria-hidden="true" />
+          <div><Button type="button" variant="outline" className="planning-footer-action" onClick={() => onOpenChange(false)} disabled={saving}>Annuleren</Button><Button type="button" className="planning-footer-action planning-save-button" onClick={onSave} disabled={saving || Boolean(timeError) || !form.project_id}>{saving ? "Opslaan…" : editId ? "Bijwerken" : "Inplannen"}</Button></div>
         </footer>
       </DialogContent>
     </Dialog>
