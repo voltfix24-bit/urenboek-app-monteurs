@@ -271,6 +271,11 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .team-planning-actions > button { height: 36px; border-color: var(--planning-border-soft); background: var(--bg-surface); color: var(--text-primary); }
   .team-planning-copy { width: auto !important; padding-inline: 12px !important; }
   .team-planning-controls { display: grid; gap: 12px; margin-bottom: 16px; }
+  .team-planning-warning { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; border: 1px solid var(--warn-border); border-radius: 6px; background: var(--warn-bg); padding: 9px 11px; color: var(--warn-text); font-size: 11px; }
+  .team-planning-warning svg { width: 15px; flex: 0 0 15px; }
+  .team-planning-warning div { display: grid; gap: 2px; }
+  .team-planning-warning strong { font-weight: 500; }
+  .team-planning-warning span { color: var(--text-secondary); }
   .team-planning-segmented { display: inline-flex; width: fit-content; padding: 3px; border: 1px solid var(--planning-border-soft); border-radius: 8px; background: var(--bg-surface-2); }
   .team-planning-segmented button { height: 30px; border-radius: 5px; padding-inline: 14px; color: var(--text-secondary); font-size: 12px; font-weight: 500; }
   .team-planning-segmented button[aria-pressed="true"] { background: var(--bg-surface); color: var(--text-primary); box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent); }
@@ -321,6 +326,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .team-planning-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 12px 2px; color: var(--text-secondary); font-size: 11px; }
   .team-planning-legend span { display: inline-flex; align-items: center; gap: 6px; }
   .team-planning-legend i { width: 8px; height: 8px; border-radius: 2px; }
+  .team-planning-fab { position: fixed; bottom: calc(96px + env(safe-area-inset-bottom, 34px)); left: 50%; z-index: 40; height: 46px; transform: translateX(-50%); border-radius: 999px; padding-inline: 22px; background: var(--accent); color: var(--primary-foreground); font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px var(--accent-border); }
 
   .planning-dialog { width: calc(100vw - 32px); max-width: 460px; max-height: calc(100dvh - 32px); gap: 0; overflow: hidden; border-color: var(--planning-border-soft); border-radius: 12px; background: var(--bg-surface); padding: 0; color: var(--text-primary); }
   .planning-dialog > button { top: 15px; right: 16px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }

@@ -7,7 +7,7 @@ import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { ChevronLeft, ChevronRight, Copy, Download, FileDown, Plus } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, Copy, Download, FileDown, Plus } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -22,7 +22,6 @@ interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: num
 interface ProjectInfo { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
 interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_tot: string; type: string; status: string; }
 
-const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
 
 function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null, weekDateStrings?: string[]): string[] {
@@ -317,7 +316,6 @@ export default function ManagerPlanning() {
   };
 
 
-  const projMap = new Map(projects.map(p => [p.id, p]));
   const medName = (id: string) => medewerkers.find(m => m.id === id)?.full_name || "?";
 
   const modalStatus = useMemo(() => {
@@ -384,6 +382,8 @@ export default function ManagerPlanning() {
             </div>
             {planningView === "grid" && weekProjectChips.length > 0 && <div className="team-planning-filters"><span>Project</span><div><Button type="button" variant="outline" aria-pressed={selectedProjectId === null} onClick={() => setSelectedProjectId(null)}>Alle projecten</Button>{weekProjectChips.map((chip) => <Button key={chip.id} type="button" variant="outline" title={chip.naam} aria-pressed={selectedProjectId === chip.id} onClick={() => setSelectedProjectId((current) => current === chip.id ? null : chip.id)}>{chip.naam || chip.nummer}</Button>)}</div></div>}
           </div>
+
+          {overplanned.length > 0 && <div className="team-planning-warning"><AlertTriangle aria-hidden="true" /><div><strong>Overplanning</strong>{overplanned.map((item) => <span key={item.id}>{item.name}: {item.days} dagen ingepland</span>)}</div></div>}
 
           {planningView === "grid" && (loading ? <Spinner padding="py-16" /> : <TeamPlanningGrid
             medewerkers={medewerkers}
@@ -543,15 +543,9 @@ export default function ManagerPlanning() {
         </main>
 
         {/* FAB */}
-        <button onClick={() => setShowModal(true)} style={{
-          position: "fixed", bottom: "calc(96px + env(safe-area-inset-bottom, 34px))", left: "50%", transform: "translateX(-50%)", zIndex: 40,
-          background: "var(--accent)", color: "var(--on-accent)", border: "none", borderRadius: 9999,
-          height: 56, padding: "0 32px", display: "flex", alignItems: "center", gap: 8,
-          fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 14, textTransform: "uppercase",
-          letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 8px 24px var(--accent-border)", whiteSpace: "nowrap",
-        }}>
+        <Button onClick={() => medewerkers[0] && openAddModal(medewerkers[0].id, format(weekDates[0], "yyyy-MM-dd"))} className="team-planning-fab">
           <Plus size={20} /> Inplannen
-        </button>
+        </Button>
       </div>
       </PullToRefresh>
 
