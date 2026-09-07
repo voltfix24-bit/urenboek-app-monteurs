@@ -1,4 +1,5 @@
 import { AlertTriangle, ChevronDown, Plus } from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ interface Props {
   onToggleExpanded: (id: string) => void;
   onOpenCell: (medewerkerId: string, datum: string) => void;
   berekenUren: (starttijd: string | null, eindtijd: string | null) => number;
-  renderExpanded: (medewerker: TeamPlanningMedewerker) => React.ReactNode;
+  renderExpanded: (medewerker: TeamPlanningMedewerker) => ReactNode;
 }
 
 const DAG_LABELS = ["Ma", "Di", "Wo", "Do", "Vr"];
@@ -126,7 +127,7 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
                         type="button"
                         variant="ghost"
                         className={`team-planning-cell ${entry ? "is-filled" : "is-empty"} ${afwezigheid ? "is-unavailable" : ""}`}
-                        style={color ? { "--cell-project": color } as React.CSSProperties : undefined}
+                        style={color ? { "--cell-project": color } as CSSProperties : undefined}
                         onClick={() => onOpenCell(medewerker.id, datum)}
                         aria-label={entry ? `${project?.naam || "Planning"}, ${berekenUren(entry.starttijd, entry.eindtijd)} uur, bewerken` : `${medewerker.full_name} op ${format(date, "d MMMM", { locale: nl })} inplannen`}
                       >
