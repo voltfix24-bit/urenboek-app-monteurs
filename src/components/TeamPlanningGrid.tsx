@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronDown, Plus } from "lucide-react";
+import { AlertTriangle, ChevronDown, MoveHorizontal, Plus } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
