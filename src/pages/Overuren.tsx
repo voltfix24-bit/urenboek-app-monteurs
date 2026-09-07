@@ -208,25 +208,48 @@ export default function Overuren() {
                   </div>
                 </div>
 
-                <div className="flex gap-4">
-                  <div>
-                    <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Geboekt</span>
-                    <span className="text-sm font-bold" style={{
-                      fontFamily: "DM Mono, monospace",
-                      color: geboektMax > limietMin ? "var(--danger)" : "var(--text-primary)",
-                    }}>{geboektMax}u</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Limiet</span>
-                    <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)" }}>{limietMin}u</span>
-                  </div>
-                  {ingepland != null && (
-                    <div>
-                      <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Ingepland</span>
-                      <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)" }}>{ingepland}u</span>
+                {/* Urenoverzicht: standaard 8u-dag als uitgangspunt, tenzij het een weekoverschrijding is */}
+                {(() => {
+                  const isWeekOnly = types.length === 1 && types[0] === "week_overschrijding";
+                  const standaardUren = isWeekOnly ? 40 : 8;
+                  const extraUren = Math.max(0, geboektMax - standaardUren);
+                  return (
+                    <div className="space-y-2">
+                      <div className="flex gap-5">
+                        <div>
+                          <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Geboekt</span>
+                          <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{geboektMax}u</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Normaal</span>
+                          <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)" }}>{standaardUren}u</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Extra</span>
+                          <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--danger)" }}>+{extraUren}u</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        {types.includes("dag_overschrijding") && (
+                          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                            <strong>Daglimiet:</strong> {geboektMax}u geboekt − 8u limiet = <strong style={{ color: "var(--danger)" }}>+{Math.max(0, geboektMax - 8)}u</strong> extra.
+                          </p>
+                        )}
+                        {types.includes("week_overschrijding") && (
+                          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                            <strong>Weeklimiet:</strong> {geboektMax}u geboekt − 40u limiet = <strong style={{ color: "var(--danger)" }}>+{Math.max(0, geboektMax - 40)}u</strong> extra.
+                          </p>
+                        )}
+                        {types.includes("meer_dan_ingepland") && (
+                          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+                            <strong>Meer dan ingepland:</strong> {geboektMax}u geboekt − {ingepland ?? "?"}u ingepland = <strong style={{ color: "var(--danger)" }}>+{ingepland != null ? Math.max(0, geboektMax - ingepland) : 0}u</strong> extra volgens planning.
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
 
                 <div>
                   <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Project(en) die dag</span>
