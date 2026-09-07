@@ -72,6 +72,12 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
     const datum = format(date, "yyyy-MM-dd");
     return new Set(entries.filter((entry) => entry.datum === datum).map((entry) => entry.medewerker_id)).size;
   });
+  const dagUren = weekDates.map((date) => {
+    const datum = format(date, "yyyy-MM-dd");
+    return entries
+      .filter((entry) => entry.datum === datum)
+      .reduce((sum, entry) => sum + berekenUren(entry.starttijd, entry.eindtijd), 0);
+  });
   const weekTotaal = entries.reduce((sum, entry) => sum + berekenUren(entry.starttijd, entry.eindtijd), 0);
 
   return (
@@ -151,7 +157,11 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
 
           <div className="team-planning-footer" role="row">
             <div className="team-planning-name" role="rowheader"><strong>Dagtotaal</strong></div>
-            {dagAantallen.map((aantal, index) => <div key={weekDates[index].toISOString()} role="cell">{aantal} {aantal === 1 ? "monteur" : "monteurs"}</div>)}
+            {dagAantallen.map((aantal, index) => (
+              <div key={weekDates[index].toISOString()} role="cell">
+                {aantal} {aantal === 1 ? "monteur" : "monteurs"} · {dagUren[index]}u
+              </div>
+            ))}
             <div role="cell"><strong>{weekTotaal}u</strong></div>
           </div>
         </div>
