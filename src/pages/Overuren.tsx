@@ -188,7 +188,13 @@ export default function Overuren() {
                     <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{m.full_name}</p>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                       <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                        {format(new Date(m.datum), "d MMMM yyyy", { locale: nl })}
+                        {format(new Date(m.datum + "T12:00:00"), "EEEE d MMMM yyyy", { locale: nl })}
+                      </span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{
+                        background: "var(--bg-app, rgba(0,0,0,0.05))", border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)",
+                        fontFamily: "DM Mono, monospace",
+                      }}>
+                        Week {getISOWeek(new Date(m.datum + "T12:00:00"))}
                       </span>
                       {types.map(t => {
                         const tc = TYPE_CONFIG[t] || TYPE_CONFIG.dag_overschrijding;
