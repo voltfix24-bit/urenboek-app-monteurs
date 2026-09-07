@@ -259,9 +259,9 @@ export default function Planning() {
     if (existing) {
       setEditingBoekingId(existing.id);
       setEditingBoekingStatus(existing.status || null);
-      // Probeer toelichting uit beschrijving te halen (formaat: "type — afwijking +Xu: toelichting")
+      // Probeer toelichting uit beschrijving te halen (formaat: "type — afwijking +Xu: toelichting" of "type — overwerk +Xu: toelichting")
       const m = existing.beschrijving?.match(/:\s*(.+)$/);
-      const toelichting = m && existing.beschrijving?.includes("afwijking") ? m[1] : "";
+      const toelichting = m && (existing.beschrijving?.includes("afwijking") || existing.beschrijving?.includes("overwerk")) ? m[1] : "";
       setUrenForm({ werkzaamheden: existing.type || "monteren", uren: existing.uren, toelichting });
     } else {
       setEditingBoekingId(null);
@@ -275,14 +275,25 @@ export default function Planning() {
     if (!queryProfileId || !modalItem) return;
     const planned = calcDefaultUren(modalItem.starttijd, modalItem.eindtijd);
     const diff = Math.abs(urenForm.uren - planned);
-    const needsToelichting = diff > 0.5;
+    // Overwerk = dagtotaal over ALLE projecten op deze dag boven de 8u-norm.
+    // Los van afwijking t.o.v. de planning op dit ene project.
+    const dagTotaalAnders = [...existingBoekingen.values()]
+      .filter(b => b.datum === modalItem.datum && b.id !== editingBoekingId)
+      .reduce((s, b) => s + b.uren, 0);
+    const dagTotaal = dagTotaalAnders + urenForm.uren;
+    const isOverwerk = dagTotaal > 8;
+    const needsToelichting = diff > 0.5 || isOverwerk;
     if (needsToelichting && urenForm.toelichting.trim().length < 3) {
-      toast.error("Geef een korte toelichting op de afwijking");
+      toast.error(isOverwerk
+        ? "Overwerk boeken kan alleen met een toelichting"
+        : "Geef een korte toelichting op de afwijking");
       return;
     }
-    const beschrijving = needsToelichting
+    const beschrijving = diff > 0.5
       ? `${urenForm.werkzaamheden} — afwijking ${urenForm.uren - planned > 0 ? '+' : ''}${(urenForm.uren - planned).toFixed(1)}u: ${urenForm.toelichting.trim()}`
-      : urenForm.werkzaamheden;
+      : isOverwerk
+        ? `${urenForm.werkzaamheden} — overwerk +${(dagTotaal - 8).toFixed(1)}u boven 8u-norm: ${urenForm.toelichting.trim()}`
+        : urenForm.werkzaamheden;
 
     // EDIT modus: bestaande boeking updaten
     if (editingBoekingId) {
