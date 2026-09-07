@@ -190,7 +190,16 @@ export default function Projecten() {
   }, [projects, searchQuery, statusFilter]);
   const filteredActive = filteredProjects.filter(p => p.active);
   const filteredInactive = filteredProjects.filter(p => !p.active);
+  const statusCounts = useMemo(() => {
+    const base = searchQuery.trim()
+      ? projects.filter(p => p.naam.toLowerCase().includes(searchQuery.toLowerCase()) || p.nummer.toLowerCase().includes(searchQuery.toLowerCase()))
+      : projects;
+    const counts: Record<string, number> = { alle: base.length };
+    base.forEach(p => { const s = p.status || "nieuw"; counts[s] = (counts[s] || 0) + 1; });
+    return counts;
+  }, [projects, searchQuery]);
   const selectedProject = selectedId ? projects.find(p => p.id === selectedId) || null : null;
+
 
   const clearError = (field: string) => setFormErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
   const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} />;
