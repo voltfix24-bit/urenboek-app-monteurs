@@ -354,7 +354,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .planning-selection-count { color: var(--text-muted); font-size: 11px; }
   .planning-project-trigger { width: 100%; height: 40px; justify-content: flex-start; border-color: var(--planning-border-soft); color: var(--text-secondary); font-size: 14px; font-weight: 400; }
   .planning-project-trigger span { min-width: 0; flex: 1; overflow: hidden; text-align: left; text-overflow: ellipsis; }
-  .planning-project-popover { width: min(512px, calc(100vw - 44px)); padding: 0; border-color: var(--planning-border-soft); background: var(--bg-surface); }
+  .planning-project-popover { width: min(512px, calc(100vw - 60px)); padding: 0; border-color: var(--planning-border-soft); background: var(--bg-surface); }
   .planning-project-option { display: grid; min-width: 0; flex: 1; }
   .planning-project-option strong { overflow: hidden; color: var(--text-primary); text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 500; }
   .planning-project-option small { color: var(--text-secondary); font-size: 11px; }
