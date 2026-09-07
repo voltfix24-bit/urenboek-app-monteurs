@@ -402,7 +402,8 @@ p, h1, h2, h3, span.selectable, input, textarea {
   }
 
   @media (max-width: 560px) {
-    .planning-dialog { max-height: calc(100dvh - 24px); }
+    .planning-dialog { max-height: calc(100vh - 16px); max-height: calc(100svh - 16px); }
+    .planning-dialog-footer { flex: 0 0 auto; }
     .planning-dialog-header { padding: 20px 56px 16px 16px; }
     .planning-dialog-body { padding: 16px; gap: 16px; overflow-x: hidden; }
     .planning-dialog-body > *, .planning-field-group, .planning-time-field { min-width: 0; }
