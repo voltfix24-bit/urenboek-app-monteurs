@@ -1674,11 +1674,16 @@ export default function Planning() {
                   })}
                 </div>
 
-                {/* Afwijking */}
+                {/* Afwijking / overwerk */}
                 {(() => {
                   const planned = calcDefaultUren(modalItem.starttijd, modalItem.eindtijd);
                   const delta = urenForm.uren - planned;
-                  if (Math.abs(delta) <= 0.5) return null;
+                  const dagTotaalAnders = [...existingBoekingen.entries()]
+                    .filter(([key, b]) => key.startsWith(`${modalItem.datum}|`) && b.id !== editingBoekingId)
+                    .reduce((s, [, b]) => s + b.uren, 0);
+                  const dagTotaal = dagTotaalAnders + urenForm.uren;
+                  const isOverwerk = dagTotaal > 8;
+                  if (Math.abs(delta) <= 0.5 && !isOverwerk) return null;
                   const isMore = delta > 0;
                   return (
                     <div style={{
