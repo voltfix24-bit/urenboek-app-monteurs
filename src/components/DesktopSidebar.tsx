@@ -26,15 +26,10 @@ interface NavGroep {
 
 const MANAGER_GROEPEN: NavGroep[] = [
   {
-    label: "Overzicht",
+    label: "Planning",
     items: [
       { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard", badgeKey: "verlofAanvragen" },
       { path: "/mededelingen", icon: Bell, label: "Berichten", badgeKey: "ongelezen" },
-    ],
-  },
-  {
-    label: "Planning",
-    items: [
       { path: "/manager-planning", icon: CalendarDays, label: "Weekplanning" },
       { path: "/projecten", icon: FolderOpen, label: "Projecten" },
       { path: "/opdrachtgevers", icon: Building2, label: "Opdrachtgevers" },
@@ -46,11 +41,6 @@ const MANAGER_GROEPEN: NavGroep[] = [
       { path: "/goedkeuring", icon: CheckCircle, label: "Goedkeuring", badgeKey: "openGoedkeuringen" },
       { path: "/overuren", icon: AlertTriangle, label: "Overuren", badgeKey: "openOveruren" },
       { path: "/rapportage", icon: BarChart3, label: "Rapportage" },
-    ],
-  },
-  {
-    label: "Financiën",
-    items: [
       { path: "/inkooporders", icon: Receipt, label: "Inkooporders", badgeKey: "openOrders" },
       { path: "/beheer/tarieven", icon: Euro, label: "Tarieven" },
     ],
