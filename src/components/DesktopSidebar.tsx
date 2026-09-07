@@ -185,7 +185,7 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
           {permissies.zietBeheer && (
             <div className="mt-1">
               <div className="my-1.5" style={{ borderTop: "1px solid var(--sidebar-shell-border)" }} />
-              <p className="text-[10px] uppercase tracking-wider font-bold px-3 py-1.5" style={{ color: "#c5cbd3" }}>Beheer</p>
+              <p className="text-xs font-medium px-3 py-2" style={{ color: "var(--sidebar-shell-muted)" }}>Beheer</p>
               {BEHEER_ITEMS.filter(item => isItemZichtbaar(item.path, permissies)).map(item => (
                 <button key={item.path} onClick={() => navigate(item.path)}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-colors text-left"
