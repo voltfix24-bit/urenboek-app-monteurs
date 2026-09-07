@@ -336,13 +336,13 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .team-planning-legend i { width: 8px; height: 8px; border-radius: 2px; }
   .team-planning-fab { position: fixed; bottom: calc(96px + env(safe-area-inset-bottom, 34px)); left: 50%; z-index: 40; height: 46px; transform: translateX(-50%); border-radius: 999px; padding-inline: 22px; background: var(--accent); color: var(--primary-foreground); font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px var(--accent-border); }
 
-  .planning-dialog { width: calc(100vw - 32px); max-width: 560px; max-height: calc(100dvh - 32px); gap: 0; overflow: hidden; border-color: var(--planning-border-soft); border-radius: 12px; background: var(--bg-surface); padding: 0; color: var(--text-primary); }
+  .planning-dialog { display: flex; flex-direction: column; width: calc(100vw - 32px); max-width: 560px; max-height: calc(100vh - 32px); max-height: calc(100svh - 32px); gap: 0; overflow: hidden; border-color: var(--planning-border-soft); border-radius: 12px; background: var(--bg-surface); padding: 0; color: var(--text-primary); }
   .planning-dialog > button { top: 15px; right: 16px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
-  .planning-dialog-header { padding: 24px 64px 20px 24px; border-bottom: 1px solid var(--planning-border-soft); }
+  .planning-dialog-header { flex: 0 0 auto; padding: 24px 64px 20px 24px; border-bottom: 1px solid var(--planning-border-soft); }
   .planning-dialog-header h2 { font-size: 18px; font-weight: 500; letter-spacing: 0; }
   .planning-dialog-subtitle { display: flex; align-items: center; gap: 8px; margin-top: 7px; color: var(--text-secondary); font-size: 12px; }
   .planning-availability { border: 1px solid color-mix(in srgb, currentColor 28%, transparent); border-radius: 999px; padding: 2px 7px; font-size: 11px; font-weight: 500; }
-  .planning-dialog-body { display: grid; gap: 20px; overflow-y: auto; padding: 24px; }
+  .planning-dialog-body { display: grid; align-content: start; min-height: 0; flex: 1 1 auto; gap: 20px; overflow-y: auto; padding: 24px; }
   .planning-conflicts { border: 1px solid var(--danger-border); border-radius: 6px; background: var(--danger-light); padding: 8px 10px; color: var(--danger); font-size: 11px; }
   .planning-field-group { display: grid; gap: 6px; }
   .planning-field-group > label, .planning-time-field > label { color: var(--text-secondary); font-size: 13px; font-weight: 400; }
