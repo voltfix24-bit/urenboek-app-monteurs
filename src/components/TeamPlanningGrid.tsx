@@ -112,7 +112,9 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
                   <div className="team-planning-name" role="rowheader">
                     <span className="team-planning-avatar" aria-hidden="true">{initialen(medewerker.full_name)}</span>
                     <span className="team-planning-person">
-                      <strong title={medewerker.full_name}>{medewerker.full_name}</strong>
+                      <strong className="team-planning-name-full" title={medewerker.full_name}>{medewerker.full_name}</strong>
+                      <strong className="team-planning-name-short" title={medewerker.full_name}>{korteNaam(medewerker.full_name)}</strong>
+
                       {medewerker.role && medewerker.role !== "monteur" && <small>{medewerker.role === "wv" ? "Werkvoorbereider" : medewerker.role.charAt(0).toUpperCase() + medewerker.role.slice(1)}</small>}
                     </span>
                     <Button
