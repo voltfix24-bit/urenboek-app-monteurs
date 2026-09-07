@@ -19,6 +19,8 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 import { format, startOfWeek, addDays, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 import { useProjects } from "@/hooks/useProjects";
+import { WeekstaatCard } from "@/components/WeekstaatCard";
+
 
 interface EntryWithProfile {
   id: string; datum: string; project_naam: string; project_nummer: string; beschrijving: string;
