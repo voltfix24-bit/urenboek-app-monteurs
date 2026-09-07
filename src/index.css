@@ -624,5 +624,6 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .team-planning-name-head, .team-planning-name { position: sticky; left: 0; z-index: 11; }
   .team-planning-name-head { z-index: 13; }
   .team-planning-name { font-size: 13px; padding-left: 8px; }
+  .team-planning-scroll { max-height: calc(100dvh - 360px); }
   .team-planning-avatar { width: 24px; height: 24px; flex: 0 0 24px; font-size: 11px; }
 }
