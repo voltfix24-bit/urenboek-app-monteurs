@@ -59,7 +59,29 @@ export default function Overuren() {
       : { data: [] };
     const nameMap = new Map((profiles ?? []).map((p: any) => [p.id, p.full_name]));
 
+    // Projectnamen per medewerker+datum ophalen via de urenboekingen van die dag
+    const datums = [...new Set(data.map((m: any) => m.datum))];
+    const { data: boekingen } = (medIds.length > 0 && datums.length > 0)
+      ? await supabase.from("uren_boekingen")
+          .select("medewerker_id, datum, project_id")
+          .in("medewerker_id", medIds)
+          .in("datum", datums)
+      : { data: [] };
+    const projectIds = [...new Set((boekingen ?? []).map((b: any) => b.project_id).filter(Boolean))];
+    const { data: projecten } = projectIds.length > 0
+      ? await supabase.from("projects").select("id, naam").in("id", projectIds)
+      : { data: [] };
+    const projectMap = new Map((projecten ?? []).map((p: any) => [p.id, p.naam]));
+    const projectenPerDag = new Map<string, Set<string>>();
+    for (const b of boekingen ?? []) {
+      const key = `${b.medewerker_id}|${b.datum}`;
+      if (!projectenPerDag.has(key)) projectenPerDag.set(key, new Set());
+      const naam = projectMap.get(b.project_id);
+      if (naam) projectenPerDag.get(key)!.add(naam);
+    }
+
     setMeldingen(data.map((m: any) => ({
+      projectNamen: [...(projectenPerDag.get(`${m.medewerker_id}|${m.datum}`) ?? [])],
       ...m,
       geboekte_uren: Number(m.geboekte_uren),
       limiet_uren: Number(m.limiet_uren),
