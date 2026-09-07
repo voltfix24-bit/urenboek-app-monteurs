@@ -83,6 +83,7 @@ export default function ManagerPlanning() {
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
   const weekDateStrings = useMemo(() => weekDates.map(d => format(d, "yyyy-MM-dd")), [weekStart]);
   const overplanned = useMemo(() => getOverplannedMedewerkers(entries, medewerkers, weekDateStrings), [entries, medewerkers, weekDateStrings]);
+  const weekHasPlanning = useMemo(() => entries.some(e => weekDateStrings.includes(e.datum)), [entries, weekDateStrings]);
 
   // Projecten met planning in deze week (voor filterchips)
   const weekProjectChips = useMemo(() => {
@@ -542,10 +543,12 @@ export default function ManagerPlanning() {
           )}
         </main>
 
-        {/* FAB */}
-        <Button onClick={() => medewerkers[0] && openAddModal(medewerkers[0].id, format(weekDates[0], "yyyy-MM-dd"))} className="team-planning-fab">
-          <Plus size={20} /> Inplannen
-        </Button>
+        {/* FAB — alleen zichtbaar als de week nog leeg is */}
+        {!weekHasPlanning && (
+          <Button onClick={() => medewerkers[0] && openAddModal(medewerkers[0].id, format(weekDates[0], "yyyy-MM-dd"))} className="team-planning-fab" aria-label="Nieuwe planning toevoegen">
+            <Plus size={20} aria-hidden="true" /> Inplannen
+          </Button>
+        )}
       </div>
       </PullToRefresh>
 
