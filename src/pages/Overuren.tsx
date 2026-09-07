@@ -77,12 +77,12 @@ export default function Overuren() {
     return () => { supabase.removeChannel(channel); };
   }, [fetchMeldingen]);
 
-  const handleAction = async (id: string, status: string) => {
+  const handleAction = async (ids: string[], status: string) => {
     const { error } = await supabase.from("overuren_meldingen").update({
       status,
       behandeld_door: profileId,
       behandeld_op: new Date().toISOString(),
-    }).eq("id", id);
+    }).in("id", ids);
     if (error) { toast.error("Fout bij opslaan"); return; }
     toast.success(status === "goedgekeurd" ? "Overuren goedgekeurd ✓" : "Overuren afgekeurd");
     fetchMeldingen();
@@ -92,7 +92,29 @@ export default function Overuren() {
     return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
   }
 
-  const openCount = meldingen.filter(m => m.status === "open").length;
+  // Groepeer meldingen per medewerker + datum: meerdere signalen (bijv. "Dag > 8u"
+  // én "Meer dan ingepland") worden één kaart met één keuze.
+  interface Groep {
+    key: string;
+    items: Melding[];
+    hoofd: Melding; // representatieve melding voor naam/datum/toelichting
+    status: string; // "open" als minstens één open is
+  }
+  const groepen: Groep[] = [];
+  const groepMap = new Map<string, Groep>();
+  for (const m of meldingen) {
+    const key = `${m.medewerker_id}|${m.datum}`;
+    let g = groepMap.get(key);
+    if (!g) {
+      g = { key, items: [], hoofd: m, status: m.status };
+      groepMap.set(key, g);
+      groepen.push(g);
+    }
+    g.items.push(m);
+    // Bepaal representatieve: de melding met de hoogste geboekte uren
+    if (m.geboekte_uren > g.hoofd.geboekte_uren) g.hoofd = m;
+    if (m.status === "open") g.status = "open";
+  }
 
   const mainContent = (
     <main className="px-4 py-4 space-y-4">
