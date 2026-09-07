@@ -31,6 +31,12 @@ export function fmtUren(n: number) {
   return `${String(v).replace(".", ",")}u`;
 }
 
+/** "HOLTHUIZERWEG 7 BRUMMEN" -> "Holthuizerweg 7 Brummen" */
+export function nettNaam(naam: string) {
+  if (!naam) return "";
+  return naam.toLocaleLowerCase("nl-NL").replace(/(^|[\s,.-])\p{L}/gu, t => t.toLocaleUpperCase("nl-NL"));
+}
+
 const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1";
 
 export function WeekstaatCard({
@@ -67,7 +73,7 @@ export function WeekstaatCard({
       <div className="hidden sm:grid items-baseline gap-2" style={{ gridTemplateColumns: "62px minmax(0,1fr) 52px 44px" }}>
         <span className="text-[13px]" style={{ color: "var(--text-muted)" }}>{format(new Date(d.datum + "T12:00:00"), "EEE d/M", { locale: nl })}</span>
         <span className="text-[13px] truncate" style={{ color: "var(--text-primary)" }}>
-          {d.projectNaam}{d.taak ? ` · ${d.taak}` : ""}
+          {nettNaam(d.projectNaam)}{d.taak ? ` · ${d.taak}` : ""}
           {d.projectNummer && <span className="ml-1 text-[12px]" style={{ color: "var(--text-muted)" }}>{d.projectNummer}</span>}
         </span>
         <span className="text-[12px] text-right" style={{ color: d.afwijking > 0 ? "var(--warn-text)" : "transparent" }}>
@@ -79,7 +85,7 @@ export function WeekstaatCard({
       <div className="sm:hidden">
         <div className="text-[13px]" style={{ color: "var(--text-primary)" }}>
           <span style={{ color: "var(--text-muted)" }}>{format(new Date(d.datum + "T12:00:00"), "EEE d/M", { locale: nl })}</span>{" · "}
-          {d.projectNaam}{d.taak ? ` · ${d.taak}` : ""}
+          {nettNaam(d.projectNaam)}{d.taak ? ` · ${d.taak}` : ""}
         </div>
         <div className="flex justify-end gap-2 text-[13px] tabular-nums">
           {d.afwijking > 0 && <span className="text-[12px]" style={{ color: "var(--warn-text)" }}>+{fmtUren(d.afwijking)}</span>}
@@ -126,7 +132,7 @@ export function WeekstaatCard({
             <div className="flex items-center justify-between gap-2 py-2" style={{ borderBottom: "1px solid var(--approval-divider)" }}>
               <span className="text-[13px] truncate" style={{ color: "var(--text-primary)" }}>
                 {format(new Date(dagen[0].datum + "T12:00:00"), "EEEEEE", { locale: nl })} – {format(new Date(dagen[dagen.length - 1].datum + "T12:00:00"), "EEEEEE", { locale: nl })}
-                {" · "}{eersteDag.projectNaam}{eersteDag.taak ? ` · ${eersteDag.taak}` : ""}
+                {" · "}{nettNaam(eersteDag.projectNaam)}{eersteDag.taak ? ` · ${eersteDag.taak}` : ""}
                 {" · "}{fmtUren(eersteDag.uren)} per dag
               </span>
               <span className="text-[13px] tabular-nums shrink-0" style={{ color: "var(--text-primary)" }}>{fmtUren(totaalUren)}</span>
