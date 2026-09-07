@@ -446,20 +446,90 @@ export default function Goedkeuring() {
 
   const weekNumber = getISOWeek(weekStart);
 
-  // Build monteurGroups from grouped data for the new UI (keyed by medewerker_id)
-  const monteurGroups = Object.entries(grouped).map(([medewerker_id, userEntries]) => {
+  // Groepeer per monteur (weekstaat) — filter werkt op groepsniveau
+  const alleGroepen = Object.entries(
+    entries.reduce<Record<string, EntryWithProfile[]>>((acc, e) => {
+      (acc[e.medewerker_id] ||= []).push(e);
+      return acc;
+    }, {})
+  ).map(([medewerker_id, userEntries]) => {
     const statuses = userEntries.map(e => e.status);
-    const overallStatus = statuses.every(s => s === "goedgekeurd") ? "goedgekeurd"
+    const status = statuses.every(s => s === "goedgekeurd") ? "goedgekeurd"
       : statuses.some(s => s === "afgekeurd") ? "afgekeurd"
       : statuses.some(s => s === "ingediend") ? "ingediend"
       : "concept";
-    return {
-      id: medewerker_id,
-      full_name: userEntries[0]?.full_name || "Onbekend",
-      status: overallStatus,
-      entries: userEntries,
-    };
+    const dagen = [...userEntries]
+      .sort((a, b) => a.datum.localeCompare(b.datum))
+      .map(e => {
+        const [taakDeel, ...rest] = (e.beschrijving || "").split(" — ");
+        const toelichting = rest.join(" — ").split(": ").slice(1).join(": ") || null;
+        return {
+          id: e.id,
+          datum: e.datum,
+          projectNaam: e.project_naam,
+          projectNummer: e.project_nummer,
+          taak: taakDeel || "",
+          uren: e.uren,
+          afwijking: Math.max(0, e.uren - 8),
+          toelichting,
+        };
+      });
+    const laatste = [...userEntries].sort((a, b) => (a.updated_at || "").localeCompare(b.updated_at || "")).at(-1);
+    const goedgekeurdLabel = status === "goedgekeurd" && laatste?.updated_at
+      ? `Goedgekeurd${laatste.approved_by && keurderNamen[laatste.approved_by] ? ` door ${keurderNamen[laatste.approved_by]}` : ""} op ${format(new Date(laatste.updated_at), "d MMM yyyy, HH:mm", { locale: nl })}`
+      : null;
+    return { id: medewerker_id, full_name: userEntries[0]?.full_name || "Onbekend", status, entries: userEntries, dagen, goedgekeurdLabel };
   });
+
+  const telIngediend = alleGroepen.filter(g => g.status === "ingediend").length;
+  const telGoedgekeurd = alleGroepen.filter(g => g.status === "goedgekeurd").length;
+  const filterOpties = [
+    { key: "alle", label: "Alle", aantal: alleGroepen.length },
+    { key: "ingediend", label: "Ingediend", aantal: telIngediend },
+    { key: "goedgekeurd", label: "Goedgekeurd", aantal: telGoedgekeurd },
+    { key: "afgekeurd", label: "Afgekeurd", aantal: alleGroepen.filter(g => g.status === "afgekeurd").length },
+  ];
+
+  const zichtbareGroepen = alleGroepen
+    .filter(g => filter === "alle" || g.status === filter)
+    .sort((a, b) => {
+      const prio = (g: typeof a) => (g.status === "ingediend" ? 0 : g.dagen.some(d => d.afwijking > 0) ? 1 : 2);
+      return prio(a) - prio(b) || a.full_name.localeCompare(b.full_name);
+    });
+
+  const bulkGroepen = alleGroepen.filter(g => g.status === "ingediend" && g.dagen.every(d => d.afwijking === 0));
+
+  const keurGroepGoed = async (group: { id: string; entries: EntryWithProfile[] }) => {
+    setBusyGroep(group.id);
+    const ids = group.entries.filter(e => e.status !== "goedgekeurd").map(e => e.id);
+    const ok = await mutate(supabase.from("uren_boekingen").update({ status: "goedgekeurd", approved_by: myProfileId }).in("id", ids));
+    setBusyGroep(null);
+    if (!ok) return;
+    toast.success(`${ids.length} uren goedgekeurd`);
+    fetchEntries();
+  };
+
+  const keurGroepAf = async (group: { id: string; entries: EntryWithProfile[] }, reden: string) => {
+    setBusyGroep(group.id);
+    const ids = group.entries.filter(e => e.status === "ingediend").map(e => e.id);
+    const ok = await mutate(supabase.from("uren_boekingen").update({ status: "afgekeurd", afkeur_reden: reden, approved_by: myProfileId }).in("id", ids));
+    setBusyGroep(null);
+    if (!ok) return;
+    toast.success("Weekstaat afgewezen");
+    fetchEntries();
+  };
+
+  const keurBulkGoed = async () => {
+    const ids = bulkGroepen.flatMap(g => g.entries.filter(e => e.status === "ingediend").map(e => e.id));
+    if (ids.length === 0) return;
+    setBusyGroep("bulk");
+    const ok = await mutate(supabase.from("uren_boekingen").update({ status: "goedgekeurd", approved_by: myProfileId }).in("id", ids));
+    setBusyGroep(null);
+    if (!ok) return;
+    toast.success(`${bulkGroepen.length} weekstaten goedgekeurd`);
+    fetchEntries();
+  };
+
 
   return (
     <PageShell>
