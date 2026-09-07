@@ -615,7 +615,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
   /* Koppen met knoppen mogen afbreken i.p.v. over elkaar vallen */
   .mobile-header-wrap { flex-wrap: wrap; row-gap: 8px; }
   .mobile-header-wrap > div:first-of-type,
-  .mobile-header-wrap .flex-1 { min-width: 0; }
+  .mobile-header-wrap .flex-1 { min-width: 0; flex-basis: calc(100% - 44px); }
 }
 
 @media (max-width: 640px) {
