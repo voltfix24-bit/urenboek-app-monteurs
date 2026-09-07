@@ -120,7 +120,7 @@ export default function Overuren() {
     <main className="px-4 py-4 space-y-4">
       <div>
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          {filter === "open" ? `${meldingen.length} open meldingen` : `${meldingen.length} meldingen`}
+          {filter === "open" ? `${groepen.length} open meldingen` : `${groepen.length} meldingen`}
         </p>
       </div>
 
