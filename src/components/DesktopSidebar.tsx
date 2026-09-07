@@ -153,7 +153,7 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
           {zichtbareGroepen.map((groep, gi) => (
             <div key={groep.label}>
               {gi > 0 && <div className="my-1.5" style={{ borderTop: "1px solid var(--sidebar-shell-border)" }} />}
-              <p className="text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 mt-1" style={{ color: "#c5cbd3" }}>
+              <p className="text-xs font-medium px-3 py-2" style={{ color: "var(--sidebar-shell-muted)" }}>
                 {groep.label}
               </p>
               {groep.items.map(item => {
