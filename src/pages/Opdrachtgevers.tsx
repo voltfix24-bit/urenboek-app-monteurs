@@ -45,7 +45,7 @@ export default function Opdrachtgevers() {
 
   return (
     <PageShell>
-      <header className="sticky top-0 z-30 px-4 py-3" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--planning-border-soft)" }}>
+      <header className="sticky top-0 z-30 px-4 py-3 mobile-safe-header" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--planning-border-soft)" }}>
         <div className="flex items-center gap-3">
           <button onClick={() => navigate("/")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}><ArrowLeft className="h-4 w-4" /></button>
           <h1 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Opdrachtgevers</h1>

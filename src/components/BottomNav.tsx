@@ -37,10 +37,10 @@ export function BottomNav({ badges }: BottomNavProps) {
   ];
 
   const managerTabs: TabDef[] = [
-    { key: "/dashboard", icon: LayoutDashboard, label: "Overzicht" },
-    { key: "/goedkeuring", icon: CheckCircle, label: "Goedkeuring", badge: badges.openGoedkeuringen },
+    { key: "/dashboard", icon: LayoutDashboard, label: "Start" },
+    { key: "/goedkeuring", icon: CheckCircle, label: "Keuren", badge: badges.openGoedkeuringen },
     { key: "/manager-planning", icon: CalendarDays, label: "Planning" },
-    { key: "/medewerkers", icon: Users, label: "Medewerkers" },
+    { key: "/medewerkers", icon: Users, label: "Team" },
     { key: "/projecten", icon: FolderOpen, label: "Projecten" },
   ];
 
@@ -150,8 +150,12 @@ export function BottomNav({ badges }: BottomNavProps) {
                 fontWeight: active ? 700 : 600,
                 fontFamily: "Hanken Grotesk",
                 textTransform: "uppercase",
-                letterSpacing: "0.05em",
+                letterSpacing: "0.02em",
                 color: active ? "var(--accent)" : "var(--text-muted)",
+                whiteSpace: "nowrap",
+                maxWidth: "100%",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
               {t.label}

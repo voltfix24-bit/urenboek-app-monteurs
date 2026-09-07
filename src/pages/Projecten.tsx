@@ -252,7 +252,7 @@ export default function Projecten() {
 
       {/* MOBILE */}
       <div className="lg:hidden">
-        <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
+        <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 190px)" }}>
           {/* HEADER */}
           <MobileHeader initials={profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'} />
 
@@ -343,7 +343,7 @@ export default function Projecten() {
                                   {margeMap.get(project.id)?.marge ? `${Math.round(margeMap.get(project.id)!.marge)}%` : "—"}
                                 </span>
                               </div>
-                              <div style={{ height: 4, background: "#000", borderRadius: 9999, overflow: "hidden" }}>
+                              <div style={{ height: 4, background: "var(--bg-surface-2)", borderRadius: 9999, overflow: "hidden" }}>
                                 <div style={{ height: "100%", width: `${Math.min(100, margeMap.get(project.id)?.marge || 0)}%`, background: "var(--accent)", borderRadius: 9999, boxShadow: "0 0 8px color-mix(in srgb, var(--accent) 35%, transparent)" }} />
                               </div>
                             </div>
@@ -366,9 +366,9 @@ export default function Projecten() {
 
           {/* FAB */}
           <button onClick={() => { setShowAdd(true); setEditId(null); setExpandedId(null); setForm(emptyForm); }} style={{
-            position: "fixed", bottom: "calc(96px + env(safe-area-inset-bottom, 34px))", left: "50%", transform: "translateX(-50%)", zIndex: 40,
-            background: "var(--accent)", color: "var(--accent-dark)", border: "none", borderRadius: 9999,
-            height: 56, padding: "0 28px", display: "flex", alignItems: "center", gap: 8,
+            position: "fixed", bottom: "calc(88px + env(safe-area-inset-bottom, 34px))", right: 20, zIndex: 40,
+            background: "var(--accent)", color: "#fff", border: "none", borderRadius: 9999,
+            height: 52, padding: "0 20px", display: "flex", alignItems: "center", gap: 8,
             fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 14, textTransform: "uppercase",
             letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 8px 24px var(--accent-border)", whiteSpace: "nowrap",
           }}>
