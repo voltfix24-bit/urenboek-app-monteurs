@@ -253,9 +253,9 @@ export default function Overuren() {
             <HeaderLogo />
             <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Overuren meldingen</span>
           </div>
-          {filter === "open" && meldingen.length > 0 && (
+          {filter === "open" && groepen.length > 0 && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-              <span className="text-lg font-extrabold" style={{ color: "var(--warn-text)" }}>{meldingen.length}</span>
+              <span className="text-lg font-extrabold" style={{ color: "var(--warn-text)" }}>{groepen.length}</span>
               <span className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>open</span>
             </div>
           )}
