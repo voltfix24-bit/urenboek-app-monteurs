@@ -605,3 +605,24 @@ p, h1, h2, h3, span.selectable, input, textarea {
   0%, 100% { transform: translateX(-50%) translateY(0); }
   50% { transform: translateX(-50%) translateY(3px); }
 }
+
+/* ---- Mobiele verbeteringen (alleen onder lg, desktop blijft ongewijzigd) ---- */
+@media (max-width: 1023px) {
+  /* Eigen paginakoppen die niet via MobileHeader lopen: ruimte voor de statusbalk/notch */
+  .mobile-safe-header { padding-top: calc(12px + env(safe-area-inset-top, 20px)) !important; }
+  /* Pagina's zonder PageShell: ruimte onder de vaste onderbalk */
+  .mobile-nav-space { padding-bottom: calc(72px + env(safe-area-inset-bottom, 34px) + 24px) !important; }
+  /* Koppen met knoppen mogen afbreken i.p.v. over elkaar vallen */
+  .mobile-header-wrap { flex-wrap: wrap; row-gap: 8px; }
+  .mobile-header-wrap > div:first-of-type,
+  .mobile-header-wrap .flex-1 { min-width: 0; }
+}
+
+@media (max-width: 640px) {
+  .team-planning-grid { min-width: 720px; }
+  .team-planning-header, .team-planning-row, .team-planning-footer { grid-template-columns: 132px repeat(5, minmax(96px, 1fr)) 52px; }
+  .team-planning-name-head, .team-planning-name { position: sticky; left: 0; z-index: 11; }
+  .team-planning-name-head { z-index: 13; }
+  .team-planning-name { font-size: 13px; padding-left: 8px; }
+  .team-planning-avatar { width: 24px; height: 24px; flex: 0 0 24px; font-size: 11px; }
+}
