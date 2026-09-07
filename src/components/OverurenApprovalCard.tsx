@@ -63,6 +63,12 @@ export function OverurenApprovalCard({
   onReject,
   onRequestExplanation,
 }: OverurenApprovalCardProps) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(part => part.charAt(0).toUpperCase())
+    .join("");
   const [busyAction, setBusyAction] = useState<"approve" | "reject" | null>(null);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
@@ -101,7 +107,7 @@ export function OverurenApprovalCard({
               style={{ background: "var(--approval-avatar)", color: "var(--approval-avatar-text)" }}
               aria-hidden="true"
             >
-              {name.charAt(0).toUpperCase()}
+              {initials}
             </div>
             <div className="min-w-0 space-y-1">
               <h2 className="text-[15px] font-medium leading-5" style={{ color: "var(--text-primary)", letterSpacing: 0 }}>{name}</h2>
