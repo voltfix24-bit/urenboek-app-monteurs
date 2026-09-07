@@ -7,32 +7,23 @@ import { PageShell } from "@/components/PageShell";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { mutate } from "@/lib/supabaseHelpers";
-import { ChevronLeft, ChevronRight, Plus, X, AlertTriangle, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Download, FileDown, Plus } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
-import { volledigAdres } from "@/lib/utils";
 import { format, startOfISOWeek, addDays, addWeeks, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
 import { generatePlanningPdf, generatePersoneelsPdf } from "@/lib/planningPdf";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { TeamPlanningGrid } from "@/components/TeamPlanningGrid";
+import { PlanningDialog } from "@/components/PlanningDialog";
 
 interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; planning_group_id: string | null; }
 interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; planning_partner_ids: string[]; role?: string | null; }
 interface ProjectInfo { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
 interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_tot: string; type: string; status: string; }
 
-const ROLE_LABELS: Record<string, string> = {
-  monteur: "Monteur",
-  schakelmonteur: "Schakelmonteur",
-  uitvoerder: "Uitvoerder",
-  wv: "Werkvoorbereider",
-  manager: "Manager",
-};
-
-
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr"];
 const DAG_MAP = [1, 2, 3, 4, 5];
-const PLANNING_ROW_GRID_COLUMNS = "minmax(220px, 1fr) minmax(240px, 720px) 26px";
-const PLANNING_DAY_GRID_COLUMNS = "repeat(5, minmax(0, 1fr))";
-const AVATAR_COLORS = ['var(--accent)', 'var(--info)', 'var(--warn-text)', 'var(--purple)', 'var(--accent-dark)'];
 
 function getConflicts(medId: string, dateStr: string, dayIndex: number, entries: PlanningEntry[], medewerkers: MedewerkerInfo[], beschikbaarheid: BeschikbaarheidItem[], currentEditId: string | null, weekDateStrings?: string[]): string[] {
   const conflicts: string[] = [];
@@ -85,6 +76,9 @@ export default function ManagerPlanning() {
   const [expandedMedewerker, setExpandedMedewerker] = useState<string | null>(null);
   const [planningView, setPlanningView] = useState<'grid' | 'klus'>('grid');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [copyingWeek, setCopyingWeek] = useState(false);
+  const [extraMedewerkerIds, setExtraMedewerkerIds] = useState<string[]>([]);
 
   const weekNumber = getISOWeek(weekStart);
   const weekDates = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
@@ -199,6 +193,7 @@ export default function ManagerPlanning() {
       setModalForm({ medewerker_id, project_id: projects[0]?.id || "", datum, starttijd: "07:00", eindtijd: "16:00", notitie: "" });
       setModalDatums([datum]);
     }
+    setExtraMedewerkerIds([]);
     setShowModal(true);
   };
 
@@ -213,6 +208,8 @@ export default function ManagerPlanning() {
 
   const savePlanning = async () => {
     if (!myProfileId) return;
+    setSaving(true);
+    try {
     if (editId) {
       const existing = entries.find(e => e.id === editId);
       const updatePayload = { project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any;
@@ -232,7 +229,7 @@ export default function ManagerPlanning() {
       const datums = [...(modalDatums.length > 0 ? modalDatums : [modalForm.datum])].sort();
       const skipped: Array<{ medId: string; datum: string }> = [];
       const rows = datums.flatMap((datum) => {
-        const kandidaatGroep = [modalForm.medewerker_id, ...partners];
+        const kandidaatGroep = Array.from(new Set([modalForm.medewerker_id, ...partners, ...extraMedewerkerIds]));
         const inGroup = kandidaatGroep.filter((medId) => {
           const bestaatAl = entries.some(e => e.medewerker_id === medId && e.datum === datum);
           if (bestaatAl) skipped.push({ medId, datum });
@@ -274,6 +271,35 @@ export default function ManagerPlanning() {
         toast.info(`Overgeslagen (al ingepland): ${tekst}${skipped.length > 4 ? "..." : ""}`);
       }
       setShowModal(false); fetchAll();
+    }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const copyPreviousWeek = async () => {
+    if (!myProfileId || copyingWeek) return;
+    setCopyingWeek(true);
+    try {
+      const previousStart = addWeeks(weekStart, -1);
+      const previousEnd = addDays(previousStart, 4);
+      const { data, error } = await supabase.from("planning").select("medewerker_id, project_id, datum, starttijd, eindtijd, notitie, activiteit, activiteit_kleur, collega_ids").gte("datum", format(previousStart, "yyyy-MM-dd")).lte("datum", format(previousEnd, "yyyy-MM-dd"));
+      if (error) throw error;
+      const existing = new Set(entries.map((entry) => `${entry.medewerker_id}:${entry.datum}`));
+      let skipped = 0;
+      const rows = (data ?? []).flatMap((entry) => {
+        const targetDate = format(addDays(new Date(`${entry.datum}T12:00:00`), 7), "yyyy-MM-dd");
+        if (existing.has(`${entry.medewerker_id}:${targetDate}`)) { skipped += 1; return []; }
+        return [{ ...entry, datum: targetDate, created_by: myProfileId }];
+      });
+      if (rows.length > 0 && !await mutate(supabase.from("planning").insert(rows as any))) return;
+      toast.success(`${rows.length} planningregels gekopieerd${skipped ? ` · ${skipped} overgeslagen` : ""}`);
+      fetchAll();
+    } catch (error) {
+      console.error("Week copy failed", error);
+      toast.error("Vorige week kopiëren is mislukt");
+    } finally {
+      setCopyingWeek(false);
     }
   };
 
