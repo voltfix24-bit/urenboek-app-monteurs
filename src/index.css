@@ -342,7 +342,8 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .planning-day-picker { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
   .planning-day-picker button { height: 44px; min-width: 0; flex-direction: column; gap: 0; border-color: var(--planning-border-soft); color: var(--text-secondary); font-size: 11px; font-weight: 400; }
   .planning-day-picker button strong { color: var(--text-primary); font-size: 11px; font-weight: 500; }
-  .planning-day-picker button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }
+  .planning-day-picker button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #ffffff; }
+  .planning-day-picker button[aria-pressed="true"] strong { color: #ffffff; }
   .planning-selection-count { color: var(--text-muted); font-size: 11px; }
   .planning-project-trigger { width: 100%; height: 40px; justify-content: flex-start; border-color: var(--planning-border-soft); color: var(--text-secondary); font-size: 12px; font-weight: 400; }
   .planning-project-trigger span { min-width: 0; flex: 1; overflow: hidden; text-align: left; text-overflow: ellipsis; }
