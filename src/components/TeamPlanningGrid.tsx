@@ -82,7 +82,7 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
 
   return (
     <>
-      <div className="team-planning-scroll" tabIndex={0} aria-label="Teamplanning weekraster">
+      <div className={`team-planning-scroll ${medewerkers.length > 20 ? "is-compact" : ""}`} tabIndex={0} aria-label="Teamplanning weekraster">
         <div className="team-planning-grid" role="table" aria-label="Planning per medewerker en werkdag">
           <div className="team-planning-header" role="row">
             <div className="team-planning-name-head" role="columnheader">Medewerker</div>
