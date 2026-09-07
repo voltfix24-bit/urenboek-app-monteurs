@@ -483,420 +483,41 @@ export default function ManagerPlanning() {
         <MobileHeader initials={profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'} />
 
         <main style={{ padding: "24px 20px" }}>
-          {/* WEEK SELECTOR */}
-          <section style={{ marginBottom: 28, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <section className="team-planning-topbar">
             <div>
-              <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--accent)", marginBottom: 4 }}>
-                TEAM PLANNING
-              </p>
-              <h2 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", lineHeight: 1, marginBottom: 4 }}>
-                Week {weekNumber}
-              </h2>
-              <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Hanken Grotesk" }}>
-                {format(weekStart, "EEE d MMM", { locale: nl })} t/m {format(addDays(weekStart, 4), "EEE d MMM", { locale: nl })}
-              </p>
+              <h1>Week {weekNumber}</h1>
+              <p>{format(weekStart, "d MMM", { locale: nl })} t/m {format(addDays(weekStart, 4), "d MMM", { locale: nl })} · {new Set(visibleEntries.map((entry) => entry.medewerker_id)).size} van {medewerkers.length} ingepland</p>
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => setWeekStart(w => addWeeks(w, -1))} style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-button)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                <ChevronLeft size={20} />
-              </button>
-              <button onClick={handleDownloadPdf} title="Download planning PDF" style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-button)", border: "1px solid var(--accent-border)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>picture_as_pdf</span>
-              </button>
-              <button onClick={handleDownloadPersoneelsPdf} title="Download persoonlijke planning per monteur" style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-button)", border: "1px solid var(--accent-border)", color: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>group</span>
-              </button>
-              <button onClick={() => setWeekStart(w => addWeeks(w, 1))} style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-button)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                <ChevronRight size={20} />
-              </button>
+            <div className="team-planning-actions">
+              <Button type="button" variant="outline" className="team-planning-copy" onClick={copyPreviousWeek} disabled={copyingWeek}><Copy />{copyingWeek ? "Kopiëren…" : "Week kopiëren"}</Button>
+              {[
+                { label: "Vorige week", icon: <ChevronLeft />, action: () => setWeekStart((week) => addWeeks(week, -1)) },
+                { label: "Planning als PDF downloaden", icon: <Download />, action: handleDownloadPdf },
+                { label: "Persoonlijke planning downloaden", icon: <FileDown />, action: handleDownloadPersoneelsPdf },
+                { label: "Volgende week", icon: <ChevronRight />, action: () => setWeekStart((week) => addWeeks(week, 1)) },
+              ].map((item) => <Tooltip key={item.label}><TooltipTrigger asChild><Button type="button" variant="outline" size="icon" aria-label={item.label} onClick={item.action}>{item.icon}</Button></TooltipTrigger><TooltipContent>{item.label}</TooltipContent></Tooltip>)}
             </div>
           </section>
 
-          {/* VIEW TOGGLE */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-            {[
-              { key: 'grid', label: 'Overzicht', icon: 'grid_view' },
-              { key: 'klus', label: 'Per klus', icon: 'table_rows' },
-            ].map((v) => (
-              <button
-                key={v.key}
-                onClick={() => setPlanningView(v.key as 'grid' | 'klus')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '8px 16px',
-                  borderRadius: 9999,
-                  border: planningView === v.key ? 'none' : '1px solid var(--planning-border-soft)',
-                  background: planningView === v.key ? 'var(--accent)' : 'var(--planning-button)',
-                  color: planningView === v.key ? 'var(--on-accent)' : 'var(--text-secondary)',
-                  fontFamily: 'Hanken Grotesk',
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                  boxShadow: planningView === v.key ? '0 0 12px var(--accent-border)' : 'none',
-                }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{v.icon}</span>
-                {v.label}
-              </button>
-            ))}
+          <div className="team-planning-controls">
+            <div className="team-planning-segmented" aria-label="Planningweergave">
+              {[{ key: "grid", label: "Overzicht" }, { key: "klus", label: "Per klus" }].map((view) => <Button key={view.key} type="button" variant="ghost" aria-pressed={planningView === view.key} onClick={() => setPlanningView(view.key as "grid" | "klus")}>{view.label}</Button>)}
+            </div>
+            {planningView === "grid" && weekProjectChips.length > 0 && <div className="team-planning-filters"><span>Project</span><div><Button type="button" variant="outline" aria-pressed={selectedProjectId === null} onClick={() => setSelectedProjectId(null)}>Alle projecten</Button>{weekProjectChips.map((chip) => <Button key={chip.id} type="button" variant="outline" title={chip.naam} aria-pressed={selectedProjectId === chip.id} onClick={() => setSelectedProjectId((current) => current === chip.id ? null : chip.id)}>{chip.naam || chip.nummer}</Button>)}</div></div>}
           </div>
 
-          {planningView === 'grid' && (<>
-          {/* PROJECT FILTER CHIPS */}
-          {weekProjectChips.length > 0 && (
-            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none", marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
-              {(() => {
-                const allActive = selectedProjectId === null;
-                return (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedProjectId(null)}
-                    aria-pressed={allActive}
-                    style={{
-                      padding: "8px 16px", borderRadius: 9999,
-                      background: allActive ? "var(--accent)" : "var(--planning-button)",
-                      border: allActive ? "none" : "1px solid var(--planning-border-soft)",
-                      color: allActive ? "var(--on-accent)" : "var(--text-secondary)",
-                      fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13,
-                      cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
-                      boxShadow: allActive ? "0 0 12px var(--accent-border)" : "none",
-                    }}
-                  >
-                    Alle projecten
-                  </button>
-                );
-              })()}
-              {weekProjectChips.map(chip => {
-                const active = selectedProjectId === chip.id;
-                const label = chip.naam || chip.nummer || "Project";
-                return (
-                  <button
-                    key={chip.id}
-                    type="button"
-                    title={label}
-                    aria-pressed={active}
-                    onClick={() => setSelectedProjectId(prev => prev === chip.id ? null : chip.id)}
-                    style={{
-                      padding: "8px 16px", borderRadius: 9999,
-                      background: active ? "var(--accent)" : "var(--planning-button)",
-                      border: active ? "none" : "1px solid var(--planning-border-soft)",
-                      color: active ? "var(--on-accent)" : "var(--text-secondary)",
-                      fontFamily: "Hanken Grotesk", fontWeight: active ? 700 : 600, fontSize: 13,
-                      cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
-                      maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis",
-                      boxShadow: active ? "0 0 12px var(--accent-border)" : "none",
-                    }}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* DAY HEADERS */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: PLANNING_ROW_GRID_COLUMNS,
-            gap: 8,
-            alignItems: "center",
-            marginBottom: 10,
-            padding: "0 16px",
-          }}>
-            <div />
-            <div style={{ display: "grid", gridTemplateColumns: PLANNING_DAY_GRID_COLUMNS, gap: 8, minWidth: 0 }}>
-              {weekDates.map((d, i) => {
-                const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
-                return (
-                  <div key={i} style={{ textAlign: "center", lineHeight: 1.2, padding: "4px 2px", borderRadius: 8, background: isToday ? "var(--accent-light)" : "transparent", border: isToday ? "1px solid var(--accent-border)" : "1px solid transparent" }}>
-                    <span style={{ display: "block", fontSize: 11, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.08em", color: isToday ? "var(--accent)" : "var(--text-secondary)" }}>{DAGEN[i]}</span>
-                    <span style={{ display: "block", fontSize: 13, fontWeight: 800, fontFamily: "Hanken Grotesk", color: "var(--text-primary)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", marginTop: 2 }}>{format(d, "d/M")}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div />
-          </div>
-
-          {/* LOADING */}
-          {loading && (
-            <div style={{ textAlign: "center", padding: 40, color: "var(--text-secondary)" }}>Planning laden...</div>
-          )}
-
-          {/* OVERPLANNING WARNING */}
-          {overplanned.length > 0 && (
-            <div style={{ background: "var(--warn-bg)", border: "1px solid var(--warn-border)", borderRadius: 16, padding: "14px 16px", marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 12 }}>
-              <AlertTriangle size={16} style={{ color: "var(--warn-text)", marginTop: 2, flexShrink: 0 }} />
-              <div>
-                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--warn-text)", fontFamily: "Hanken Grotesk", marginBottom: 4 }}>Overplanning</p>
-                {overplanned.map(m => (
-                  <p key={m.id} style={{ fontSize: 11, color: "var(--text-secondary)", fontFamily: "Hanken Grotesk" }}>{m.name}: {m.days} dagen ingepland</p>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* MONTEUR ROWS */}
-          {!loading && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {medewerkers.map((med) => {
-                const initials = med.full_name?.split(" ").map(n => n[0]).slice(0, 2).join("") || "XX";
-                const isExpanded = expandedMedewerker === med.id;
-                return (
-                  <div key={med.id}>
-                  <div style={{
-                    background: "var(--planning-card)",
-                    borderRadius: isExpanded ? "16px 16px 0 0" : 16,
-                    padding: "14px 16px",
-                    display: "grid",
-                    gridTemplateColumns: PLANNING_ROW_GRID_COLUMNS,
-                    gap: 8,
-                    alignItems: "center",
-                  }}>
-                    {/* Avatar + name (clickable to toggle) */}
-                    <div
-                      onClick={() => setExpandedMedewerker(prev => prev === med.id ? null : med.id)}
-                      style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, cursor: "pointer" }}
-                    >
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--planning-avatar-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 13, color: "var(--accent)", border: "1px solid var(--accent-border)", flexShrink: 0, letterSpacing: "0.02em" }}>
-                        {initials}
-                      </div>
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{ fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 14, color: "var(--text-primary)", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {med.full_name}
-                        </p>
-                        <p style={{ fontSize: 10, color: "var(--text-secondary)", fontFamily: "Hanken Grotesk", marginTop: 2, fontWeight: 500 }}>
-                          {ROLE_LABELS[med.role || ""] || "Medewerker"}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Day blocks */}
-                    <div style={{ display: "grid", gridTemplateColumns: PLANNING_DAY_GRID_COLUMNS, gap: 8, minWidth: 0 }}>
-
-                      {weekDates.map((date, i) => {
-                        const dateStr = format(date, "yyyy-MM-dd");
-                        const entry = visibleEntries.find(e => e.medewerker_id === med.id && e.datum === dateStr);
-                        const heeftEntry = !!entry;
-                        const verlof = beschikbaarheid.find(b => b.medewerker_id === med.id && b.status === "goedgekeurd" && dateStr >= b.datum_van && dateStr <= b.datum_tot);
-                        const proj = entry ? projMap.get(entry.project_id) : null;
-                        const accent = entry?.activiteit_kleur || "var(--accent)";
-                        const verlofColor = verlof?.type === "ziek" ? "var(--danger)" : "var(--warn-text)";
-                        const bgColor = verlof ? `${verlofColor}1a` : !heeftEntry ? "var(--planning-cell-empty)" : `${accent}1f`;
-                        const borderColor = verlof ? `${verlofColor}55` : !heeftEntry ? "var(--planning-border-soft)" : `${accent}55`;
-                        return (
-                          <div key={i} onClick={() => openAddModal(med.id, dateStr)} style={{
-                            height: 64, borderRadius: 12, background: bgColor, cursor: "pointer",
-                            border: `1px solid ${borderColor}`,
-                            boxShadow: heeftEntry ? `0 0 12px ${accent}25` : "none",
-                            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                            padding: "4px 4px", lineHeight: 1.1, transition: "transform 0.1s",
-                            minWidth: 0, overflow: "hidden",
-                          }}>
-                            {verlof ? (
-                              <>
-                                <span style={{ fontSize: 10, fontWeight: 800, fontFamily: "Hanken Grotesk", color: verlofColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                                  {verlof.type === "ziek" ? "Ziek" : "Verlof"}
-                                </span>
-                                <span style={{ fontSize: 9, fontWeight: 500, fontFamily: "Hanken Grotesk", color: "var(--text-secondary)", marginTop: 2 }}>
-                                  Hele dag
-                                </span>
-                              </>
-                            ) : heeftEntry ? (
-                              <>
-                                <span style={{
-                                  fontSize: 11, fontWeight: 700, fontFamily: "Hanken Grotesk",
-                                  color: "var(--text-primary)", letterSpacing: "-0.01em",
-                                  width: "100%", padding: "0 2px", textAlign: "center",
-                                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                                  overflow: "hidden", overflowWrap: "anywhere", wordBreak: "break-word",
-                                  lineHeight: 1.1,
-                                }}>
-                                  {proj?.naam || "—"}
-                                </span>
-                                <span style={{ fontSize: 9, fontWeight: 600, fontFamily: "DM Mono, monospace", color: accent, marginTop: 3, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
-                                  {berekenUren(entry?.starttijd || null, entry?.eindtijd || null)}u
-                                </span>
-                              </>
-                            ) : (
-                              <span style={{ fontSize: 22, color: "var(--text-muted)", lineHeight: 1, fontWeight: 300 }}>+</span>
-                            )}
-                          </div>
-
-                        );
-                      })}
-                    </div>
-
-                    {/* Chevron */}
-                    <span
-                      className="material-symbols-outlined"
-                      onClick={() => setExpandedMedewerker(prev => prev === med.id ? null : med.id)}
-                      style={{
-                        fontSize: 18,
-                        color: 'var(--text-secondary)',
-                        flexShrink: 0,
-                        cursor: 'pointer',
-                        justifySelf: 'center',
-                        transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s',
-                      }}
-                    >
-                      expand_more
-                    </span>
-                  </div>
-
-                  {isExpanded && (
-                    <div style={{
-                      background: 'var(--app-navy)',
-                      borderRadius: '0 0 16px 16px',
-                      marginTop: -8,
-                      paddingTop: 8,
-                      overflow: 'hidden',
-                      border: '1px solid var(--planning-border-soft)',
-                      borderTop: 'none',
-                    }}>
-                      {weekDates.map((date, i) => {
-                        const dateStr = format(date, 'yyyy-MM-dd');
-                        const DAGEN_LBL = ['Ma','Di','Wo','Do','Vr'];
-                        const dayEntries = visibleEntries.filter(e => e.medewerker_id === med.id && e.datum === dateStr);
-
-                        if (dayEntries.length === 0) {
-                          return (
-                            <div key={dateStr} style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              padding: '10px 16px',
-                              borderBottom: i < 4 ? '1px solid var(--planning-border-soft)' : 'none',
-                              gap: 12,
-                              opacity: 0.4,
-                            }}>
-                              <span style={{ width: 28, fontSize: 11, fontWeight: 700, fontFamily: 'Hanken Grotesk', color: 'var(--text-secondary)', textTransform: 'uppercase', flexShrink: 0 }}>
-                                {DAGEN_LBL[i]}
-                              </span>
-                              <span style={{ fontSize: 12, fontFamily: 'Hanken Grotesk', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                                Niet ingepland
-                              </span>
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div key={dateStr} style={{ borderBottom: i < 4 ? '1px solid var(--planning-border-soft)' : 'none' }}>
-                            {dayEntries.map((entry, ei) => {
-                              const project = projects.find(p => p.id === entry.project_id);
-                              const uren = berekenUren(entry.starttijd, entry.eindtijd);
-                              return (
-                                <div key={entry.id} style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  padding: '10px 16px',
-                                  gap: 12,
-                                  borderTop: ei > 0 ? '1px solid var(--planning-border-soft)' : 'none',
-                                }}>
-                                  <span style={{ width: 28, fontSize: 11, fontWeight: 700, fontFamily: 'Hanken Grotesk', color: 'var(--accent)', textTransform: 'uppercase', flexShrink: 0 }}>
-                                    {ei === 0 ? DAGEN_LBL[i] : ''}
-                                  </span>
-                                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: entry.activiteit_kleur || 'var(--accent)', flexShrink: 0 }} />
-                                  <span style={{
-                                    flex: 1,
-                                    fontSize: 13,
-                                    fontWeight: 600,
-                                    fontFamily: 'Hanken Grotesk',
-                                    color: 'var(--text-primary)',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}>
-                                    {project?.naam || project?.nummer || entry.activiteit || 'Onbekend project'}
-                                  </span>
-                                  <div style={{
-                                    padding: '3px 10px',
-                                    borderRadius: 9999,
-                                    background: 'var(--accent-light)',
-                                    border: '1px solid var(--accent-border)',
-                                    flexShrink: 0,
-                                  }}>
-                                    <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Hanken Grotesk', color: 'var(--accent)' }}>
-                                      {uren}u
-                                    </span>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      })}
-
-                      {/* Week totaal */}
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                        padding: '10px 16px',
-                        borderTop: '1px solid var(--planning-border-soft)',
-                        gap: 8,
-                      }}>
-                        <span style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          fontFamily: 'Hanken Grotesk',
-                          color: 'var(--text-secondary)',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.08em',
-                        }}>
-                          Week totaal
-                        </span>
-                        <div style={{ padding: '4px 12px', borderRadius: 9999, background: 'var(--accent)', flexShrink: 0 }}>
-                          <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Hanken Grotesk', color: 'var(--on-accent)' }}>
-                            {visibleEntries
-                              .filter(e => e.medewerker_id === med.id && weekDateStrings.includes(e.datum))
-                              .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0)}u
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* CAPACITEIT CARD */}
-          {!loading && (() => {
-            const totalGeplandUren = visibleEntries
-              .filter(e => weekDateStrings.includes(e.datum))
-              .reduce((sum, e) => sum + berekenUren(e.starttijd, e.eindtijd), 0);
-            const maxUren = medewerkers.length * 5 * 8;
-            const capaciteitPct = maxUren > 0 ? Math.round((totalGeplandUren / maxUren) * 100) : 0;
-            const activeProjects = new Set(visibleEntries.filter(e => weekDateStrings.includes(e.datum)).map(e => e.project_id)).size;
-            return (
-            <div style={{ marginTop: 24, background: "var(--planning-card)", borderRadius: 18, padding: "18px 20px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, border: "1px solid var(--planning-border-soft)" }}>
-              <div>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Geplande uren</p>
-                <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>
-                  {totalGeplandUren}<span style={{ fontSize: 14, color: "var(--text-secondary)", marginLeft: 2 }}>u</span>
-                </span>
-              </div>
-              <div style={{ borderLeft: "1px solid var(--planning-border-soft)", borderRight: "1px solid var(--planning-border-soft)", paddingLeft: 16, paddingRight: 16 }}>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Capaciteit</p>
-                <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 26, color: capaciteitPct > 100 ? "var(--danger)" : "var(--accent)" }}>
-                  {medewerkers.length > 0 ? `${capaciteitPct}%` : "—"}
-                </span>
-                <div style={{ height: 4, marginTop: 8, background: "var(--planning-button)", borderRadius: 9999, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${medewerkers.length > 0 ? Math.min(100, capaciteitPct) : 0}%`, background: capaciteitPct > 100 ? "var(--danger)" : "var(--accent)", transition: "width 0.3s" }} />
-                </div>
-              </div>
-              <div>
-                <p style={{ fontSize: 9, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--text-secondary)", marginBottom: 6 }}>Actieve projecten</p>
-                <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>{activeProjects}</span>
-              </div>
-            </div>
-            );
-          })()}
-          </>)}
+          {planningView === "grid" && (loading ? <Spinner padding="py-16" /> : <TeamPlanningGrid
+            medewerkers={medewerkers}
+            entries={visibleEntries}
+            projects={projects}
+            beschikbaarheid={beschikbaarheid}
+            weekDates={weekDates}
+            expandedMedewerker={expandedMedewerker}
+            onToggleExpanded={(id) => setExpandedMedewerker((current) => current === id ? null : id)}
+            onOpenCell={openAddModal}
+            berekenUren={berekenUren}
+            renderExpanded={(medewerker) => <div className="team-planning-detail-list">{weekDates.map((date) => { const datum = format(date, "yyyy-MM-dd"); const dayEntries = visibleEntries.filter((entry) => entry.medewerker_id === medewerker.id && entry.datum === datum); return <div key={datum} className="team-planning-detail-day"><strong>{format(date, "EEE", { locale: nl })}</strong>{dayEntries.length === 0 ? <span>Niet ingepland</span> : dayEntries.map((entry) => <span key={entry.id}>{projects.find((project) => project.id === entry.project_id)?.naam || "Onbekend project"} · {berekenUren(entry.starttijd, entry.eindtijd)}u</span>)}</div>; })}</div>}
+          />)}
 
           {planningView === 'klus' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1055,129 +676,28 @@ export default function ManagerPlanning() {
       </div>
       </PullToRefresh>
 
-      {/* MODAL */}
-      {showModal && (() => {
-        const modalBody = (
-          <>
-            <div style={{ width: 48, height: 6, borderRadius: 9999, background: "var(--planning-border-soft)", margin: "0 auto 20px" }} />
-            <h2 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 20, color: "var(--text-primary)", marginBottom: 4 }}>
-              {editId ? "Planning bewerken" : "Inplannen"} · {medName(modalForm.medewerker_id)}
-            </h2>
-            <p style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "Hanken Grotesk", marginBottom: 16 }}>
-              {editId
-                ? modalForm.datum
-                : `${modalDatums.length || 1} ${modalDatums.length === 1 ? "dag" : "dagen"} geselecteerd`}
-            </p>
-            {modalStatus && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: modalStatus.bg, border: `1px solid ${modalStatus.color}33`, marginBottom: 12 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: modalStatus.color, fontFamily: "Hanken Grotesk" }}>{modalStatus.label}</span>
-              </div>
-            )}
-            {modalConflicts.length > 0 && (
-              <div style={{ marginBottom: 12 }}>
-                {modalConflicts.map((c, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 12, background: "var(--danger-light)", border: "1px solid var(--danger-border)", marginBottom: 6 }}>
-                    <AlertTriangle size={14} style={{ color: "var(--danger)", flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, fontWeight: 500, color: "var(--danger)", fontFamily: "Hanken Grotesk" }}>Conflict: {c}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div>
-                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>
-                  Dagen
-                </label>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 8 }}>
-                  {weekDates.map((date, i) => {
-                    const datum = format(date, "yyyy-MM-dd");
-                    const selected = editId ? modalForm.datum === datum : modalDatums.includes(datum);
-                    const hasExisting = entries.some(e => e.medewerker_id === modalForm.medewerker_id && e.datum === datum);
-                    const disabled = !!editId && modalForm.datum !== datum;
-
-                    return (
-                      <button
-                        key={datum}
-                        type="button"
-                        onClick={() => toggleModalDatum(datum)}
-                        disabled={disabled}
-                        title={hasExisting && !selected ? "Deze dag heeft al planning" : undefined}
-                        style={{
-                          minHeight: 58,
-                          borderRadius: 12,
-                          border: selected ? "1px solid var(--accent-border)" : "1px solid var(--planning-border-soft)",
-                          background: selected ? "var(--accent)" : hasExisting ? "var(--warn-bg)" : "var(--app-navy)",
-                          color: selected ? "var(--on-accent)" : "var(--text-primary)",
-                          opacity: disabled ? 0.4 : 1,
-                          cursor: disabled ? "not-allowed" : "pointer",
-                          fontFamily: "Hanken Grotesk",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 2,
-                          boxShadow: selected ? "0 4px 14px var(--accent-border)" : "none",
-                        }}
-                      >
-                        <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: selected ? "var(--on-accent)" : "var(--text-secondary)" }}>
-                          {DAGEN[i]}
-                        </span>
-                        <span style={{ fontSize: 16, fontWeight: 800, fontFamily: "Hanken Grotesk", fontVariantNumeric: "tabular-nums" }}>
-                          {format(date, "d/M")}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div>
-                <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Project</label>
-                <select value={modalForm.project_id} onChange={e => setModalForm({ ...modalForm, project_id: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", outline: "none" }}>
-                  {projects.map(p => <option key={p.id} value={p.id}>{p.nummer} – {p.naam}</option>)}
-                </select>
-                {(() => {
-                  const selProj = projects.find(p => p.id === modalForm.project_id);
-                  if (!selProj) return null;
-                  const addr = volledigAdres(selProj);
-                  return (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, marginTop: 6, background: "var(--planning-card)", border: "1px solid var(--planning-border-soft)" }}>
-                      <MapPin size={12} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, color: addr ? "var(--text-secondary)" : "var(--warn-text)", fontFamily: "Hanken Grotesk" }}>{addr || "? Geen adres ingevuld"}</span>
-                    </div>
-                  );
-                })()}
-              </div>
-              <div style={{ display: "flex", gap: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Start</label>
-                  <input type="time" value={modalForm.starttijd} onChange={e => setModalForm({ ...modalForm, starttijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", outline: "none" }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>Eind</label>
-                  <input type="time" value={modalForm.eindtijd} onChange={e => setModalForm({ ...modalForm, eindtijd: e.target.value })} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", outline: "none" }} />
-                </div>
-              </div>
-              <input value={modalForm.notitie} onChange={e => setModalForm({ ...modalForm, notitie: e.target.value })} placeholder="Notitie (optioneel)" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, fontSize: 14, background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", fontFamily: "Hanken Grotesk", outline: "none" }} />
-              <button onClick={savePlanning} style={{ width: "100%", height: 52, borderRadius: 14, background: "var(--accent)", border: "none", color: "var(--on-accent)", fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 4px 16px var(--accent-border)" }}>
-                {editId ? "Bijwerken" : "Inplannen"}
-              </button>
-              {editId && (
-                <button onClick={deletePlanning} style={{ width: "100%", height: 48, borderRadius: 14, background: "transparent", border: "1px solid var(--danger-border)", color: "var(--danger)", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer" }}>
-                  Verwijderen
-                </button>
-              )}
-            </div>
-          </>
-        );
-        return (
-          <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", justifyContent: "flex-end" }} onClick={() => setShowModal(false)}>
-            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
-            <div style={{ position: "relative", background: "var(--planning-card)", borderRadius: "40px 40px 0 0", padding: "24px 24px 48px", borderTop: "1px solid var(--planning-border-soft)", maxHeight: "85vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
-              {modalBody}
-            </div>
-          </div>
-        );
-      })()}
+      <PlanningDialog
+        open={showModal}
+        editId={editId}
+        weekNumber={weekNumber}
+        weekDates={weekDates}
+        medewerkerNaam={medName(modalForm.medewerker_id)}
+        modalStatus={modalStatus}
+        conflicts={modalConflicts}
+        form={modalForm}
+        selectedDates={modalDatums}
+        projects={projects}
+        medewerkers={medewerkers}
+        existingDates={entries.filter((entry) => entry.medewerker_id === modalForm.medewerker_id).map((entry) => entry.datum)}
+        saving={saving}
+        extraMedewerkerIds={extraMedewerkerIds}
+        onExtraMedewerkerIdsChange={setExtraMedewerkerIds}
+        onOpenChange={setShowModal}
+        onFormChange={setModalForm}
+        onToggleDate={toggleModalDatum}
+        onSave={savePlanning}
+        onDelete={deletePlanning}
+      />
     </PageShell>
   );
 }
