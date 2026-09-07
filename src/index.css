@@ -354,7 +354,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .planning-selection-count { color: var(--text-muted); font-size: 11px; }
   .planning-project-trigger { width: 100%; height: 40px; justify-content: flex-start; border-color: var(--planning-border-soft); color: var(--text-secondary); font-size: 14px; font-weight: 400; }
   .planning-project-trigger span { min-width: 0; flex: 1; overflow: hidden; text-align: left; text-overflow: ellipsis; }
-  .planning-project-popover { width: min(512px, calc(100vw - 44px)); padding: 0; border-color: var(--planning-border-soft); background: var(--bg-surface); }
+  .planning-project-popover { width: min(512px, calc(100vw - 60px)); padding: 0; border-color: var(--planning-border-soft); background: var(--bg-surface); }
   .planning-project-option { display: grid; min-width: 0; flex: 1; }
   .planning-project-option strong { overflow: hidden; color: var(--text-primary); text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 500; }
   .planning-project-option small { color: var(--text-secondary); font-size: 11px; }
@@ -402,9 +402,19 @@ p, h1, h2, h3, span.selectable, input, textarea {
   }
 
   @media (max-width: 560px) {
+    .planning-dialog { max-height: calc(100dvh - 24px); }
+    .planning-dialog-header { padding: 20px 56px 16px 16px; }
+    .planning-dialog-body { padding: 16px; gap: 16px; overflow-x: hidden; }
+    .planning-dialog-body > *, .planning-field-group, .planning-time-field { min-width: 0; }
+    .planning-day-picker { gap: 4px; }
+    .planning-day-picker button { height: 48px; padding-inline: 2px; font-size: 12px; }
+    .planning-day-picker button strong { font-size: 12px; }
     .planning-time-grid { grid-template-columns: 1fr 1fr; }
     .planning-time-field:last-child { grid-column: 1 / -1; }
-    .planning-presets { grid-column: 1 / -1; }
+    .planning-presets { grid-column: 1 / -1; flex-wrap: wrap; }
+    .planning-presets button { flex: 1 1 30%; }
+    .planning-dialog-footer { padding: 12px 16px; }
+
     .planning-dialog-footer { align-items: stretch; flex-direction: column; }
     .planning-dialog-footer > div { width: 100%; }
     .planning-footer-spacer { display: none; }
@@ -618,12 +628,30 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .mobile-header-wrap .flex-1 { min-width: 0; flex-basis: calc(100% - 44px); }
 }
 
+.team-planning-person strong.team-planning-name-short { display: none; }
+.team-planning-swipe-hint { display: none; align-items: center; justify-content: center; gap: 6px; padding: 8px 2px 0; color: var(--text-muted); font-size: 12px; }
+
 @media (max-width: 640px) {
-  .team-planning-grid { min-width: 720px; }
-  .team-planning-header, .team-planning-row, .team-planning-footer { grid-template-columns: 132px repeat(5, minmax(96px, 1fr)) 52px; }
+  .team-planning-grid { min-width: 660px; }
+  .team-planning-header, .team-planning-row, .team-planning-footer { grid-template-columns: 148px repeat(5, minmax(88px, 1fr)) 56px; }
+  .team-planning-name-head { background: var(--bg-surface); }
+  .team-planning-total-head { font-size: 12px !important; }
+  .team-planning-filters { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .team-planning-filters > div { width: 100%; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+  .team-planning-filters button { flex: 0 0 auto; max-width: 150px; white-space: nowrap; }
   .team-planning-name-head, .team-planning-name { position: sticky; left: 0; z-index: 11; }
   .team-planning-name-head { z-index: 13; }
-  .team-planning-name { font-size: 13px; padding-left: 8px; }
+  .team-planning-name { font-size: 13px; padding-left: 8px; gap: 4px; }
   .team-planning-scroll { max-height: calc(100dvh - 360px); }
-  .team-planning-avatar { width: 24px; height: 24px; flex: 0 0 24px; font-size: 11px; }
+  .team-planning-avatar { display: none; }
+  .team-planning-person strong { font-size: 13.5px; }
+  .team-planning-person small { font-size: 11px; }
+  .team-planning-person strong.team-planning-name-full { display: none; }
+  .team-planning-person strong.team-planning-name-short { display: block; }
+  .team-planning-cell { margin-inline: 4px; }
+  .team-planning-cell.is-filled strong { font-size: 12.5px; }
+  .team-planning-cell.is-filled span { font-size: 12.5px; }
+  .team-planning-footer > div { font-size: 12px; text-align: center; }
+  .team-planning-swipe-hint { display: flex; }
 }
+

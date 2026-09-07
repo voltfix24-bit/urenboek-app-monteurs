@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronDown, Plus } from "lucide-react";
+import { AlertTriangle, ChevronDown, MoveHorizontal, Plus } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -54,6 +54,13 @@ function initialen(naam: string) {
   return naam.split(" ").filter(Boolean).map((deel) => deel[0]).slice(0, 2).join("").toUpperCase();
 }
 
+function korteNaam(naam: string) {
+  const delen = naam.split(" ").filter(Boolean);
+  if (delen.length < 2) return naam;
+  return `${delen[0]} ${delen[delen.length - 1][0].toUpperCase()}.`;
+}
+
+
 function projectColor(projectId: string, projectIds: string[]) {
   const index = Math.max(0, projectIds.indexOf(projectId));
   return `var(--${PROJECT_COLORS[index % PROJECT_COLORS.length]})`;
@@ -105,7 +112,9 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
                   <div className="team-planning-name" role="rowheader">
                     <span className="team-planning-avatar" aria-hidden="true">{initialen(medewerker.full_name)}</span>
                     <span className="team-planning-person">
-                      <strong title={medewerker.full_name}>{medewerker.full_name}</strong>
+                      <strong className="team-planning-name-full" title={medewerker.full_name}>{medewerker.full_name}</strong>
+                      <strong className="team-planning-name-short" title={medewerker.full_name}>{korteNaam(medewerker.full_name)}</strong>
+
                       {medewerker.role && medewerker.role !== "monteur" && <small>{medewerker.role === "wv" ? "Werkvoorbereider" : medewerker.role.charAt(0).toUpperCase() + medewerker.role.slice(1)}</small>}
                     </span>
                     <Button
@@ -166,6 +175,10 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
           </div>
         </div>
       </div>
+
+      <p className="team-planning-swipe-hint"><MoveHorizontal aria-hidden="true" size={14} />Veeg opzij voor de rest van de week</p>
+
+
 
       {projectIds.length > 0 && (
         <div className="team-planning-legend" aria-label="Projectlegenda">
