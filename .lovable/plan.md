@@ -1,56 +1,46 @@
-## Doel
+# Teamplanning herontwerp
 
-Per monteur van een onderaannemer kun je vaste **planning-partners** instellen (collega's binnen hetzelfde onderaannemerteam). Plan je vervolgens in de manager-planning één van die monteurs in, dan worden de partners automatisch met dezelfde planning meegenomen. Wijzigingen en verwijderingen op één entry werken automatisch door op de gekoppelde entries.
+## Doel
+Het beheerdersscherm Teamplanning wordt één compact en goed scanbaar weekraster. De bestaande planninggegevens, bewerk-/verwijderlogica en database-aanroepen blijven intact.
 
 ## Wijzigingen
 
-### 1. Database (migratie)
+### Kop en bediening
+- Verwijder het groene label boven de titel.
+- Toon dynamisch `Week [nummer]` met daaronder de korte periode en `[ingepland] van [totaal] ingepland`.
+- Zet vorige/volgende week samen rechtsboven, naast de bestaande twee downloadacties.
+- Geef alle vier pictogramknoppen een duidelijke naam, tooltip en zichtbare toetsenbordfocus.
+- Voeg `Week kopiëren` toe. Deze kopieert regels van de vorige week naar dezelfde weekdagen in de getoonde week via de bestaande planning-API; bestaande doelcellen worden niet overschreven en worden gemeld als overgeslagen.
+- Maak `Overzicht / Per klus` een echte segmented control en plaats de projectfilters in een afzonderlijke rij met het label `Project`.
 
-- `profiles.planning_partner_ids uuid[]` (default `'{}'`) — wederzijdse lijst met partner-profile-ids binnen het onderaannemerteam.
-- `planning.planning_group_id uuid` (nullable) — entries die samen aangemaakt zijn delen één group-id.
-- Index op `planning.planning_group_id`.
+### Weekraster
+- Vervang losse monteurskaarten door één tabelachtig raster met alleen hairline rijscheidingen.
+- Gebruik vaste kolommen: `220px` voor medewerker, vijf gelijke dagkolommen en `60px` voor weektotaal.
+- Maak de dagkop sticky tijdens verticaal scrollen.
+- Sorteer medewerkers eerst op wel/geen zichtbare planning en daarna alfabetisch.
+- Toon per rij een avatar van 22px, naam en alleen een functienaam wanneer die afwijkt van monteur.
+- Voeg een toegankelijke uitklapknop toe met een naam die de medewerker noemt.
 
-Geen RLS-wijziging nodig (planning-policies blijven van toepassing).
+### Cellen en totalen
+- Geef gevulde en lege cellen dezelfde hoogte en vorm.
+- Gevulde cellen tonen een licht projectvlak, projectnaam met ellipsis en uren; de bestaande project-/activiteitskleur bepaalt de tint.
+- Lege cellen krijgen een gestippelde rand en een gedempte plus.
+- Beide celtypen blijven volledig klikbaar en krijgen hover- en focusstates.
+- Voeg per medewerker een weektotaal toe.
+- Voeg onderaan een totaalrij toe met het aantal ingeplande medewerkers per dag en het totale aantal geplande uren.
+- Plaats een projectkleur-legenda onder het raster.
+- Houd alle tekst minimaal 11px en verwijder hoofdletterlabels binnen dit scherm.
 
-### 2. UI — Onderaannemers-detailpagina
+### Responsive en stijl
+- Vanaf smalle desktop/tablet wordt het raster horizontaal scrollbaar; onder 900px blijft de medewerkerkolom links sticky.
+- Gebruik uitsluitend bestaande of nieuwe semantische CSS-variabelen voor kleuren, inclusief donkere-themawaarden.
+- Laat de bestaande detailuitklap, waarschuwingen, modal en `Per klus`-weergave functioneel; pas zichtbare hoofdletterlabels daar waar nodig aan zonder de logica te wijzigen.
 
-Per monteur in de lijst onder de onderaannemer een nieuwe knop **"Vaste collega's"** die een mini-dialoog opent met checkboxes van alle ándere teamleden (onderaannemer + zijn monteurs). Bij opslaan wordt de selectie wederzijds bewaard: monteur A krijgt B in zijn lijst, B krijgt A in zijn lijst. Uitvinken werkt ook wederzijds.
-
-### 3. ManagerPlanning — savePlanning / deletePlanning
-
-**Insert (nieuwe planning):**
-- Haal partner-ids op van de geselecteerde monteur.
-- Genereer één `planning_group_id`.
-- Insert één rij voor de monteur zelf en één rij per partner met identieke project/datum/tijden/notitie en dezelfde `planning_group_id`.
-- Sla rijen over voor partners die op die datum al een planning hebben (conflict-veilig).
-- `collega_ids` wordt automatisch gevuld met de andere monteurs in de groep.
-
-**Update:**
-- Als de entry een `planning_group_id` heeft → update alle rijen in de groep met dezelfde project/tijden/notitie (medewerker_id en datum blijven per rij behouden).
-
-**Delete:**
-- Als de entry een `planning_group_id` heeft → verwijder alle rijen met die group-id.
-
-### 4. ProjectPlanning publish-flow
-
-Onaangeroerd — partners worden niet automatisch op project-matrix toegevoegd (dat zou cellen overschrijven). Alleen in de losse manager-planning werkt de koppeling.
+## Controle
+- Controleer desktop en een viewport onder 900px op kolombreedtes, sticky gedrag, horizontaal scrollen, tekstafkapping en ontbrekende overlap.
+- Controleer openen/bewerken van een gevulde cel, openen van een lege cel, filters, weeknavigatie, uitklappen en weekkopie zonder bestaande doelplanning te overschrijven.
+- Controleer build, typecontrole en relevante tests.
 
 ## Buiten scope
-
-- Auto-doorduwen via realtime naar reeds geopende sessies (entry-mutaties triggeren wel de bestaande realtime-fetch).
-- Conflict-resolutie (partner heeft al planning) gaat stil — we slaan die rij over en tonen een toast met aantal overgeslagen.
-- Geen koppelingen tussen monteurs van verschillende onderaannemers.
-
-## Technische details
-
-- Migration voegt kolommen toe + index, niets meer.
-- `src/integrations/supabase/types.ts` wordt automatisch geregenereerd na approval.
-- `src/pages/Onderaannemers.tsx`: extra knopje + bottom-sheet voor koppeling, helper `togglePartner(a, b)` die beide profielen update.
-- `src/pages/ManagerPlanning.tsx`: `savePlanning`/`deletePlanning` herschrijven naar groep-aware logica; nieuwe `loadPartners(profileId)` helper.
-
-## Stappen
-
-1. SQL-migratie (kolommen + index).
-2. UI in Onderaannemers-detail voor partner-koppeling.
-3. ManagerPlanning save/update/delete groep-aware maken.
-4. Testen: plan Cevdet → Abdullah krijgt automatisch dezelfde dag; bewerk → beiden updaten; verwijder → beide weg.
+- Geen wijzigingen aan tabellen, rollen, policies, Edge Functions of bestaande planning-API-contracten.
+- Geen aanpassing van de onderliggende planningregels of berekening van productieve uren.
