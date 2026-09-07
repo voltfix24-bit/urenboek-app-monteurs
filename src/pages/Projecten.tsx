@@ -190,7 +190,16 @@ export default function Projecten() {
   }, [projects, searchQuery, statusFilter]);
   const filteredActive = filteredProjects.filter(p => p.active);
   const filteredInactive = filteredProjects.filter(p => !p.active);
+  const statusCounts = useMemo(() => {
+    const base = searchQuery.trim()
+      ? projects.filter(p => p.naam.toLowerCase().includes(searchQuery.toLowerCase()) || p.nummer.toLowerCase().includes(searchQuery.toLowerCase()))
+      : projects;
+    const counts: Record<string, number> = { alle: base.length };
+    base.forEach(p => { const s = p.status || "nieuw"; counts[s] = (counts[s] || 0) + 1; });
+    return counts;
+  }, [projects, searchQuery]);
   const selectedProject = selectedId ? projects.find(p => p.id === selectedId) || null : null;
+
 
   const clearError = (field: string) => setFormErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
   const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} />;
@@ -217,7 +226,7 @@ export default function Projecten() {
         </header>
 
         <div className="flex px-10 pb-10" style={{ height: "calc(100vh - 100px)" }}>
-          <DesktopProjectLijst activeProjects={filteredActive} inactiveProjects={filteredInactive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} getOgNaam={getOgNaam} loading={loading} statusFilter={statusFilter} onStatusFilter={setStatusFilter} />
+          <DesktopProjectLijst activeProjects={filteredActive} inactiveProjects={filteredInactive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} getOgNaam={getOgNaam} loading={loading} statusFilter={statusFilter} onStatusFilter={setStatusFilter} statusCounts={statusCounts} />
 
           <div className="flex-1 overflow-y-auto pl-8">
             {desktopMode === "add" ? (
