@@ -1714,7 +1714,9 @@ export default function Planning() {
                           fontFamily: 'Hanken Grotesk',
                           color: 'var(--warn-text)',
                         }}>
-                          Afwijking ({isMore ? '+' : ''}{delta.toFixed(1)}u — gepland {planned}u)
+                          {isOverwerk
+                            ? `Overwerk (+${(dagTotaal - 8).toFixed(1)}u boven de 8u-norm — dagtotaal ${dagTotaal.toFixed(1)}u)`
+                            : `Afwijking (${isMore ? '+' : ''}${delta.toFixed(1)}u — gepland ${planned}u)`}
                         </span>
                       </div>
                       <p style={{
@@ -1724,14 +1726,18 @@ export default function Planning() {
                         marginBottom: 8,
                         lineHeight: 1.4,
                       }}>
-                        Geef een korte toelichting waarom je {isMore ? 'meer' : 'minder'} uren boekt dan ingepland.
+                        {isOverwerk
+                          ? 'Je boekt meer dan 8 uur op deze dag. Een toelichting is verplicht om overwerk in te dienen.'
+                          : `Geef een korte toelichting waarom je ${isMore ? 'meer' : 'minder'} uren boekt dan ingepland.`}
                       </p>
                       <textarea
                         value={urenForm.toelichting}
                         onChange={e => setUrenForm(f => ({ ...f, toelichting: e.target.value.slice(0, 300) }))}
-                        placeholder={isMore
-                          ? 'Bijv. extra werk uitgevoerd, uitloop wegens...'
-                          : 'Bijv. eerder klaar, kortere pauze...'}
+                        placeholder={isOverwerk
+                          ? 'Bijv. spoedklus af moest, storing, uitloop wegens...'
+                          : isMore
+                            ? 'Bijv. extra werk uitgevoerd, uitloop wegens...'
+                            : 'Bijv. eerder klaar, kortere pauze...'}
                         rows={2}
                         maxLength={300}
                         style={{
