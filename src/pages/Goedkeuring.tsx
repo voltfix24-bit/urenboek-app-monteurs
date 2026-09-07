@@ -472,155 +472,103 @@ export default function Goedkeuring() {
         } />
 
         <main style={{ padding: "24px 20px" }}>
-          {/* HEADER INFO */}
-          <section style={{ marginBottom: 24 }}>
-            <h2 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 26, color: "var(--text-primary)", marginBottom: 4 }}>
-              {monteurGroups.filter(g => g.status === "ingediend").length} openstaande weekstaten
-            </h2>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>
-              Week {weekNumber} — {format(weekStart, "EEE d MMM", { locale: nl })} t/m {format(weekEnd, "EEE d MMM", { locale: nl })}
-            </p>
+          {/* KOP + WEEKNAVIGATIE */}
+          <section className="w-full mx-auto flex items-start justify-between gap-4 flex-wrap" style={{ maxWidth: 700, marginBottom: 20 }}>
+            <div>
+              <h2 style={{ fontFamily: "Hanken Grotesk", fontWeight: 500, fontSize: 18, color: "var(--text-primary)", marginBottom: 2 }}>
+                {telIngediend} openstaand · {telGoedgekeurd} goedgekeurd
+              </h2>
+              <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
+                {format(weekStart, "d MMM", { locale: nl })} t/m {format(weekEnd, "d MMM", { locale: nl })}
+              </p>
+            </div>
+            <div className="flex items-center" style={{ gap: 4 }}>
+              <button aria-label="Vorige week" onClick={() => setWeekOffset(w => w - 1)}
+                className="rounded-lg flex items-center justify-center focus-visible:outline-none focus-visible:ring-2"
+                style={{ width: 32, height: 32, background: "var(--bg-surface)", border: "0.5px solid var(--approval-border)", color: "var(--text-secondary)" }}>
+                <ChevronLeft size={16} />
+              </button>
+              <span style={{ fontSize: 13, color: "var(--text-primary)", minWidth: 64, textAlign: "center" }}>Week {weekNumber}</span>
+              <button aria-label="Volgende week" onClick={() => setWeekOffset(w => w + 1)}
+                className="rounded-lg flex items-center justify-center focus-visible:outline-none focus-visible:ring-2"
+                style={{ width: 32, height: 32, background: "var(--bg-surface)", border: "0.5px solid var(--approval-border)", color: "var(--text-secondary)" }}>
+                <ChevronRight size={16} />
+              </button>
+              {weekOffset !== 0 && (
+                <button onClick={() => setWeekOffset(0)}
+                  className="rounded-lg px-2 focus-visible:outline-none focus-visible:ring-2"
+                  style={{ fontSize: 13, height: 32, color: "var(--text-muted)", background: "transparent", border: "none" }}>
+                  Deze week
+                </button>
+              )}
+            </div>
           </section>
 
-          {/* WEEK NAV */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-            <button onClick={() => setWeekOffset(w => w - 1)} style={{ width: 44, height: 44, borderRadius: 12, background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-              <ChevronLeft size={20} />
-            </button>
-            <button onClick={() => setWeekOffset(0)} style={{ flex: 1, textAlign: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 15, color: "var(--text-primary)", background: weekOffset === 0 ? "var(--accent-light)" : "transparent", border: "none", borderRadius: 12, padding: "8px 0", cursor: "pointer" }}>
-              Week {weekNumber}
-              {weekOffset !== 0 && <span style={{ display: "block", fontSize: 10, color: "var(--accent)", marginTop: 2 }}>↩ Terug naar deze week</span>}
-            </button>
-            <button onClick={() => setWeekOffset(w => w + 1)} style={{ width: 44, height: 44, borderRadius: 12, background: "var(--bg-surface-2)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-              <ChevronRight size={20} />
-            </button>
+          {/* FILTERS */}
+          <div className="w-full mx-auto flex gap-2 overflow-x-auto" style={{ maxWidth: 700, marginBottom: 16, scrollbarWidth: "none", paddingBottom: 2 }}>
+            {filterOpties.map(({ key, label, aantal }) => {
+              const actief = filter === key;
+              return (
+                <button key={key} onClick={() => setFilter(key)}
+                  className="shrink-0 rounded-full px-3 focus-visible:outline-none focus-visible:ring-2"
+                  style={{
+                    height: 30, fontSize: 13, fontWeight: actief ? 500 : 400,
+                    background: actief ? "var(--accent)" : "transparent",
+                    color: actief ? "#fff" : "var(--text-muted)",
+                    border: actief ? "1px solid var(--accent)" : "1px solid var(--approval-border)",
+                  }}>
+                  {label} {aantal}
+                </button>
+              );
+            })}
           </div>
 
-          {/* FILTER CHIPS */}
-          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none" }}>
-            {["alle", "ingediend", "goedgekeurd", "afgekeurd"].map((f) => (
-              <button key={f} onClick={() => setFilter(f)} style={{
-                padding: "8px 16px", borderRadius: 9999,
-                border: filter === f ? "2px solid var(--accent)" : "1px solid var(--planning-border-soft)",
-                background: filter === f ? "var(--accent-light)" : "var(--bg-surface-2)",
-                color: filter === f ? "var(--accent)" : "var(--text-muted)",
-                fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", textTransform: "capitalize",
-              }}>
-                {f === "alle" ? "Alle" : f === "ingediend" ? "Ingediend" : f === "goedgekeurd" ? "Goedgekeurd" : "Afgekeurd"}
+          {/* BULK */}
+          {bulkGroepen.length > 1 && (
+            <div className="w-full mx-auto" style={{ maxWidth: 700, marginBottom: 16 }}>
+              <button onClick={keurBulkGoed} disabled={!!busyGroep}
+                className="rounded-lg px-3 inline-flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50"
+                style={{ height: 32, fontSize: 13, color: "var(--accent-dark)", background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
+                <CheckCheck size={14} /> Alles zonder afwijking goedkeuren ({bulkGroepen.length})
               </button>
-            ))}
-          </div>
+            </div>
+          )}
 
           {/* LOADING */}
           {loading && (
             <div style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>Laden...</div>
           )}
 
-          {/* MONTEUR CARDS */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {monteurGroups
-              .filter(g => filter === "alle" || g.status === filter)
-              .map((group) => {
-              const isGoedgekeurd = group.status === "goedgekeurd";
-              const isAfgekeurd = group.status === "afgekeurd";
-              const borderColor = isGoedgekeurd ? "var(--accent)" : isAfgekeurd ? "var(--danger)" : "var(--warn-text)";
-              const totalUren = group.entries.reduce((s: number, e: any) => s + e.uren, 0);
-              const pct = Math.min(100, Math.round((totalUren / 40) * 100));
-              const initials = group.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("") || "XX";
-
-              return (
-                <div key={group.id} style={{
-                  background: "var(--bg-surface)",
-                  backdropFilter: "blur(12px)", borderRadius: 20,
-                  border: "1px solid var(--planning-border-soft)",
-                  borderLeft: `6px solid ${borderColor}`,
-                  overflow: "hidden", opacity: isGoedgekeurd ? 0.65 : 1,
-                }}>
-                  <div style={{ padding: "20px 20px 16px" }}>
-                    {/* Card header */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--bg-surface-2)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 14, color: "var(--text-primary)" }}>
-                          {initials}
-                        </div>
-                        <div>
-                          <p style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 16, color: "var(--text-primary)", marginBottom: 2 }}>{group.full_name}</p>
-                          <p style={{ fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>
-                            Week {weekNumber} · {totalUren} uur
-                          </p>
-                        </div>
-                      </div>
-                      <div style={{ padding: "4px 12px", borderRadius: 9999, background: isGoedgekeurd ? "var(--accent-light)" : isAfgekeurd ? "var(--danger-light)" : "var(--warn-light)", border: `1px solid ${borderColor}50`, whiteSpace: "nowrap" }}>
-                        <span style={{ fontSize: 9, fontWeight: 800, fontFamily: "Hanken Grotesk", textTransform: "uppercase", color: borderColor }}>{group.status.toUpperCase()}</span>
-                      </div>
-                    </div>
-
-                    {/* Day entries */}
-                    <div style={{ marginBottom: 12 }}>
-                      {group.entries.map((e: any) => {
-                        const hasOveruren = overurenIds.has(`${e.medewerker_id}_${e.datum}`);
-                        return (
-                          <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--border-soft)" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk", minWidth: 52 }}>{format(new Date(e.datum), "EEE d/M", { locale: nl })}</span>
-                              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", fontFamily: "Hanken Grotesk", padding: "1px 6px", borderRadius: 6, background: "var(--accent-light)" }}>{e.project_nummer}</span>
-                              <span style={{ fontSize: 11, color: "var(--text-primary)", fontFamily: "Hanken Grotesk" }}>{e.beschrijving || ""}</span>
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", fontFamily: "Hanken Grotesk" }}>{e.uren}u</span>
-                              {hasOveruren && (
-                                <span className="material-symbols-outlined" style={{ fontSize: 14, color: "var(--warn-text)", cursor: "pointer" }} onClick={() => navigate("/overuren")}>warning</span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Progress bar */}
-                    <div style={{ marginBottom: 12 }}>
-                      <div style={{ height: 6, background: "#000", borderRadius: 9999, overflow: "hidden", marginBottom: 6 }}>
-                        <div style={{ height: "100%", width: `${pct}%`, background: isGoedgekeurd ? "var(--accent)" : pct < 100 ? "var(--warn-text)" : "var(--accent)", borderRadius: 9999 }} />
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        {["Ma", "Di", "Wo", "Do", "Vr"].map(d => (
-                          <span key={d} style={{ fontSize: 9, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase", color: pct === 100 ? "var(--accent)" : "var(--text-muted)" }}>{d}</span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Action buttons */}
-                    {!isGoedgekeurd && (
-                      <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-                        <button onClick={() => { setAfkeurId(group.entries[0]?.id); setAfkeurReden(""); }} style={{
-                          flex: 1, height: 52, borderRadius: 14, background: "transparent",
-                          border: "1px solid rgba(255,113,108,0.4)", color: "var(--danger)",
-                          fontFamily: "Hanken Grotesk", fontWeight: 700, fontSize: 12, textTransform: "uppercase",
-                          letterSpacing: "0.1em", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        }}>
-                          <X size={16} /> Afwijzen
-                        </button>
-                        <button onClick={() => { group.entries.forEach((e: any) => updateStatus(e.id, "goedgekeurd")); }} style={{
-                          flex: 1, height: 52, borderRadius: 14, background: "var(--accent)", border: "none",
-                          color: "var(--accent-dark)", fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 12, textTransform: "uppercase",
-                          letterSpacing: "0.1em", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                          boxShadow: "0 4px 16px var(--accent-border)",
-                        }}>
-                          <Check size={16} /> Goedkeuren
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {/* WEEKSTAAT-KAARTEN */}
+          {!loading && zichtbareGroepen.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {zichtbareGroepen.map(group => (
+                <WeekstaatCard
+                  key={group.id}
+                  naam={group.full_name}
+                  status={group.status}
+                  dagen={group.dagen}
+                  busy={busyGroep === group.id}
+                  goedgekeurdLabel={group.goedgekeurdLabel}
+                  onApprove={() => keurGroepGoed(group)}
+                  onReject={(reden) => keurGroepAf(group, reden)}
+                />
+              ))}
+            </div>
+          )}
 
           {/* EMPTY STATE */}
-          {!loading && monteurGroups.length === 0 && (
-            <EmptyState icoon="✓" titel="Alles behandeld" subtitel="Er zijn geen openstaande weekstaten voor deze week." />
+          {!loading && zichtbareGroepen.length === 0 && (
+            <EmptyState
+              icoon="✓"
+              titel="Niets te keuren"
+              subtitel={filter === "alle"
+                ? "Er zijn geen weekstaten in deze week."
+                : "Geen weekstaten met dit filter. Bekijk alle weekstaten."}
+            />
           )}
         </main>
+
 
         {/* AFKEUR BOTTOM SHEET */}
         {afkeurId && (
