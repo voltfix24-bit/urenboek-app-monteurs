@@ -623,7 +623,12 @@ p, h1, h2, h3, span.selectable, input, textarea {
 
 @media (max-width: 640px) {
   .team-planning-grid { min-width: 660px; }
-  .team-planning-header, .team-planning-row, .team-planning-footer { grid-template-columns: 148px repeat(5, minmax(88px, 1fr)) 48px; }
+  .team-planning-header, .team-planning-row, .team-planning-footer { grid-template-columns: 148px repeat(5, minmax(88px, 1fr)) 56px; }
+  .team-planning-name-head { background: var(--bg-surface); }
+  .team-planning-total-head { font-size: 12px !important; }
+  .team-planning-filters { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .team-planning-filters > div { width: 100%; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+  .team-planning-filters button { flex: 0 0 auto; max-width: 150px; white-space: nowrap; }
   .team-planning-name-head, .team-planning-name { position: sticky; left: 0; z-index: 11; }
   .team-planning-name-head { z-index: 13; }
   .team-planning-name { font-size: 13px; padding-left: 8px; gap: 4px; }
