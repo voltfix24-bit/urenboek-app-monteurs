@@ -150,8 +150,12 @@ export function BottomNav({ badges }: BottomNavProps) {
                 fontWeight: active ? 700 : 600,
                 fontFamily: "Hanken Grotesk",
                 textTransform: "uppercase",
-                letterSpacing: "0.05em",
+                letterSpacing: "0.02em",
                 color: active ? "var(--accent)" : "var(--text-muted)",
+                whiteSpace: "nowrap",
+                maxWidth: "100%",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
               {t.label}
