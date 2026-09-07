@@ -628,8 +628,8 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .team-planning-avatar { display: none; }
   .team-planning-person strong { font-size: 13.5px; }
   .team-planning-person small { font-size: 11px; }
-  .team-planning-name-full { display: none; }
-  .team-planning-name-short { display: block; }
+  .team-planning-person strong.team-planning-name-full { display: none; }
+  .team-planning-person strong.team-planning-name-short { display: block; }
   .team-planning-cell { margin-inline: 4px; }
   .team-planning-cell.is-filled strong { font-size: 12.5px; }
   .team-planning-cell.is-filled span { font-size: 12.5px; }
@@ -637,6 +637,6 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .team-planning-swipe-hint { display: flex; }
 }
 
-.team-planning-name-short { display: none; }
+.team-planning-person strong.team-planning-name-short { display: none; }
 .team-planning-swipe-hint { display: none; align-items: center; justify-content: center; gap: 6px; padding: 8px 2px 0; color: var(--text-muted); font-size: 12px; }
 
