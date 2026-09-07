@@ -366,9 +366,9 @@ export default function Projecten() {
 
           {/* FAB */}
           <button onClick={() => { setShowAdd(true); setEditId(null); setExpandedId(null); setForm(emptyForm); }} style={{
-            position: "fixed", bottom: "calc(96px + env(safe-area-inset-bottom, 34px))", left: "50%", transform: "translateX(-50%)", zIndex: 40,
-            background: "var(--accent)", color: "var(--accent-dark)", border: "none", borderRadius: 9999,
-            height: 56, padding: "0 28px", display: "flex", alignItems: "center", gap: 8,
+            position: "fixed", bottom: "calc(88px + env(safe-area-inset-bottom, 34px))", right: 20, zIndex: 40,
+            background: "var(--accent)", color: "#fff", border: "none", borderRadius: 9999,
+            height: 52, padding: "0 20px", display: "flex", alignItems: "center", gap: 8,
             fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 14, textTransform: "uppercase",
             letterSpacing: "0.1em", cursor: "pointer", boxShadow: "0 8px 24px var(--accent-border)", whiteSpace: "nowrap",
           }}>
