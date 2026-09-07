@@ -176,6 +176,10 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
         </div>
       </div>
 
+      <p className="team-planning-swipe-hint"><MoveHorizontal aria-hidden="true" size={14} />Veeg opzij voor de rest van de week</p>
+
+
+
       {projectIds.length > 0 && (
         <div className="team-planning-legend" aria-label="Projectlegenda">
           {projectIds.map((projectId) => {
