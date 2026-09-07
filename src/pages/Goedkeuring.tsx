@@ -23,7 +23,7 @@ import { useProjects } from "@/hooks/useProjects";
 interface EntryWithProfile {
   id: string; datum: string; project_naam: string; project_nummer: string; beschrijving: string;
   uren: number; status: string; medewerker_id: string; full_name: string; afkeur_reden: string | null;
-  project_id: string;
+  project_id: string; approved_by?: string | null; updated_at?: string | null;
 }
 
 export default function Goedkeuring() {
@@ -39,6 +39,8 @@ export default function Goedkeuring() {
   const [selectedMonteur, setSelectedMonteur] = useState<string | null>(null);
   const [showBookModal, setShowBookModal] = useState(false);
   const [editEntry, setEditEntry] = useState<EntryWithProfile | null>(null);
+  const [busyGroep, setBusyGroep] = useState<string | null>(null);
+  const [keurderNamen, setKeurderNamen] = useState<Record<string, string>>({});
 
   const weekStart = startOfWeek(addDays(new Date(), weekOffset * 7), { weekStartsOn: 1 });
   const weekEnd = addDays(weekStart, 6);
@@ -50,7 +52,19 @@ export default function Goedkeuring() {
     beschrijving: e.beschrijving || e.type || "", uren: e.uren, status: e.status,
     medewerker_id: e.medewerker_id, full_name: e.full_name,
     afkeur_reden: e.afkeur_reden, project_id: e.project_id,
+    approved_by: (e as any).approved_by ?? null, updated_at: (e as any).updated_at ?? null,
   }));
+
+  // Namen van keurders (voor "Goedgekeurd door ... op ...")
+  useEffect(() => {
+    const ids = [...new Set(entries.map(e => e.approved_by).filter(Boolean))] as string[];
+    const ontbrekend = ids.filter(id => !keurderNamen[id]);
+    if (ontbrekend.length === 0) return;
+    supabase.from("profiles").select("id, full_name").in("id", ontbrekend).then(({ data }) => {
+      if (data?.length) setKeurderNamen(prev => ({ ...prev, ...Object.fromEntries(data.map((p: any) => [p.id, p.full_name])) }));
+    });
+  }, [rawEntries]);
+
 
   useEffect(() => {
     const fetchOveruren = async () => {
