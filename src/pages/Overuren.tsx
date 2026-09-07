@@ -229,6 +229,23 @@ export default function Overuren() {
                 </div>
 
                 <div>
+                  <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Project(en) die dag</span>
+                  {m.projectNamen.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {m.projectNamen.map(naam => (
+                        <span key={naam} className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{
+                          background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)",
+                        }}>
+                          {naam}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs italic mt-0.5" style={{ color: "var(--text-muted)" }}>Geen boekingen gevonden</p>
+                  )}
+                </div>
+
+                <div>
                   <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Toelichting monteur:</span>
                   {m.toelichting ? (
                     <p className="text-xs mt-0.5" style={{ color: "var(--text-primary)" }}>"{m.toelichting}"</p>
