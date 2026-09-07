@@ -88,8 +88,8 @@ export default function TarievenBeheer() {
   return (
     <>
       <DesktopSidebar badges={badges} />
-      <div className="lg:ml-[240px] min-h-screen" style={{ background: "var(--app-navy)" }}>
-        <header className="flex items-center gap-3 px-6 lg:px-10 pt-6 pb-4">
+      <div className="lg:ml-[240px] min-h-screen mobile-nav-space" style={{ background: "var(--app-navy)" }}>
+        <header className="mobile-safe-header mobile-header-wrap flex items-center gap-3 px-6 lg:px-10 pt-6 pb-4">
           <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-lg flex items-center justify-center lg:hidden" style={{ background: "var(--bg-surface-2)" }}>
             <ArrowLeft className="h-4 w-4" style={{ color: "var(--text-muted)" }} />
           </button>

@@ -252,7 +252,7 @@ export default function Projecten() {
 
       {/* MOBILE */}
       <div className="lg:hidden">
-        <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
+        <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 190px)" }}>
           {/* HEADER */}
           <MobileHeader initials={profile?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '?'} />
 
@@ -343,7 +343,7 @@ export default function Projecten() {
                                   {margeMap.get(project.id)?.marge ? `${Math.round(margeMap.get(project.id)!.marge)}%` : "—"}
                                 </span>
                               </div>
-                              <div style={{ height: 4, background: "#000", borderRadius: 9999, overflow: "hidden" }}>
+                              <div style={{ height: 4, background: "var(--bg-surface-2)", borderRadius: 9999, overflow: "hidden" }}>
                                 <div style={{ height: "100%", width: `${Math.min(100, margeMap.get(project.id)?.marge || 0)}%`, background: "var(--accent)", borderRadius: 9999, boxShadow: "0 0 8px color-mix(in srgb, var(--accent) 35%, transparent)" }} />
                               </div>
                             </div>
