@@ -8,9 +8,10 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { toast } from "sonner";
 import { format, getISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
-import { AlertTriangle, CheckCircle } from "lucide-react";
 import { ListSkeleton, OverurenCardSkeleton } from "@/components/ui/Skeletons";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/button";
+import { OverurenApprovalCard } from "@/components/OverurenApprovalCard";
 
 interface Melding {
   id: string;
@@ -28,13 +29,15 @@ interface Melding {
   full_name: string;
   behandeld_naam: string | null;
   projectNamen: string[];
+  starttijd: string | null;
+  eindtijd: string | null;
+  pauzeUren: number;
+  reistijdUren: number;
 }
 
-const TYPE_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
-  dag_overschrijding: { label: "Dag > 8u", bg: "var(--warn-light)", color: "var(--warn-text)" },
-  week_overschrijding: { label: "Week > 40u", bg: "rgba(110,155,255,0.1)", color: "var(--info)" },
-  meer_dan_ingepland: { label: "Meer dan ingepland", bg: "var(--danger-light)", color: "var(--danger)" },
-};
+const normaliseerProjectnaam = (naam: string) => naam
+  .toLocaleLowerCase("nl-NL")
+  .replace(/(^|[\s,.-])\p{L}/gu, teken => teken.toLocaleUpperCase("nl-NL"));
 
 export default function Overuren() {
   const { isManager } = useAuth();
@@ -63,7 +66,7 @@ export default function Overuren() {
     const datums = [...new Set(data.map((m: any) => m.datum))];
     const { data: boekingen } = (medIds.length > 0 && datums.length > 0)
       ? await supabase.from("uren_boekingen")
-          .select("medewerker_id, datum, project_id")
+          .select("medewerker_id, datum, project_id, type, uren")
           .in("medewerker_id", medIds)
           .in("datum", datums)
       : { data: [] };
@@ -73,22 +76,50 @@ export default function Overuren() {
       : { data: [] };
     const projectMap = new Map((projecten ?? []).map((p: any) => [p.id, p.naam]));
     const projectenPerDag = new Map<string, Set<string>>();
+    const reistijdPerDag = new Map<string, number>();
     for (const b of boekingen ?? []) {
       const key = `${b.medewerker_id}|${b.datum}`;
       if (!projectenPerDag.has(key)) projectenPerDag.set(key, new Set());
       const naam = projectMap.get(b.project_id);
-      if (naam) projectenPerDag.get(key)!.add(naam);
+      if (naam) projectenPerDag.get(key)?.add(normaliseerProjectnaam(naam));
+      if (b.type?.toLocaleLowerCase("nl-NL").includes("reis")) {
+        reistijdPerDag.set(key, (reistijdPerDag.get(key) ?? 0) + Number(b.uren));
+      }
     }
 
-    setMeldingen(data.map((m: any) => ({
-      projectNamen: [...(projectenPerDag.get(`${m.medewerker_id}|${m.datum}`) ?? [])],
-      ...m,
-      geboekte_uren: Number(m.geboekte_uren),
-      limiet_uren: Number(m.limiet_uren),
-      ingeplande_uren: m.ingeplande_uren != null ? Number(m.ingeplande_uren) : null,
-      full_name: nameMap.get(m.medewerker_id) || "Onbekend",
-      behandeld_naam: m.behandeld_door ? nameMap.get(m.behandeld_door) || null : null,
-    })));
+    const { data: planning } = (medIds.length > 0 && datums.length > 0)
+      ? await supabase.from("planning")
+          .select("medewerker_id, datum, starttijd, eindtijd")
+          .in("medewerker_id", medIds)
+          .in("datum", datums)
+      : { data: [] };
+    const planningPerDag = new Map<string, { starttijd: string; eindtijd: string }[]>();
+    for (const regel of planning ?? []) {
+      const key = `${regel.medewerker_id}|${regel.datum}`;
+      const regels = planningPerDag.get(key) ?? [];
+      regels.push({ starttijd: regel.starttijd, eindtijd: regel.eindtijd });
+      planningPerDag.set(key, regels);
+    }
+
+    setMeldingen(data.map((m: any) => {
+      const key = `${m.medewerker_id}|${m.datum}`;
+      const dagPlanning = planningPerDag.get(key) ?? [];
+      const starttijd = dagPlanning.length ? dagPlanning.map(r => r.starttijd).sort()[0].slice(0, 5) : null;
+      const eindtijd = dagPlanning.length ? dagPlanning.map(r => r.eindtijd).sort().at(-1)?.slice(0, 5) ?? null : null;
+      return {
+        projectNamen: [...(projectenPerDag.get(key) ?? [])],
+        starttijd,
+        eindtijd,
+        pauzeUren: starttijd && eindtijd ? 1 : 0,
+        reistijdUren: reistijdPerDag.get(key) ?? 0,
+        ...m,
+        geboekte_uren: Number(m.geboekte_uren),
+        limiet_uren: Number(m.limiet_uren),
+        ingeplande_uren: m.ingeplande_uren != null ? Number(m.ingeplande_uren) : null,
+        full_name: nameMap.get(m.medewerker_id) || "Onbekend",
+        behandeld_naam: m.behandeld_door ? nameMap.get(m.behandeld_door) || null : null,
+      };
+    }));
     setLoading(false);
   }, [filter]);
 
@@ -149,13 +180,13 @@ export default function Overuren() {
 
       <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
         {([["open", "Open"], ["goedgekeurd", "Goedgekeurd"], ["afgekeurd", "Afgekeurd"], ["alle", "Alle"]] as const).map(([k, l]) => (
-          <button key={k} onClick={() => setFilter(k)} className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors" style={{
+          <Button key={k} variant="outline" onClick={() => setFilter(k)} className="h-8 shrink-0 rounded-lg px-3 text-xs font-medium focus-visible:ring-2" style={{
             background: filter === k ? "var(--accent-light)" : "var(--bg-surface)",
             border: filter === k ? "1px solid var(--accent-border)" : "1px solid var(--planning-border-soft)",
             color: filter === k ? "var(--accent)" : "var(--text-muted)",
           }}>
             {l}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -164,7 +195,7 @@ export default function Overuren() {
       ) : meldingen.length === 0 ? (
         <EmptyState icoon="✓" titel="Geen overuren meldingen" subtitel="Geen meldingen voor dit filter." />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-5">
           {groepen.map(g => {
             const m = g.hoofd;
             const isDone = g.status !== "open";
@@ -174,139 +205,33 @@ export default function Overuren() {
             const ids = g.items.map(i => i.id);
             const alleGoedgekeurd = g.items.every(i => i.status === "goedgekeurd");
             const behandeld = g.items.find(i => i.behandeld_op);
-            return (
-              <div key={g.key} className="rounded-2xl p-4 space-y-3 transition-opacity" style={{
-                background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)",
-                opacity: isDone ? 0.7 : 1,
-              }}>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "var(--accent)", color: "var(--on-accent)" }}>
-                    {m.full_name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{m.full_name}</p>
-                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                        {format(new Date(m.datum + "T12:00:00"), "EEEE d MMMM yyyy", { locale: nl })}
-                      </span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{
-                        background: "var(--bg-app, rgba(0,0,0,0.05))", border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)",
-                        fontFamily: "DM Mono, monospace",
-                      }}>
-                        Week {getISOWeek(new Date(m.datum + "T12:00:00"))}
-                      </span>
-                      {types.map(t => {
-                        const tc = TYPE_CONFIG[t] || TYPE_CONFIG.dag_overschrijding;
-                        return (
-                          <span key={t} className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: tc.bg, color: tc.color }}>
-                            {tc.label}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Urenoverzicht: standaard 8u-dag als uitgangspunt, tenzij het een weekoverschrijding is */}
-                {(() => {
-                  const isWeekOnly = types.length === 1 && types[0] === "week_overschrijding";
-                  const standaardUren = isWeekOnly ? 40 : 8;
-                  const extraUren = Math.max(0, geboektMax - standaardUren);
-                  return (
-                    <div className="space-y-2">
-                      <div className="flex gap-5">
-                        <div>
-                          <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Geboekt</span>
-                          <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-primary)" }}>{geboektMax}u</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Normaal</span>
-                          <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)" }}>{standaardUren}u</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Extra</span>
-                          <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--danger)" }}>+{extraUren}u</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        {types.includes("dag_overschrijding") && (
-                          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                            <strong>Daglimiet:</strong> {geboektMax}u geboekt − 8u limiet = <strong style={{ color: "var(--danger)" }}>+{Math.max(0, geboektMax - 8)}u</strong> extra.
-                          </p>
-                        )}
-                        {types.includes("week_overschrijding") && (
-                          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                            <strong>Weeklimiet:</strong> {geboektMax}u geboekt − 40u limiet = <strong style={{ color: "var(--danger)" }}>+{Math.max(0, geboektMax - 40)}u</strong> extra.
-                          </p>
-                        )}
-                        {types.includes("meer_dan_ingepland") && (
-                          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                            <strong>Meer dan ingepland:</strong> {geboektMax}u geboekt − {ingepland ?? "?"}u ingepland = <strong style={{ color: "var(--danger)" }}>+{ingepland != null ? Math.max(0, geboektMax - ingepland) : 0}u</strong> extra volgens planning.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                <div>
-                  <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Project(en) die dag</span>
-                  {m.projectNamen.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5 mt-1">
-                      {m.projectNamen.map(naam => (
-                        <span key={naam} className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{
-                          background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)",
-                        }}>
-                          {naam}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs italic mt-0.5" style={{ color: "var(--text-muted)" }}>Geen boekingen gevonden</p>
-                  )}
-                </div>
-
-                <div>
-                  <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>Toelichting monteur:</span>
-                  {m.toelichting ? (
-                    <p className="text-xs mt-0.5" style={{ color: "var(--text-primary)" }}>"{m.toelichting}"</p>
-                  ) : (
-                    <p className="text-xs italic mt-0.5" style={{ color: "var(--text-muted)" }}>Geen toelichting ontvangen</p>
-                  )}
-                </div>
-
-                {isDone ? (
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{
-                      background: alleGoedgekeurd ? "var(--accent-light)" : "var(--danger-light)",
-                      color: alleGoedgekeurd ? "var(--accent)" : "var(--danger)",
-                    }}>
-                      {alleGoedgekeurd ? "✓ Goedgekeurd" : "✕ Afgekeurd"}
-                    </span>
-                    {behandeld?.behandeld_op && (
-                      <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                        Behandeld op {format(new Date(behandeld.behandeld_op), "d MMM yyyy", { locale: nl })}
-                        {behandeld.behandeld_naam && ` door ${behandeld.behandeld_naam}`}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <button onClick={() => handleAction(ids, "goedgekeurd")} className="flex-1 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
-                      background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)",
-                    }}>
-                      ✓ Goedkeuren
-                    </button>
-                    <button onClick={() => handleAction(ids, "afgekeurd")} className="flex-1 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
-                      background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)",
-                    }}>
-                      ✕ Afwijzen
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
+            const overwerk = Math.max(0, geboektMax - 8);
+            const afwijking = ingepland != null ? Math.max(0, geboektMax - ingepland) : overwerk;
+            const tijdLabel = m.starttijd && m.eindtijd
+              ? `${m.starttijd}–${m.eindtijd} · ${m.pauzeUren}u pauze`
+              : "Tijden niet beschikbaar";
+            const behandeldLabel = behandeld?.behandeld_op
+              ? `${format(new Date(behandeld.behandeld_op), "d MMM yyyy", { locale: nl })}${behandeld.behandeld_naam ? ` door ${behandeld.behandeld_naam}` : ""}`
+              : null;
+            return <OverurenApprovalCard
+              key={g.key}
+              name={m.full_name}
+              dateLabel={`${format(new Date(m.datum + "T12:00:00"), "EEEE d MMMM yyyy", { locale: nl })} · week ${getISOWeek(new Date(m.datum + "T12:00:00"))}`}
+              deviationLabel={`${afwijking}u meer dan gepland`}
+              bookedHours={geboektMax}
+              plannedHours={ingepland}
+              overtimeHours={overwerk}
+              travelHours={m.reistijdUren}
+              timeLabel={tijdLabel}
+              projectNames={m.projectNamen}
+              explanation={m.toelichting}
+              done={isDone}
+              approved={alleGoedgekeurd}
+              handledLabel={behandeldLabel}
+              onApprove={() => handleAction(ids, "goedgekeurd")}
+              onReject={() => handleAction(ids, "afgekeurd")}
+              onRequestExplanation={() => toast.info(`Vraag ${m.full_name} om een toelichting.`)}
+            />;
           })}
         </div>
       )}

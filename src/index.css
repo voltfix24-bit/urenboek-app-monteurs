@@ -91,6 +91,14 @@ p, h1, h2, h3, span.selectable, input, textarea {
     --planning-avatar-bg:   #adedd3;
     --planning-border-soft: #d9e3f6;
 
+    /* Uren-goedkeuringskaart */
+    --approval-metric:      #f7faf9;
+    --approval-footer:      #f7faf9;
+    --approval-border:      #e2e8e5;
+    --approval-divider:     #e2e8e5;
+    --approval-avatar:      #dff5eb;
+    --approval-avatar-text: #185c45;
+
     --sidebar-shell-bg:        #1f2937;
     --sidebar-shell-fg:        #eaf1ff;
     --sidebar-shell-muted:     #a7b0bd;
@@ -293,6 +301,12 @@ p, h1, h2, h3, span.selectable, input, textarea {
   --planning-button:      #102038;
   --planning-avatar-bg:   #142640;
   --planning-border-soft: rgba(106,118,140,0.15);
+  --approval-metric:      var(--bg-surface-2);
+  --approval-footer:      var(--bg-surface-2);
+  --approval-border:      var(--border);
+  --approval-divider:     var(--border);
+  --approval-avatar:      var(--accent-light);
+  --approval-avatar-text: var(--accent-mid);
 
 
   --background: 222 47% 4%;
