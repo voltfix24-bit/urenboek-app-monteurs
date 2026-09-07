@@ -351,13 +351,17 @@ p, h1, h2, h3, span.selectable, input, textarea {
   .planning-project-option small { color: var(--text-secondary); font-size: 11px; }
   .planning-address { display: flex; align-items: flex-start; gap: 6px; color: var(--text-secondary); font-size: 11px; }
   .planning-address svg { width: 14px; flex: 0 0 14px; }
-  .planning-time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .planning-time-grid { display: grid; grid-template-columns: 1fr 1fr 94px; gap: 10px; }
   .planning-time-field { display: grid; gap: 6px; min-width: 0; }
   .planning-time-input { display: flex; height: 40px; align-items: center; gap: 7px; border: 1px solid var(--planning-border-soft); border-radius: 6px; background: var(--bg-surface); padding: 0 10px; }
   .planning-time-input:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
   .planning-time-input.has-error { border-color: var(--danger); }
   .planning-time-input svg { width: 15px; color: var(--text-secondary); }
   .planning-time-input input { min-width: 0; width: 100%; border: 0; outline: 0; background: transparent; color: var(--text-primary); font-family: "DM Mono", monospace; font-size: 13px; }
+  .planning-break-input { display: flex; height: 40px; align-items: center; gap: 5px; border: 1px solid var(--planning-border-soft); border-radius: 6px; background: var(--bg-surface); padding: 0 9px; }
+  .planning-break-input:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  .planning-break-input input { min-width: 0; width: 100%; border: 0; outline: 0; background: transparent; color: var(--text-primary); font-family: "DM Mono", monospace; font-size: 13px; }
+  .planning-break-input span { color: var(--text-muted); font-size: 11px; }
   .planning-time-menu { display: grid; grid-template-columns: repeat(3, 1fr); width: 210px; max-height: 220px; overflow-y: auto; padding: 6px; border-color: var(--planning-border-soft); background: var(--bg-surface); }
   .planning-time-menu button { min-height: 34px; border-radius: 4px; color: var(--text-primary); font-family: "DM Mono", monospace; font-size: 11px; }
   .planning-time-menu button:hover, .planning-time-menu button.is-selected { background: var(--accent-light); color: var(--accent-dark); }
@@ -386,6 +390,8 @@ p, h1, h2, h3, span.selectable, input, textarea {
   }
 
   @media (max-width: 560px) {
+    .planning-time-grid { grid-template-columns: 1fr 1fr; }
+    .planning-time-field:last-child { grid-column: 1 / -1; }
     .planning-dialog-footer { align-items: stretch; flex-direction: column; }
     .planning-dialog-footer > div { width: 100%; }
     .planning-more-button, .planning-delete-button { justify-content: flex-start; }

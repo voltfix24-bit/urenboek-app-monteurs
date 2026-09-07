@@ -72,11 +72,13 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
   const [projectOpen, setProjectOpen] = useState(false);
   const [showExtra, setShowExtra] = useState(false);
   const [recentIds, setRecentIds] = useState<string[]>([]);
+  const [pauzeMinuten, setPauzeMinuten] = useState("30");
   const selectedProject = projects.find((project) => project.id === form.project_id);
 
   useEffect(() => {
     if (!open) return;
     try { setRecentIds(JSON.parse(localStorage.getItem(RECENT_KEY) || "[]")); } catch { setRecentIds([]); }
+    setPauzeMinuten("30");
   }, [open]);
 
   const sortedProjects = useMemo(() => [...projects].sort(numericProjectSort), [projects]);
@@ -86,8 +88,8 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
   const einde = /^\d{2}:\d{2}$/.test(form.eindtijd) ? Number(form.eindtijd.slice(0, 2)) * 60 + Number(form.eindtijd.slice(3)) : NaN;
   const timeError = Number.isFinite(start) && Number.isFinite(einde) && einde <= start ? "Eindtijd moet na de starttijd liggen." : "";
   const brutoMinuten = Number.isFinite(start) && Number.isFinite(einde) && einde > start ? einde - start : 0;
-  const pauzeMinuten = brutoMinuten >= 360 ? 30 : 0;
-  const nettoUren = Math.max(0, brutoMinuten - pauzeMinuten) / 60;
+  const pauze = Math.max(0, Number(pauzeMinuten) || 0);
+  const nettoUren = Math.max(0, brutoMinuten - pauze) / 60;
 
   const selectProject = (project: Project) => {
     onFormChange({ ...form, project_id: project.id });
@@ -148,9 +150,13 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
           <div className="planning-time-grid">
             <TimeField label="Start" value={form.starttijd} onChange={(value) => onFormChange({ ...form, starttijd: value })} />
             <TimeField label="Eind" value={form.eindtijd} onChange={(value) => onFormChange({ ...form, eindtijd: value })} error={timeError} />
+            <div className="planning-time-field">
+              <label htmlFor="planning-break">Pauze</label>
+              <div className="planning-break-input"><input id="planning-break" type="number" min="0" step="5" inputMode="numeric" value={pauzeMinuten} onChange={(event) => setPauzeMinuten(event.target.value)} /><span>min</span></div>
+            </div>
           </div>
           <div className="planning-presets">{PRESETS.map(([starttijd, eindtijd]) => <Button key={starttijd} type="button" variant="outline" onClick={() => onFormChange({ ...form, starttijd, eindtijd })}>{starttijd} – {eindtijd}</Button>)}</div>
-          <div className="planning-hours"><span>{brutoMinuten / 60 || 0} uur{pauzeMinuten ? `, min ${pauzeMinuten} min pauze` : ""}</span><strong>{Number.isInteger(nettoUren) ? nettoUren : nettoUren.toFixed(1).replace(".", ",")}u</strong></div>
+          <div className="planning-hours"><span>{brutoMinuten / 60 || 0} uur{pauze ? `, min ${pauze} min pauze` : ""}</span><strong>{Number.isInteger(nettoUren) ? nettoUren : nettoUren.toFixed(1).replace(".", ",")}u</strong></div>
 
           <div className="planning-field-group"><label htmlFor="planning-note">Notitie</label><input id="planning-note" className="planning-note" value={form.notitie} onChange={(event) => onFormChange({ ...form, notitie: event.target.value })} placeholder="Optioneel" /></div>
 
