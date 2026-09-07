@@ -26,15 +26,10 @@ interface NavGroep {
 
 const MANAGER_GROEPEN: NavGroep[] = [
   {
-    label: "Overzicht",
+    label: "Planning",
     items: [
       { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard", badgeKey: "verlofAanvragen" },
       { path: "/mededelingen", icon: Bell, label: "Berichten", badgeKey: "ongelezen" },
-    ],
-  },
-  {
-    label: "Planning",
-    items: [
       { path: "/manager-planning", icon: CalendarDays, label: "Weekplanning" },
       { path: "/projecten", icon: FolderOpen, label: "Projecten" },
       { path: "/opdrachtgevers", icon: Building2, label: "Opdrachtgevers" },
@@ -46,11 +41,6 @@ const MANAGER_GROEPEN: NavGroep[] = [
       { path: "/goedkeuring", icon: CheckCircle, label: "Goedkeuring", badgeKey: "openGoedkeuringen" },
       { path: "/overuren", icon: AlertTriangle, label: "Overuren", badgeKey: "openOveruren" },
       { path: "/rapportage", icon: BarChart3, label: "Rapportage" },
-    ],
-  },
-  {
-    label: "Financiën",
-    items: [
       { path: "/inkooporders", icon: Receipt, label: "Inkooporders", badgeKey: "openOrders" },
       { path: "/beheer/tarieven", icon: Euro, label: "Tarieven" },
     ],
@@ -163,7 +153,7 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
           {zichtbareGroepen.map((groep, gi) => (
             <div key={groep.label}>
               {gi > 0 && <div className="my-1.5" style={{ borderTop: "1px solid var(--sidebar-shell-border)" }} />}
-              <p className="text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 mt-1" style={{ color: "#c5cbd3" }}>
+              <p className="text-xs font-medium px-3 py-2" style={{ color: "var(--sidebar-shell-muted)" }}>
                 {groep.label}
               </p>
               {groep.items.map(item => {
@@ -195,7 +185,7 @@ export function DesktopSidebar({ badges }: DesktopSidebarProps) {
           {permissies.zietBeheer && (
             <div className="mt-1">
               <div className="my-1.5" style={{ borderTop: "1px solid var(--sidebar-shell-border)" }} />
-              <p className="text-[10px] uppercase tracking-wider font-bold px-3 py-1.5" style={{ color: "#c5cbd3" }}>Beheer</p>
+              <p className="text-xs font-medium px-3 py-2" style={{ color: "var(--sidebar-shell-muted)" }}>Beheer</p>
               {BEHEER_ITEMS.filter(item => isItemZichtbaar(item.path, permissies)).map(item => (
                 <button key={item.path} onClick={() => navigate(item.path)}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-colors text-left"
