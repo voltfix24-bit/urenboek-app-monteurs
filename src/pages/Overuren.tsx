@@ -77,12 +77,12 @@ export default function Overuren() {
     return () => { supabase.removeChannel(channel); };
   }, [fetchMeldingen]);
 
-  const handleAction = async (id: string, status: string) => {
+  const handleAction = async (ids: string[], status: string) => {
     const { error } = await supabase.from("overuren_meldingen").update({
       status,
       behandeld_door: profileId,
       behandeld_op: new Date().toISOString(),
-    }).eq("id", id);
+    }).in("id", ids);
     if (error) { toast.error("Fout bij opslaan"); return; }
     toast.success(status === "goedgekeurd" ? "Overuren goedgekeurd ✓" : "Overuren afgekeurd");
     fetchMeldingen();
@@ -92,13 +92,35 @@ export default function Overuren() {
     return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
   }
 
-  const openCount = meldingen.filter(m => m.status === "open").length;
+  // Groepeer meldingen per medewerker + datum: meerdere signalen (bijv. "Dag > 8u"
+  // én "Meer dan ingepland") worden één kaart met één keuze.
+  interface Groep {
+    key: string;
+    items: Melding[];
+    hoofd: Melding; // representatieve melding voor naam/datum/toelichting
+    status: string; // "open" als minstens één open is
+  }
+  const groepen: Groep[] = [];
+  const groepMap = new Map<string, Groep>();
+  for (const m of meldingen) {
+    const key = `${m.medewerker_id}|${m.datum}`;
+    let g = groepMap.get(key);
+    if (!g) {
+      g = { key, items: [], hoofd: m, status: m.status };
+      groepMap.set(key, g);
+      groepen.push(g);
+    }
+    g.items.push(m);
+    // Bepaal representatieve: de melding met de hoogste geboekte uren
+    if (m.geboekte_uren > g.hoofd.geboekte_uren) g.hoofd = m;
+    if (m.status === "open") g.status = "open";
+  }
 
   const mainContent = (
     <main className="px-4 py-4 space-y-4">
       <div>
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          {filter === "open" ? `${meldingen.length} open meldingen` : `${meldingen.length} meldingen`}
+          {filter === "open" ? `${groepen.length} open meldingen` : `${groepen.length} meldingen`}
         </p>
       </div>
 
@@ -120,11 +142,18 @@ export default function Overuren() {
         <EmptyState icoon="✓" titel="Geen overuren meldingen" subtitel="Geen meldingen voor dit filter." />
       ) : (
         <div className="space-y-3">
-          {meldingen.map(m => {
-            const tc = TYPE_CONFIG[m.type] || TYPE_CONFIG.dag_overschrijding;
-            const isDone = m.status !== "open";
+          {groepen.map(g => {
+            const m = g.hoofd;
+            const isDone = g.status !== "open";
+            const types = [...new Set(g.items.map(i => i.type))];
+            const geboektMax = Math.max(...g.items.map(i => i.geboekte_uren));
+            const limietMin = Math.min(...g.items.map(i => i.limiet_uren));
+            const ingepland = g.items.find(i => i.ingeplande_uren != null)?.ingeplande_uren ?? null;
+            const ids = g.items.map(i => i.id);
+            const alleGoedgekeurd = g.items.every(i => i.status === "goedgekeurd");
+            const behandeld = g.items.find(i => i.behandeld_op);
             return (
-              <div key={m.id} className="rounded-2xl p-4 space-y-3 transition-opacity" style={{
+              <div key={g.key} className="rounded-2xl p-4 space-y-3 transition-opacity" style={{
                 background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)",
                 opacity: isDone ? 0.7 : 1,
               }}>
@@ -138,9 +167,14 @@ export default function Overuren() {
                       <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
                         {format(new Date(m.datum), "d MMMM yyyy", { locale: nl })}
                       </span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: tc.bg, color: tc.color }}>
-                        {tc.label}
-                      </span>
+                      {types.map(t => {
+                        const tc = TYPE_CONFIG[t] || TYPE_CONFIG.dag_overschrijding;
+                        return (
+                          <span key={t} className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: tc.bg, color: tc.color }}>
+                            {tc.label}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -150,17 +184,17 @@ export default function Overuren() {
                     <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Geboekt</span>
                     <span className="text-sm font-bold" style={{
                       fontFamily: "DM Mono, monospace",
-                      color: m.geboekte_uren > m.limiet_uren ? "var(--danger)" : "var(--text-primary)",
-                    }}>{m.geboekte_uren}u</span>
+                      color: geboektMax > limietMin ? "var(--danger)" : "var(--text-primary)",
+                    }}>{geboektMax}u</span>
                   </div>
                   <div>
                     <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Limiet</span>
-                    <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)" }}>{m.limiet_uren}u</span>
+                    <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)" }}>{limietMin}u</span>
                   </div>
-                  {m.type === "meer_dan_ingepland" && m.ingeplande_uren != null && (
+                  {ingepland != null && (
                     <div>
                       <span className="text-[10px] block" style={{ color: "var(--text-muted)" }}>Ingepland</span>
-                      <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)" }}>{m.ingeplande_uren}u</span>
+                      <span className="text-sm font-bold" style={{ fontFamily: "DM Mono, monospace", color: "var(--text-muted)" }}>{ingepland}u</span>
                     </div>
                   )}
                 </div>
@@ -177,26 +211,26 @@ export default function Overuren() {
                 {isDone ? (
                   <div className="space-y-1">
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{
-                      background: m.status === "goedgekeurd" ? "var(--accent-light)" : "var(--danger-light)",
-                      color: m.status === "goedgekeurd" ? "var(--accent)" : "var(--danger)",
+                      background: alleGoedgekeurd ? "var(--accent-light)" : "var(--danger-light)",
+                      color: alleGoedgekeurd ? "var(--accent)" : "var(--danger)",
                     }}>
-                      {m.status === "goedgekeurd" ? "✓ Goedgekeurd" : "✕ Afgekeurd"}
+                      {alleGoedgekeurd ? "✓ Goedgekeurd" : "✕ Afgekeurd"}
                     </span>
-                    {m.behandeld_op && (
+                    {behandeld?.behandeld_op && (
                       <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                        Behandeld op {format(new Date(m.behandeld_op), "d MMM yyyy", { locale: nl })}
-                        {m.behandeld_naam && ` door ${m.behandeld_naam}`}
+                        Behandeld op {format(new Date(behandeld.behandeld_op), "d MMM yyyy", { locale: nl })}
+                        {behandeld.behandeld_naam && ` door ${behandeld.behandeld_naam}`}
                       </p>
                     )}
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                    <button onClick={() => handleAction(m.id, "goedgekeurd")} className="flex-1 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
+                    <button onClick={() => handleAction(ids, "goedgekeurd")} className="flex-1 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
                       background: "var(--accent-light)", border: "1px solid var(--accent-border)", color: "var(--accent)",
                     }}>
                       ✓ Goedkeuren
                     </button>
-                    <button onClick={() => handleAction(m.id, "afgekeurd")} className="flex-1 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
+                    <button onClick={() => handleAction(ids, "afgekeurd")} className="flex-1 py-2 rounded-xl text-xs font-semibold transition-colors" style={{
                       background: "var(--danger-light)", border: "1px solid var(--danger-border)", color: "var(--danger)",
                     }}>
                       ✕ Afwijzen
@@ -219,9 +253,9 @@ export default function Overuren() {
             <HeaderLogo />
             <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Overuren meldingen</span>
           </div>
-          {filter === "open" && meldingen.length > 0 && (
+          {filter === "open" && groepen.length > 0 && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-              <span className="text-lg font-extrabold" style={{ color: "var(--warn-text)" }}>{meldingen.length}</span>
+              <span className="text-lg font-extrabold" style={{ color: "var(--warn-text)" }}>{groepen.length}</span>
               <span className="text-[10px] font-semibold" style={{ color: "var(--text-muted)" }}>open</span>
             </div>
           )}
