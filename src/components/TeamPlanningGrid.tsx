@@ -54,6 +54,13 @@ function initialen(naam: string) {
   return naam.split(" ").filter(Boolean).map((deel) => deel[0]).slice(0, 2).join("").toUpperCase();
 }
 
+function korteNaam(naam: string) {
+  const delen = naam.split(" ").filter(Boolean);
+  if (delen.length < 2) return naam;
+  return `${delen[0]} ${delen[delen.length - 1][0].toUpperCase()}.`;
+}
+
+
 function projectColor(projectId: string, projectIds: string[]) {
   const index = Math.max(0, projectIds.indexOf(projectId));
   return `var(--${PROJECT_COLORS[index % PROJECT_COLORS.length]})`;
