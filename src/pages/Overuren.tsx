@@ -170,7 +170,6 @@ export default function Overuren() {
             const isDone = g.status !== "open";
             const types = [...new Set(g.items.map(i => i.type))];
             const geboektMax = Math.max(...g.items.map(i => i.geboekte_uren));
-            const limietMin = Math.min(...g.items.map(i => i.limiet_uren));
             const ingepland = g.items.find(i => i.ingeplande_uren != null)?.ingeplande_uren ?? null;
             const ids = g.items.map(i => i.id);
             const alleGoedgekeurd = g.items.every(i => i.status === "goedgekeurd");
