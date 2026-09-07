@@ -27,6 +27,7 @@ interface Melding {
   created_at: string;
   full_name: string;
   behandeld_naam: string | null;
+  projectNamen: string[];
 }
 
 const TYPE_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
