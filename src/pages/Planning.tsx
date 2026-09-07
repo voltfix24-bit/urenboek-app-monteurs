@@ -277,9 +277,9 @@ export default function Planning() {
     const diff = Math.abs(urenForm.uren - planned);
     // Overwerk = dagtotaal over ALLE projecten op deze dag boven de 8u-norm.
     // Los van afwijking t.o.v. de planning op dit ene project.
-    const dagTotaalAnders = [...existingBoekingen.values()]
-      .filter(b => b.datum === modalItem.datum && b.id !== editingBoekingId)
-      .reduce((s, b) => s + b.uren, 0);
+    const dagTotaalAnders = [...existingBoekingen.entries()]
+      .filter(([key, b]) => key.startsWith(`${modalItem.datum}|`) && b.id !== editingBoekingId)
+      .reduce((s, [, b]) => s + b.uren, 0);
     const dagTotaal = dagTotaalAnders + urenForm.uren;
     const isOverwerk = dagTotaal > 8;
     const needsToelichting = diff > 0.5 || isOverwerk;
