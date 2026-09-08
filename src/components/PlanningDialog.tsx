@@ -72,13 +72,11 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
   const [projectOpen, setProjectOpen] = useState(false);
   const [showExtra, setShowExtra] = useState(false);
   const [recentIds, setRecentIds] = useState<string[]>([]);
-  const [pauzeMinuten, setPauzeMinuten] = useState("30");
   const selectedProject = projects.find((project) => project.id === form.project_id);
 
   useEffect(() => {
     if (!open) return;
     try { setRecentIds(JSON.parse(localStorage.getItem(RECENT_KEY) || "[]")); } catch { setRecentIds([]); }
-    setPauzeMinuten("30");
   }, [open]);
 
   const sortedProjects = useMemo(() => [...projects].sort(numericProjectSort), [projects]);
@@ -88,8 +86,8 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
   const einde = /^\d{2}:\d{2}$/.test(form.eindtijd) ? Number(form.eindtijd.slice(0, 2)) * 60 + Number(form.eindtijd.slice(3)) : NaN;
   const timeError = Number.isFinite(start) && Number.isFinite(einde) && einde <= start ? "Eindtijd moet na de starttijd liggen." : "";
   const brutoMinuten = Number.isFinite(start) && Number.isFinite(einde) && einde > start ? einde - start : 0;
-  const pauze = Math.max(0, Number(pauzeMinuten) || 0);
-  const nettoUren = Math.max(0, brutoMinuten - pauze) / 60;
+  // Vaste pauze; identiek aan de urenberekening in het weekraster en de PDF.
+  const nettoUren = Math.round(Math.max(0, brutoMinuten - PAUZE_MINUTEN) / 60);
 
   const selectProject = (project: Project) => {
     onFormChange({ ...form, project_id: project.id });
