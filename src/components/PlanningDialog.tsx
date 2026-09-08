@@ -37,6 +37,7 @@ interface Props {
 
 const RECENT_KEY = "terrevolt-recent-planning-projects";
 const PRESETS = [["07:00", "16:00"], ["07:30", "16:30"], ["08:00", "17:00"]];
+const PAUZE_MINUTEN = 60;
 const TIME_OPTIONS = Array.from({ length: 49 }, (_, index) => {
   const minutes = index * 30;
   return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
