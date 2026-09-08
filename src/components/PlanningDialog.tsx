@@ -152,11 +152,11 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
             <TimeField label="Eind" value={form.eindtijd} onChange={(value) => onFormChange({ ...form, eindtijd: value })} error={timeError} />
             <div className="planning-time-field">
               <label htmlFor="planning-break">Pauze</label>
-              <div className="planning-break-input"><input id="planning-break" type="number" min="0" step="5" inputMode="numeric" value={pauzeMinuten} onChange={(event) => setPauzeMinuten(event.target.value)} /><span>min</span></div>
+              <div className="planning-break-input"><input id="planning-break" type="number" value={PAUZE_MINUTEN} readOnly disabled aria-describedby="planning-break-hint" /><span>min</span></div>
             </div>
             <div className="planning-presets">{PRESETS.map(([starttijd, eindtijd]) => <Button key={starttijd} type="button" variant="outline" onClick={() => onFormChange({ ...form, starttijd, eindtijd })}>{starttijd} – {eindtijd}</Button>)}</div>
           </div>
-          <div className="planning-hours"><span>{brutoMinuten / 60 || 0} uur{pauze ? `, min ${pauze} min pauze` : ""}</span><strong>{Number.isInteger(nettoUren) ? nettoUren : nettoUren.toFixed(1).replace(".", ",")}u</strong></div>
+          <div className="planning-hours" id="planning-break-hint"><span>{brutoMinuten / 60 || 0} uur, min {PAUZE_MINUTEN} min vaste pauze</span><strong>{nettoUren}u</strong></div>
 
           <div className="planning-field-group"><label htmlFor="planning-note">Notitie</label><input id="planning-note" className="planning-note" value={form.notitie} onChange={(event) => onFormChange({ ...form, notitie: event.target.value })} placeholder="Optioneel" /></div>
 
