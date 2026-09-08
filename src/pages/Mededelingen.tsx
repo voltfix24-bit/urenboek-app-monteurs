@@ -303,7 +303,7 @@ export default function Mededelingen() {
           flexDirection: 'column',
         }}>
           {/* HEADER */}
-          <header style={{
+          <header className="mobile-safe-header" style={{
             position: 'sticky',
             top: 0, zIndex: 50,
             background: 'color-mix(in srgb, var(--bg-surface) 94%, transparent)',
@@ -575,7 +575,7 @@ export default function Mededelingen() {
         flexDirection: 'column',
       }}>
         {/* HEADER */}
-        <header style={{
+        <header className="mobile-safe-header" style={{
           position: 'sticky',
           top: 0, zIndex: 50,
           background: 'color-mix(in srgb, var(--bg-surface) 94%, transparent)',

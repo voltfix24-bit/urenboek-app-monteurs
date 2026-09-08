@@ -202,7 +202,7 @@ export default function Medewerkers() {
       <>
       <PageShell>
         <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)" }}>
-          <header style={{ position: "sticky", top: 0, zIndex: 50, background: "color-mix(in srgb, var(--bg-surface) 94%, transparent)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--planning-border-soft)", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+          <header className="mobile-safe-header" style={{ position: "sticky", top: 0, zIndex: 50, background: "color-mix(in srgb, var(--bg-surface) 94%, transparent)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--planning-border-soft)", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
             <button onClick={() => setSelectedEmployee(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", display: "flex" }}>
               <ArrowLeft size={24} />
             </button>
@@ -271,7 +271,7 @@ export default function Medewerkers() {
     <PageShell>
       <div style={{ background: "var(--app-navy)", minHeight: "100dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)" }}>
         {/* HEADER */}
-        <header style={{ position: "sticky", top: 0, zIndex: 50, background: "color-mix(in srgb, var(--bg-surface) 94%, transparent)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--planning-border-soft)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <header className="mobile-safe-header" style={{ position: "sticky", top: 0, zIndex: 50, background: "color-mix(in srgb, var(--bg-surface) 94%, transparent)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--planning-border-soft)", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span className="material-symbols-outlined" style={{ color: "var(--accent)", fontSize: 24, fontVariationSettings: "'FILL' 1" }}>bolt</span>
             <span style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 18, color: "var(--accent)", letterSpacing: "0.1em", textTransform: "uppercase" }}>TERREVOLT UREN</span>

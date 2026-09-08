@@ -144,7 +144,7 @@ export default function BedrijfsgegevensBeheer() {
     <>
       <DesktopSidebar badges={badges} />
       <PageShell>
-        <header className="sticky top-0 z-30" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--planning-border-soft)" }}>
+        <header className="sticky top-0 z-30 mobile-safe-header" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--planning-border-soft)" }}>
           <div className="px-4 py-3 flex items-center gap-2.5">
             <HeaderLogo />
             <span className="text-base font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>Bedrijfsgegevens</span>
