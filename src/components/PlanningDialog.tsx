@@ -37,6 +37,7 @@ interface Props {
 
 const RECENT_KEY = "terrevolt-recent-planning-projects";
 const PRESETS = [["07:00", "16:00"], ["07:30", "16:30"], ["08:00", "17:00"]];
+const PAUZE_MINUTEN = 60;
 const TIME_OPTIONS = Array.from({ length: 49 }, (_, index) => {
   const minutes = index * 30;
   return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
@@ -72,13 +73,11 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
   const [projectOpen, setProjectOpen] = useState(false);
   const [showExtra, setShowExtra] = useState(false);
   const [recentIds, setRecentIds] = useState<string[]>([]);
-  const [pauzeMinuten, setPauzeMinuten] = useState("30");
   const selectedProject = projects.find((project) => project.id === form.project_id);
 
   useEffect(() => {
     if (!open) return;
     try { setRecentIds(JSON.parse(localStorage.getItem(RECENT_KEY) || "[]")); } catch { setRecentIds([]); }
-    setPauzeMinuten("30");
   }, [open]);
 
   const sortedProjects = useMemo(() => [...projects].sort(numericProjectSort), [projects]);
@@ -88,8 +87,8 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
   const einde = /^\d{2}:\d{2}$/.test(form.eindtijd) ? Number(form.eindtijd.slice(0, 2)) * 60 + Number(form.eindtijd.slice(3)) : NaN;
   const timeError = Number.isFinite(start) && Number.isFinite(einde) && einde <= start ? "Eindtijd moet na de starttijd liggen." : "";
   const brutoMinuten = Number.isFinite(start) && Number.isFinite(einde) && einde > start ? einde - start : 0;
-  const pauze = Math.max(0, Number(pauzeMinuten) || 0);
-  const nettoUren = Math.max(0, brutoMinuten - pauze) / 60;
+  // Vaste pauze; identiek aan de urenberekening in het weekraster en de PDF.
+  const nettoUren = Math.round(Math.max(0, brutoMinuten - PAUZE_MINUTEN) / 60);
 
   const selectProject = (project: Project) => {
     onFormChange({ ...form, project_id: project.id });
@@ -152,11 +151,11 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
             <TimeField label="Eind" value={form.eindtijd} onChange={(value) => onFormChange({ ...form, eindtijd: value })} error={timeError} />
             <div className="planning-time-field">
               <label htmlFor="planning-break">Pauze</label>
-              <div className="planning-break-input"><input id="planning-break" type="number" min="0" step="5" inputMode="numeric" value={pauzeMinuten} onChange={(event) => setPauzeMinuten(event.target.value)} /><span>min</span></div>
+              <div className="planning-break-input"><input id="planning-break" type="number" value={PAUZE_MINUTEN} readOnly disabled aria-describedby="planning-break-hint" /><span>min</span></div>
             </div>
             <div className="planning-presets">{PRESETS.map(([starttijd, eindtijd]) => <Button key={starttijd} type="button" variant="outline" onClick={() => onFormChange({ ...form, starttijd, eindtijd })}>{starttijd} – {eindtijd}</Button>)}</div>
           </div>
-          <div className="planning-hours"><span>{brutoMinuten / 60 || 0} uur{pauze ? `, min ${pauze} min pauze` : ""}</span><strong>{Number.isInteger(nettoUren) ? nettoUren : nettoUren.toFixed(1).replace(".", ",")}u</strong></div>
+          <div className="planning-hours" id="planning-break-hint"><span>{brutoMinuten / 60 || 0} uur, min {PAUZE_MINUTEN} min vaste pauze</span><strong>{nettoUren}u</strong></div>
 
           <div className="planning-field-group"><label htmlFor="planning-note">Notitie</label><input id="planning-note" className="planning-note" value={form.notitie} onChange={(event) => onFormChange({ ...form, notitie: event.target.value })} placeholder="Optioneel" /></div>
 
