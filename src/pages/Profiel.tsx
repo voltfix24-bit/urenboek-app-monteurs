@@ -581,7 +581,7 @@ export default function Profiel() {
 
           {/* MIJN GEGEVENS */}
           <div style={{
-            background: '#111a2c',
+            background: 'var(--bg-surface)',
             border: '1px solid var(--planning-border-soft)',
             borderRadius: 16,
             marginBottom: 12,
@@ -656,7 +656,7 @@ export default function Profiel() {
                           marginTop: 4,
                           padding: '10px 14px',
                           borderRadius: 12,
-                          background: '#060e20',
+                          background: 'var(--bg-surface-2)',
                           border: profileErrors[f.key]
                             ? '1.5px solid var(--danger)'
                             : '1px solid var(--planning-border-soft)',
@@ -698,7 +698,7 @@ export default function Profiel() {
                         marginTop: 4,
                         padding: '10px 14px',
                         borderRadius: 12,
-                        background: '#060e20',
+                        background: 'var(--bg-surface-2)',
                         border: '1px solid var(--planning-border-soft)',
                         color: 'var(--text-primary)',
                         fontFamily: 'Hanken Grotesk',
@@ -730,7 +730,7 @@ export default function Profiel() {
                         width: 40,
                         height: 40,
                         borderRadius: 12,
-                        background: '#060e20',
+                        background: 'var(--bg-surface-2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -781,7 +781,7 @@ export default function Profiel() {
 
           {/* RIJBEWIJS */}
           <div style={{
-            background: '#111a2c',
+            background: 'var(--bg-surface)',
             border: '1px solid var(--planning-border-soft)',
             borderRadius: 16,
             marginBottom: 12,
@@ -811,7 +811,7 @@ export default function Profiel() {
                 <div style={{
                   width: 40, height: 40,
                   borderRadius: 12,
-                  background: '#060e20',
+                  background: 'var(--bg-surface-2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -860,7 +860,7 @@ export default function Profiel() {
 
           {/* NOODCONTACT */}
           <div style={{
-            background: '#111a2c',
+            background: 'var(--bg-surface)',
             border: '1px solid var(--planning-border-soft)',
             borderRadius: 16,
             marginBottom: 12,
@@ -894,7 +894,7 @@ export default function Profiel() {
                   <div style={{
                     width: 40, height: 40,
                     borderRadius: 12,
-                    background: '#060e20',
+                    background: 'var(--bg-surface-2)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -935,7 +935,7 @@ export default function Profiel() {
 
           {/* ZZP GEGEVENS */}
           <div style={{
-            background: '#111a2c',
+            background: 'var(--bg-surface)',
             border: '1px solid var(--planning-border-soft)',
             borderRadius: 16,
             marginBottom: 12,
@@ -1068,7 +1068,7 @@ export default function Profiel() {
                           marginTop: 4,
                           padding: '10px 14px',
                           borderRadius: 12,
-                          background: '#060e20',
+                          background: 'var(--bg-surface-2)',
                           border: '1px solid var(--planning-border-soft)',
                           color: 'var(--text-primary)',
                           fontFamily: 'Hanken Grotesk',
@@ -1103,7 +1103,7 @@ export default function Profiel() {
                         marginTop: 4,
                         padding: '10px 14px',
                         borderRadius: 12,
-                        background: '#060e20',
+                        background: 'var(--bg-surface-2)',
                         border: '1px solid var(--planning-border-soft)',
                         color: 'var(--text-primary)',
                         fontFamily: 'Hanken Grotesk',
@@ -1184,7 +1184,7 @@ export default function Profiel() {
 
           {/* BESCHIKBAARHEID */}
           <div style={{
-            background: '#111a2c',
+            background: 'var(--bg-surface)',
             border: '1px solid var(--planning-border-soft)',
             borderRadius: 16,
             marginBottom: 12,
@@ -1226,7 +1226,7 @@ export default function Profiel() {
                       borderRadius: 12,
                       background: active
                         ? 'var(--accent-light)'
-                        : '#060e20',
+                        : 'var(--bg-surface-2)',
                       border: active
                         ? '1px solid var(--accent-border)'
                         : '1px solid var(--planning-border-soft)',
@@ -1351,7 +1351,7 @@ export default function Profiel() {
               width: '100%',
               padding: '16px 20px',
               borderRadius: 16,
-              background: '#111a2c',
+              background: 'var(--bg-surface)',
               border: '1px solid var(--planning-border-soft)',
               display: 'flex',
               alignItems: 'center',
@@ -1420,7 +1420,7 @@ export default function Profiel() {
                 width: '100%',
                 padding: '16px 20px',
                 borderRadius: 16,
-                background: '#111a2c',
+                background: 'var(--bg-surface)',
                 border: '1px solid var(--accent-border)',
                 color: 'var(--accent)',
                 fontFamily: 'Hanken Grotesk',
@@ -1450,7 +1450,7 @@ export default function Profiel() {
             width: '100%',
             padding: '16px 20px',
             borderRadius: 16,
-            background: '#111a2c',
+            background: 'var(--bg-surface)',
             border: '1px solid var(--planning-border-soft)',
             marginBottom: 12,
           }}>
