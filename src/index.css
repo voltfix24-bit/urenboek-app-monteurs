@@ -620,7 +620,11 @@ p, h1, h2, h3, span.selectable, input, textarea {
 /* ---- Mobiele verbeteringen (alleen onder lg, desktop blijft ongewijzigd) ---- */
 @media (max-width: 1023px) {
   /* Eigen paginakoppen die niet via MobileHeader lopen: ruimte voor de statusbalk/notch */
-  .mobile-safe-header { padding-top: calc(12px + env(safe-area-inset-top, 20px)) !important; }
+  .mobile-safe-header { padding-top: calc(12px + env(safe-area-inset-top, 0px)) !important; }
+  /* Geïnstalleerde app (zonder browserbalk): altijd genoeg ruimte voor klok/batterij */
+  @media (display-mode: standalone), (display-mode: fullscreen) {
+    .mobile-safe-header { padding-top: max(calc(12px + env(safe-area-inset-top, 0px)), 56px) !important; }
+  }
   /* Pagina's zonder PageShell: ruimte onder de vaste onderbalk */
   .mobile-nav-space { padding-bottom: calc(72px + env(safe-area-inset-bottom, 34px) + 24px) !important; }
   /* Koppen met knoppen mogen afbreken i.p.v. over elkaar vallen */

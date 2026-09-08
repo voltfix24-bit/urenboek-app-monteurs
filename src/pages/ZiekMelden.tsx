@@ -241,7 +241,7 @@ export default function ZiekMelden() {
       paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 96px)",
     }}>
       {/* Header with back button */}
-      <header style={{
+      <header className="mobile-safe-header" style={{
         display: "flex",
         alignItems: "center",
         gap: 14,

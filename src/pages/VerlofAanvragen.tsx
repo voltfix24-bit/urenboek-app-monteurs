@@ -335,7 +335,7 @@ export default function VerlofAanvragen() {
       `}</style>
 
       {/* Header */}
-      <header style={{
+      <header className="mobile-safe-header" style={{
         display: "flex", alignItems: "center", gap: 12, padding: "16px 20px 12px",
       }}>
         <button

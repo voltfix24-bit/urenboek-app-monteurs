@@ -631,7 +631,7 @@ export default function ProjectPlanning() {
   return (
     <div className="min-h-screen" style={{ background: "var(--app-navy)" }}>
       {/* Header */}
-      <header className="sticky top-0 z-40 px-4 py-3 flex items-center gap-3 flex-wrap" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--planning-border-soft)" }}>
+      <header className="sticky top-0 z-40 px-4 py-3 flex items-center gap-3 flex-wrap mobile-safe-header" style={{ background: "color-mix(in srgb, var(--bg-surface) 97%, transparent)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--planning-border-soft)" }}>
         <button onClick={() => navigate("/projecten")} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
           <ArrowLeft className="h-4 w-4" />
         </button>

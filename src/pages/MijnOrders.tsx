@@ -57,7 +57,7 @@ export default function MijnOrders() {
         paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 100px)",
       }}>
         {/* ── HEADER ── */}
-        <header style={{
+        <header className="mobile-safe-header" style={{
           position: 'sticky',
           top: 0, zIndex: 50,
           background: 'color-mix(in srgb, var(--bg-surface) 94%, transparent)',

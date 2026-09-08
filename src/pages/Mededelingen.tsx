@@ -303,7 +303,7 @@ export default function Mededelingen() {
           flexDirection: 'column',
         }}>
           {/* HEADER */}
-          <header style={{
+          <header className="mobile-safe-header" style={{
             position: 'sticky',
             top: 0, zIndex: 50,
             background: 'color-mix(in srgb, var(--bg-surface) 94%, transparent)',
@@ -381,7 +381,7 @@ export default function Mededelingen() {
             flex: 1,
             overflowY: 'auto',
             padding: '16px 20px',
-            paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 120px)",
+            paddingBottom: "calc(env(safe-area-inset-bottom, 34px) + 160px)",
             display: 'flex',
             flexDirection: 'column',
             gap: 4,
@@ -484,7 +484,7 @@ export default function Mededelingen() {
           {/* MESSAGE INPUT */}
           <div style={{
             position: 'fixed',
-            bottom: 72, left: 0, right: 0,
+            bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))', left: 0, right: 0,
             padding: '12px 16px',
             background: 'color-mix(in srgb, var(--bg-surface) 96%, transparent)',
             backdropFilter: 'blur(20px)',
@@ -575,7 +575,7 @@ export default function Mededelingen() {
         flexDirection: 'column',
       }}>
         {/* HEADER */}
-        <header style={{
+        <header className="mobile-safe-header" style={{
           position: 'sticky',
           top: 0, zIndex: 50,
           background: 'color-mix(in srgb, var(--bg-surface) 94%, transparent)',
@@ -742,7 +742,7 @@ export default function Mededelingen() {
           onClick={() => setShowNieuwGesprek(true)}
           style={{
             position: 'fixed',
-            bottom: 100,
+            bottom: 'calc(100px + env(safe-area-inset-bottom, 0px))',
             right: 'max(24px, calc(50% - 215px + 24px))',
             zIndex: 40,
             width: 56, height: 56,
