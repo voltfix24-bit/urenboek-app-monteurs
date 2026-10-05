@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TeamPlanningGrid } from "@/components/TeamPlanningGrid";
 import { PlanningDialog } from "@/components/PlanningDialog";
+import { formatUren } from "@/lib/formatting";
 
 interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; planning_group_id: string | null; }
 interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; planning_partner_ids: string[]; role?: string | null; }
@@ -346,7 +347,8 @@ export default function ManagerPlanning() {
       : s + 9;
     const klokuren = e - s;
     const productief = Math.max(0, klokuren - 1);
-    return Math.round(productief);
+    // Halve-uren-precisie, zodat 07:00–16:30 als 8,5u zichtbaar blijft (pauze 60 min).
+    return Math.round(productief * 2) / 2;
   };
 
   if (!isManager) {
@@ -396,7 +398,7 @@ export default function ManagerPlanning() {
             onToggleExpanded={(id) => setExpandedMedewerker((current) => current === id ? null : id)}
             onOpenCell={openAddModal}
             berekenUren={berekenUren}
-            renderExpanded={(medewerker) => <div className="team-planning-detail-list">{weekDates.map((date) => { const datum = format(date, "yyyy-MM-dd"); const dayEntries = visibleEntries.filter((entry) => entry.medewerker_id === medewerker.id && entry.datum === datum); return <div key={datum} className="team-planning-detail-day"><strong>{format(date, "EEE", { locale: nl })}</strong>{dayEntries.length === 0 ? <span>Niet ingepland</span> : dayEntries.map((entry) => <span key={entry.id}>{projects.find((project) => project.id === entry.project_id)?.naam || "Onbekend project"} · {berekenUren(entry.starttijd, entry.eindtijd)}u</span>)}</div>; })}</div>}
+            renderExpanded={(medewerker) => <div className="team-planning-detail-list">{weekDates.map((date) => { const datum = format(date, "yyyy-MM-dd"); const dayEntries = visibleEntries.filter((entry) => entry.medewerker_id === medewerker.id && entry.datum === datum); return <div key={datum} className="team-planning-detail-day"><strong>{format(date, "EEE", { locale: nl })}</strong>{dayEntries.length === 0 ? <span>Niet ingepland</span> : dayEntries.map((entry) => <span key={entry.id}>{projects.find((project) => project.id === entry.project_id)?.naam || "Onbekend project"} · {formatUren(berekenUren(entry.starttijd, entry.eindtijd))}</span>)}</div>; })}</div>}
           />)}
 
           {planningView === 'klus' && (
@@ -445,7 +447,7 @@ export default function ManagerPlanning() {
                         </p>
                         <div style={{ padding: '4px 14px', borderRadius: 9999, background: 'var(--accent)', display: 'inline-block' }}>
                           <span style={{ fontFamily: 'Hanken Grotesk', fontWeight: 800, fontSize: 16, color: 'var(--on-accent)' }}>
-                            {totalUren}u
+                            {formatUren(totalUren)}
                           </span>
                         </div>
                       </div>
@@ -473,7 +475,7 @@ export default function ManagerPlanning() {
                               </span>
                             </span>
                             <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Hanken Grotesk', color: 'var(--text-secondary)' }}>
-                              {dagTotaal}u totaal
+                              {formatUren(dagTotaal)} totaal
                             </span>
                           </div>
                           {dagEntries.map((entry, ei) => {
@@ -516,7 +518,7 @@ export default function ManagerPlanning() {
                                   border: '1px solid var(--accent-border)',
                                 }}>
                                   <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'Hanken Grotesk', color: 'var(--accent)' }}>
-                                    {uren}u
+                                    {formatUren(uren)}
                                   </span>
                                 </div>
                               </div>

@@ -16,9 +16,14 @@ export function euroDecimals(n: number): string {
 }
 
 // ─── UREN ─────────────────────────────
+// Halve-uren-precisie met Nederlandse decimale komma, dezelfde precisie als de urenberekening bij boekingen.
+export function formatUrenGetal(n: number): string {
+  const halveUren = Math.round(n * 2) / 2;
+  return halveUren.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+}
+
 export function formatUren(n: number): string {
-  if (Number.isInteger(n)) return `${n}u`;
-  return `${n.toFixed(1)}u`;
+  return `${formatUrenGetal(n)}u`;
 }
 
 // ─── DATUMS ───────────────────────────

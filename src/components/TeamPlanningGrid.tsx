@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
+import { formatUren, formatUrenGetal } from "@/lib/formatting";
 
 export interface TeamPlanningEntry {
   id: string;
@@ -144,12 +145,12 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
                         className={`team-planning-cell ${entry ? "is-filled" : "is-empty"} ${afwezigheid ? "is-unavailable" : ""}`}
                         style={color ? { "--cell-project": color } as CSSProperties : undefined}
                         onClick={() => onOpenCell(medewerker.id, datum)}
-                        aria-label={entry ? `${project?.naam || "Planning"}, ${berekenUren(entry.starttijd, entry.eindtijd)} uur, bewerken` : `${medewerker.full_name} op ${format(date, "d MMMM", { locale: nl })} inplannen`}
+                        aria-label={entry ? `${project?.naam || "Planning"}, ${formatUrenGetal(berekenUren(entry.starttijd, entry.eindtijd))} uur, bewerken` : `${medewerker.full_name} op ${format(date, "d MMMM", { locale: nl })} inplannen`}
                       >
                         {afwezigheid && !entry ? (
                           <><AlertTriangle aria-hidden="true" /><span>{afwezigheid.type === "ziek" ? "Ziek" : "Verlof"}</span></>
                         ) : entry ? (
-                          <><strong title={project?.naam || project?.nummer}>{project?.naam || project?.nummer || "Onbekend project"}</strong><span>{berekenUren(entry.starttijd, entry.eindtijd)}u</span></>
+                          <><strong title={project?.naam || project?.nummer}>{project?.naam || project?.nummer || "Onbekend project"}</strong><span>{formatUren(berekenUren(entry.starttijd, entry.eindtijd))}</span></>
                         ) : (
                           <Plus aria-hidden="true" />
                         )}
@@ -157,7 +158,7 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
                     );
                   })}
 
-                  <div className={`team-planning-row-total ${totaal === 0 ? "is-zero" : ""}`} role="cell">{totaal}u</div>
+                  <div className={`team-planning-row-total ${totaal === 0 ? "is-zero" : ""}`} role="cell">{formatUren(totaal)}</div>
                 </div>
                 {expanded && <div className="team-planning-expanded">{renderExpanded(medewerker)}</div>}
               </div>
@@ -168,10 +169,10 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
             <div className="team-planning-name" role="rowheader"><strong>Dagtotaal</strong></div>
             {dagAantallen.map((aantal, index) => (
               <div key={weekDates[index].toISOString()} role="cell">
-                {aantal} {aantal === 1 ? "monteur" : "monteurs"} · {dagUren[index]}u
+                {aantal} {aantal === 1 ? "monteur" : "monteurs"} · {formatUren(dagUren[index])}
               </div>
             ))}
-            <div role="cell"><strong>{weekTotaal}u</strong></div>
+            <div role="cell"><strong>{formatUren(weekTotaal)}</strong></div>
           </div>
         </div>
       </div>

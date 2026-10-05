@@ -3,6 +3,7 @@ import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import terrevoltLogoPng from "@/assets/terrevolt-logo.png";
+import { formatUren, formatUrenGetal } from "@/lib/formatting";
 
 interface PlanningEntry {
   id: string;
@@ -132,7 +133,7 @@ export async function generatePlanningPdf(
   const summaryItems = [
     `${actieveMonteurs} monteurs`,
     `${actieveProjecten} klussen`,
-    `${totaalUren} uur totaal`,
+    `${formatUrenGetal(totaalUren)} uur totaal`,
   ];
   const colW = (pageW - ml - mr) / 3;
   summaryItems.forEach((item, i) => {
@@ -204,7 +205,7 @@ export async function generatePlanningPdf(
           ei === 0 ? `${DAGEN[di]} ${format(date, "d MMM", { locale: nl })}` : "",
           monteur?.full_name || "Onbekend",
           tijden,
-          `${uren}u`,
+          `${formatUren(uren)}`,
         ]);
       });
 
@@ -212,7 +213,7 @@ export async function generatePlanningPdf(
         (sum, e) => sum + berekenUren(e.starttijd, e.eindtijd),
         0
       );
-      tableRows.push(["", "", "Dag totaal:", `${dagTotaal}u`]);
+      tableRows.push(["", "", "Dag totaal:", `${formatUren(dagTotaal)}`]);
     });
 
     autoTable(doc, {
@@ -407,7 +408,7 @@ export async function generatePersoneelsPdf(
           project?.naam || project?.nummer || "—",
           adres,
           tijden,
-          `${uren}u`,
+          `${formatUren(uren)}`,
         ]);
       });
     });
@@ -453,7 +454,7 @@ export async function generatePersoneelsPdf(
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...groen);
     doc.text("Week totaal", ml + 4, finalY + 10.5);
-    doc.text(`${weekTotaal} uur`, pageW - mr - 4, finalY + 10.5, { align: "right" });
+    doc.text(`${formatUrenGetal(weekTotaal)} uur`, pageW - mr - 4, finalY + 10.5, { align: "right" });
 
     // Footer
     doc.setFontSize(7);

@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { volledigAdres } from "@/lib/utils";
+import { formatUren, formatUrenGetal } from "@/lib/formatting";
 
 interface Project { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
 interface Medewerker { id: string; full_name: string; }
@@ -87,8 +88,8 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
   const einde = /^\d{2}:\d{2}$/.test(form.eindtijd) ? Number(form.eindtijd.slice(0, 2)) * 60 + Number(form.eindtijd.slice(3)) : NaN;
   const timeError = Number.isFinite(start) && Number.isFinite(einde) && einde <= start ? "Eindtijd moet na de starttijd liggen." : "";
   const brutoMinuten = Number.isFinite(start) && Number.isFinite(einde) && einde > start ? einde - start : 0;
-  // Vaste pauze; identiek aan de urenberekening in het weekraster en de PDF.
-  const nettoUren = Math.round(Math.max(0, brutoMinuten - PAUZE_MINUTEN) / 60);
+  // Vaste pauze; identiek aan de urenberekening in het weekraster en de PDF, inclusief halve uren.
+  const nettoUren = Math.max(0, brutoMinuten - PAUZE_MINUTEN) / 60;
 
   const selectProject = (project: Project) => {
     onFormChange({ ...form, project_id: project.id });
@@ -155,7 +156,7 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
             </div>
             <div className="planning-presets">{PRESETS.map(([starttijd, eindtijd]) => <Button key={starttijd} type="button" variant="outline" onClick={() => onFormChange({ ...form, starttijd, eindtijd })}>{starttijd} – {eindtijd}</Button>)}</div>
           </div>
-          <div className="planning-hours" id="planning-break-hint"><span>{brutoMinuten / 60 || 0} uur, min {PAUZE_MINUTEN} min vaste pauze</span><strong>{nettoUren}u</strong></div>
+          <div className="planning-hours" id="planning-break-hint"><span>{formatUrenGetal(brutoMinuten / 60)} uur, min {PAUZE_MINUTEN} min vaste pauze</span><strong>{formatUren(nettoUren)}</strong></div>
 
           <div className="planning-field-group"><label htmlFor="planning-note">Notitie</label><input id="planning-note" className="planning-note" value={form.notitie} onChange={(event) => onFormChange({ ...form, notitie: event.target.value })} placeholder="Optioneel" /></div>
 
