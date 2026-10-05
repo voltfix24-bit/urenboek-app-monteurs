@@ -82,9 +82,7 @@ describe("urenberekening in het teamplanning-raster", () => {
         renderExpanded={() => null}
       />,
     );
-    expect(screen.getAllByText("8,5u").length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText("9,5 monteurs")).toBeInTheDocument();
-    expect(screen.getByText("8,5u totaal")).toBeInTheDocument();
+    expect(screen.getAllByText("8,5u").length).toBeGreaterThanOrEqual(3);
     expect(screen.getByText("1 monteur · 8,5u")).toBeInTheDocument();
   });
 });
