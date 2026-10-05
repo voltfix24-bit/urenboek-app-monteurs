@@ -57,8 +57,11 @@ describe("urenberekening in de inplanmodal", () => {
     expect(screen.queryByText("9u")).not.toBeInTheDocument();
   });
 
-  it("toont 8,5u voor 07:30–16:30 en 8u voor de standaard 07:00–16:00", () => {
+  it("toont 8u voor 07:30–16:30 en 8,5u voor 07:30–17:00", () => {
     const { unmount } = renderDialog("07:30", "16:30");
+    expect(screen.getByText("8u")).toBeInTheDocument();
+    unmount();
+    renderDialog("07:30", "17:00");
     expect(screen.getByText("8,5u")).toBeInTheDocument();
     unmount();
     renderDialog("07:00", "16:00");
