@@ -253,7 +253,6 @@ export default function ProjectPlanning() {
     // `planning`. Inplannen loopt uitsluitend via de weekplanning
     // (planning_concept → publiceer_planning). Zo kan de matrix nooit meer
     // bestaande planning wissen of overschrijven.
-    const toInsert: unknown[] = [];
     void splitsKandidatenOpExternePlannerBotsing;
     void externePlannerRegels;
     void dateFromWeek;
