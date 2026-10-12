@@ -249,87 +249,14 @@ export default function ProjectPlanning() {
       definitief_door: myProfileId.current,
     }, { onConflict: "project_id" });
 
-    // Verwijder alleen handmatige/interne planningregels voor dit project.
-    // Externe Planner-regels (external_source = 'terrevolt_planner') én regels
-    // met sync_locked = true worden beheerd door de Planner-sync en mogen niet
-    // door publiceren verloren gaan.
-    await supabase
-      .from("planning")
-      .delete()
-      .eq("project_id", projectId)
-      .is("external_source", null)
-      .or("sync_locked.is.null,sync_locked.eq.false");
-
-    // Build monteur-per-datum map for collega_ids
-    const monteurPerDatum = new Map<string, string[]>();
-    const cellEntries: { key: string; cell: CellData; datumStr: string; actIdx: number; weekIdx: number }[] = [];
-    for (const [key, cell] of Object.entries(state.cells)) {
-      if (!cell.medewerker_id) continue;
-      const [actIdx, weekIdx, dayIdx] = key.split("-").map(Number);
-      const weekNr = state.weekNrs[weekIdx];
-      if (weekNr === undefined) continue;
-      const datum = dateFromWeek(state.year, weekNr, dayIdx);
-      const datumStr = format(datum, "yyyy-MM-dd");
-      cellEntries.push({ key, cell, datumStr, actIdx, weekIdx });
-
-      const existing = monteurPerDatum.get(datumStr) || [];
-      if (!existing.includes(cell.medewerker_id)) {
-        existing.push(cell.medewerker_id);
-      }
-      monteurPerDatum.set(datumStr, existing);
-    }
-
-    // Deduplicate by medewerker_id + datum (keep first activity found)
-    const seen = new Set<string>();
-    const unique = cellEntries.filter(e => {
-      const k = `${e.cell.medewerker_id}-${e.datumStr}`;
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
-
-    const kandidaten = unique.map(r => {
-      const activiteitNaam = state.activities[r.actIdx] || "";
-      const activiteitKleur = r.cell.color || "";
-      const weekKey = `${state.weekNrs[r.weekIdx]}`;
-      const weekOpm = state.weekComments?.[weekKey] || null;
-      const alleDagMonteurs = monteurPerDatum.get(r.datumStr) || [];
-      const collega_ids = alleDagMonteurs.filter(id => id !== r.cell.medewerker_id);
-
-      return {
-        medewerker_id: r.cell.medewerker_id!,
-        project_id: projectId,
-        datum: r.datumStr,
-        starttijd: "07:00",
-        eindtijd: "16:00",
-        notitie: r.cell.note || "",
-        activiteit: activiteitNaam || null,
-        activiteit_kleur: activiteitKleur || null,
-        collega_ids: collega_ids.length > 0 ? collega_ids : null,
-        week_opmerking: weekOpm,
-        created_by: myProfileId.current || r.cell.medewerker_id!,
-      };
-    });
-
-    // Filter kandidaten die zouden botsen met een bestaande externe Planner-regel.
-    const { toInsert, geblokkeerd } = splitsKandidatenOpExternePlannerBotsing(
-      kandidaten,
-      externePlannerRegels,
-    );
-
-    if (toInsert.length > 0) {
-      await supabase.from("planning").insert(toInsert as any);
-    }
-
-    if (geblokkeerd.length > 0) {
-      const monteurNamen = new Set(
-        geblokkeerd.map(g => monteurMap.get(g.medewerker_id)?.full_name ?? "Onbekend"),
-      );
-      toast.warning(
-        `${geblokkeerd.length} interne planningregel(s) overgeslagen — er bestaat al een Planner-regel voor ${Array.from(monteurNamen).join(", ")}.`,
-        { duration: 8000 },
-      );
-    }
+    // De projectmatrix is onschadelijk gemaakt: hij schrijft niet meer naar
+    // `planning`. Inplannen loopt uitsluitend via de weekplanning
+    // (planning_concept → publiceer_planning). Zo kan de matrix nooit meer
+    // bestaande planning wissen of overschrijven.
+    const toInsert: unknown[] = [];
+    void splitsKandidatenOpExternePlannerBotsing;
+    void externePlannerRegels;
+    void dateFromWeek;
 
     // Auto-update project status to 'in_uitvoering' if currently 'gepland'
     if (project) {
@@ -350,14 +277,7 @@ export default function ProjectPlanning() {
 
   const makeConcept = async () => {
     if (!projectId) return;
-    // Alleen handmatige/interne planningregels opruimen — externe Planner-regels
-    // en sync_locked-regels blijven beschermd.
-    await supabase
-      .from("planning")
-      .delete()
-      .eq("project_id", projectId)
-      .is("external_source", null)
-      .or("sync_locked.is.null,sync_locked.eq.false");
+    // Matrix wist geen planning meer; alleen de matrixstatus gaat terug.
     await supabase.from("project_planning_status").upsert({
       project_id: projectId,
       is_definitief: false,
