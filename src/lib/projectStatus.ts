@@ -1,52 +1,11 @@
+/** Eén levenscyclus van 6 fasen. Kleuren komen uit CSS-variabelen (--fase-*). */
 export const STATUS_CONFIG = {
-  nieuw: {
-    label: 'Nieuw',
-    kleur: '#374151',
-    bg: '#f3f4f6',
-    border: '#d1d5db',
-    icoon: '📋',
-    volgorde: 1,
-  },
-  gepland: {
-    label: 'Gepland',
-    kleur: '#1e40af',
-    bg: '#dbeafe',
-    border: '#93c5fd',
-    icoon: '📅',
-    volgorde: 2,
-  },
-  in_uitvoering: {
-    label: 'In uitvoering',
-    kleur: '#854d0e',
-    bg: '#fef3c7',
-    border: '#fcd34d',
-    icoon: '⚡',
-    volgorde: 3,
-  },
-  opgeleverd: {
-    label: 'Opgeleverd',
-    kleur: '#064e3b',
-    bg: '#d1fae5',
-    border: '#6ee7b7',
-    icoon: '✓',
-    volgorde: 4,
-  },
-  gefactureerd: {
-    label: 'Gefactureerd',
-    kleur: '#064e3b',
-    bg: '#d1fae5',
-    border: '#6ee7b7',
-    icoon: '💶',
-    volgorde: 5,
-  },
-  gesloten: {
-    label: 'Gesloten',
-    kleur: '#4b5563',
-    bg: '#e5e7eb',
-    border: '#9ca3af',
-    icoon: '🔒',
-    volgorde: 6,
-  },
+  nieuw: { label: 'Nieuw', kleur: 'var(--fase-nieuw-text)', bg: 'var(--fase-nieuw-bg)', dot: 'var(--fase-nieuw-dot)', volgorde: 1 },
+  gepland: { label: 'Gepland', kleur: 'var(--fase-gepland-text)', bg: 'var(--fase-gepland-bg)', dot: 'var(--fase-gepland-dot)', volgorde: 2 },
+  in_uitvoering: { label: 'In uitvoering', kleur: 'var(--fase-uitvoering-text)', bg: 'var(--fase-uitvoering-bg)', dot: 'var(--fase-uitvoering-dot)', volgorde: 3 },
+  opgeleverd: { label: 'Opgeleverd', kleur: 'var(--fase-opgeleverd-text)', bg: 'var(--fase-opgeleverd-bg)', dot: 'var(--fase-opgeleverd-dot)', volgorde: 4 },
+  gefactureerd: { label: 'Gefactureerd', kleur: 'var(--fase-gefactureerd-text)', bg: 'var(--fase-gefactureerd-bg)', dot: 'var(--fase-gefactureerd-dot)', volgorde: 5 },
+  gesloten: { label: 'Gesloten', kleur: 'var(--fase-gesloten-text)', bg: 'var(--fase-gesloten-bg)', dot: 'var(--fase-gesloten-dot)', volgorde: 6 },
 } as const;
 
 
@@ -65,6 +24,18 @@ export const STATUS_TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
   gefactureerd: ['gesloten'],
   gesloten: ['nieuw'],
 };
+
+/** Volgende fase in de levenscyclus, als die overgang is toegestaan. */
+export function volgendeFase(huidig: ProjectStatus): ProjectStatus | null {
+  const i = STATUS_VOLGORDE.indexOf(huidig);
+  const next = STATUS_VOLGORDE[i + 1];
+  return next && STATUS_TRANSITIONS[huidig].includes(next) ? next : null;
+}
+
+/** Fasen waarnaar je terug kunt zetten (toegestaan én eerder in de cyclus, of heropenen vanuit gesloten). */
+export function terugzetFasen(huidig: ProjectStatus): ProjectStatus[] {
+  return STATUS_TRANSITIONS[huidig].filter((t) => STATUS_CONFIG[t].volgorde < STATUS_CONFIG[huidig].volgorde);
+}
 
 export function bepaalAutoStatus(
   huidig: ProjectStatus,

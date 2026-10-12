@@ -134,6 +134,14 @@ export default function DesktopWeekPlanning() {
     try { await fn(); } catch (err) { console.error(err); toast.error("Er ging iets mis. Probeer opnieuw."); } finally { setBusy(false); refetch(); }
   };
 
+  /** Project met fase "nieuw" gaat naar "gepland" zodra er een concept of planning voor bestaat. */
+  const markeerGepland = async (projectIds: string[]) => {
+    const ids = Array.from(new Set(projectIds));
+    if (!ids.length || !profileId) return;
+    await supabase.from("projects").update({ status: "gepland", status_gewijzigd_op: new Date().toISOString(), status_gewijzigd_door: profileId })
+      .in("id", ids).eq("status", "nieuw");
+  };
+
   const plan = (medIds: string[], doelDatums: string[], notitie: string) => run(async () => {
     if (!profileId || !barProject) return;
     const { doelen, overgeslagen } = bepaalDoelen(medIds, doelDatums, cellen, medewerkers, beschikbaarheid);
@@ -153,6 +161,7 @@ export default function DesktopWeekPlanning() {
       ids = (data ?? []).map((r) => r.id);
     }
     bewaarRecent(barProject);
+    await markeerGepland([barProject]);
     setSel(null);
     const tabel = conceptModus ? "planning_concept" : "planning";
     toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingepland op ${projectNaam}${conceptModus ? " (concept)" : ""}`, {
@@ -263,6 +272,7 @@ export default function DesktopWeekPlanning() {
         ? await supabase.from("planning_concept").insert(rows.map((r) => ({ ...r, actie: "nieuw" as const })))
         : await supabase.from("planning").insert(rows);
       if (insErr) throw insErr;
+      await markeerGepland(rows.map((r) => r.project_id));
     }
     toast.success(`${rows.length} ${rows.length === 1 ? "dag" : "dagen"} gekopieerd uit week ${getISOWeek(vorige)}${conceptModus ? " (concept)" : ""}${overgeslagen ? ` · ${overgeslagen} overgeslagen` : ""}`);
   });

@@ -1,30 +1,32 @@
 import { useState } from "react";
-import { Pencil, X, Trash2, Download, Lock, Phone, Mail, MapPin, Zap, AlertTriangle } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { format, getISOWeek, getISOWeekYear } from "date-fns";
+import { nl } from "date-fns/locale";
+import { Check, Lock, Mail, MapPin, MoreHorizontal, Phone, X } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { volledigAdres } from "@/lib/utils";
-import { CaseTypeBadge } from "./CaseTypeBadge";
 import { generateProjectPdf } from "./projectPdf";
 import { ForecastTab } from "@/components/ForecastTab";
-import { PlanningStatusTab } from "@/components/PlanningStatusTab";
 import { StatusBadge } from "@/components/StatusBadge";
-import { STATUS_TRANSITIONS, type ProjectStatus } from "@/lib/projectStatus";
+import { STATUS_CONFIG, STATUS_VOLGORDE, STATUS_TRANSITIONS, terugzetFasen, volgendeFase, type ProjectStatus } from "@/lib/projectStatus";
+import { projectChecklist, type ChecklistKey } from "@/lib/projectChecklist";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useProjectInzet } from "@/hooks/useProjectInzet";
+import { berekenUren } from "@/lib/weekPlanning";
+import { formatUren } from "@/lib/formatting";
 
-function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "128px 1fr", alignItems: "baseline", gap: 12 }}>
-      <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{label}</span>
-      <span style={{ fontSize: 13, color: "var(--text-primary)", minWidth: 0 }}>{children}</span>
-    </div>
-  );
-}
+const initialen = (n: string) => n.split(" ").filter(Boolean).map((d) => d[0]).slice(0, 2).join("").toUpperCase();
+const isoWeek = (datum: string) => { const d = new Date(`${datum}T12:00:00`); return `${getISOWeekYear(d)}-W${String(getISOWeek(d)).padStart(2, "0")}`; };
 
 interface Props {
   project: any;
   ogNaam: string | null;
   isManager: boolean;
+  zietFinancien: boolean;
   confirmDeleteId: string | null;
   onEdit: () => void;
   onToggle: () => void;
@@ -34,269 +36,239 @@ interface Props {
   onStartIntake: () => void;
 }
 
-export function DesktopProjectDetail({ project, ogNaam, isManager, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate, onStartIntake }: Props) {
-  const [activeTab, setActiveTab] = useState<"info" | "forecast" | "planning">("info");
-  const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const { user } = useAuth();
+type Tab = "overzicht" | "forecast" | "planning";
+
+export function DesktopProjectDetail({ project, ogNaam, isManager, zietFinancien, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate, onStartIntake }: Props) {
+  const [params, setParams] = useSearchParams();
   const { profileId } = useProfile();
-  const tabs = [
-    { key: "info" as const, label: "Projectinfo" },
-    ...(isManager ? [{ key: "forecast" as const, label: "Forecast" }] : []),
-    { key: "planning" as const, label: "Planning" },
-  ];
+  const inzet = useProjectInzet(project.id);
+  const [busy, setBusy] = useState(false);
 
-  const currentStatus = (project.status || "nieuw") as ProjectStatus;
-  const transitions = STATUS_TRANSITIONS[currentStatus] || [];
+  const tabParam = params.get("tab");
+  const tab: Tab = tabParam === "forecast" && zietFinancien ? "forecast" : tabParam === "planning" ? "planning" : "overzicht";
+  const setTab = (t: Tab) => {
+    const next = new URLSearchParams(params);
+    next.set("focus", project.id);
+    if (t === "overzicht") next.delete("tab"); else next.set("tab", t);
+    setParams(next, { replace: true });
+  };
+
+  const status = (project.status || "nieuw") as ProjectStatus;
+  const checklist = projectChecklist(project);
+  const checklistKlaar = checklist.every((c) => c.klaar);
   const adres = volledigAdres(project);
+  const huidigJaar = new Date().getFullYear();
 
-  const changeStatus = async (newStatus: ProjectStatus) => {
-    const { error } = await supabase.from("projects").update({
-      status: newStatus,
-      status_gewijzigd_op: new Date().toISOString(),
-      status_gewijzigd_door: profileId,
-    } as any).eq("id", project.id);
-    if (error) { toast.error("Fout bij statuswijziging"); return; }
-    toast.success(`Status gewijzigd naar ${newStatus.replace(/_/g, " ")}`);
-    setShowStatusMenu(false);
-    // Trigger refetch via parent
+  const changeStatus = async (nieuw: ProjectStatus) => {
+    if (!STATUS_TRANSITIONS[status].includes(nieuw)) return;
+    setBusy(true);
+    const { error } = await supabase.from("projects").update({ status: nieuw, status_gewijzigd_op: new Date().toISOString(), status_gewijzigd_door: profileId }).eq("id", project.id);
+    setBusy(false);
+    if (error) { toast.error("Fase wijzigen mislukt"); return; }
+    toast.success(`Fase gewijzigd naar ${STATUS_CONFIG[nieuw].label.toLowerCase()}`);
     window.dispatchEvent(new CustomEvent("project-status-changed"));
   };
 
+  const zetJaar = async () => {
+    const { error } = await supabase.from("projects").update({ projectjaar: huidigJaar }).eq("id", project.id);
+    if (error) { toast.error("Opslaan mislukt"); return; }
+    toast.success(`Projectjaar op ${huidigJaar} gezet`);
+    window.dispatchEvent(new CustomEvent("project-status-changed"));
+  };
+
+  const planningUrl = (datum?: string | null) => `/manager-planning?project=${project.id}${datum ? `&week=${isoWeek(datum)}` : ""}`;
+
+  // Volgende actie per fase
+  const volgende = volgendeFase(status);
+  let actie: { label: string; onClick: () => void; blocked?: string } | null = null;
+  if (status === "nieuw") actie = { label: "Planning maken →", onClick: () => navigate(planningUrl()), blocked: checklistKlaar ? undefined : "Rond eerst de checklist af" };
+  else if (status === "gepland") actie = { label: "Planning publiceren →", onClick: () => navigate(planningUrl(inzet.eersteConceptDatum ?? inzet.eersteDatum)) };
+  else if (status === "in_uitvoering" && volgende) actie = { label: "Markeer als opgeleverd", onClick: () => changeStatus("opgeleverd") };
+  else if (status === "opgeleverd" && volgende) actie = { label: "Markeer als gefactureerd", onClick: () => changeStatus("gefactureerd") };
+  else if (status === "gefactureerd" && volgende) actie = { label: "Project sluiten", onClick: () => changeStatus("gesloten") };
+
+  const checkActie: Record<ChecklistKey, { label: string; onClick: () => void }> = {
+    adres: { label: "Invullen", onClick: onEdit },
+    projectjaar: { label: `Zet op ${huidigJaar}`, onClick: zetJaar },
+    opdrachtgever: { label: "Kiezen", onClick: onEdit },
+    intake: { label: "Intake starten", onClick: onStartIntake },
+  };
+
+  const huidigeIndex = STATUS_VOLGORDE.indexOf(status);
+  const faseNotitie = project.status_gewijzigd_op
+    ? `${STATUS_CONFIG[status].label} sinds ${format(new Date(project.status_gewijzigd_op), "d MMM yyyy", { locale: nl })}.`
+    : `Huidige fase: ${STATUS_CONFIG[status].label.toLowerCase()}.`;
+
+  const perMedewerker = Array.from(inzet.actief.reduce((m, c) => {
+    const cur = m.get(c.medewerker_id) ?? { dagen: 0, uren: 0, concept: false };
+    cur.dagen++; cur.uren += berekenUren(c.starttijd, c.eindtijd); cur.concept ||= c.status !== "pub";
+    return m.set(c.medewerker_id, cur);
+  }, new Map<string, { dagen: number; uren: number; concept: boolean }>()).entries());
+
+  const actieKnop = actie && (actie.blocked ? (
+    <Tooltip>
+      <TooltipTrigger asChild><span tabIndex={0}><Button className="pj-btn-next is-blocked" disabled>{actie.label}</Button></span></TooltipTrigger>
+      <TooltipContent>{actie.blocked}</TooltipContent>
+    </Tooltip>
+  ) : <Button className="pj-btn-next" disabled={busy} onClick={actie.onClick}>{actie.label}</Button>);
+
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div style={{ minWidth: 0 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 500, color: "var(--text-primary)" }}>{project.naam}</h2>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
-            {project.nummer}{ogNaam ? ` · ${ogNaam}` : ""}
-          </p>
-          <div className="flex items-center gap-2" style={{ marginTop: 8 }}>
-            <span
-              className="px-2.5 py-0.5 rounded-full"
-              style={{
-                fontSize: 12,
-                fontWeight: 500,
-                background: project.active ? "var(--accent-light)" : "var(--bg-surface-2)",
-                color: project.active ? "var(--accent)" : "var(--text-muted)",
-              }}
-            >
-              {project.active ? "Actief" : "Inactief"}
-            </span>
-            <div className="relative">
-              <StatusBadge status={currentStatus} size="md" onClick={isManager ? () => setShowStatusMenu(!showStatusMenu) : undefined} />
-              {showStatusMenu && transitions.length > 0 && (
-                <div className="absolute top-full left-0 mt-1 z-50 rounded-xl p-1.5 min-w-[160px] shadow-lg" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
-                  {transitions.map(t => (
-                    <button key={t} onClick={() => changeStatus(t)} className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium hover:opacity-80 transition-opacity" style={{ color: "var(--text-primary)" }}>
-                      <StatusBadge status={t} size="sm" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+    <div className="pj-detail-inner">
+      <div className="pj-kop">
+        <div className="min-w-0">
+          <code>{[project.nummer, project.case_type, project.stationsnaam].filter(Boolean).join(" · ")}</code>
+          <h2>{project.naam}</h2>
+          <p>{[ogNaam, project.stad, !project.active ? "Gearchiveerd" : null].filter(Boolean).join(" · ") || "—"}</p>
+        </div>
+        {isManager && (
+          <div className="pj-actions">
+            <Button variant="outline" onClick={onEdit}>Bewerken</Button>
+            {actieKnop}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Meer acties"><MoreHorizontal size={18} /></Button></DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onSelect={() => generateProjectPdf(project, ogNaam, isManager)}>PDF downloaden</DropdownMenuItem>
+                {terugzetFasen(status).length > 0 && (
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Fase terugzetten</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {terugzetFasen(status).map((f) => <DropdownMenuItem key={f} onSelect={() => changeStatus(f)}>{STATUS_CONFIG[f].label}</DropdownMenuItem>)}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                )}
+                <DropdownMenuItem onSelect={onToggle}>{project.active ? "Archiveren" : "Terugzetten uit archief"}</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled={inzet.heeftData} onSelect={onDelete} style={{ color: "var(--danger)" }}>
+                  <span className="flex flex-col">
+                    Verwijderen
+                    {inzet.heeftData && <span className="text-xs" style={{ color: "var(--text-muted)" }}>Kan niet: project heeft planning, uren of orders. Archiveer het.</span>}
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => generateProjectPdf(project, ogNaam, isManager)}
-            aria-label="Project als PDF downloaden"
-            title="PDF downloaden"
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}
-          >
-            <Download className="h-4 w-4" />
-          </button>
-          <button
-            onClick={onEdit}
-            className="px-3 h-8 rounded-lg text-[13px] font-medium flex items-center gap-1.5"
-            style={{ border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}
-          >
-            <Pencil className="h-3.5 w-3.5" /> Bewerken
-          </button>
-        </div>
+        )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-0" style={{ borderBottom: "1px solid var(--planning-border-soft)", marginTop: 20 }}>
-        {tabs.map(t => (
-          <button key={t.key} onClick={() => setActiveTab(t.key)} className="px-4 py-2 text-sm transition-colors" style={{
-            color: activeTab === t.key ? "var(--text-primary)" : "var(--text-muted)",
-            fontWeight: activeTab === t.key ? 500 : 400,
-            borderBottom: activeTab === t.key ? "2px solid var(--accent)" : "2px solid transparent",
-            marginBottom: -1,
-          }}>
-            {t.label}
+      <div className="pj-steps" aria-label="Projectfase">
+        <div className="pj-steps-row">
+          {STATUS_VOLGORDE.map((s, i) => (
+            <div key={s} className={`pj-step ${i < huidigeIndex ? "is-past" : i === huidigeIndex ? "is-current" : ""}`} aria-current={i === huidigeIndex ? "step" : undefined}>
+              <span /><p>{STATUS_CONFIG[s].label}</p>
+            </div>
+          ))}
+        </div>
+        <p className="pj-step-note">{faseNotitie}</p>
+      </div>
+
+      <div className="pj-tabs" role="tablist">
+        {(["overzicht", ...(zietFinancien ? ["forecast"] : []), "planning"] as Tab[]).map((t) => (
+          <button key={t} role="tab" type="button" className="pj-tab" aria-selected={tab === t} onClick={() => setTab(t)}>
+            {t === "overzicht" ? "Overzicht" : t === "forecast" ? "Forecast" : "Planning"}
           </button>
         ))}
       </div>
 
-      {activeTab === "info" && (
-        <div className="space-y-5" style={{ paddingTop: 20 }}>
-          {/* Veldenlijst */}
-          <div style={{ display: "grid", rowGap: 10 }}>
-            <DetailRow label="Casenummer">
-              <span className="font-mono">{project.nummer}</span>
-            </DetailRow>
-            {project.case_type && (
-              <DetailRow label="Case type">
-                <CaseTypeBadge type={project.case_type} />
-              </DetailRow>
-            )}
-            {ogNaam && <DetailRow label="Opdrachtgever">{ogNaam}</DetailRow>}
-            {project.stationsnaam && <DetailRow label="Stationsnaam">{project.stationsnaam}</DetailRow>}
-            {adres && (
-              <DetailRow label="Adres">
-                <span>{adres}</span>
-                <a
-                  href={`https://maps.google.com/?q=${encodeURIComponent(adres)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1"
-                  style={{ color: "var(--accent)", marginLeft: 8, fontSize: 13 }}
-                >
-                  <MapPin className="h-3 w-3" /> Kaart ↗
-                </a>
-              </DetailRow>
-            )}
-            <DetailRow label="Jaartal">
-              {project.projectjaar != null ? (
-                project.projectjaar
-              ) : (
-                <span className="inline-flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
-                  <AlertTriangle className="h-3.5 w-3.5" /> Niet ingevuld
-                </span>
-              )}
-            </DetailRow>
-          </div>
-
-          {/* Forecast-melding */}
-          {isManager && !project.intake_gedaan && (
-            <div className="rounded-xl p-3 flex items-center justify-between" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4" style={{ color: "var(--warn-text)" }} />
-                <span className="text-xs font-medium" style={{ color: "var(--warn-text)" }}>Forecast intake nog niet gedaan</span>
+      {tab === "overzicht" && (
+        <div className="pj-grid">
+          <section className="pj-card">
+            <h3>Klaar voor uitvoering</h3>
+            {checklist.map((c) => (
+              <div key={c.key} className="pj-check">
+                <span className={`pj-check-icon ${c.klaar ? "is-done" : "is-open"}`} aria-hidden="true">{c.klaar ? <Check size={14} /> : "!"}</span>
+                <span className="flex-1">{c.label}</span>
+                {!c.klaar && isManager && <Button size="sm" variant="outline" onClick={checkActie[c.key].onClick}>{checkActie[c.key].label}</Button>}
+                {c.klaar && c.key === "intake" && isManager && <button type="button" className="text-xs" style={{ color: "var(--text-muted)" }} onClick={onStartIntake}>Opnieuw doen</button>}
               </div>
-              <button
-                onClick={onStartIntake}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                style={{ background: "transparent", border: "1px solid var(--warn-border)", color: "var(--warn-text)" }}
-              >
-                Intake starten →
-              </button>
-            </div>
-          )}
-          {isManager && project.intake_gedaan && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>✓ Intake voltooid</span>
-              <button onClick={onStartIntake} className="text-[11px]" style={{ color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>Opnieuw doen</button>
-            </div>
-          )}
+            ))}
+          </section>
 
-          {/* Contactpersoon */}
-          {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
-            <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-              <p className="text-xs font-medium flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
-                <Lock className="h-3 w-3" /> Contactpersoon opdrachtgever
-              </p>
-              <div className="grid grid-cols-3 gap-4">
-                {project.contactpersoon_naam && (
-                  <div>
-                    <p className="text-[11px] mb-0.5" style={{ color: "var(--warn-text)" }}>Naam</p>
-                    <p className="text-sm" style={{ color: "var(--text-primary)" }}>{project.contactpersoon_naam}</p>
-                  </div>
-                )}
-                {project.contactpersoon_tel && (
-                  <div>
-                    <p className="text-[11px] mb-0.5" style={{ color: "var(--warn-text)" }}>Telefoon</p>
-                    <a href={`tel:${project.contactpersoon_tel}`} className="text-sm flex items-center gap-1" style={{ color: "var(--accent)" }}>
-                      <Phone className="h-3 w-3" /> {project.contactpersoon_tel}
-                    </a>
-                  </div>
-                )}
-                {project.contactpersoon_email && (
-                  <div>
-                    <p className="text-[11px] mb-0.5" style={{ color: "var(--warn-text)" }}>Email</p>
-                    <a href={`mailto:${project.contactpersoon_email}`} className="text-sm flex items-center gap-1" style={{ color: "var(--accent)" }}>
-                      <Mail className="h-3 w-3" /> {project.contactpersoon_email}
-                    </a>
-                  </div>
-                )}
+          <section className="pj-card">
+            <h3>Gegevens</h3>
+            <dl className="pj-fields">
+              <dt>Casenummer</dt><dd className="pj-mono" style={{ fontSize: 14 }}>{project.nummer}</dd>
+              <dt>Case type</dt><dd>{project.case_type || "—"}</dd>
+              <dt>Opdrachtgever</dt><dd>{ogNaam || "—"}</dd>
+              <dt>Stationsnaam</dt><dd>{project.stationsnaam || "—"}</dd>
+              <dt>Adres</dt>
+              <dd>{adres || "—"}{adres && <a href={`https://maps.google.com/?q=${encodeURIComponent(adres)}`} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center gap-1 text-[13px]" style={{ color: "var(--accent-dark)" }}><MapPin className="h-3 w-3" />Kaart</a>}</dd>
+              <dt>Projectjaar</dt><dd>{project.projectjaar ?? "—"}</dd>
+            </dl>
+            {isManager && (project.contactpersoon_naam || project.contactpersoon_tel || project.contactpersoon_email) && (
+              <div className="pj-contact">
+                <p><Lock size={12} aria-hidden="true" />Contactpersoon · alleen managers</p>
+                {project.contactpersoon_naam && <p className="font-semibold">{project.contactpersoon_naam}</p>}
+                {project.contactpersoon_tel && <a href={`tel:${project.contactpersoon_tel}`} className="flex items-center gap-1.5 text-[13px]" style={{ color: "var(--accent-dark)" }}><Phone className="h-3 w-3" />{project.contactpersoon_tel}</a>}
+                {project.contactpersoon_email && <a href={`mailto:${project.contactpersoon_email}`} className="flex items-center gap-1.5 text-[13px]" style={{ color: "var(--accent-dark)" }}><Mail className="h-3 w-3" />{project.contactpersoon_email}</a>}
               </div>
+            )}
+          </section>
+
+          <section className="pj-card is-wide">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="!mb-0">Komende inzet</h3>
+              <Button variant="outline" size="sm" onClick={() => navigate(planningUrl(inzet.eersteDatum))}>Planning openen →</Button>
             </div>
-          )}
-
-          {/* Voetbalk */}
-          <div
-            className="flex items-center justify-between rounded-xl px-4 py-3"
-            style={{ background: "var(--bg-surface-2)", borderTop: "1px solid var(--planning-border-soft)" }}
-          >
-            <button
-              onClick={onToggle}
-              className="text-[13px] font-medium"
-              style={{ color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}
-            >
-              {project.active ? "Deactiveren" : "Activeren"}
-            </button>
-            <button
-              onClick={onDelete}
-              className="text-[13px] font-medium flex items-center gap-1.5"
-              style={{ color: "var(--danger)", background: "none", border: "none", cursor: "pointer" }}
-            >
-              <Trash2 className="h-3.5 w-3.5" /> Verwijderen
-            </button>
-          </div>
+            {inzet.loading ? <p className="wp-hint">Laden…</p> : inzet.inzet.length === 0 ? <p className="wp-hint">Nog niemand ingepland.</p> : inzet.inzet.slice(0, 8).map((c) => {
+              const naam = inzet.medewerkers.get(c.medewerker_id)?.full_name ?? "Onbekend";
+              return (
+                <div key={`${c.medewerker_id}-${c.datum}`} className="pj-inzet">
+                  <span>{format(new Date(`${c.datum}T12:00:00`), "EEEEEE d MMM", { locale: nl })}</span>
+                  <span className="min-w-0 flex-1 truncate" style={c.status === "verwijderd" ? { textDecoration: "line-through", color: "var(--text-muted)" } : undefined}>{c.activiteit || c.notitie || `${c.starttijd}–${c.eindtijd}`}</span>
+                  {c.status !== "pub" && <span className="pj-concept-tag">concept</span>}
+                  <span className="pj-avatar" aria-hidden="true">{initialen(naam)}</span>
+                  <span className="w-44 truncate">{naam}</span>
+                </div>
+              );
+            })}
+          </section>
         </div>
       )}
 
-      {activeTab === "forecast" && isManager && (
-        <div style={{ paddingTop: 20 }}>
-          <ForecastTab projectId={project.id} />
+      {tab === "forecast" && zietFinancien && (
+        <div style={{ paddingTop: 20 }}><ForecastTab projectId={project.id} /></div>
+      )}
+
+      {tab === "planning" && (
+        <div className="pj-grid">
+          <section className="pj-card is-wide">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="!mb-1">{inzet.actief.length === 0 ? "Nog geen planning" : inzet.heeftConcept ? "Planning in concept" : "Planning gepubliceerd"}</h3>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                  {inzet.actief.length} {inzet.actief.length === 1 ? "dag" : "dagen"} · {perMedewerker.length} {perMedewerker.length === 1 ? "monteur" : "monteurs"} · {inzet.conflicten} {inzet.conflicten === 1 ? "conflict" : "conflicten"}
+                </p>
+              </div>
+              <Button className="pj-btn-next" onClick={() => navigate(planningUrl(inzet.eersteConceptDatum ?? inzet.eersteDatum))}>Planning openen →</Button>
+            </div>
+            <div className="mt-4">
+              {perMedewerker.map(([id, v]) => {
+                const naam = inzet.medewerkers.get(id)?.full_name ?? "Onbekend";
+                return (
+                  <div key={id} className="pj-inzet">
+                    <span className="pj-avatar" aria-hidden="true">{initialen(naam)}</span>
+                    <span className="flex-1">{naam}</span>
+                    {v.concept && <span className="pj-concept-tag">concept</span>}
+                    <span className="pj-mono">{v.dagen} {v.dagen === 1 ? "dag" : "dagen"} · {formatUren(v.uren)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
         </div>
       )}
 
-      {activeTab === "planning" && (
-        <div style={{ paddingTop: 20 }}>
-          <PlanningStatusTab projectId={project.id} profileId={undefined} />
-        </div>
-      )}
-
-      {/* Verwijder-bevestiging */}
       {confirmDeleteId === project.id && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: "rgba(0,0,0,0.4)" }}
-          onClick={onCancelDelete}
-        >
-          <div
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="verwijder-titel"
-            className="rounded-2xl p-6"
-            style={{ background: "var(--bg-surface)", maxWidth: 380, width: "calc(100% - 32px)" }}
-            onClick={e => e.stopPropagation()}
-          >
-            <h3 id="verwijder-titel" style={{ fontSize: 16, fontWeight: 500, color: "var(--text-primary)" }}>
-              Project verwijderen?
-            </h3>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 8 }}>
-              “{project.naam}” wordt definitief verwijderd. Dit kan niet ongedaan worden gemaakt.
-            </p>
-            <div className="flex gap-3" style={{ marginTop: 20 }}>
-              <button
-                onClick={onCancelDelete}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium"
-                style={{ border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}
-              >
-                Annuleren
-              </button>
-              <button
-                onClick={onDelete}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white"
-                style={{ background: "var(--danger)" }}
-              >
-                Definitief verwijderen
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(18,28,42,.4)" }} onClick={onCancelDelete}>
+          <div role="alertdialog" aria-modal="true" aria-labelledby="verwijder-titel" className="rounded-2xl p-6" style={{ background: "var(--bg-surface)", maxWidth: 380, width: "calc(100% - 32px)" }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between">
+              <h3 id="verwijder-titel" className="text-base font-bold">Project verwijderen?</h3>
+              <button type="button" onClick={onCancelDelete} aria-label="Sluiten"><X size={16} /></button>
+            </div>
+            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>“{project.naam}” wordt definitief verwijderd. Dit kan niet ongedaan worden gemaakt.</p>
+            <div className="mt-5 flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={onCancelDelete}>Annuleren</Button>
+              <Button className="flex-1" style={{ background: "var(--danger)", color: "var(--wp-on-dark)" }} onClick={onDelete}>Definitief verwijderen</Button>
             </div>
           </div>
         </div>
@@ -309,17 +281,15 @@ export function DesktopFormPanel({ title, children, onCancel, onSubmit, submitLa
   title: string; children: React.ReactNode; onCancel: () => void; onSubmit: () => void; submitLabel: string;
 }) {
   return (
-    <div className="space-y-5">
+    <div className="pj-detail-inner space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium" style={{ color: "var(--text-primary)" }}>{title}</h2>
-        <button onClick={onCancel} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--bg-surface-2)" }} aria-label="Sluiten">
-          <X className="h-4 w-4" style={{ color: "var(--text-muted)" }} />
-        </button>
+        <h2 className="text-[22px] font-extrabold" style={{ color: "var(--text-primary)" }}>{title}</h2>
+        <button onClick={onCancel} className="wp-icon-btn" aria-label="Sluiten"><X className="h-4 w-4" /></button>
       </div>
       <div className="space-y-3">{children}</div>
       <div className="flex gap-3 pt-2">
-        <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>Annuleren</button>
-        <button onClick={onSubmit} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>{submitLabel}</button>
+        <Button variant="outline" className="flex-1" onClick={onCancel}>Annuleren</Button>
+        <Button className="pj-btn-next flex-1" onClick={onSubmit}>{submitLabel}</Button>
       </div>
     </div>
   );
