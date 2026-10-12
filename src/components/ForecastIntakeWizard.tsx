@@ -122,7 +122,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
     ]).then(([rmu, regels, codes, existingFc]) => {
       if (rmu.data) setRmuConfigs(rmu.data as RmuConfiguratie[]);
       if (regels.data) setDbRegels(regels.data as IntakeRegel[]);
-      if (codes) setSpecCodes(codes); else setTarievenFout(true);
+      if (codes) setSpecCodes(codes); else { setTarievenFout(true); toast.error("Tarieven konden niet worden opgehaald (alleen managers). Opslaan is uitgeschakeld."); }
       if (existingFc.data) setConfirmRedo(true);
     });
   }, [projectId]);
@@ -160,6 +160,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
   const merkConfigs = rmuConfigs.filter(c => c.merk === answers.rmu_merk);
 
   const handleSave = async () => {
+    if (tarievenFout || specCodes.length === 0) { toast.error("Tarieven niet beschikbaar — forecast niet opgeslagen."); return; }
     setSaving(true);
     try {
       // Bug fix 1: check existing forecast and reuse/replace

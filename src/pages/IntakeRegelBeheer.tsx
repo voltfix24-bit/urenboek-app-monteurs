@@ -9,7 +9,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 import { ArrowLeft, Plus, Pencil, Trash2, X, Check, FlaskConical, AlertTriangle, ChevronDown, ChevronRight, Settings, LayoutList } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
 import { NumericInput } from "@/components/ui/NumericInput";
-import { SPEC_CODES, GROEP_LABELS } from "@/lib/specCodes";
+import { SPEC_CODE_META as SPEC_CODES, GROEP_LABELS } from "@/lib/specCodes";
 import { IntakeRegel, IntakeAntwoorden, BerekendeRegel, LEGE_ANTWOORDEN, berekenRegels } from "@/lib/forecastIntake";
 import { euroDecimals as euro } from "@/lib/formatting";
 
@@ -307,7 +307,7 @@ export default function IntakeRegelBeheer() {
           setEditForm(f => ({ ...f, spec_code: e.target.value, label: spec?.omschrijving || f.label || "" }));
         }} className="w-full px-3 py-2 rounded-xl text-sm" style={inputStyle}>
           <option value="">Kies spec code...</option>
-          {SPEC_CODES.map(s => <option key={s.code} value={s.code}>{s.code} — {s.omschrijving} ({euro(s.tarief)}/{s.eenheid})</option>)}
+          {SPEC_CODES.map(s => <option key={s.code} value={s.code}>{s.code} — {s.omschrijving} ({s.eenheid})</option>)}
         </select>
       </div>
 
