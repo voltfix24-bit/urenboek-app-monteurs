@@ -43,6 +43,7 @@ export type Database = {
           id: string
           kvk_nummer: string | null
           land: string
+          planning_conceptmodus: boolean
           postcode: string | null
           rechtsvorm: string | null
           stad: string | null
@@ -62,6 +63,7 @@ export type Database = {
           id?: string
           kvk_nummer?: string | null
           land?: string
+          planning_conceptmodus?: boolean
           postcode?: string | null
           rechtsvorm?: string | null
           stad?: string | null
@@ -81,6 +83,7 @@ export type Database = {
           id?: string
           kvk_nummer?: string | null
           land?: string
+          planning_conceptmodus?: boolean
           postcode?: string | null
           rechtsvorm?: string | null
           stad?: string | null
@@ -1616,6 +1619,127 @@ export type Database = {
           },
         ]
       }
+      planning_concept: {
+        Row: {
+          actie: Database["public"]["Enums"]["planning_concept_actie"]
+          activiteit: string | null
+          activiteit_kleur: string | null
+          collega_ids: string[] | null
+          created_at: string
+          created_by: string | null
+          datum: string
+          eindtijd: string | null
+          id: string
+          medewerker_id: string
+          notitie: string | null
+          planning_group_id: string | null
+          planning_id: string | null
+          project_id: string | null
+          starttijd: string | null
+          updated_at: string
+        }
+        Insert: {
+          actie: Database["public"]["Enums"]["planning_concept_actie"]
+          activiteit?: string | null
+          activiteit_kleur?: string | null
+          collega_ids?: string[] | null
+          created_at?: string
+          created_by?: string | null
+          datum: string
+          eindtijd?: string | null
+          id?: string
+          medewerker_id: string
+          notitie?: string | null
+          planning_group_id?: string | null
+          planning_id?: string | null
+          project_id?: string | null
+          starttijd?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actie?: Database["public"]["Enums"]["planning_concept_actie"]
+          activiteit?: string | null
+          activiteit_kleur?: string | null
+          collega_ids?: string[] | null
+          created_at?: string
+          created_by?: string | null
+          datum?: string
+          eindtijd?: string | null
+          id?: string
+          medewerker_id?: string
+          notitie?: string | null
+          planning_group_id?: string | null
+          planning_id?: string | null
+          project_id?: string | null
+          starttijd?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planning_concept_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_concept_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_concept_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_concept_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_concept_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_concept_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_concept_planning_id_fkey"
+            columns: ["planning_id"]
+            isOneToOne: false
+            referencedRelation: "planning"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_concept_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_concept_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_monteur"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       planning_templates: {
         Row: {
           activiteiten: string[]
@@ -2671,6 +2795,10 @@ export type Database = {
           uren_totaal: number
         }[]
       }
+      publiceer_planning: {
+        Args: { p_tot: string; p_van: string }
+        Returns: Json
+      }
       restore_planner_planning_soft_delete_v1: {
         Args: { _external_id: string }
         Returns: Json
@@ -2710,6 +2838,7 @@ export type Database = {
     }
     Enums: {
       app_role: "monteur" | "schakelmonteur" | "uitvoerder" | "wv" | "manager"
+      planning_concept_actie: "nieuw" | "wijzig" | "verwijder"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2838,6 +2967,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["monteur", "schakelmonteur", "uitvoerder", "wv", "manager"],
+      planning_concept_actie: ["nieuw", "wijzig", "verwijder"],
     },
   },
 } as const
