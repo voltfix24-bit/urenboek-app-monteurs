@@ -19,7 +19,7 @@ const TEMPLATE = resolve(__dirname, "../../public/templates/prijzenblad-template
 
 async function loadTemplate() {
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(readFileSync(TEMPLATE));
+  await wb.xlsx.load(readFileSync(TEMPLATE) as any);
   return wb.worksheets[0];
 }
 
