@@ -7,6 +7,7 @@ import { PLANNER_EXCLUSION_REASONS, PLANNER_EXCLUSION_LABEL, exclusionLabel, typ
 import { PlannerSyncAuditPanel } from "@/components/PlannerSyncAuditPanel";
 import { PlannerSoftDeletedPanel } from "@/components/PlannerSoftDeletedPanel";
 import { PlannerSyncStatusBar } from "@/components/PlannerSyncStatusBar";
+import { adminProjects, PROJECT_SAFE_COLUMNS } from "@/lib/projectsAdmin";
 
 type AnalyseStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match" | "uitgesloten";
 interface Afwijking { veld: string; urenapp: unknown; planner: unknown }
@@ -472,7 +473,7 @@ export default function PlannerKoppeling() {
   async function loadStats() {
     setLoading(true);
     const [{ data: projs }, { data: profs }, { data: rollen }] = await Promise.all([
-      supabase.from("projects").select("id, nummer, naam, projectjaar, planner_project_id, active, planner_sync_enabled, planner_sync_exclusion_reason").order("nummer"),
+      adminProjects().select("id, nummer, naam, projectjaar, planner_project_id, active, planner_sync_enabled, planner_sync_exclusion_reason").order("nummer"),
       supabase.from("profiles").select("id, user_id, full_name, account_status, is_onderaannemer, planner_monteur_id").order("full_name"),
       supabase.from("user_roles").select("user_id, role"),
     ]);

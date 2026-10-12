@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { queryKeys } from "@/lib/queryKeys";
 import { toast } from "sonner";
 import { cacheProjecten } from "@/lib/offlineQueue";
+import { adminProjects } from "@/lib/projectsAdmin";
 
 interface Project {
   id: string; nummer: string; naam: string; active: boolean; opdrachtgever_id: string | null;
