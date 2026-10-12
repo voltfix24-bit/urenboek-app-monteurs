@@ -9,7 +9,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 import { ArrowLeft, Plus, Pencil, Trash2, X, Check, FlaskConical, AlertTriangle, ChevronDown, ChevronRight, Settings, LayoutList } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
 import { NumericInput } from "@/components/ui/NumericInput";
-import { SPEC_CODE_META as SPEC_CODES, GROEP_LABELS } from "@/lib/specCodes";
+import { SPEC_CODE_META as SPEC_CODES, GROEP_LABELS, loadSpecCodes, type SpecCode } from "@/lib/specCodes";
 import { IntakeRegel, IntakeAntwoorden, BerekendeRegel, LEGE_ANTWOORDEN, berekenRegels } from "@/lib/forecastIntake";
 import { euroDecimals as euro } from "@/lib/formatting";
 
@@ -182,6 +182,8 @@ export default function IntakeRegelBeheer() {
   const [simTrafo, setSimTrafo] = useState<string>("geen");
   const [simLsRek, setSimLsRek] = useState<string>("geen");
   const [simResult, setSimResult] = useState<BerekendeRegel[]>([]);
+  const [dbTarieven, setDbTarieven] = useState<SpecCode[]>([]);
+  useEffect(() => { loadSpecCodes(supabase).then(setDbTarieven).catch(() => setDbTarieven([])); }, []);
 
   const fetchRegels = useCallback(async () => {
     const { data } = await supabase.from("intake_regels").select("*").order("volgorde");
@@ -261,7 +263,7 @@ export default function IntakeRegelBeheer() {
       wv: true, wv_uren: simCaseType.toLowerCase().includes("provisorium") ? 32 : 16,
       wv_io: true, wv_io_uren: simCaseType.toLowerCase().includes("provisorium") ? 32 : 16,
     };
-    setSimResult(berekenRegels(a, simCaseType || null, regels));
+    setSimResult(berekenRegels(a, simCaseType || null, regels, dbTarieven));
   }
 
   // Build trigger label from result's own trigger info
