@@ -124,7 +124,7 @@ export default function ProjectPlanning() {
         supabase.from("projects").select("id, nummer, naam, stationsnaam, case_type").eq("id", projectId).single(),
         supabase.from("project_planning_matrix").select("*").eq("project_id", projectId).maybeSingle(),
         supabase.from("project_planning_status").select("*").eq("project_id", projectId).maybeSingle(),
-        supabase.from("profiles").select("id, user_id, full_name"),
+        supabase.from("profiles").select("id, user_id, full_name, uurtarief"),
         supabase.from("user_roles").select("user_id, role"),
       ]);
 
@@ -132,7 +132,15 @@ export default function ProjectPlanning() {
 
       if (projRes.data) setProject(projRes.data as any);
       if (matrixRes.data?.state_json) {
-        setState(matrixRes.data.state_json as unknown as MatrixState);
+        const geladen = matrixRes.data.state_json as unknown as MatrixState;
+        // Oude schetsen gebruikten de kolomindex als sleutel; zet om naar weeknummer.
+        const comments: Record<string, string> = {};
+        Object.entries(geladen.weekComments || {}).forEach(([k, v]) => {
+          const idx = Number(k);
+          const isIndex = Number.isInteger(idx) && idx < (geladen.weekNrs?.length ?? 0) && !(geladen.weekNrs || []).map(String).includes(k);
+          comments[isIndex ? String(geladen.weekNrs[idx]) : k] = v;
+        });
+        setState({ ...geladen, weekComments: comments });
       } else if (projRes.data) {
         setState(prev => ({ ...prev, stationName: projRes.data!.stationsnaam || "", caseType: projRes.data!.case_type || "" }));
       }
@@ -141,7 +149,7 @@ export default function ProjectPlanning() {
       // Filter monteurs
       const monteurUserIds = new Set((rolesRes.data || []).filter((r: any) => r.role === "monteur").map((r: any) => r.user_id));
       const allProfiles = profilesRes.data || [];
-      setMonteurs(allProfiles.filter((p: any) => monteurUserIds.has(p.user_id)).map((p: any) => ({ id: p.id, full_name: p.full_name, uurtarief: null })));
+      setMonteurs(allProfiles.filter((p: any) => monteurUserIds.has(p.user_id)).map((p: any) => ({ id: p.id, full_name: p.full_name, uurtarief: p.uurtarief != null ? Number(p.uurtarief) : null })));
 
       // Fetch other project matrices for cross-project conflict detection
       const { data: otherData } = await supabase
@@ -575,20 +583,14 @@ export default function ProjectPlanning() {
         <button onClick={() => setShowTemplates(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>
           <FileText className="h-3.5 w-3.5 inline mr-1" />Templates
         </button>
-        <button onClick={() => saveState(state)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--accent)", color: "var(--accent)" }}>
-          <Save className="h-3.5 w-3.5 inline mr-1" />Opslaan
-        </button>
-
-        {isDef ? (
-          <button onClick={() => setShowConceptDialog(true)} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white flex items-center gap-1" style={{ background: "var(--accent)" }}>
-            <Check className="h-3.5 w-3.5" /> Gepubliceerd
-          </button>
-        ) : (
-          <button onClick={() => setShowDefinitiefDialog(true)} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: "var(--info)" }}>
-            Definitief maken
-          </button>
-        )}
       </header>
+
+      <div className="mx-4 mt-3 rounded-xl p-3 flex items-center gap-3" style={{ background: "var(--info-light, var(--accent-light))", border: "1px solid var(--planning-border-soft)" }}>
+        <span className="text-[12px] flex-1" style={{ color: "var(--text-primary)" }}>Deze schets is niet zichtbaar voor monteurs. Plan in via Weekplanning.</span>
+        <button onClick={() => navigate(`/manager-planning?project=${projectId}`)} className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: "var(--accent)" }}>
+          Naar Weekplanning
+        </button>
+      </div>
 
       {/* Waarschuwing: project bevat externe Planner-regels */}
       {externePlannerRegels.length > 0 && (
@@ -783,7 +785,7 @@ export default function ProjectPlanning() {
             <div className="flex" style={{ width: totalW }}>
               {state.weekNrs.map((wn, wi) => (
                 <div key={wi} style={{ width: 5 * CELL_SIZE }}>
-                  <textarea value={state.weekComments[wi] || ""} onChange={e => updateState(s => ({ ...s, weekComments: { ...s.weekComments, [wi]: e.target.value } }))}
+                  <textarea value={state.weekComments[String(wn)] ?? ""} onChange={e => updateState(s => ({ ...s, weekComments: { ...s.weekComments, [String(wn)]: e.target.value } }))}
                     placeholder={`Opmerking week ${wn}...`}
                     className="w-full bg-transparent text-[10px] px-2 py-1 resize-none outline-none" style={{ height: 44, color: "var(--text-primary)", borderRight: "1px solid var(--planning-border-soft)" }} />
                 </div>

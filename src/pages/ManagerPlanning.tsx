@@ -131,6 +131,9 @@ function MobileManagerPlanning() {
     [entries, selectedProjectId],
   );
 
+  const [conceptKeys, setConceptKeys] = useState<Set<string>>(new Set());
+  const CONCEPT_MELDING = "Er staat een concept op deze dag (desktop)";
+
   const fetchAll = useCallback(async () => {
     setLoading(true);
     const startStr = format(weekStart, "yyyy-MM-dd");
@@ -142,6 +145,8 @@ function MobileManagerPlanning() {
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("user_roles").select("user_id, role"),
     ]);
+    const { data: conceptData } = await supabase.from("planning_concept").select("medewerker_id, datum").gte("datum", startStr).lte("datum", endStr);
+    setConceptKeys(new Set((conceptData ?? []).map((c: any) => `${c.medewerker_id}|${c.datum}`)));
     const profIdToUserId = new Map<string, string>();
     const profilesWithUser = await supabase.from("profiles").select("id, user_id").eq("account_status", "active");
     (profilesWithUser.data ?? []).forEach((p: any) => profIdToUserId.set(p.id, p.user_id));
@@ -196,13 +201,14 @@ function MobileManagerPlanning() {
 
   // Realtime subscription
   useEffect(() => {
-    const channel = supabase.channel('manager-planning-rt').on('postgres_changes', { event: '*', schema: 'public', table: 'planning' }, fetchAll).subscribe();
+    const channel = supabase.channel('manager-planning-rt').on('postgres_changes', { event: '*', schema: 'public', table: 'planning' }, fetchAll).on('postgres_changes', { event: '*', schema: 'public', table: 'planning_concept' }, fetchAll).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [fetchAll]);
 
 
 
   const openAddModal = (medewerker_id: string, datum: string) => {
+    if (conceptKeys.has(`${medewerker_id}|${datum}`)) { toast.info(CONCEPT_MELDING); return; }
     const existing = entries.find(e => e.medewerker_id === medewerker_id && e.datum === datum);
     if (existing) {
       setEditId(existing.id);
@@ -251,7 +257,7 @@ function MobileManagerPlanning() {
       const rows = datums.flatMap((datum) => {
         const kandidaatGroep = Array.from(new Set([modalForm.medewerker_id, ...partners, ...extraMedewerkerIds]));
         const inGroup = kandidaatGroep.filter((medId) => {
-          const bestaatAl = entries.some(e => e.medewerker_id === medId && e.datum === datum);
+          const bestaatAl = entries.some(e => e.medewerker_id === medId && e.datum === datum) || conceptKeys.has(`${medId}|${datum}`);
           if (bestaatAl) skipped.push({ medId, datum });
           return !bestaatAl;
         });

@@ -78,12 +78,15 @@ export default function DesktopWeekPlanning() {
     return a.full_name.localeCompare(b.full_name, "nl", { sensitivity: "base" });
   }), [medewerkers, cellen, datums]);
 
-  // Overplanning (bestaande regel: meer dan 5 unieke dagen per week)
+  // Overplanning (bestaande regel: meer dan 5 unieke dagen per week), inclusief concepten
   const overgepland = useMemo(() => {
-    const set = new Set<string>();
-    medewerkers.forEach((m) => { if (new Set(planning.filter((p) => p.medewerker_id === m.id).map((p) => p.datum)).size > 5) set.add(m.id); });
-    return set;
-  }, [planning, medewerkers]);
+    const tel = new Map<string, Set<string>>();
+    celLijst.filter(celTelt).forEach((c) => {
+      const s = tel.get(c.medewerker_id) ?? new Set<string>();
+      s.add(c.datum); tel.set(c.medewerker_id, s);
+    });
+    return new Set(Array.from(tel.entries()).filter(([, s]) => s.size > 5).map(([id]) => id));
+  }, [celLijst]);
 
   const conflictTekst = useCallback((cel: Cel | undefined) => {
     if (!celTelt(cel)) return null;
@@ -142,6 +145,18 @@ export default function DesktopWeekPlanning() {
       .in("id", ids).eq("status", "nieuw");
   };
 
+  /** Directe modus: inplannen zet het project op definitief, zodat monteurs uren kunnen boeken. */
+  const markeerDefinitief = async (projectIds: (string | null | undefined)[]) => {
+    const ids = Array.from(new Set(projectIds.filter((x): x is string => !!x)));
+    if (!ids.length || !profileId) return;
+    const nu = new Date().toISOString();
+    const { error } = await supabase.from("project_planning_status").upsert(
+      ids.map((project_id) => ({ project_id, is_definitief: true, definitief_op: nu, definitief_door: profileId })),
+      { onConflict: "project_id" },
+    );
+    if (error) throw error;
+  };
+
   const plan = (medIds: string[], doelDatums: string[], notitie: string) => run(async () => {
     if (!profileId || !barProject) return;
     const { doelen, overgeslagen } = bepaalDoelen(medIds, doelDatums, cellen, medewerkers, beschikbaarheid);
@@ -159,6 +174,7 @@ export default function DesktopWeekPlanning() {
       const { data, error } = await supabase.from("planning").insert(direct).select("id");
       if (error) throw error;
       ids = (data ?? []).map((r) => r.id);
+      await markeerDefinitief([barProject]);
     }
     bewaarRecent(barProject);
     await markeerGepland([barProject]);
@@ -214,6 +230,7 @@ export default function DesktopWeekPlanning() {
       const ids = doel.filter((c) => c.planning && !c.beschermd).map((c) => c.planning!.id);
       beschermd = doel.length - ids.length;
       if (ids.length) { const { error } = await supabase.from("planning").update(waarden).in("id", ids); if (error) throw error; }
+      if (ids.length) await markeerDefinitief([waarden.project_id]);
     } else {
       for (const c of doel) {
         const a = actieVoorBewerken(c, waarden, profileId);
@@ -273,6 +290,7 @@ export default function DesktopWeekPlanning() {
         : await supabase.from("planning").insert(rows);
       if (insErr) throw insErr;
       await markeerGepland(rows.map((r) => r.project_id));
+      if (!conceptModus) await markeerDefinitief(rows.map((r) => r.project_id));
     }
     toast.success(`${rows.length} ${rows.length === 1 ? "dag" : "dagen"} gekopieerd uit week ${getISOWeek(vorige)}${conceptModus ? " (concept)" : ""}${overgeslagen ? ` · ${overgeslagen} overgeslagen` : ""}`);
   });
@@ -285,7 +303,7 @@ export default function DesktopWeekPlanning() {
     const n = res.medewerker_ids?.length ?? 0;
     toast.success(`Week ${weekNumber} gepubliceerd — ${n} ${n === 1 ? "monteur ziet" : "monteurs zien"} de wijzigingen`);
     if (res.overgeslagen?.length) {
-      toast.warning(`Overgeslagen: ${res.overgeslagen.map((o) => `${korteNaam(medMap.get(o.medewerker_id)?.full_name ?? "?")} ${format(new Date(`${o.datum}T12:00:00`), "EEEEEE d/M", { locale: nl })}${o.reden === "planner_beschermd" ? " (Planner-koppeling)" : ""}`).join(", ")}`);
+      toast.warning(`Overgeslagen: ${res.overgeslagen.map((o) => `${korteNaam(medMap.get(o.medewerker_id)?.full_name ?? "?")} ${format(new Date(`${o.datum}T12:00:00`), "EEEEEE d/M", { locale: nl })}${o.reden === "planner_beschermd" ? " (Planner-koppeling)" : o.reden === "al_ingepland" ? " (al ingepland)" : ""}`).join(", ")}`);
     }
   });
 
