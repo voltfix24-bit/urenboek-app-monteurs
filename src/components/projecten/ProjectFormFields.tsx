@@ -26,17 +26,20 @@ interface Props {
   isManager: boolean;
   errors?: Record<string, string>;
   clearError?: (field: string) => void;
+  /** Alleen desktop: "desktop-edit" verbergt de vergoedingsmethode; contactblok neutraal. Zonder variant = ongewijzigd (mobiel). */
+  variant?: "desktop-new" | "desktop-edit";
 }
 
-export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, errors = {}, clearError }: Props) {
+export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, errors = {}, clearError, variant }: Props) {
+  const isDesktop = !!variant;
   const update = (field: keyof FormState, value: string | null) => {
     setForm(f => ({ ...f, [field]: value }));
     if (clearError && errors[field]) clearError(field);
   };
 
   const methodeOptions: { key: FormState['vergoed_methode']; Icon: any; label: string; desc: string }[] = [
-    { key: 'stuksprijzen', Icon: ClipboardList, label: 'Stuksprijzen', desc: 'Van Gelder betaalt per spec-code' },
-    { key: 'uren', Icon: Clock, label: 'Op uren', desc: 'Van Gelder betaalt per uur' },
+    { key: 'stuksprijzen', Icon: ClipboardList, label: 'Stuksprijzen', desc: isDesktop ? 'Opdrachtgever betaalt per spec-code' : 'Van Gelder betaalt per spec-code' },
+    { key: 'uren', Icon: Clock, label: 'Op uren', desc: isDesktop ? 'Opdrachtgever betaalt per uur' : 'Van Gelder betaalt per uur' },
     { key: '', Icon: HelpCircle, label: 'Nog onbekend', desc: 'Later bepalen in Forecast tab' },
   ];
 
@@ -101,6 +104,9 @@ export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, er
       </div>
 
       {/* Vergoedingsmethode */}
+      {variant === "desktop-edit" ? (
+        <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>Vergoedingsmethode: wijzigen via Forecast.</p>
+      ) : (<>
       <p className="text-[11px] font-semibold uppercase tracking-wider mt-2" style={{ color: "var(--text-muted)" }}>Vergoedingsmethode</p>
       <div className="grid grid-cols-3 gap-2">
         {methodeOptions.map(o => {
@@ -124,10 +130,11 @@ export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, er
           );
         })}
       </div>
+      </>)}
 
       {isManager && (
-        <div className="rounded-xl p-3 space-y-2 mt-1" style={{ background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
-          <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "var(--warn-text)" }}>
+        <div className="rounded-xl p-3 space-y-2 mt-1" style={isDesktop ? { background: "var(--wp-soft-bg)", border: "1px solid var(--wp-grid-line)" } : { background: "var(--warn-light)", border: "1px solid var(--warn-border)" }}>
+          <p className="text-[11px] font-semibold flex items-center gap-1" style={{ color: isDesktop ? "var(--wp-muted-strong)" : "var(--warn-text)" }}>
             <Lock className="h-3 w-3" /> Contactpersoon (alleen zichtbaar voor managers)
           </p>
           <FormField label="Naam contactpersoon">
