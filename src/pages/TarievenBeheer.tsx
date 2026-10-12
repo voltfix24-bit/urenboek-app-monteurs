@@ -7,8 +7,8 @@ import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { useProfile } from "@/hooks/useProfile";
-import { ArrowLeft, Pencil, Check, X, Download, RotateCcw, Info } from "lucide-react";
-import { SPEC_CODES, GROEP_LABELS } from "@/lib/specCodes";
+import { ArrowLeft, Pencil, Check, X, Download, Info } from "lucide-react";
+import { GROEP_LABELS } from "@/lib/specCodes";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface Tarief {
@@ -24,7 +24,6 @@ interface Tarief {
 
 import { euroDecimals as fmt } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
-const origMap = new Map(SPEC_CODES.map(s => [s.code, s.tarief]));
 
 export default function TarievenBeheer() {
   const { isManager } = useAuth();
@@ -35,7 +34,6 @@ export default function TarievenBeheer() {
   const [loading, setLoading] = useState(true);
   const [editCode, setEditCode] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
-  const [confirmReset, setConfirmReset] = useState(false);
 
   const fetch = useCallback(async () => {
     const { data } = await supabase.from("spec_code_tarieven").select("*").order("code");
@@ -65,15 +63,6 @@ export default function TarievenBeheer() {
     fetch();
   }
 
-  async function resetAll() {
-    for (const sc of SPEC_CODES) {
-      await supabase.from("spec_code_tarieven").update({ tarief: sc.tarief, updated_by: null }).eq("code", sc.code);
-    }
-    toast.success("Alle tarieven gereset naar origineel");
-    setConfirmReset(false);
-    fetch();
-  }
-
   function exportCsv() {
     const bom = "\uFEFF";
     const header = "Code;Omschrijving;Eenheid;Tarief;Groep\n";
@@ -100,16 +89,6 @@ export default function TarievenBeheer() {
           <button onClick={exportCsv} className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5" style={{ border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>
             <Download className="h-3.5 w-3.5" /> CSV
           </button>
-          {!confirmReset ? (
-            <button onClick={() => setConfirmReset(true)} className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5" style={{ border: "1px solid var(--danger-border)", color: "var(--danger)" }}>
-              <RotateCcw className="h-3.5 w-3.5" /> Reset
-            </button>
-          ) : (
-            <div className="flex gap-1">
-              <button onClick={resetAll} className="px-3 py-2 rounded-lg text-xs font-bold text-white" style={{ background: "var(--danger)" }}>Bevestigen</button>
-              <button onClick={() => setConfirmReset(false)} className="px-2 py-2 rounded-lg text-xs" style={{ color: "var(--text-muted)" }}>×</button>
-            </div>
-          )}
         </header>
 
         {/* Info banner */}
@@ -133,8 +112,6 @@ export default function TarievenBeheer() {
                       <span>Code</span><span>Omschrijving</span><span>Eh</span><span>Tarief</span><span>Status</span><span></span>
                     </div>
                     {items.map(t => {
-                      const orig = origMap.get(t.code);
-                      const isModified = orig !== undefined && Math.abs(orig - t.tarief) > 0.005;
                       const isEditing = editCode === t.code;
                       return (
                         <div key={t.id} className="grid grid-cols-[90px_1fr_50px_100px_80px_60px] items-center px-4 py-2 text-[12px]" style={{ borderTop: "1px solid var(--planning-border-soft)" }}>
@@ -159,11 +136,6 @@ export default function TarievenBeheer() {
                             <span className="font-mono" style={{ color: "var(--text-primary)" }}>{fmt(t.tarief)}</span>
                           )}
                           <span>
-                            {isModified && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "var(--warn-light)", color: "var(--warn-text)" }} title={`Origineel: ${fmt(orig!)}`}>
-                                Aangepast
-                              </span>
-                            )}
                           </span>
                           {!isEditing && (
                             <button onClick={() => { setEditCode(t.code); setEditValue(t.tarief.toFixed(2)); }} className="w-6 h-6 rounded flex items-center justify-center" style={{ color: "var(--text-muted)" }}>
