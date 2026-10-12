@@ -132,7 +132,15 @@ export default function ProjectPlanning() {
 
       if (projRes.data) setProject(projRes.data as any);
       if (matrixRes.data?.state_json) {
-        setState(matrixRes.data.state_json as unknown as MatrixState);
+        const geladen = matrixRes.data.state_json as unknown as MatrixState;
+        // Oude schetsen gebruikten de kolomindex als sleutel; zet om naar weeknummer.
+        const comments: Record<string, string> = {};
+        Object.entries(geladen.weekComments || {}).forEach(([k, v]) => {
+          const idx = Number(k);
+          const isIndex = Number.isInteger(idx) && idx < (geladen.weekNrs?.length ?? 0) && !(geladen.weekNrs || []).map(String).includes(k);
+          comments[isIndex ? String(geladen.weekNrs[idx]) : k] = v;
+        });
+        setState({ ...geladen, weekComments: comments });
       } else if (projRes.data) {
         setState(prev => ({ ...prev, stationName: projRes.data!.stationsnaam || "", caseType: projRes.data!.case_type || "" }));
       }
