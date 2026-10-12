@@ -272,7 +272,7 @@ export default function ProjectPlanning() {
 
     setPlanningStatus({ is_definitief: true, definitief_op: new Date().toISOString() });
     setShowDefinitiefDialog(false);
-    toast.success(`Planning gepubliceerd — ${toInsert.length} dagen ingepland voor monteurs.`);
+    toast.success("Matrix definitief opgeslagen. Inplannen voor monteurs gaat via de weekplanning.");
   };
 
   const makeConcept = async () => {
@@ -285,7 +285,7 @@ export default function ProjectPlanning() {
     }, { onConflict: "project_id" });
     setPlanningStatus({ is_definitief: false, definitief_op: null });
     setShowConceptDialog(false);
-    toast.success("Planning terug naar concept gezet.");
+    toast.success("Matrix terug naar concept gezet. Bestaande planning is ongewijzigd.");
   };
 
   // ── Drag & drop activities ──
