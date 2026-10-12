@@ -1,6 +1,28 @@
 import ExcelJS from "exceljs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { loadSpecCodes, SPEC_CODES } from "@/lib/specCodes";
+
+/** Herkent uitsluitend de defecte template-rij (kolom A = 3) voor R410010. */
+export function isDefecteMsMofRij(omschrijving: string): boolean {
+  return omschrijving.trim() === "Monteren MS mof (verbindings-, eind- of overgangsmof).";
+}
+
+/** Actieve tarieven uit de database; bij fout/leeg veilige fallback naar SPEC_CODES. */
+export async function loadTariefMap(client: any = supabase): Promise<Map<string, number>> {
+  let codes = SPEC_CODES;
+  try {
+    codes = await loadSpecCodes(client);
+  } catch (err) {
+    console.warn("[prijzenbladExcel] tarieven laden mislukt, fallback", err);
+  }
+  const map = new Map<string, number>();
+  for (const c of codes) {
+    const t = Number(c.tarief);
+    if (Number.isFinite(t)) map.set(c.code, Math.round(t * 100) / 100);
+  }
+  return map;
+}
 
 /**
  * Genereert een Prijzenblad Excel op basis van de vaste TerreVolt-template.
@@ -61,16 +83,28 @@ export async function generatePrijzenbladExcel(projectId: string) {
       return;
     }
 
-    // 3. Per rij: als kolom A een spec-code is en we hebben een aantal → invullen in F
+    // 3. Actuele tarieven (zelfde bron als bestekcode-zoeker, fallback SPEC_CODES)
+    const tariefMap = await loadTariefMap();
+
+    // 4. Per rij: kolom E = actueel tarief, kolom F = aantal uit forecast
     const codeRows: number[] = [];
     let totaalRow: number | null = null;
     ws.eachRow({ includeEmpty: false }, (row, rowNum) => {
       const aRaw = row.getCell(1).value;
-      const a = aRaw == null ? "" : String(aRaw).trim();
+      let a = aRaw == null ? "" : String(aRaw).trim();
       const bRaw = row.getCell(2).value;
-      const b = bRaw == null ? "" : String(bRaw).trim().toLowerCase();
+      const bOrig = bRaw == null ? "" : String(bRaw).trim();
+      const b = bOrig.toLowerCase();
+      if (a === "3" && isDefecteMsMofRij(bOrig)) {
+        a = "R410010";
+        row.getCell(1).value = a;
+      }
       if (/^R\d{6}$/.test(a)) {
         codeRows.push(rowNum);
+        const prijs = tariefMap.get(a);
+        if (prijs !== undefined) {
+          row.getCell(5).value = Math.round(prijs * 100) / 100; // kolom E
+        }
         const aantal = aantalMap.get(a);
         if (aantal && aantal > 0) {
           row.getCell(6).value = aantal; // kolom F

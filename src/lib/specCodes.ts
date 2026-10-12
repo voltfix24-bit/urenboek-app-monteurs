@@ -49,7 +49,7 @@ export const SPEC_CODES: SpecCode[] = [
   { code: 'R360020', omschrijving: 'OV kWh-meter', eenheid: 'st', tarief: 106.02, groep: 'R36x' },
   { code: 'R370010', omschrijving: 'Provisorium', eenheid: 'st', tarief: 3875.16, groep: 'R37x' },
   { code: 'R370020', omschrijving: 'LS kast', eenheid: 'st', tarief: 815.10, groep: 'R37x' },
-  { code: 'R370030', omschrijving: 'NSA coördinatie', eenheid: 'st', tarief: 601.62, groep: 'R37x' },
+  { code: 'R370030', omschrijving: 'NSA coördinatie', eenheid: 'st', tarief: 500.00, groep: 'R37x' },
   { code: 'R410010', omschrijving: 'MS mof', eenheid: 'st', tarief: 610.93, groep: 'R41x' },
   { code: 'R410020', omschrijving: 'MS eindsluiting', eenheid: 'st', tarief: 494.74, groep: 'R41x' },
   { code: 'R420010', omschrijving: 'LS mof', eenheid: 'st', tarief: 141.35, groep: 'R42x' },
