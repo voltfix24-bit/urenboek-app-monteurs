@@ -77,8 +77,10 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
   const loadForecast = useCallback(async () => {
     setLoading(true);
+    let codes: SpecCode[] = [];
     try {
-      setSpecCodes(await loadSpecCodes(supabase));
+      codes = await loadSpecCodes(supabase);
+      setSpecCodes(codes);
     } catch (err) {
       console.error("[ForecastTab] tarieven", err);
       setSpecCodes([]);
