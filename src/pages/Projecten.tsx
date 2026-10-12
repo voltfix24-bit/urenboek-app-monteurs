@@ -237,7 +237,7 @@ export default function Projecten() {
       <DesktopSidebar badges={badges} />
 
       {/* DESKTOP */}
-      <div className="hidden lg:flex pj-page">
+      <div className="pj-page">
         <header className="pj-header">
           <div>
             <h1>Projecten</h1>

@@ -851,7 +851,9 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .fase-pill.is-lg { padding: 6px 14px; font-size: 14px; }
 
 /* ───────── Desktop /projecten ───────── */
-.pj-page { margin-left: 240px; height: 100vh; display: flex; flex-direction: column; background: var(--bg-base); color: var(--text-primary); }
+.pj-page { display: none; }
+@media (min-width: 1024px) { .pj-page { display: flex; } }
+.pj-page { margin-left: 240px; height: 100vh; flex-direction: column; background: var(--bg-base); color: var(--text-primary); }
 .pj-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px 32px 16px; }
 .pj-header h1 { font-size: 26px; font-weight: 800; line-height: 1.2; }
 .pj-header p { font-size: 14px; color: var(--text-muted); }
