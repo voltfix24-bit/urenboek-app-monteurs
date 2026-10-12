@@ -257,7 +257,7 @@ function MobileManagerPlanning() {
       const rows = datums.flatMap((datum) => {
         const kandidaatGroep = Array.from(new Set([modalForm.medewerker_id, ...partners, ...extraMedewerkerIds]));
         const inGroup = kandidaatGroep.filter((medId) => {
-          const bestaatAl = entries.some(e => e.medewerker_id === medId && e.datum === datum);
+          const bestaatAl = entries.some(e => e.medewerker_id === medId && e.datum === datum) || conceptKeys.has(`${medId}|${datum}`);
           if (bestaatAl) skipped.push({ medId, datum });
           return !bestaatAl;
         });
