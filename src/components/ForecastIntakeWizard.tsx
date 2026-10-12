@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { X, Minus, Plus, Zap, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Loader2, AlertTriangle, RotateCcw, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { SPEC_CODES, GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/specCodes";
+import { GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/specCodes";
 import {
   IntakeAntwoorden, RmuConfiguratie, BerekendeRegel, IntakeRegel,
   LEGE_ANTWOORDEN, initAntwoorden, berekenRegels, suggesteerEindsluitingen,
@@ -107,7 +107,8 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
   const [showNewRmu, setShowNewRmu] = useState(false);
   const [newRmu, setNewRmu] = useState({ code: "", velden: 3 });
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
-  const [specCodes, setSpecCodes] = useState<SpecCode[]>(SPEC_CODES);
+  const [specCodes, setSpecCodes] = useState<SpecCode[]>([]);
+  const [tarievenFout, setTarievenFout] = useState(false);
   const [confirmRedo, setConfirmRedo] = useState(false);
 
   const set = useCallback((patch: Partial<IntakeAntwoorden>) => setAnswers(a => ({ ...a, ...patch })), []);
@@ -116,12 +117,12 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
     Promise.all([
       supabase.from("rmu_configuraties").select("*").eq("actief", true).order("volgorde"),
       supabase.from("intake_regels").select("*").eq("actief", true).order("volgorde"),
-      loadSpecCodes(supabase),
+      loadSpecCodes(supabase).catch((err) => { console.error("[Intake] tarieven", err); return null; }),
       supabase.from("project_forecast").select("id").eq("project_id", projectId).maybeSingle(),
     ]).then(([rmu, regels, codes, existingFc]) => {
       if (rmu.data) setRmuConfigs(rmu.data as RmuConfiguratie[]);
       if (regels.data) setDbRegels(regels.data as IntakeRegel[]);
-      if (codes) setSpecCodes(codes);
+      if (codes) setSpecCodes(codes); else setTarievenFout(true);
       if (existingFc.data) setConfirmRedo(true);
     });
   }, [projectId]);
@@ -498,19 +499,19 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
           <div className="space-y-4">
             <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>WV & personeel</h3>
             <div>
-              <ToggleRow checked={answers.wv} onChange={v => set({ wv: v, wv_uren: v && answers.wv_uren === 0 ? defaultWv : answers.wv_uren })} label="WV-er inzetten (R440010)" hint={`€110,00/uur`} />
+              <ToggleRow checked={answers.wv} onChange={v => set({ wv: v, wv_uren: v && answers.wv_uren === 0 ? defaultWv : answers.wv_uren })} label="WV-er inzetten (R440010)" hint={getSpec("R440010") ? `${euro(getSpec("R440010")!.tarief)}/uur` : undefined} />
               {answers.wv && (
                 <div className="ml-4 animate-fade-in">
-                  <NumberStepper value={answers.wv_uren} onChange={v => set({ wv_uren: v })} step={8} max={999} label="Uren WV-er" tarief={110} eenheid="uur" />
+                  <NumberStepper value={answers.wv_uren} onChange={v => set({ wv_uren: v })} step={8} max={999} label="Uren WV-er" tarief={getSpec("R440010")?.tarief} eenheid="uur" />
                   <p className="text-[11px] italic" style={{ color: "var(--text-muted)" }}>Standaard {defaultWv}u voor {project.case_type || "dit type"}</p>
                 </div>
               )}
             </div>
             <div>
-              <ToggleRow checked={answers.wv_io} onChange={v => set({ wv_io: v, wv_io_uren: v && answers.wv_io_uren === 0 ? defaultWv : answers.wv_io_uren })} label="WV-er io inzetten (R440020)" hint={`€50,00/uur`} />
+              <ToggleRow checked={answers.wv_io} onChange={v => set({ wv_io: v, wv_io_uren: v && answers.wv_io_uren === 0 ? defaultWv : answers.wv_io_uren })} label="WV-er io inzetten (R440020)" hint={getSpec("R440020") ? `${euro(getSpec("R440020")!.tarief)}/uur` : undefined} />
               {answers.wv_io && (
                 <div className="ml-4 animate-fade-in">
-                  <NumberStepper value={answers.wv_io_uren} onChange={v => set({ wv_io_uren: v })} step={8} max={999} label="Uren WV-er io" tarief={50} eenheid="uur" />
+                  <NumberStepper value={answers.wv_io_uren} onChange={v => set({ wv_io_uren: v })} step={8} max={999} label="Uren WV-er io" tarief={getSpec("R440020")?.tarief} eenheid="uur" />
                 </div>
               )}
             </div>
@@ -652,7 +653,7 @@ export function ForecastIntakeWizard({ projectId, project, onClose, onComplete }
           )}
           <div className="flex-1" />
           {isOverzicht ? (
-            <button onClick={handleSave} disabled={saving || overzichtRegels.length === 0} className="px-6 py-2.5 rounded-xl text-sm font-bold text-white flex items-center gap-2 disabled:opacity-50" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
+            <button onClick={handleSave} disabled={saving || tarievenFout || overzichtRegels.length === 0} className="px-6 py-2.5 rounded-xl text-sm font-bold text-white flex items-center gap-2 disabled:opacity-50" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
               Forecast aanmaken
             </button>
