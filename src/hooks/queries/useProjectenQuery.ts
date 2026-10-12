@@ -13,6 +13,7 @@ interface Project {
   intake_gedaan: boolean; rmu_merk: string | null; rmu_configuratie_id: string | null;
   status: string;
   projectjaar: number | null;
+  status_gewijzigd_op?: string | null;
 }
 
 async function fetchProjecten(): Promise<Project[]> {
