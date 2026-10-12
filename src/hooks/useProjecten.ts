@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Project } from "@/types/app";
+import { adminProjects, PROJECT_SAFE_COLUMNS } from "@/lib/projectsAdmin";
 
 interface UseProjectenOptions {
   alleenActief?: boolean;
@@ -16,7 +17,7 @@ export function useProjecten(options: UseProjectenOptions = {}) {
   const fetchProjecten = useCallback(async () => {
     setLoading(true);
 
-    let q = supabase.from("projects").select("*").order("nummer");
+    let q = supabase.from("projects").select(PROJECT_SAFE_COLUMNS).order("nummer");
 
     if (alleenActief) {
       q = q.eq("active", true);

@@ -3,6 +3,7 @@
 // Excludes internal data like eigen kosten and marges.
 
 import { supabase } from "@/integrations/supabase/client";
+import { adminProjects, PROJECT_SAFE_COLUMNS } from "@/lib/projectsAdmin";
 
 interface PrijzenbladRegel {
   spec_code?: string | null;
@@ -34,8 +35,7 @@ const fmtDate = (d = new Date()) =>
 
 export async function generateForecastPdf(projectId: string) {
   // Load project + forecast + regels + opdrachtgever
-  const { data: project } = await supabase
-    .from("projects")
+  const { data: project } = await adminProjects()
     .select("id, nummer, naam, stationsnaam, adres, straat, postcode, stad, opdrachtgever_id")
     .eq("id", projectId)
     .maybeSingle();

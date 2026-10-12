@@ -5,6 +5,7 @@ import { euro } from "@/lib/formatting";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { isProjectForecastRelevant } from "@/lib/forecastRelevant";
+import { adminProjects, PROJECT_SAFE_COLUMNS } from "@/lib/projectsAdmin";
 
 interface Props { projectId: string }
 
@@ -31,7 +32,7 @@ export function NacalculatieTab({ projectId }: Props) {
     const [fcRes, urenRes, projRes] = await Promise.all([
       supabase.from("project_forecast").select("id, methode, verwachte_omzet").eq("project_id", projectId).maybeSingle(),
       supabase.from("uren_boekingen").select("medewerker_id, uren, status").eq("project_id", projectId),
-      supabase.from("projects").select("naam, planner_sync_enabled, opdrachtgever_id, opdrachtgevers(naam)").eq("id", projectId).maybeSingle(),
+      adminProjects().select("naam, planner_sync_enabled, opdrachtgever_id, opdrachtgevers(naam)").eq("id", projectId).maybeSingle(),
     ]);
 
     if (projRes.data) {

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
-import { SPEC_CODES, GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/specCodes";
+import { GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/specCodes";
 import {
   Plus, Trash2, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock,
   Check, Info, Download, FileSpreadsheet, AlertTriangle, RefreshCw, CheckCircle2,
@@ -67,7 +67,7 @@ export function ForecastTab({ projectId }: { projectId: string }) {
   const [alleProfielen, setAlleProfielen] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
   const [verwachteOmzet, setVerwachteOmzet] = useState<number>(0);
-  const [specCodes, setSpecCodes] = useState<SpecCode[]>(SPEC_CODES);
+  const [specCodes, setSpecCodes] = useState<SpecCode[]>([]);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const isSavingRef = useRef(false);
   const [project, setProject] = useState<ProjectInfo>({ nummer: null, naam: null });
@@ -77,8 +77,15 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
   const loadForecast = useCallback(async () => {
     setLoading(true);
-    const codes = await loadSpecCodes(supabase);
-    setSpecCodes(codes);
+    let codes: SpecCode[] = [];
+    try {
+      codes = await loadSpecCodes(supabase);
+      setSpecCodes(codes);
+    } catch (err) {
+      console.error("[ForecastTab] tarieven", err);
+      setSpecCodes([]);
+      toast.error("Tarieven konden niet worden opgehaald. Prijzen zijn niet beschikbaar.");
+    }
 
     const { data: proj } = await supabase
       .from("projects")

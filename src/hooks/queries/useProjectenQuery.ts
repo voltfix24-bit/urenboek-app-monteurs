@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { queryKeys } from "@/lib/queryKeys";
 import { toast } from "sonner";
 import { cacheProjecten } from "@/lib/offlineQueue";
+import { adminProjects } from "@/lib/projectsAdmin";
 
 interface Project {
   id: string; nummer: string; naam: string; active: boolean; opdrachtgever_id: string | null;
@@ -15,8 +16,7 @@ interface Project {
 }
 
 async function fetchProjecten(): Promise<Project[]> {
-  const { data, error } = await supabase
-    .from("projects")
+  const { data, error } = await adminProjects()
     .select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id, status, projectjaar")
     .order("nummer");
   if (error) throw error;
@@ -37,8 +37,7 @@ export function useProjectQuery(id: string) {
   return useQuery({
     queryKey: queryKeys.project(id),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("projects")
+      const { data, error } = await adminProjects()
         .select("*")
         .eq("id", id)
         .single();

@@ -1,4 +1,4 @@
-import { SPEC_CODES, type SpecCode } from "./specCodes";
+import { type SpecCode } from "./specCodes";
 
 export interface IntakeAntwoorden {
   // Stap 1 — RMU
@@ -196,7 +196,7 @@ export function berekenRegels(
   specCodesOverride?: SpecCode[]
 ): BerekendeRegel[] {
   const getSpec = (code: string) => {
-    const codes = specCodesOverride || SPEC_CODES;
+    const codes = specCodesOverride || [];
     return codes.find(s => s.code === code);
   };
   const actief = new Map<string, BerekendeRegel>();
