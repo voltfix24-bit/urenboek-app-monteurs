@@ -174,6 +174,7 @@ export default function DesktopWeekPlanning() {
       const { data, error } = await supabase.from("planning").insert(direct).select("id");
       if (error) throw error;
       ids = (data ?? []).map((r) => r.id);
+      await markeerDefinitief([barProject]);
     }
     bewaarRecent(barProject);
     await markeerGepland([barProject]);
@@ -229,6 +230,7 @@ export default function DesktopWeekPlanning() {
       const ids = doel.filter((c) => c.planning && !c.beschermd).map((c) => c.planning!.id);
       beschermd = doel.length - ids.length;
       if (ids.length) { const { error } = await supabase.from("planning").update(waarden).in("id", ids); if (error) throw error; }
+      if (ids.length) await markeerDefinitief([waarden.project_id]);
     } else {
       for (const c of doel) {
         const a = actieVoorBewerken(c, waarden, profileId);
@@ -288,6 +290,7 @@ export default function DesktopWeekPlanning() {
         : await supabase.from("planning").insert(rows);
       if (insErr) throw insErr;
       await markeerGepland(rows.map((r) => r.project_id));
+      if (!conceptModus) await markeerDefinitief(rows.map((r) => r.project_id));
     }
     toast.success(`${rows.length} ${rows.length === 1 ? "dag" : "dagen"} gekopieerd uit week ${getISOWeek(vorige)}${conceptModus ? " (concept)" : ""}${overgeslagen ? ` · ${overgeslagen} overgeslagen` : ""}`);
   });
@@ -300,7 +303,7 @@ export default function DesktopWeekPlanning() {
     const n = res.medewerker_ids?.length ?? 0;
     toast.success(`Week ${weekNumber} gepubliceerd — ${n} ${n === 1 ? "monteur ziet" : "monteurs zien"} de wijzigingen`);
     if (res.overgeslagen?.length) {
-      toast.warning(`Overgeslagen: ${res.overgeslagen.map((o) => `${korteNaam(medMap.get(o.medewerker_id)?.full_name ?? "?")} ${format(new Date(`${o.datum}T12:00:00`), "EEEEEE d/M", { locale: nl })}${o.reden === "planner_beschermd" ? " (Planner-koppeling)" : ""}`).join(", ")}`);
+      toast.warning(`Overgeslagen: ${res.overgeslagen.map((o) => `${korteNaam(medMap.get(o.medewerker_id)?.full_name ?? "?")} ${format(new Date(`${o.datum}T12:00:00`), "EEEEEE d/M", { locale: nl })}${o.reden === "planner_beschermd" ? " (Planner-koppeling)" : o.reden === "al_ingepland" ? " (al ingepland)" : ""}`).join(", ")}`);
     }
   });
 
