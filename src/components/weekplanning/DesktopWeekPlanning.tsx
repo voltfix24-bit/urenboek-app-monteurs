@@ -78,12 +78,15 @@ export default function DesktopWeekPlanning() {
     return a.full_name.localeCompare(b.full_name, "nl", { sensitivity: "base" });
   }), [medewerkers, cellen, datums]);
 
-  // Overplanning (bestaande regel: meer dan 5 unieke dagen per week)
+  // Overplanning (bestaande regel: meer dan 5 unieke dagen per week), inclusief concepten
   const overgepland = useMemo(() => {
-    const set = new Set<string>();
-    medewerkers.forEach((m) => { if (new Set(planning.filter((p) => p.medewerker_id === m.id).map((p) => p.datum)).size > 5) set.add(m.id); });
-    return set;
-  }, [planning, medewerkers]);
+    const tel = new Map<string, Set<string>>();
+    celLijst.filter(celTelt).forEach((c) => {
+      const s = tel.get(c.medewerker_id) ?? new Set<string>();
+      s.add(c.datum); tel.set(c.medewerker_id, s);
+    });
+    return new Set(Array.from(tel.entries()).filter(([, s]) => s.size > 5).map(([id]) => id));
+  }, [celLijst]);
 
   const conflictTekst = useCallback((cel: Cel | undefined) => {
     if (!celTelt(cel)) return null;
@@ -140,6 +143,18 @@ export default function DesktopWeekPlanning() {
     if (!ids.length || !profileId) return;
     await supabase.from("projects").update({ status: "gepland", status_gewijzigd_op: new Date().toISOString(), status_gewijzigd_door: profileId })
       .in("id", ids).eq("status", "nieuw");
+  };
+
+  /** Directe modus: inplannen zet het project op definitief, zodat monteurs uren kunnen boeken. */
+  const markeerDefinitief = async (projectIds: (string | null | undefined)[]) => {
+    const ids = Array.from(new Set(projectIds.filter((x): x is string => !!x)));
+    if (!ids.length || !profileId) return;
+    const nu = new Date().toISOString();
+    const { error } = await supabase.from("project_planning_status").upsert(
+      ids.map((project_id) => ({ project_id, is_definitief: true, definitief_op: nu, definitief_door: profileId })),
+      { onConflict: "project_id" },
+    );
+    if (error) throw error;
   };
 
   const plan = (medIds: string[], doelDatums: string[], notitie: string) => run(async () => {
