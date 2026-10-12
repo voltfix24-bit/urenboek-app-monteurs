@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from "react";
+import DesktopWeekPlanning from "@/components/weekplanning/DesktopWeekPlanning";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -60,7 +61,25 @@ function getModalStatus(medId: string, dateStr: string, medewerkers: MedewerkerI
   return { label: "Beschikbaar", color: "var(--accent)", bg: "var(--accent-light)" };
 }
 
+const DESKTOP_QUERY = "(min-width: 1024px)";
+
+function useIsDesktop() {
+  return useSyncExternalStore(
+    (cb) => { const mq = window.matchMedia(DESKTOP_QUERY); mq.addEventListener("change", cb); return () => mq.removeEventListener("change", cb); },
+    () => window.matchMedia(DESKTOP_QUERY).matches,
+    () => false,
+  );
+}
+
+/** Desktop (lg+) krijgt de weekplanning met conceptmodus; mobiel blijft ongewijzigd. */
 export default function ManagerPlanning() {
+  const { isManager } = useAuth();
+  const isDesktop = useIsDesktop();
+  if (isDesktop && isManager) return <DesktopWeekPlanning />;
+  return <MobileManagerPlanning />;
+}
+
+function MobileManagerPlanning() {
   const { isManager, user } = useAuth();
   const { profile, profileId: myProfileId } = useProfile();
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
