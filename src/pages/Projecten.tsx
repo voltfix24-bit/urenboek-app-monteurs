@@ -22,6 +22,9 @@ import { DesktopProjectLijst } from "@/components/projecten/DesktopProjectLijst"
 import { DesktopProjectDetail, DesktopFormPanel } from "@/components/projecten/DesktopProjectDetail";
 import { valideer, projectSchema, projectEditSchema } from "@/lib/validatie";
 import { ListSkeleton, ProjectCardSkeleton } from "@/components/ui/Skeletons";
+import { Button } from "@/components/ui/button";
+import { STATUS_CONFIG, STATUS_VOLGORDE } from "@/lib/projectStatus";
+import { isLopend, openPunten } from "@/lib/projectChecklist";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
@@ -53,6 +56,8 @@ export default function Projecten() {
   const [searchQuery, setSearchQuery] = useState("");
   const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
   const [statusFilter, setStatusFilter] = useState("alle");
+  const [deskFase, setDeskFase] = useState<string>("lopend");
+  const [deskArchief, setDeskArchief] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const { focus, clear: clearFocus } = useFocusParam();
   useClearFocusOnClose(selectedId !== null);
@@ -202,33 +207,67 @@ export default function Projecten() {
 
 
   const clearError = (field: string) => setFormErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
-  const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} />;
+  const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} variant={desktopMode === "edit" ? "desktop-edit" : "desktop-new"} />;
+
+  // ── Desktop: fasefilters + archief ──
+  const desktopBase = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return projects.filter(p => (deskArchief || p.active) && (!q || [p.naam, p.nummer, p.stad, p.stationsnaam].some(v => v?.toLowerCase().includes(q))));
+  }, [projects, searchQuery, deskArchief]);
+  const matchFase = (p: Project, f: string) => {
+    const s = p.status || "nieuw";
+    if (f === "lopend") return s !== "gesloten";
+    if (f === "aandacht") return isLopend(p) && openPunten(p) > 0;
+    return s === f;
+  };
+  const deskCounts = useMemo(() => {
+    const c: Record<string, number> = {};
+    ["lopend", "aandacht", ...STATUS_VOLGORDE].forEach(f => { c[f] = desktopBase.filter(p => matchFase(p, f)).length; });
+    return c;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [desktopBase]);
+  const desktopProjects = useMemo(() => desktopBase.filter(p => matchFase(p, deskFase)).sort((a, b) => Number(b.active) - Number(a.active) || a.naam.localeCompare(b.naam, "nl")),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [desktopBase, deskFase]);
+  const lopendTotaal = projects.filter(isLopend).length;
+  const aandachtTotaal = projects.filter(p => isLopend(p) && openPunten(p) > 0).length;
 
   return (
     <>
       <DesktopSidebar badges={badges} />
 
       {/* DESKTOP */}
-      <div className="hidden lg:block" style={{ marginLeft: 240, minHeight: "100vh", background: "var(--app-navy)" }}>
-        <header className="flex items-center justify-between px-10 pt-8 pb-4">
+      <div className="hidden lg:flex pj-page">
+        <header className="pj-header">
           <div>
-            <h1 className="text-[22px] font-medium" style={{ color: "var(--text-primary)" }}>Projecten</h1>
-            <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>{activeProjects.length} projecten actief</p>
+            <h1>Projecten</h1>
+            <p>{lopendTotaal} lopend · {aandachtTotaal} {aandachtTotaal === 1 ? "vraagt" : "vragen"} aandacht</p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/opdrachtgevers")} className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5" style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>
-              <Building2 className="h-3.5 w-3.5" /> Opdrachtgevers →
-            </button>
-            <button onClick={() => { setDesktopMode("add"); setSelectedId(null); setForm(emptyForm); }} className="px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5" style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}>
-              <Plus className="h-3.5 w-3.5" /> Nieuw project
-            </button>
+            <Button variant="outline" onClick={() => navigate("/opdrachtgevers")}><Building2 className="h-4 w-4" /> Opdrachtgevers</Button>
+            <Button className="pj-btn-next" onClick={() => { setDesktopMode("add"); setSelectedId(null); setForm({ ...emptyForm, projectjaar: String(new Date().getFullYear()) }); }}>
+              <Plus className="h-4 w-4" /> Nieuw project
+            </Button>
           </div>
         </header>
 
-        <div className="flex px-10 pb-10" style={{ height: "calc(100vh - 100px)" }}>
-          <DesktopProjectLijst activeProjects={filteredActive} inactiveProjects={filteredInactive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} getOgNaam={getOgNaam} loading={loading} statusFilter={statusFilter} onStatusFilter={setStatusFilter} statusCounts={statusCounts} />
+        <div className="pj-filters" role="toolbar" aria-label="Filter op fase">
+          {[{ key: "lopend", label: "Lopend", dot: null }, { key: "aandacht", label: "Aandacht nodig", dot: "var(--danger)" },
+            ...STATUS_VOLGORDE.map(s => ({ key: s, label: STATUS_CONFIG[s].label, dot: STATUS_CONFIG[s].dot as string }))].map(f => (
+            <button key={f.key} type="button" className="pj-chip" aria-pressed={deskFase === f.key} onClick={() => setDeskFase(f.key)}>
+              {f.dot && <i style={{ background: f.dot }} />}{f.label}<b>{deskCounts[f.key] ?? 0}</b>
+            </button>
+          ))}
+          <span className="flex-1" />
+          <button type="button" className="pj-chip" aria-pressed={deskArchief} onClick={() => setDeskArchief(v => !v)}>
+            {deskArchief ? "Archief verbergen" : "Archief tonen"}
+          </button>
+        </div>
 
-          <div className="flex-1 overflow-y-auto pl-8">
+        <div className="pj-columns">
+          <DesktopProjectLijst projects={desktopProjects} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} toonMarge={permissies.zietProjectFinancien} loading={loading} />
+
+          <div className="pj-detail">
             {desktopMode === "add" ? (
               <DesktopFormPanel title="Nieuw project aanmaken" onCancel={() => setDesktopMode("view")} onSubmit={() => handleSubmit(true)} submitLabel="Project aanmaken">
                 {formFields}
@@ -238,12 +277,12 @@ export default function Projecten() {
                 {formFields}
               </DesktopFormPanel>
             ) : selectedProject ? (
-              <DesktopProjectDetail project={selectedProject} ogNaam={getOgNaam(selectedProject.opdrachtgever_id)} isManager={isManager} confirmDeleteId={confirmDeleteId} onEdit={() => startDesktopEdit(selectedProject)} onToggle={() => toggleActive(selectedProject)} onDelete={() => handleDelete(selectedProject)} onCancelDelete={() => setConfirmDeleteId(null)} navigate={navigate} onStartIntake={() => setIntakeProjectId(selectedProject.id)} />
+              <DesktopProjectDetail key={selectedProject.id} project={selectedProject} ogNaam={getOgNaam(selectedProject.opdrachtgever_id)} isManager={isManager} zietFinancien={permissies.zietProjectFinancien} confirmDeleteId={confirmDeleteId} onEdit={() => startDesktopEdit(selectedProject)} onToggle={() => toggleActive(selectedProject)} onDelete={() => handleDelete(selectedProject)} onCancelDelete={() => setConfirmDeleteId(null)} navigate={navigate} onStartIntake={() => setIntakeProjectId(selectedProject.id)} />
             ) : (
-              <div className="flex flex-col items-center justify-center h-full" style={{ color: "var(--text-muted)" }}>
-                <FolderOpen className="h-8 w-8 mb-3" />
-                <p className="text-sm font-medium">Selecteer een project</p>
-                <p className="text-xs mt-1">Klik op een project links om de details te bekijken</p>
+              <div className="pj-empty">
+                <FolderOpen className="mb-3 h-8 w-8" />
+                <p className="font-medium">Selecteer een project</p>
+                <p className="mt-1 text-xs">Klik op een project links om de details te bekijken</p>
               </div>
             )}
           </div>
