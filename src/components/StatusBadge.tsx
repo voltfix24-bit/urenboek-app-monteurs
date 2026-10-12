@@ -1,32 +1,22 @@
 import { STATUS_CONFIG, type ProjectStatus } from "@/lib/projectStatus";
 
 interface StatusBadgeProps {
-  status: ProjectStatus;
+  status: ProjectStatus | string;
   size?: 'sm' | 'md' | 'lg';
   onClick?: () => void;
 }
 
+/** Fasepill met dot, zonder emoji. */
 export function StatusBadge({ status, size = 'md', onClick }: StatusBadgeProps) {
-  const config = STATUS_CONFIG[status] || STATUS_CONFIG.nieuw;
+  const config = STATUS_CONFIG[status as ProjectStatus] || STATUS_CONFIG.nieuw;
   return (
     <span
       onClick={onClick}
-      style={{
-        background: config.bg,
-        border: `1px solid ${config.border}`,
-        color: config.kleur,
-        borderRadius: size === 'lg' ? 12 : 20,
-        padding: size === 'sm' ? '2px 8px' : size === 'lg' ? '8px 16px' : '4px 12px',
-        fontSize: size === 'sm' ? 10 : size === 'lg' ? 14 : 12,
-        fontWeight: 600,
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        cursor: onClick ? 'pointer' : 'default',
-        whiteSpace: 'nowrap' as const,
-      }}
+      className={`fase-pill is-${size}`}
+      style={{ background: config.bg, color: config.kleur, cursor: onClick ? 'pointer' : 'default' }}
     >
-      {config.icoon} {config.label}
+      <i style={{ background: config.dot }} aria-hidden="true" />
+      {config.label}
     </span>
   );
 }
