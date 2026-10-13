@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
+import { UitleenInfo } from "@/components/planning/UitleenInfo";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,7 +21,7 @@ import { useNavBadges } from "@/hooks/useNavBadges";
 import { useActiveMedewerker } from "@/hooks/useActiveMedewerker";
 import { MonteurSwitcher } from "@/components/MonteurSwitcher";
 
-interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; activiteit: string | null; activiteit_kleur: string | null; collega_ids: string[] | null; week_opmerking: string | null; }
+interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; activiteit: string | null; activiteit_kleur: string | null; collega_ids: string[] | null; week_opmerking: string | null; werklocatie?: string | null; contactpersoon?: string | null; contact_telefoon?: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
 interface ExistingBoeking { id: string; uren: number; status: string; type: string; beschrijving: string; }
 
@@ -160,7 +161,7 @@ export default function Planning() {
     const endStr = format(addDays(weekStart, 6), "yyyy-MM-dd");
 
     const [{ data }, { data: beschData }, { data: boekData }] = await Promise.all([
-      supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id, activiteit, activiteit_kleur, collega_ids, week_opmerking").eq("medewerker_id", queryProfileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
+      supabase.from("planning").select("id, datum, starttijd, eindtijd, notitie, project_id, activiteit, activiteit_kleur, collega_ids, week_opmerking, werklocatie, contactpersoon, contact_telefoon").eq("medewerker_id", queryProfileId).gte("datum", startStr).lte("datum", endStr).order("datum"),
       supabase.from("beschikbaarheid").select("id, type, datum_van, datum_tot, status").eq("medewerker_id", queryProfileId).eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("uren_boekingen").select("id, datum, project_id, uren, status, type, beschrijving").eq("medewerker_id", queryProfileId).gte("datum", startStr).lte("datum", endStr),
     ]);
@@ -198,7 +199,7 @@ export default function Planning() {
 
         setItems(data.map((d: any) => {
           const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "", straat: null, postcode: null, stad: null, adres: null };
-          return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false, project_straat: (proj as any).straat, project_postcode: (proj as any).postcode, project_stad: (proj as any).stad, project_adres: (proj as any).adres, activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, collega_ids: d.collega_ids || null, week_opmerking: d.week_opmerking || null };
+          return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false, project_straat: (proj as any).straat, project_postcode: (proj as any).postcode, project_stad: (proj as any).stad, project_adres: (proj as any).adres, activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, collega_ids: d.collega_ids || null, week_opmerking: d.week_opmerking || null, werklocatie: d.werklocatie ?? ((d.contactpersoon || d.contact_telefoon) ? (proj as any)?.adres ?? null : null), contactpersoon: d.contactpersoon ?? null, contact_telefoon: d.contact_telefoon ?? null };
         }));
 
         // Cache planning data for offline use
@@ -214,7 +215,7 @@ export default function Planning() {
 
         setItems(cached.map((d: any) => {
           const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "" };
-          return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: false, project_straat: null, project_postcode: null, project_stad: null, project_adres: null, activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, collega_ids: d.collega_ids || null, week_opmerking: d.week_opmerking || null };
+          return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: false, project_straat: null, project_postcode: null, project_stad: null, project_adres: null, activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, collega_ids: d.collega_ids || null, week_opmerking: d.week_opmerking || null, werklocatie: d.werklocatie ?? ((d.contactpersoon || d.contact_telefoon) ? (proj as any)?.adres ?? null : null), contactpersoon: d.contactpersoon ?? null, contact_telefoon: d.contact_telefoon ?? null };
         }));
         toast.info("📡 Offline — planning uit cache");
       }
@@ -618,6 +619,7 @@ export default function Planning() {
                               <p style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Hanken Grotesk', margin: 0 }}>
                                 {item.project_naam}
                               </p>
+                              <UitleenInfo werklocatie={item.werklocatie} contactpersoon={item.contactpersoon} telefoon={item.contact_telefoon} />
                               <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'Hanken Grotesk', marginTop: 2 }}>
                                 {item.starttijd}-{item.eindtijd}{item.project_stad ? ` - ${item.project_stad}` : ''}
                               </p>
@@ -920,6 +922,7 @@ export default function Planning() {
                                         }}>
                                           #{item.project_nummer}
                                         </div>
+                                        <UitleenInfo werklocatie={item.werklocatie} contactpersoon={item.contactpersoon} telefoon={item.contact_telefoon} />
                                       </div>
 
                                       {/* Status */}

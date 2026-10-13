@@ -18,6 +18,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useProjectInzet } from "@/hooks/useProjectInzet";
 import { berekenUren } from "@/lib/weekPlanning";
 import { formatUren } from "@/lib/formatting";
+import { UitleenUrenKaart } from "./UitleenUrenKaart";
 
 const initialen = (n: string) => n.split(" ").filter(Boolean).map((d) => d[0]).slice(0, 2).join("").toUpperCase();
 const isoWeek = (datum: string) => { const d = new Date(`${datum}T12:00:00`); return `${getISOWeekYear(d)}-W${String(getISOWeek(d)).padStart(2, "0")}`; };
@@ -34,18 +35,20 @@ interface Props {
   onCancelDelete: () => void;
   navigate: (path: string) => void;
   onStartIntake: () => void;
+  onZetSoort?: (soort: "project" | "uitleen") => void;
 }
 
 type Tab = "overzicht" | "forecast" | "planning";
 
-export function DesktopProjectDetail({ project, ogNaam, isManager, zietFinancien, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate, onStartIntake }: Props) {
+export function DesktopProjectDetail({ project, ogNaam, isManager, zietFinancien, confirmDeleteId, onEdit, onToggle, onDelete, onCancelDelete, navigate, onStartIntake, onZetSoort }: Props) {
   const [params, setParams] = useSearchParams();
   const { profileId } = useProfile();
   const inzet = useProjectInzet(project.id);
   const [busy, setBusy] = useState(false);
 
   const tabParam = params.get("tab");
-  const tab: Tab = tabParam === "forecast" && zietFinancien ? "forecast" : tabParam === "planning" ? "planning" : "overzicht";
+  const uitleen = project.soort === "uitleen";
+  const tab: Tab = tabParam === "forecast" && zietFinancien && !uitleen ? "forecast" : tabParam === "planning" ? "planning" : "overzicht";
   const setTab = (t: Tab) => {
     const next = new URLSearchParams(params);
     next.set("focus", project.id);
@@ -105,7 +108,7 @@ export function DesktopProjectDetail({ project, ogNaam, isManager, zietFinancien
     return m.set(c.medewerker_id, cur);
   }, new Map<string, { dagen: number; uren: number; concept: boolean }>()).entries());
 
-  const actieKnop = actie && (actie.blocked ? (
+  const actieKnop = !uitleen && actie && (actie.blocked ? (
     <Tooltip>
       <TooltipTrigger asChild><span tabIndex={0}><Button className="pj-btn-next is-blocked" disabled>{actie.label}</Button></span></TooltipTrigger>
       <TooltipContent>{actie.blocked}</TooltipContent>
@@ -116,7 +119,7 @@ export function DesktopProjectDetail({ project, ogNaam, isManager, zietFinancien
     <div className="pj-detail-inner">
       <div className="pj-kop">
         <div className="min-w-0">
-          <code>{[project.nummer, project.case_type, project.stationsnaam].filter(Boolean).join(" · ")}</code>
+          <code>{uitleen ? [project.nummer, "Uitleen"].join(" · ") : [project.nummer, project.case_type, project.stationsnaam].filter(Boolean).join(" · ")}</code>
           <h2>{project.naam}</h2>
           <p>{[ogNaam, project.stad, !project.active ? "Gearchiveerd" : null].filter(Boolean).join(" · ") || "—"}</p>
         </div>
@@ -128,7 +131,8 @@ export function DesktopProjectDetail({ project, ogNaam, isManager, zietFinancien
               <DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Meer acties"><MoreHorizontal size={18} /></Button></DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem onSelect={() => generateProjectPdf(project, ogNaam, isManager)}>PDF downloaden</DropdownMenuItem>
-                {terugzetFasen(status).length > 0 && (
+                {onZetSoort && <DropdownMenuItem onSelect={() => onZetSoort(uitleen ? "project" : "uitleen")}>{uitleen ? "Omzetten naar klus" : "Omzetten naar uitleen"}</DropdownMenuItem>}
+                {!uitleen && terugzetFasen(status).length > 0 && (
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger>Fase terugzetten</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
@@ -150,7 +154,7 @@ export function DesktopProjectDetail({ project, ogNaam, isManager, zietFinancien
         )}
       </div>
 
-      <div className="pj-steps" aria-label="Projectfase">
+      {!uitleen && <div className="pj-steps" aria-label="Projectfase">
         <div className="pj-steps-row">
           {STATUS_VOLGORDE.map((s, i) => (
             <div key={s} className={`pj-step ${i < huidigeIndex ? "is-past" : i === huidigeIndex ? "is-current" : ""}`} aria-current={i === huidigeIndex ? "step" : undefined}>
@@ -159,17 +163,34 @@ export function DesktopProjectDetail({ project, ogNaam, isManager, zietFinancien
           ))}
         </div>
         <p className="pj-step-note">{faseNotitie}</p>
-      </div>
+      </div>}
 
       <div className="pj-tabs" role="tablist">
-        {(["overzicht", ...(zietFinancien ? ["forecast"] : []), "planning"] as Tab[]).map((t) => (
+        {(["overzicht", ...(zietFinancien && !uitleen ? ["forecast"] : []), "planning"] as Tab[]).map((t) => (
           <button key={t} role="tab" type="button" className="pj-tab" aria-selected={tab === t} onClick={() => setTab(t)}>
             {t === "overzicht" ? "Overzicht" : t === "forecast" ? "Forecast" : "Planning"}
           </button>
         ))}
       </div>
 
-      {tab === "overzicht" && (
+      {tab === "overzicht" && uitleen && (
+        <div className="pj-grid">
+          <section className="pj-card">
+            <h3>Gegevens</h3>
+            <dl className="pj-fields">
+              <dt>Nummer</dt><dd className="pj-mono" style={{ fontSize: 14 }}>{project.nummer}</dd>
+              <dt>Opdrachtgever</dt><dd>{ogNaam || "—"}</dd>
+              <dt>Werklocatie</dt>
+              <dd>{project.adres || "—"}{project.adres && <a href={`https://maps.google.com/?q=${encodeURIComponent(project.adres)}`} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center gap-1 text-[13px]" style={{ color: "var(--accent-dark)" }}><MapPin className="h-3 w-3" />Kaart</a>}</dd>
+              <dt>Contactpersoon</dt><dd>{project.contactpersoon_naam || "—"}</dd>
+              <dt>Telefoon</dt><dd>{project.contactpersoon_tel ? <a href={`tel:${project.contactpersoon_tel}`} style={{ color: "var(--accent-dark)" }}>{project.contactpersoon_tel}</a> : "—"}</dd>
+            </dl>
+          </section>
+          <UitleenUrenKaart projectId={project.id} />
+        </div>
+      )}
+
+      {tab === "overzicht" && !uitleen && (
         <div className="pj-grid">
           <section className="pj-card">
             <h3>Klaar voor uitvoering</h3>
@@ -225,7 +246,7 @@ export function DesktopProjectDetail({ project, ogNaam, isManager, zietFinancien
         </div>
       )}
 
-      {tab === "forecast" && zietFinancien && (
+      {tab === "forecast" && zietFinancien && !uitleen && (
         <div style={{ paddingTop: 20 }}><ForecastTab projectId={project.id} /></div>
       )}
 

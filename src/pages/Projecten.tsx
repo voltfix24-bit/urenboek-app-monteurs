@@ -25,6 +25,8 @@ import { ListSkeleton, ProjectCardSkeleton } from "@/components/ui/Skeletons";
 import { Button } from "@/components/ui/button";
 import { STATUS_CONFIG, STATUS_VOLGORDE } from "@/lib/projectStatus";
 import { isLopend, openPunten } from "@/lib/projectChecklist";
+import { UitleenUrenKaart } from "@/components/projecten/UitleenUrenKaart";
+import { endOfISOWeek, format as fmtDatum, startOfISOWeek } from "date-fns";
 
 interface Opdrachtgever { id: string; naam: string; }
 interface Project {
@@ -35,7 +37,15 @@ interface Project {
   intake_gedaan: boolean; rmu_merk: string | null; rmu_configuratie_id: string | null;
   status: string;
   projectjaar: number | null;
+  soort?: string;
+  created_at?: string;
 }
+
+const formatUrenKort = (u: number) => `${Math.round(u * 10) / 10} u`.replace(".", ",");
+const isUitleen = (p: { soort?: string | null }) => p.soort === "uitleen";
+/** Nieuwste eerst (aanmaakdatum), gearchiveerde projecten onderaan. */
+const sorteerProjecten = <T extends { active: boolean; created_at?: string }>(lijst: T[]) =>
+  [...lijst].sort((a, b) => Number(b.active) - Number(a.active) || (b.created_at ?? "").localeCompare(a.created_at ?? ""));
 
 export default function Projecten() {
   const { isManager, permissies } = useAuth(); const navigate = useNavigate();
@@ -103,6 +113,21 @@ export default function Projecten() {
   }, [permissies.zietProjectFinancien]);
 
   useEffect(() => { fetchExtra(); }, [fetchExtra]);
+
+  // Uitleen: geboekte uren deze week per project (alleen lezen)
+  const [uitleenWeekUren, setUitleenWeekUren] = useState<Map<string, number>>(new Map());
+  const uitleenIds = useMemo(() => projects.filter(isUitleen).map(p => p.id).sort().join(","), [projects]);
+  useEffect(() => {
+    if (!uitleenIds) { setUitleenWeekUren(new Map()); return; }
+    const nu = new Date();
+    supabase.from("uren_boekingen").select("project_id, uren").in("project_id", uitleenIds.split(","))
+      .gte("datum", fmtDatum(startOfISOWeek(nu), "yyyy-MM-dd")).lte("datum", fmtDatum(endOfISOWeek(nu), "yyyy-MM-dd"))
+      .then(({ data }) => {
+        const m = new Map<string, number>();
+        (data ?? []).forEach((b: any) => m.set(b.project_id, (m.get(b.project_id) ?? 0) + (Number(b.uren) || 0)));
+        setUitleenWeekUren(m);
+      });
+  }, [uitleenIds]);
   useEffect(() => { if (!projectsLoading) setLoading(false); }, [projectsLoading]);
 
   const fetchData = useCallback(() => {
@@ -120,7 +145,36 @@ export default function Projecten() {
 
   function getOgNaam(id: string | null) { return id ? opdrachtgevers.find(o => o.id === id)?.naam || null : null; }
 
+  async function handleUitleenSubmit(isNew: boolean, id?: string) {
+    const errs: Record<string, string> = {};
+    if (!form.nummer.trim()) errs.nummer = "Nummer is verplicht";
+    if (!form.naam.trim()) errs.naam = "Naam is verplicht";
+    if (Object.keys(errs).length) { setFormErrors(errs); toast.error("Controleer de ingevulde gegevens"); return; }
+    setFormErrors({});
+    const data: any = {
+      nummer: form.nummer.trim(), naam: form.naam.trim(), soort: "uitleen",
+      opdrachtgever_id: form.opdrachtgever_id || null,
+      adres: form.werklocatie.trim() || null,
+      contactpersoon_naam: form.contactpersoon_naam.trim() || null,
+      contactpersoon_tel: form.contactpersoon_tel.trim() || null,
+    };
+    if (isNew) {
+      const { error } = await supabase.from("projects").insert(data);
+      if (error) { if ((await supabase.from("projects").select("id").eq("nummer", form.nummer.trim())).data?.length) toast.error("Nummer bestaat al"); else toast.error("Fout bij aanmaken"); return; }
+      toast.success("Uitleen toegevoegd"); setForm(emptyForm); setShowAdd(false); setDesktopMode("view"); fetchData();
+    } else {
+      if (!await mutate(supabase.from("projects").update(data).eq("id", id!))) return;
+      toast.success("Uitleen gewijzigd"); setEditId(null); setDesktopMode("view"); setForm(emptyForm); fetchData();
+    }
+  }
+
+  async function zetSoort(p: Project, soort: "project" | "uitleen") {
+    if (!await mutate(supabase.from("projects").update({ soort } as any).eq("id", p.id))) return;
+    toast.success(soort === "uitleen" ? "Omgezet naar uitleen" : "Omgezet naar klus"); fetchData();
+  }
+
   async function handleSubmit(isNew: boolean, id?: string) {
+    if (form.soort === "uitleen") return handleUitleenSubmit(isNew, id);
     const schema = isNew ? projectSchema : projectEditSchema;
     const vResult = valideer(schema, form);
     if (!vResult.success) {
@@ -172,12 +226,12 @@ export default function Projecten() {
 
   function startEdit(p: Project) {
     setEditId(p.id); setExpandedId(null); setShowAdd(false);
-    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "", vergoed_methode: "", projectjaar: p.projectjaar != null ? String(p.projectjaar) : "" });
+    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "", vergoed_methode: "", projectjaar: p.projectjaar != null ? String(p.projectjaar) : "", soort: isUitleen(p) ? "uitleen" : "project", werklocatie: p.adres || "" });
   }
 
   function startDesktopEdit(p: Project) {
     setDesktopMode("edit"); setSelectedId(p.id);
-    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "", vergoed_methode: "", projectjaar: p.projectjaar != null ? String(p.projectjaar) : "" });
+    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "", vergoed_methode: "", projectjaar: p.projectjaar != null ? String(p.projectjaar) : "", soort: isUitleen(p) ? "uitleen" : "project", werklocatie: p.adres || "" });
   }
 
   const activeProjects = projects.filter(p => p.active);
@@ -207,7 +261,7 @@ export default function Projecten() {
 
 
   const clearError = (field: string) => setFormErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
-  const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} variant={desktopMode === "edit" ? "desktop-edit" : "desktop-new"} />;
+  const formFields = <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} variant={desktopMode === "edit" ? "desktop-edit" : "desktop-new"} toonSoortKeuze={desktopMode === "add"} />;
 
   // ── Desktop: fasefilters + archief ──
   const desktopBase = useMemo(() => {
@@ -216,21 +270,23 @@ export default function Projecten() {
   }, [projects, searchQuery, deskArchief]);
   const matchFase = (p: Project, f: string) => {
     const s = p.status || "nieuw";
+    if (f === "uitleen") return isUitleen(p);
+    if (isUitleen(p)) return false;
     if (f === "lopend") return s !== "gesloten";
     if (f === "aandacht") return isLopend(p) && openPunten(p) > 0;
     return s === f;
   };
   const deskCounts = useMemo(() => {
     const c: Record<string, number> = {};
-    ["lopend", "aandacht", ...STATUS_VOLGORDE].forEach(f => { c[f] = desktopBase.filter(p => matchFase(p, f)).length; });
+    ["lopend", "aandacht", ...STATUS_VOLGORDE, "uitleen"].forEach(f => { c[f] = desktopBase.filter(p => matchFase(p, f)).length; });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [desktopBase]);
-  const desktopProjects = useMemo(() => desktopBase.filter(p => matchFase(p, deskFase)).sort((a, b) => Number(b.active) - Number(a.active) || a.naam.localeCompare(b.naam, "nl")),
+  const desktopProjects = useMemo(() => desktopBase.filter(p => matchFase(p, deskFase)).sort((a, b) => Number(b.active) - Number(a.active) || (b.created_at ?? "").localeCompare(a.created_at ?? "")),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [desktopBase, deskFase]);
-  const lopendTotaal = projects.filter(isLopend).length;
-  const aandachtTotaal = projects.filter(p => isLopend(p) && openPunten(p) > 0).length;
+  const lopendTotaal = projects.filter(p => !isUitleen(p) && isLopend(p)).length;
+  const aandachtTotaal = projects.filter(p => !isUitleen(p) && isLopend(p) && openPunten(p) > 0).length;
 
   return (
     <>
@@ -253,7 +309,7 @@ export default function Projecten() {
 
         <div className="pj-filters" role="toolbar" aria-label="Filter op fase">
           {[{ key: "lopend", label: "Lopend", dot: null }, { key: "aandacht", label: "Aandacht nodig", dot: "var(--danger)" },
-            ...STATUS_VOLGORDE.map(s => ({ key: s, label: STATUS_CONFIG[s].label, dot: STATUS_CONFIG[s].dot as string }))].map(f => (
+            ...STATUS_VOLGORDE.map(s => ({ key: s, label: STATUS_CONFIG[s].label, dot: STATUS_CONFIG[s].dot as string })), { key: "uitleen", label: "Uitleen", dot: "var(--text-muted)" }].map(f => (
             <button key={f.key} type="button" className="pj-chip" aria-pressed={deskFase === f.key} onClick={() => setDeskFase(f.key)}>
               {f.dot && <i style={{ background: f.dot }} />}{f.label}<b>{deskCounts[f.key] ?? 0}</b>
             </button>
@@ -265,7 +321,7 @@ export default function Projecten() {
         </div>
 
         <div className="pj-columns">
-          <DesktopProjectLijst projects={desktopProjects} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} toonMarge={permissies.zietProjectFinancien} loading={loading} />
+          <DesktopProjectLijst projects={desktopProjects} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} toonMarge={permissies.zietProjectFinancien} loading={loading} uitleenWeekUren={uitleenWeekUren} />
 
           <div className="pj-detail">
             {desktopMode === "add" ? (
@@ -277,7 +333,7 @@ export default function Projecten() {
                 {formFields}
               </DesktopFormPanel>
             ) : selectedProject ? (
-              <DesktopProjectDetail key={selectedProject.id} project={selectedProject} ogNaam={getOgNaam(selectedProject.opdrachtgever_id)} isManager={isManager} zietFinancien={permissies.zietProjectFinancien} confirmDeleteId={confirmDeleteId} onEdit={() => startDesktopEdit(selectedProject)} onToggle={() => toggleActive(selectedProject)} onDelete={() => handleDelete(selectedProject)} onCancelDelete={() => setConfirmDeleteId(null)} navigate={navigate} onStartIntake={() => setIntakeProjectId(selectedProject.id)} />
+              <DesktopProjectDetail key={selectedProject.id} project={selectedProject} ogNaam={getOgNaam(selectedProject.opdrachtgever_id)} isManager={isManager} zietFinancien={permissies.zietProjectFinancien} confirmDeleteId={confirmDeleteId} onEdit={() => startDesktopEdit(selectedProject)} onToggle={() => toggleActive(selectedProject)} onDelete={() => handleDelete(selectedProject)} onCancelDelete={() => setConfirmDeleteId(null)} navigate={navigate} onStartIntake={() => setIntakeProjectId(selectedProject.id)} onZetSoort={(soort) => zetSoort(selectedProject, soort)} />
             ) : (
               <div className="pj-empty">
                 <FolderOpen className="mb-3 h-8 w-8" />
@@ -317,6 +373,7 @@ export default function Projecten() {
                 { key: "actief", label: `Actief (${activeProjects.length})` },
                 { key: "concept", label: `Concept (${projects.filter(p => p.status === "concept").length})` },
                 { key: "afgerond", label: "Voltooid" },
+                { key: "uitleen", label: `Uitleen (${projects.filter(isUitleen).length})` },
               ].map(f => (
                 <button key={f.key} onClick={() => setStatusFilter(f.key)} style={{
                   padding: "8px 16px", borderRadius: 9999,
@@ -334,8 +391,9 @@ export default function Projecten() {
             {/* PROJECT CARDS */}
             {!loading && (
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {projects
+                {sorteerProjecten(projects)
                   .filter(p => {
+                    if (statusFilter === "uitleen") return isUitleen(p);
                     if (statusFilter === "actief") return p.active;
                     if (statusFilter === "concept") return p.status === "concept";
                     if (statusFilter === "afgerond") return !p.active;
@@ -343,7 +401,8 @@ export default function Projecten() {
                   })
                   .filter(p => !searchQuery || p.naam?.toLowerCase().includes(searchQuery.toLowerCase()) || p.nummer?.toLowerCase().includes(searchQuery.toLowerCase()))
                   .map((project) => {
-                    const isConcept = project.status === "concept";
+                    const uitleen = isUitleen(project);
+                    const isConcept = !uitleen && project.status === "concept";
                     const borderColor = isConcept ? "var(--warn-text)" : "var(--accent)";
                     return (
                       <div key={project.id} onClick={() => setSelectedId(project.id)} style={{
@@ -366,13 +425,16 @@ export default function Projecten() {
                             </div>
                             <div style={{ padding: "4px 12px", borderRadius: 9999, background: isConcept ? "var(--warn-light)" : "var(--accent-light)", border: `1px solid ${borderColor}50` }}>
                               <span style={{ fontSize: 9, fontWeight: 800, fontFamily: "Hanken Grotesk", textTransform: "uppercase", color: borderColor }}>
-                                {isConcept ? "CONCEPT" : project.active ? "ACTIEF" : "AFGEROND"}
+                                {uitleen ? "UITLEEN" : isConcept ? "CONCEPT" : project.active ? "ACTIEF" : "AFGEROND"}
                               </span>
                             </div>
                           </div>
 
                           {/* Progress */}
-                          {!isConcept && (
+                          {uitleen && (
+                            <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>{formatUrenKort(uitleenWeekUren.get(project.id) ?? 0)} deze week</p>
+                          )}
+                          {!isConcept && !uitleen && (
                             <div style={{ marginBottom: 8 }}>
                               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                                 <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>
@@ -426,7 +488,7 @@ export default function Projecten() {
                     <X size={20} />
                   </button>
                 </div>
-                <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} />
+                <ProjectFormFields form={form} setForm={setForm} opdrachtgevers={opdrachtgevers} isManager={isManager} errors={formErrors} clearError={clearError} toonSoortKeuze />
                 <button onClick={() => handleSubmit(true)} style={{
                   width: "100%", height: 64, borderRadius: 16, background: "var(--accent)", border: "none", color: "var(--accent-dark)",
                   fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 16, textTransform: "uppercase", letterSpacing: "0.1em",
@@ -483,12 +545,20 @@ export default function Projecten() {
                     </div>
                   )}
 
+                  {isUitleen(p) && <UitleenUrenKaart projectId={p.id} compact />}
+
                   {/* Planning status — concept ↔ definitief toggle */}
                   {isManager && (
                     <div className="mb-3">
                       <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Planning</p>
                       <PlanningStatusTab projectId={p.id} profileId={profileId ?? undefined} onStatusChange={fetchData} />
                     </div>
+                  )}
+
+                  {isManager && (
+                    <button onClick={() => zetSoort(p as any, isUitleen(p) ? "project" : "uitleen")} className="w-full py-2.5 mt-3 rounded-xl text-xs font-semibold" style={{ background: "var(--bg-surface-2)", color: "var(--text-muted)" }}>
+                      {isUitleen(p) ? "Omzetten naar klus" : "Omzetten naar uitleen"}
+                    </button>
                   )}
 
                   {isManager && (

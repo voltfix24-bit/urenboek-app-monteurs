@@ -17,9 +17,10 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TeamPlanningGrid } from "@/components/TeamPlanningGrid";
 import { PlanningDialog } from "@/components/PlanningDialog";
+import { adminProjects } from "@/lib/projectsAdmin";
 import { formatUren } from "@/lib/formatting";
 
-interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; planning_group_id: string | null; }
+interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; planning_group_id: string | null; werklocatie?: string | null; contactpersoon?: string | null; contact_telefoon?: string | null; }
 interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; planning_partner_ids: string[]; role?: string | null; }
 interface ProjectInfo { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
 interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_tot: string; type: string; status: string; }
@@ -89,7 +90,7 @@ function MobileManagerPlanning() {
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [modalForm, setModalForm] = useState({ medewerker_id: "", project_id: "", datum: "", starttijd: "07:00", eindtijd: "16:00", notitie: "" });
+  const [modalForm, setModalForm] = useState({ medewerker_id: "", project_id: "", datum: "", starttijd: "07:00", eindtijd: "16:00", notitie: "", werklocatie: "", contactpersoon: "", contact_telefoon: "" });
   const [modalDatums, setModalDatums] = useState<string[]>([]);
   const [editId, setEditId] = useState<string | null>(null);
   const [expandedMedewerker, setExpandedMedewerker] = useState<string | null>(null);
@@ -141,7 +142,7 @@ function MobileManagerPlanning() {
     const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }, { data: rolesData }] = await Promise.all([
       supabase.from("planning").select("*, activiteit, activiteit_kleur, planning_group_id").gte("datum", startStr).lte("datum", endStr),
       supabase.from("profiles").select("id, full_name, vaste_vrije_dagen, planning_partner_ids").eq("account_status", "active").order("full_name"),
-      supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").eq("active", true).order("nummer"),
+      adminProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("user_roles").select("user_id, role"),
     ]);
@@ -156,7 +157,7 @@ function MobileManagerPlanning() {
       const prev = userRoleMap.get(r.user_id);
       if (!prev || (rolePriority[r.role] ?? 0) > (rolePriority[prev] ?? 0)) userRoleMap.set(r.user_id, r.role);
     });
-    setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "", activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, planning_group_id: d.planning_group_id || null })));
+    setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "", activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, planning_group_id: d.planning_group_id || null, werklocatie: d.werklocatie ?? null, contactpersoon: d.contactpersoon ?? null, contact_telefoon: d.contact_telefoon ?? null })));
     setMedewerkers(((profData ?? []) as any[]).map((p) => ({ ...p, planning_partner_ids: p.planning_partner_ids || [], role: userRoleMap.get(profIdToUserId.get(p.id) || "") || null })) as any);
     setProjects((projData ?? []) as any);
     setBeschikbaarheid((beschData ?? []) as any);
@@ -212,11 +213,13 @@ function MobileManagerPlanning() {
     const existing = entries.find(e => e.medewerker_id === medewerker_id && e.datum === datum);
     if (existing) {
       setEditId(existing.id);
-      setModalForm({ medewerker_id: existing.medewerker_id, project_id: existing.project_id, datum: existing.datum, starttijd: existing.starttijd, eindtijd: existing.eindtijd, notitie: existing.notitie });
+      setModalForm({ medewerker_id: existing.medewerker_id, project_id: existing.project_id, datum: existing.datum, starttijd: existing.starttijd, eindtijd: existing.eindtijd, notitie: existing.notitie, werklocatie: existing.werklocatie ?? "", contactpersoon: existing.contactpersoon ?? "", contact_telefoon: existing.contact_telefoon ?? "" });
       setModalDatums([existing.datum]);
     } else {
       setEditId(null);
-      setModalForm({ medewerker_id, project_id: projects[0]?.id || "", datum, starttijd: "07:00", eindtijd: "16:00", notitie: "" });
+      const p0: any = projects[0];
+      setModalForm({ medewerker_id, project_id: p0?.id || "", datum, starttijd: "07:00", eindtijd: "16:00", notitie: "",
+        werklocatie: p0?.soort === "uitleen" ? p0.adres ?? "" : "", contactpersoon: p0?.soort === "uitleen" ? p0.contactpersoon_naam ?? "" : "", contact_telefoon: p0?.soort === "uitleen" ? p0.contactpersoon_tel ?? "" : "" });
       setModalDatums([datum]);
     }
     setExtraMedewerkerIds([]);
@@ -235,10 +238,17 @@ function MobileManagerPlanning() {
   const savePlanning = async () => {
     if (!myProfileId) return;
     setSaving(true);
+    const gekozen: any = projects.find((p: any) => p.id === modalForm.project_id);
+    const uitleen = gekozen?.soort === "uitleen";
+    const uitleenVelden = {
+      werklocatie: uitleen ? modalForm.werklocatie.trim() || null : null,
+      contactpersoon: uitleen ? modalForm.contactpersoon.trim() || null : null,
+      contact_telefoon: uitleen ? modalForm.contact_telefoon.trim() || null : null,
+    };
     try {
     if (editId) {
       const existing = entries.find(e => e.id === editId);
-      const updatePayload = { project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie } as any;
+      const updatePayload = { project_id: modalForm.project_id, starttijd: modalForm.starttijd, eindtijd: modalForm.eindtijd, notitie: modalForm.notitie, ...uitleenVelden } as any;
       if (existing?.planning_group_id) {
         // update alle gekoppelde entries
         if (!await mutate(supabase.from("planning").update(updatePayload).eq("planning_group_id", existing.planning_group_id))) return;
@@ -273,6 +283,7 @@ function MobileManagerPlanning() {
           created_by: myProfileId,
           planning_group_id: groupId,
           collega_ids: inGroup.filter(x => x !== medId),
+          ...uitleenVelden,
         }));
       }) as any;
 

@@ -9,9 +9,9 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { volledigAdres } from "@/lib/utils";
 import { formatUren, formatUrenGetal } from "@/lib/formatting";
 
-interface Project { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
+interface Project { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; soort?: string | null; contactpersoon_naam?: string | null; contactpersoon_tel?: string | null; }
 interface Medewerker { id: string; full_name: string; }
-interface FormValue { medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; }
+interface FormValue { medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; werklocatie: string; contactpersoon: string; contact_telefoon: string; }
 
 interface Props {
   open: boolean;
@@ -92,7 +92,7 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
   const nettoUren = Math.max(0, brutoMinuten - PAUZE_MINUTEN) / 60;
 
   const selectProject = (project: Project) => {
-    onFormChange({ ...form, project_id: project.id });
+    onFormChange({ ...form, project_id: project.id, ...(project.soort === "uitleen" ? { werklocatie: project.adres ?? "", contactpersoon: project.contactpersoon_naam ?? "", contact_telefoon: project.contactpersoon_tel ?? "" } : { werklocatie: "", contactpersoon: "", contact_telefoon: "" }) });
     const next = [project.id, ...recentIds.filter((id) => id !== project.id)].slice(0, 5);
     setRecentIds(next);
     localStorage.setItem(RECENT_KEY, JSON.stringify(next));
@@ -157,6 +157,13 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
             <div className="planning-presets">{PRESETS.map(([starttijd, eindtijd]) => <Button key={starttijd} type="button" variant="outline" onClick={() => onFormChange({ ...form, starttijd, eindtijd })}>{starttijd} – {eindtijd}</Button>)}</div>
           </div>
           <div className="planning-hours" id="planning-break-hint"><span>{formatUrenGetal(brutoMinuten / 60)} uur, min {PAUZE_MINUTEN} min vaste pauze</span><strong>{formatUren(nettoUren)}</strong></div>
+
+          {selectedProject?.soort === "uitleen" && (
+            <>
+              <div className="planning-field-group"><label htmlFor="planning-werklocatie">Werklocatie</label><input id="planning-werklocatie" className="planning-note" value={form.werklocatie ?? ""} onChange={(event) => onFormChange({ ...form, werklocatie: event.target.value })} placeholder="Optioneel" /></div>
+              <div className="planning-field-group"><label htmlFor="planning-contact">Contactpersoon / telefoon</label><div style={{ display: "flex", gap: 8 }}><input id="planning-contact" className="planning-note" value={form.contactpersoon ?? ""} onChange={(event) => onFormChange({ ...form, contactpersoon: event.target.value })} placeholder="Naam" /><input type="tel" aria-label="Telefoon contactpersoon" className="planning-note" value={form.contact_telefoon ?? ""} onChange={(event) => onFormChange({ ...form, contact_telefoon: event.target.value })} placeholder="Telefoon" /></div></div>
+            </>
+          )}
 
           <div className="planning-field-group"><label htmlFor="planning-note">Notitie</label><input id="planning-note" className="planning-note" value={form.notitie} onChange={(event) => onFormChange({ ...form, notitie: event.target.value })} placeholder="Optioneel" /></div>
 

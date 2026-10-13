@@ -25,7 +25,7 @@ function renderDialog(starttijd: string, eindtijd: string) {
       medewerkerNaam={medewerker.full_name}
       modalStatus={null}
       conflicts={[]}
-      form={{ medewerker_id: medewerker.id, project_id: project.id, datum: "2026-10-05", starttijd, eindtijd, notitie: "" }}
+      form={{ medewerker_id: medewerker.id, project_id: project.id, datum: "2026-10-05", starttijd, eindtijd, notitie: "", werklocatie: "", contactpersoon: "", contact_telefoon: "" }}
       selectedDates={["2026-10-05"]}
       projects={[project]}
       medewerkers={[medewerker]}

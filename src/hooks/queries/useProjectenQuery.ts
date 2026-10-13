@@ -14,11 +14,13 @@ interface Project {
   status: string;
   projectjaar: number | null;
   status_gewijzigd_op?: string | null;
+  soort: string;
+  created_at: string;
 }
 
 async function fetchProjecten(): Promise<Project[]> {
   const { data, error } = await adminProjects()
-    .select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id, status, projectjaar, status_gewijzigd_op")
+    .select("id, nummer, naam, active, opdrachtgever_id, stationsnaam, adres, case_type, contactpersoon_naam, contactpersoon_tel, contactpersoon_email, straat, postcode, stad, intake_gedaan, rmu_merk, rmu_configuratie_id, status, projectjaar, status_gewijzigd_op, soort, created_at")
     .order("nummer");
   if (error) throw error;
   const projects = (data ?? []) as Project[];

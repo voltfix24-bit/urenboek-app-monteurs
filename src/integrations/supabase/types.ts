@@ -1519,6 +1519,8 @@ export type Database = {
           activiteit: string | null
           activiteit_kleur: string | null
           collega_ids: string[] | null
+          contact_telefoon: string | null
+          contactpersoon: string | null
           created_at: string
           created_by: string
           datum: string
@@ -1536,11 +1538,14 @@ export type Database = {
           sync_locked: boolean
           updated_at: string
           week_opmerking: string | null
+          werklocatie: string | null
         }
         Insert: {
           activiteit?: string | null
           activiteit_kleur?: string | null
           collega_ids?: string[] | null
+          contact_telefoon?: string | null
+          contactpersoon?: string | null
           created_at?: string
           created_by: string
           datum: string
@@ -1558,11 +1563,14 @@ export type Database = {
           sync_locked?: boolean
           updated_at?: string
           week_opmerking?: string | null
+          werklocatie?: string | null
         }
         Update: {
           activiteit?: string | null
           activiteit_kleur?: string | null
           collega_ids?: string[] | null
+          contact_telefoon?: string | null
+          contactpersoon?: string | null
           created_at?: string
           created_by?: string
           datum?: string
@@ -1580,6 +1588,7 @@ export type Database = {
           sync_locked?: boolean
           updated_at?: string
           week_opmerking?: string | null
+          werklocatie?: string | null
         }
         Relationships: [
           {
@@ -1625,6 +1634,8 @@ export type Database = {
           activiteit: string | null
           activiteit_kleur: string | null
           collega_ids: string[] | null
+          contact_telefoon: string | null
+          contactpersoon: string | null
           created_at: string
           created_by: string | null
           datum: string
@@ -1637,12 +1648,15 @@ export type Database = {
           project_id: string | null
           starttijd: string | null
           updated_at: string
+          werklocatie: string | null
         }
         Insert: {
           actie: Database["public"]["Enums"]["planning_concept_actie"]
           activiteit?: string | null
           activiteit_kleur?: string | null
           collega_ids?: string[] | null
+          contact_telefoon?: string | null
+          contactpersoon?: string | null
           created_at?: string
           created_by?: string | null
           datum: string
@@ -1655,12 +1669,15 @@ export type Database = {
           project_id?: string | null
           starttijd?: string | null
           updated_at?: string
+          werklocatie?: string | null
         }
         Update: {
           actie?: Database["public"]["Enums"]["planning_concept_actie"]
           activiteit?: string | null
           activiteit_kleur?: string | null
           collega_ids?: string[] | null
+          contact_telefoon?: string | null
+          contactpersoon?: string | null
           created_at?: string
           created_by?: string | null
           datum?: string
@@ -1673,6 +1690,7 @@ export type Database = {
           project_id?: string | null
           starttijd?: string | null
           updated_at?: string
+          werklocatie?: string | null
         }
         Relationships: [
           {
@@ -2174,6 +2192,7 @@ export type Database = {
           projectjaar: number | null
           rmu_configuratie_id: string | null
           rmu_merk: string | null
+          soort: string
           stad: string | null
           stationsnaam: string | null
           status: string
@@ -2202,6 +2221,7 @@ export type Database = {
           projectjaar?: number | null
           rmu_configuratie_id?: string | null
           rmu_merk?: string | null
+          soort?: string
           stad?: string | null
           stationsnaam?: string | null
           status?: string
@@ -2230,6 +2250,7 @@ export type Database = {
           projectjaar?: number | null
           rmu_configuratie_id?: string | null
           rmu_merk?: string | null
+          soort?: string
           stad?: string | null
           stationsnaam?: string | null
           status?: string
@@ -2709,6 +2730,7 @@ export type Database = {
           projectjaar: number | null
           rmu_configuratie_id: string | null
           rmu_merk: string | null
+          soort: string
           stad: string | null
           stationsnaam: string | null
           status: string

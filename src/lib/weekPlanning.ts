@@ -20,6 +20,9 @@ export interface PlanningRij {
   collega_ids: string[] | null;
   external_source: string | null;
   sync_locked: boolean | null;
+  werklocatie?: string | null;
+  contactpersoon?: string | null;
+  contact_telefoon?: string | null;
 }
 
 export type ConceptActie = "nieuw" | "wijzig" | "verwijder";
@@ -38,6 +41,9 @@ export interface ConceptRij {
   activiteit_kleur: string | null;
   planning_group_id: string | null;
   collega_ids: string[] | null;
+  werklocatie?: string | null;
+  contactpersoon?: string | null;
+  contact_telefoon?: string | null;
 }
 
 export type CelStatus = "leeg" | "pub" | "nieuw" | "gewijzigd" | "verwijderd";
@@ -57,6 +63,9 @@ export interface Cel {
   planning: PlanningRij | null;
   concept: ConceptRij | null;
   beschermd: boolean;
+  werklocatie?: string | null;
+  contactpersoon?: string | null;
+  contact_telefoon?: string | null;
 }
 
 export interface MedewerkerBasis {
@@ -112,6 +121,9 @@ export function bouwCellen(planning: PlanningRij[], concepten: ConceptRij[]): Ma
       planning: p,
       concept: null,
       beschermd: isBeschermdeRegel(p),
+      werklocatie: p.werklocatie ?? null,
+      contactpersoon: p.contactpersoon ?? null,
+      contact_telefoon: p.contact_telefoon ?? null,
     });
   }
 
@@ -148,6 +160,9 @@ export function bouwCellen(planning: PlanningRij[], concepten: ConceptRij[]): Ma
       planning: c.actie === "wijzig" ? doel : null,
       concept: c,
       beschermd: doel ? isBeschermdeRegel(doel) : false,
+      werklocatie: c.werklocatie ?? null,
+      contactpersoon: c.contactpersoon ?? null,
+      contact_telefoon: c.contact_telefoon ?? null,
     });
   }
   return cellen;
@@ -195,7 +210,17 @@ export function bepaalDoelen(
   return { doelen, overgeslagen };
 }
 
-export interface PlanWaarden { project_id: string; starttijd: string; eindtijd: string; notitie: string }
+export interface PlanWaarden {
+  project_id: string; starttijd: string; eindtijd: string; notitie: string;
+  /** Alleen bij uitleen-projecten; optioneel en zonder validatie. */
+  werklocatie?: string | null; contactpersoon?: string | null; contact_telefoon?: string | null;
+}
+
+/** Uitleenvelden alleen meenemen als ze in de waarden staan (houdt bestaande rijen ongewijzigd). */
+const uitleenVelden = (w: PlanWaarden) =>
+  "werklocatie" in w || "contactpersoon" in w || "contact_telefoon" in w
+    ? { werklocatie: w.werklocatie ?? null, contactpersoon: w.contactpersoon ?? null, contact_telefoon: w.contact_telefoon ?? null }
+    : {};
 
 /** Concept-rijen (actie nieuw). Meerdere medewerkers op één dag = één ploeg (gedeelde group id + collega_ids). */
 export function bouwNieuwConcepten(doelen: Doel[], waarden: PlanWaarden, createdBy: string, uuid: () => string = () => crypto.randomUUID()) {
@@ -215,12 +240,13 @@ export function bouwNieuwConcepten(doelen: Doel[], waarden: PlanWaarden, created
       planning_group_id: groupId,
       collega_ids: meds.filter((m) => m !== medewerker_id),
       created_by: createdBy,
+      ...uitleenVelden(waarden),
     }));
   });
 }
 
 export type BewerkActie =
-  | { type: "update-concept"; id: string; patch: { project_id: string; starttijd: string; eindtijd: string; notitie: string } }
+  | { type: "update-concept"; id: string; patch: PlanWaarden }
   | { type: "upsert"; rij: Record<string, unknown> }
   | { type: "beschermd" }
   | { type: "niets" };
@@ -238,6 +264,8 @@ export function actieVoorBewerken(cel: Cel, waarden: PlanWaarden, createdBy: str
         project_id: waarden.project_id, starttijd: waarden.starttijd, eindtijd: waarden.eindtijd, notitie: waarden.notitie,
         activiteit: cel.activiteit, activiteit_kleur: cel.activiteit_kleur,
         planning_group_id: cel.planning_group_id, collega_ids: cel.collega_ids, created_by: createdBy,
+        werklocatie: cel.werklocatie ?? null, contactpersoon: cel.contactpersoon ?? null, contact_telefoon: cel.contact_telefoon ?? null,
+        ...uitleenVelden(waarden),
       },
     };
   }

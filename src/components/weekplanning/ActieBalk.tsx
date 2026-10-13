@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { X } from "lucide-react";
@@ -23,7 +23,7 @@ interface Props {
   conceptModus: boolean;
   onProjectChange: (id: string) => void;
   onTijdChange: (t: [string, string]) => void;
-  onPlan: (medIds: string[], datums: string[], notitie: string) => void;
+  onPlan: (medIds: string[], datums: string[], notitie: string, uitleen?: { werklocatie: string | null; contactpersoon: string | null; contact_telefoon: string | null }) => void;
   onClear: () => void;
   onClose: () => void;
 }
@@ -32,6 +32,16 @@ export function ActieBalk(props: Props) {
   const { medewerkers, selMedIds, selColumns, weekDates, cellen, beschikbaarheid, projects, weekProjectIds, projectId, tijd, busy } = props;
   const [notitie, setNotitie] = useState("");
   const [ploegMee, setPloegMee] = useState(true);
+  const project = projects.find((p) => p.id === projectId);
+  const isUitleen = project?.soort === "uitleen";
+  const [werklocatie, setWerklocatie] = useState("");
+  const [contact, setContact] = useState("");
+  const [telefoon, setTelefoon] = useState("");
+  useEffect(() => {
+    setWerklocatie(project?.adres ?? "");
+    setContact(project?.contactpersoon_naam ?? "");
+    setTelefoon(project?.contactpersoon_tel ?? "");
+  }, [project?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const medMap = useMemo(() => new Map(medewerkers.map((m) => [m.id, m])), [medewerkers]);
   const datums = selColumns.map((c) => format(weekDates[c], "yyyy-MM-dd"));
 
@@ -90,10 +100,18 @@ export function ActieBalk(props: Props) {
         <span className="wp-bar-sub">8 u netto per dag (60 min pauze)</span>
         <input className="wp-bar-note" placeholder="Notitie (optioneel)" value={notitie} onChange={(e) => setNotitie(e.target.value)} aria-label="Notitie" />
         {heeftInhoud && <button type="button" className="wp-bar-clear" disabled={busy} onClick={props.onClear}>Leegmaken</button>}
-        <button type="button" className="wp-bar-plan" disabled={busy || !projectId || doelen.length === 0} onClick={() => props.onPlan(medIds, datums, notitie)}>
+        <button type="button" className="wp-bar-plan" disabled={busy || !projectId || doelen.length === 0} onClick={() => props.onPlan(medIds, datums, notitie, isUitleen ? { werklocatie: werklocatie.trim() || null, contactpersoon: contact.trim() || null, contact_telefoon: telefoon.trim() || null } : undefined)}>
           Inplannen ({doelen.length})
         </button>
       </div>
+
+      {isUitleen && (
+        <div className="wp-bar-row wp-uitleen-velden">
+          <input className="wp-bar-note" placeholder="Werklocatie (optioneel)" value={werklocatie} onChange={(e) => setWerklocatie(e.target.value)} aria-label="Werklocatie" />
+          <input className="wp-bar-note" placeholder="Contactpersoon (optioneel)" value={contact} onChange={(e) => setContact(e.target.value)} aria-label="Contactpersoon" />
+          <input className="wp-bar-note" type="tel" placeholder="Telefoon (optioneel)" value={telefoon} onChange={(e) => setTelefoon(e.target.value)} aria-label="Telefoon contactpersoon" />
+        </div>
+      )}
 
       {overgeslagen.length > 0 && (
         <div className="wp-bar-skip">
