@@ -752,6 +752,9 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .wp-cell.is-deleted .wp-cell-title span { text-decoration: line-through; color: var(--text-muted); }
 .wp-cell-tag { position: absolute; top: 5px; right: 6px; padding: 1px 6px; border-radius: 5px; background: var(--bg-surface); font-size: 11px; font-weight: 700; color: var(--text-primary); }
 .wp-cell-lock { position: absolute; bottom: 5px; right: 6px; width: 13px; height: 13px; color: var(--text-muted); }
+.wp-cell-loc { position: absolute; bottom: 5px; right: 22px; width: 12px; height: 12px; color: var(--text-muted); }
+.wp-uitleen-velden { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; }
+.wp-uitleen-velden input { flex: 1 1 180px; }
 .wp-grid .wp-cell.is-verlof { background: repeating-linear-gradient(135deg, var(--wp-verlof-a) 0 6px, var(--wp-verlof-b) 6px 12px); }
 .wp-grid .wp-cell.is-ziek { background: repeating-linear-gradient(135deg, var(--wp-ziek-a) 0 6px, var(--wp-ziek-b) 6px 12px); }
 .wp-grid .wp-cell.is-vrij { background: var(--wp-vrij-bg); }
