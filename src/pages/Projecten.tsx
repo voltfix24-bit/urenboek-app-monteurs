@@ -524,6 +524,16 @@ export default function Projecten() {
                     </button>
                   </div>
 
+                  {isUitleen(p) && p.adres && (
+                    <div className="rounded-xl p-3 mb-3 space-y-1" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
+                      <p className="text-[11px] font-semibold" style={{ color: "var(--text-muted)" }}>Standaard werklocatie</p>
+                      <p className="text-xs" style={{ color: "var(--text-primary)" }}>{p.adres}</p>
+                      <a href={`https://maps.google.com/?q=${encodeURIComponent(p.adres)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs mt-1" style={{ color: "var(--accent)" }}>
+                        <MapPin className="h-3 w-3" /> Bekijk op kaart ↗
+                      </a>
+                    </div>
+                  )}
+
                   {(p.straat || p.stad) && (
                     <div className="rounded-xl p-3 mb-3 space-y-1" style={{ background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)" }}>
                       {p.straat && <p className="text-xs" style={{ color: "var(--text-primary)" }}>{p.straat}</p>}
