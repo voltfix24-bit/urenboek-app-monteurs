@@ -69,7 +69,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const isDefinitief = !makeConcept;
+    if (makeConcept) {
+      return new Response(JSON.stringify({ error: "Niet meer ondersteund" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const isDefinitief = true;
 
     const { error: statusError } = await adminClient
       .from("project_planning_status")

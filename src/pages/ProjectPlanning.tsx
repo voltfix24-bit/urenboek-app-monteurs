@@ -13,7 +13,6 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { getISOWeek, startOfISOWeek, addDays, format, getISOWeekYear } from "date-fns";
 import { nl } from "date-fns/locale";
-import { splitsKandidatenOpExternePlannerBotsing } from "@/lib/projectPlanningPublish";
 
 // ── Color palette ──
 const COLORS = [
@@ -93,7 +92,6 @@ export default function ProjectPlanning() {
   const [project, setProject] = useState<Project | null>(null);
   const [state, setState] = useState<MatrixState>(getDefaultState());
   const [monteurs, setMonteurs] = useState<Monteur[]>([]);
-  const [planningStatus, setPlanningStatus] = useState<{ is_definitief: boolean; definitief_op: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
@@ -101,8 +99,6 @@ export default function ProjectPlanning() {
   const [externePlannerRegels, setExternePlannerRegels] = useState<Array<{ medewerker_id: string; datum: string; external_source: string | null; sync_locked: boolean | null }>>([]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; key: string } | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
-  const [showDefinitiefDialog, setShowDefinitiefDialog] = useState(false);
-  const [showConceptDialog, setShowConceptDialog] = useState(false);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -113,17 +109,15 @@ export default function ProjectPlanning() {
   const myProfileId = useRef<string | null>(null);
   const syncForecastRef = useRef<((s: MatrixState) => Promise<void>) | null>(null);
 
-  const isDef = planningStatus?.is_definitief || false;
 
   // ── Load data ──
   useEffect(() => {
     if (!projectId) return;
     (async () => {
       setLoading(true);
-      const [projRes, matrixRes, statusRes, profilesRes, rolesRes] = await Promise.all([
+      const [projRes, matrixRes, profilesRes, rolesRes] = await Promise.all([
         supabase.from("projects").select("id, nummer, naam, stationsnaam, case_type").eq("id", projectId).single(),
         supabase.from("project_planning_matrix").select("*").eq("project_id", projectId).maybeSingle(),
-        supabase.from("project_planning_status").select("*").eq("project_id", projectId).maybeSingle(),
         supabase.from("profiles").select("id, user_id, full_name, uurtarief"),
         supabase.from("user_roles").select("user_id, role"),
       ]);
@@ -144,7 +138,6 @@ export default function ProjectPlanning() {
       } else if (projRes.data) {
         setState(prev => ({ ...prev, stationName: projRes.data!.stationsnaam || "", caseType: projRes.data!.case_type || "" }));
       }
-      setPlanningStatus(statusRes.data ? { is_definitief: statusRes.data.is_definitief, definitief_op: statusRes.data.definitief_op } : null);
 
       // Filter monteurs
       const monteurUserIds = new Set((rolesRes.data || []).filter((r: any) => r.role === "monteur").map((r: any) => r.user_id));
@@ -242,57 +235,6 @@ export default function ProjectPlanning() {
       delete cells[key];
       return { ...s, cells };
     });
-  };
-
-  // ── Definitief flow ──
-  const makeDefinitief = async () => {
-    if (!projectId) return;
-    // Save matrix
-    await saveState(state);
-    // Upsert planning status
-    await supabase.from("project_planning_status").upsert({
-      project_id: projectId,
-      is_definitief: true,
-      definitief_op: new Date().toISOString(),
-      definitief_door: myProfileId.current,
-    }, { onConflict: "project_id" });
-
-    // De projectmatrix is onschadelijk gemaakt: hij schrijft niet meer naar
-    // `planning`. Inplannen loopt uitsluitend via de weekplanning
-    // (planning_concept → publiceer_planning). Zo kan de matrix nooit meer
-    // bestaande planning wissen of overschrijven.
-    void splitsKandidatenOpExternePlannerBotsing;
-    void externePlannerRegels;
-    void dateFromWeek;
-
-    // Auto-update project status to 'in_uitvoering' if currently 'gepland'
-    if (project) {
-      const { data: projData } = await supabase.from("projects").select("status").eq("id", projectId).single();
-      if (projData && (projData.status === "gepland" || projData.status === "nieuw")) {
-        await supabase.from("projects").update({
-          status: "in_uitvoering",
-          status_gewijzigd_op: new Date().toISOString(),
-          status_gewijzigd_door: myProfileId.current,
-        } as any).eq("id", projectId);
-      }
-    }
-
-    setPlanningStatus({ is_definitief: true, definitief_op: new Date().toISOString() });
-    setShowDefinitiefDialog(false);
-    toast.success("Matrix definitief opgeslagen. Inplannen voor monteurs gaat via de weekplanning.");
-  };
-
-  const makeConcept = async () => {
-    if (!projectId) return;
-    // Matrix wist geen planning meer; alleen de matrixstatus gaat terug.
-    await supabase.from("project_planning_status").upsert({
-      project_id: projectId,
-      is_definitief: false,
-      definitief_op: null,
-    }, { onConflict: "project_id" });
-    setPlanningStatus({ is_definitief: false, definitief_op: null });
-    setShowConceptDialog(false);
-    toast.success("Matrix terug naar concept gezet. Bestaande planning is ongewijzigd.");
   };
 
   // ── Drag & drop activities ──
@@ -574,12 +516,6 @@ export default function ProjectPlanning() {
           {saveStatus === "saving" ? "Opslaan..." : saveStatus === "saved" ? "Opgeslagen" : "·"}
         </span>
 
-        {/* Status badge */}
-        <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1" style={{ background: isDef ? "var(--accent-light)" : "var(--warn-light)", color: isDef ? "var(--accent)" : "var(--warn-text)" }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: isDef ? "var(--accent)" : "var(--warn-text)" }} />
-          {isDef ? "Definitief" : "Concept"}
-        </span>
-
         <button onClick={() => setShowTemplates(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>
           <FileText className="h-3.5 w-3.5 inline mr-1" />Templates
         </button>
@@ -599,8 +535,7 @@ export default function ProjectPlanning() {
           <span className="text-base leading-none mt-0.5">⚠</span>
           <div className="text-[12px]" style={{ color: "var(--warn-text)" }}>
             <strong>Dit project bevat Planner-gekoppelde planning.</strong>{" "}
-            Externe regels ({externePlannerRegels.length}) blijven behouden bij publiceren of terug-naar-concept.
-            Interne regels voor dezelfde monteur/datum worden overgeslagen.
+            Die regels worden nooit overschreven.
           </div>
         </div>
       )}
@@ -936,16 +871,6 @@ export default function ProjectPlanning() {
         </div>
       )}
 
-      {/* Definitief dialog */}
-      {showDefinitiefDialog && (
-        <ConfirmDialog title="Planning definitief maken?" text="Monteurs kunnen de planning inzien zodra je dit bevestigt. Je kunt dit later ongedaan maken."
-          confirmLabel="Definitief maken" confirmColor="var(--info)" onCancel={() => setShowDefinitiefDialog(false)} onConfirm={makeDefinitief} />
-      )}
-      {showConceptDialog && (
-        <ConfirmDialog title="Terug naar concept?" text="Monteurs kunnen de planning dan niet meer inzien."
-          confirmLabel="Terug naar concept" confirmColor="var(--danger)" onCancel={() => setShowConceptDialog(false)} onConfirm={makeConcept} />
-      )}
-
       {/* Mobile bottom nav */}
       <div className="lg:hidden">
         <BottomNav badges={badges} />
@@ -1204,19 +1129,3 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
   );
 }
 
-function ConfirmDialog({ title, text, confirmLabel, confirmColor, onCancel, onConfirm }: {
-  title: string; text: string; confirmLabel: string; confirmColor: string; onCancel: () => void; onConfirm: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)" }}>
-        <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>{title}</h3>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>{text}</p>
-        <div className="flex gap-2">
-          <button onClick={onCancel} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>Annuleren</button>
-          <button onClick={onConfirm} className="flex-1 py-2 rounded-lg text-xs text-white" style={{ background: confirmColor }}>{confirmLabel}</button>
-        </div>
-      </div>
-    </div>
-  );
-}
