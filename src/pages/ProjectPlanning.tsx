@@ -116,10 +116,9 @@ export default function ProjectPlanning() {
     if (!projectId) return;
     (async () => {
       setLoading(true);
-      const [projRes, matrixRes, statusRes, profilesRes, rolesRes] = await Promise.all([
+      const [projRes, matrixRes, profilesRes, rolesRes] = await Promise.all([
         supabase.from("projects").select("id, nummer, naam, stationsnaam, case_type").eq("id", projectId).single(),
         supabase.from("project_planning_matrix").select("*").eq("project_id", projectId).maybeSingle(),
-        supabase.from("project_planning_status").select("*").eq("project_id", projectId).maybeSingle(),
         supabase.from("profiles").select("id, user_id, full_name, uurtarief"),
         supabase.from("user_roles").select("user_id, role"),
       ]);
@@ -140,7 +139,6 @@ export default function ProjectPlanning() {
       } else if (projRes.data) {
         setState(prev => ({ ...prev, stationName: projRes.data!.stationsnaam || "", caseType: projRes.data!.case_type || "" }));
       }
-      setPlanningStatus(statusRes.data ? { is_definitief: statusRes.data.is_definitief, definitief_op: statusRes.data.definitief_op } : null);
 
       // Filter monteurs
       const monteurUserIds = new Set((rolesRes.data || []).filter((r: any) => r.role === "monteur").map((r: any) => r.user_id));
