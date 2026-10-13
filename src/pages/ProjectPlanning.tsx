@@ -517,12 +517,6 @@ export default function ProjectPlanning() {
           {saveStatus === "saving" ? "Opslaan..." : saveStatus === "saved" ? "Opgeslagen" : "·"}
         </span>
 
-        {/* Status badge */}
-        <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1" style={{ background: isDef ? "var(--accent-light)" : "var(--warn-light)", color: isDef ? "var(--accent)" : "var(--warn-text)" }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: isDef ? "var(--accent)" : "var(--warn-text)" }} />
-          {isDef ? "Definitief" : "Concept"}
-        </span>
-
         <button onClick={() => setShowTemplates(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>
           <FileText className="h-3.5 w-3.5 inline mr-1" />Templates
         </button>
@@ -542,8 +536,7 @@ export default function ProjectPlanning() {
           <span className="text-base leading-none mt-0.5">⚠</span>
           <div className="text-[12px]" style={{ color: "var(--warn-text)" }}>
             <strong>Dit project bevat Planner-gekoppelde planning.</strong>{" "}
-            Externe regels ({externePlannerRegels.length}) blijven behouden bij publiceren of terug-naar-concept.
-            Interne regels voor dezelfde monteur/datum worden overgeslagen.
+            Die regels worden nooit overschreven.
           </div>
         </div>
       )}
