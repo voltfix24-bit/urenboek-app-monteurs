@@ -238,57 +238,6 @@ export default function ProjectPlanning() {
     });
   };
 
-  // ── Definitief flow ──
-  const makeDefinitief = async () => {
-    if (!projectId) return;
-    // Save matrix
-    await saveState(state);
-    // Upsert planning status
-    await supabase.from("project_planning_status").upsert({
-      project_id: projectId,
-      is_definitief: true,
-      definitief_op: new Date().toISOString(),
-      definitief_door: myProfileId.current,
-    }, { onConflict: "project_id" });
-
-    // De projectmatrix is onschadelijk gemaakt: hij schrijft niet meer naar
-    // `planning`. Inplannen loopt uitsluitend via de weekplanning
-    // (planning_concept → publiceer_planning). Zo kan de matrix nooit meer
-    // bestaande planning wissen of overschrijven.
-    void splitsKandidatenOpExternePlannerBotsing;
-    void externePlannerRegels;
-    void dateFromWeek;
-
-    // Auto-update project status to 'in_uitvoering' if currently 'gepland'
-    if (project) {
-      const { data: projData } = await supabase.from("projects").select("status").eq("id", projectId).single();
-      if (projData && (projData.status === "gepland" || projData.status === "nieuw")) {
-        await supabase.from("projects").update({
-          status: "in_uitvoering",
-          status_gewijzigd_op: new Date().toISOString(),
-          status_gewijzigd_door: myProfileId.current,
-        } as any).eq("id", projectId);
-      }
-    }
-
-    setPlanningStatus({ is_definitief: true, definitief_op: new Date().toISOString() });
-    setShowDefinitiefDialog(false);
-    toast.success("Matrix definitief opgeslagen. Inplannen voor monteurs gaat via de weekplanning.");
-  };
-
-  const makeConcept = async () => {
-    if (!projectId) return;
-    // Matrix wist geen planning meer; alleen de matrixstatus gaat terug.
-    await supabase.from("project_planning_status").upsert({
-      project_id: projectId,
-      is_definitief: false,
-      definitief_op: null,
-    }, { onConflict: "project_id" });
-    setPlanningStatus({ is_definitief: false, definitief_op: null });
-    setShowConceptDialog(false);
-    toast.success("Matrix terug naar concept gezet. Bestaande planning is ongewijzigd.");
-  };
-
   // ── Drag & drop activities ──
   const handleDragStart = (idx: number) => setDragIdx(idx);
   const handleDragOver = (e: React.DragEvent, idx: number) => { e.preventDefault(); };
