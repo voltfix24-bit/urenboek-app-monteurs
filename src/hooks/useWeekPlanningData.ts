@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { addDays, format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { adminProjects } from "@/lib/projectsAdmin";
 import type { BeschikbaarheidBasis, ConceptRij, MedewerkerBasis, PlanningRij } from "@/lib/weekPlanning";
 
 export interface WpMedewerker extends MedewerkerBasis { role: string | null }
-export interface WpProject { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null }
+export interface WpProject { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null;
+  soort?: string | null; contactpersoon_naam?: string | null; contactpersoon_tel?: string | null }
 
 const ROL_PRIORITEIT: Record<string, number> = { manager: 5, uitvoerder: 4, wv: 3, schakelmonteur: 2, monteur: 1 };
 
@@ -24,11 +26,11 @@ export function useWeekPlanningData(weekStart: Date) {
   const fetchAll = useCallback(async () => {
     const [plan, conc, prof, proj, besch, roles, bedrijf] = await Promise.all([
       supabase.from("planning")
-        .select("id, medewerker_id, project_id, datum, starttijd, eindtijd, notitie, activiteit, activiteit_kleur, planning_group_id, collega_ids, external_source, sync_locked")
+        .select("id, medewerker_id, project_id, datum, starttijd, eindtijd, notitie, activiteit, activiteit_kleur, planning_group_id, collega_ids, external_source, sync_locked, werklocatie, contactpersoon, contact_telefoon")
         .gte("datum", startStr).lte("datum", endStr),
       supabase.from("planning_concept").select("*").gte("datum", startStr).lte("datum", endStr),
       supabase.from("profiles").select("id, user_id, full_name, vaste_vrije_dagen, planning_partner_ids").eq("account_status", "active").order("full_name"),
-      supabase.from("projects").select("id, naam, nummer, straat, postcode, stad, adres").eq("active", true).order("nummer"),
+      adminProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("user_roles").select("user_id, role"),
       supabase.from("bedrijfsgegevens").select("planning_conceptmodus").limit(1).maybeSingle(),

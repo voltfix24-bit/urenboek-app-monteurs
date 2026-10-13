@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { useSearchParams } from "react-router-dom";
 import { addDays, addWeeks, format, getISOWeek, isSameDay, startOfISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
-import { ChevronDown, ChevronLeft, ChevronRight, Copy, Lock } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Copy, Crosshair, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesInsert } from "@/integrations/supabase/types";
@@ -157,11 +157,11 @@ export default function DesktopWeekPlanning() {
     if (error) throw error;
   };
 
-  const plan = (medIds: string[], doelDatums: string[], notitie: string) => run(async () => {
+  const plan = (medIds: string[], doelDatums: string[], notitie: string, uitleen?: Pick<PlanWaarden, "werklocatie" | "contactpersoon" | "contact_telefoon">) => run(async () => {
     if (!profileId || !barProject) return;
     const { doelen, overgeslagen } = bepaalDoelen(medIds, doelDatums, cellen, medewerkers, beschikbaarheid);
     if (doelen.length === 0) { toast.error("Niets ingepland: alle dagen zijn bezet of niet beschikbaar."); return; }
-    const waarden: PlanWaarden = { project_id: barProject, starttijd: tijd[0], eindtijd: tijd[1], notitie };
+    const waarden: PlanWaarden = { project_id: barProject, starttijd: tijd[0], eindtijd: tijd[1], notitie, ...(uitleen ?? {}) };
     const rows = bouwNieuwConcepten(doelen, waarden, profileId);
     const projectNaam = projMap.get(barProject)?.naam ?? "project";
     let ids: string[] = [];
@@ -265,7 +265,7 @@ export default function DesktopWeekPlanning() {
     if (!profileId) return;
     const vorige = addWeeks(weekStart, -1);
     const { data, error } = await supabase.from("planning")
-      .select("medewerker_id, project_id, datum, starttijd, eindtijd, notitie, activiteit, activiteit_kleur, collega_ids, planning_group_id")
+      .select("medewerker_id, project_id, datum, starttijd, eindtijd, notitie, activiteit, activiteit_kleur, collega_ids, planning_group_id, werklocatie, contactpersoon, contact_telefoon")
       .gte("datum", format(vorige, "yyyy-MM-dd")).lte("datum", format(addDays(vorige, 4), "yyyy-MM-dd"));
     if (error) throw error;
     const gezien = new Set<string>();
@@ -282,6 +282,7 @@ export default function DesktopWeekPlanning() {
       return [{
         medewerker_id: r.medewerker_id, project_id: r.project_id, datum: doelDatum, starttijd: r.starttijd.slice(0, 5), eindtijd: r.eindtijd.slice(0, 5),
         notitie: r.notitie ?? "", activiteit: r.activiteit, activiteit_kleur: r.activiteit_kleur, collega_ids: r.collega_ids, planning_group_id: groep, created_by: profileId,
+        werklocatie: r.werklocatie, contactpersoon: r.contactpersoon, contact_telefoon: r.contact_telefoon,
       }];
     });
     if (rows.length) {
@@ -367,6 +368,7 @@ export default function DesktopWeekPlanning() {
             {conflict ? <span className="wp-conflict-dot" aria-hidden="true">!</span>
               : cel.status !== "pub" && <span className="wp-cell-tag">{cel.status === "gewijzigd" ? "gewijzigd" : cel.status}</span>}
             {cel.beschermd && <Lock className="wp-cell-lock" aria-label="Planner-koppeling" />}
+            {cel.werklocatie && <Crosshair className="wp-cell-loc" aria-label={`Werklocatie: ${cel.werklocatie}`}><title>{cel.werklocatie}</title></Crosshair>}
           </>
         ) : afw ? <span className="wp-afw-label">{AFW_CEL[afw]}</span> : null}
       </div>
