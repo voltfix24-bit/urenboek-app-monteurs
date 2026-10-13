@@ -11,7 +11,7 @@ import { formatUren, formatUrenGetal } from "@/lib/formatting";
 
 interface Project { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; soort?: string | null; contactpersoon_naam?: string | null; contactpersoon_tel?: string | null; }
 interface Medewerker { id: string; full_name: string; }
-interface FormValue { medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; werklocatie?: string; contactpersoon?: string; contact_telefoon?: string; }
+interface FormValue { medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; werklocatie: string; contactpersoon: string; contact_telefoon: string; }
 
 interface Props {
   open: boolean;
