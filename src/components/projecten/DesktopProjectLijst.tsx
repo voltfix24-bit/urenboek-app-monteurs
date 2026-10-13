@@ -6,7 +6,7 @@ interface Project {
   id: string; nummer: string; naam: string; active: boolean;
   case_type: string | null; stationsnaam: string | null;
   opdrachtgever_id: string | null; straat: string | null; postcode?: string | null; stad: string | null;
-  status?: string; projectjaar?: number | null; intake_gedaan?: boolean;
+  status?: string; projectjaar?: number | null; intake_gedaan?: boolean; soort?: string;
 }
 
 interface Props {
@@ -18,10 +18,11 @@ interface Props {
   margeMap: Map<string, { omzet: number; kosten: number; marge: number }>;
   toonMarge: boolean;
   loading: boolean;
+  uitleenWeekUren?: Map<string, number>;
 }
 
 /** Desktop projectlijst: naam, "nummer · case type · stad", fasepill en open punten of marge. */
-export function DesktopProjectLijst({ projects, searchQuery, setSearchQuery, selectedId, onSelect, margeMap, toonMarge, loading }: Props) {
+export function DesktopProjectLijst({ projects, searchQuery, setSearchQuery, selectedId, onSelect, margeMap, toonMarge, loading, uitleenWeekUren }: Props) {
   return (
     <div className="pj-list">
       <div className="pj-search">
@@ -45,6 +46,7 @@ export function DesktopProjectLijst({ projects, searchQuery, setSearchQuery, sel
       ) : projects.map((p) => {
         const open = openPunten({ straat: p.straat, postcode: p.postcode ?? null, stad: p.stad, projectjaar: p.projectjaar ?? null, opdrachtgever_id: p.opdrachtgever_id, intake_gedaan: !!p.intake_gedaan });
         const marge = margeMap.get(p.id);
+        const uitleen = p.soort === "uitleen";
         return (
           <button key={p.id} type="button" onClick={() => onSelect(p)} aria-current={selectedId === p.id} className={`pj-row ${p.active ? "" : "is-archived"}`}>
             <span className="min-w-0">
@@ -52,10 +54,17 @@ export function DesktopProjectLijst({ projects, searchQuery, setSearchQuery, sel
               <small><span className="pj-mono">{p.nummer}</span>{p.case_type ? ` · ${p.case_type}` : ""}{p.stad ? ` · ${p.stad}` : ""}{!p.active ? " · Gearchiveerd" : ""}</small>
             </span>
             <span className="pj-right">
+              {uitleen ? (
+                <>
+                  <span className="pj-uitleen-pill">Uitleen</span>
+                  <span className="pj-marge">{String(Math.round((uitleenWeekUren?.get(p.id) ?? 0) * 10) / 10).replace(".", ",")} u deze week</span>
+                </>
+              ) : <>
               <StatusBadge status={p.status || "nieuw"} size="sm" />
               {open > 0 && p.active && (p.status || "nieuw") !== "gesloten"
                 ? <span className="pj-open">{open} {open === 1 ? "punt" : "punten"} open</span>
                 : toonMarge && marge?.omzet ? <span className="pj-marge">marge {Math.round(marge.marge)}%</span> : null}
+              </>}
             </span>
           </button>
         );
