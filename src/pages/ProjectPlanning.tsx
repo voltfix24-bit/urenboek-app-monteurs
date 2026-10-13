@@ -872,16 +872,6 @@ export default function ProjectPlanning() {
         </div>
       )}
 
-      {/* Definitief dialog */}
-      {showDefinitiefDialog && (
-        <ConfirmDialog title="Planning definitief maken?" text="Monteurs kunnen de planning inzien zodra je dit bevestigt. Je kunt dit later ongedaan maken."
-          confirmLabel="Definitief maken" confirmColor="var(--info)" onCancel={() => setShowDefinitiefDialog(false)} onConfirm={makeDefinitief} />
-      )}
-      {showConceptDialog && (
-        <ConfirmDialog title="Terug naar concept?" text="Monteurs kunnen de planning dan niet meer inzien."
-          confirmLabel="Terug naar concept" confirmColor="var(--danger)" onCancel={() => setShowConceptDialog(false)} onConfirm={makeConcept} />
-      )}
-
       {/* Mobile bottom nav */}
       <div className="lg:hidden">
         <BottomNav badges={badges} />
@@ -1140,19 +1130,3 @@ function TemplateModal({ onClose, onApply }: { onClose: () => void; onApply: (ac
   );
 }
 
-function ConfirmDialog({ title, text, confirmLabel, confirmColor, onCancel, onConfirm }: {
-  title: string; text: string; confirmLabel: string; confirmColor: string; onCancel: () => void; onConfirm: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)" }}>
-        <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>{title}</h3>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>{text}</p>
-        <div className="flex gap-2">
-          <button onClick={onCancel} className="flex-1 py-2 rounded-lg text-xs" style={{ border: "1px solid var(--planning-border-soft)", color: "var(--text-muted)" }}>Annuleren</button>
-          <button onClick={onConfirm} className="flex-1 py-2 rounded-lg text-xs text-white" style={{ background: confirmColor }}>{confirmLabel}</button>
-        </div>
-      </div>
-    </div>
-  );
-}
