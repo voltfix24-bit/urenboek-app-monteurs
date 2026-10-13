@@ -93,7 +93,6 @@ export default function ProjectPlanning() {
   const [project, setProject] = useState<Project | null>(null);
   const [state, setState] = useState<MatrixState>(getDefaultState());
   const [monteurs, setMonteurs] = useState<Monteur[]>([]);
-  const [planningStatus, setPlanningStatus] = useState<{ is_definitief: boolean; definitief_op: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
@@ -101,8 +100,6 @@ export default function ProjectPlanning() {
   const [externePlannerRegels, setExternePlannerRegels] = useState<Array<{ medewerker_id: string; datum: string; external_source: string | null; sync_locked: boolean | null }>>([]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; key: string } | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
-  const [showDefinitiefDialog, setShowDefinitiefDialog] = useState(false);
-  const [showConceptDialog, setShowConceptDialog] = useState(false);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -113,7 +110,6 @@ export default function ProjectPlanning() {
   const myProfileId = useRef<string | null>(null);
   const syncForecastRef = useRef<((s: MatrixState) => Promise<void>) | null>(null);
 
-  const isDef = planningStatus?.is_definitief || false;
 
   // ── Load data ──
   useEffect(() => {
