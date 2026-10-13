@@ -7,6 +7,8 @@ export interface FormState {
   contactpersoon_naam: string; contactpersoon_tel: string; contactpersoon_email: string;
   vergoed_methode: 'stuksprijzen' | 'uren' | '';
   projectjaar: string;
+  soort: 'project' | 'uitleen';
+  werklocatie: string;
 }
 
 export const emptyForm: FormState = {
@@ -15,6 +17,8 @@ export const emptyForm: FormState = {
   contactpersoon_naam: "", contactpersoon_tel: "", contactpersoon_email: "",
   vergoed_methode: "",
   projectjaar: "",
+  soort: "project",
+  werklocatie: "",
 };
 
 const selectStyle = { background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" };
@@ -28,9 +32,11 @@ interface Props {
   clearError?: (field: string) => void;
   /** Alleen desktop: "desktop-edit" verbergt de vergoedingsmethode; contactblok neutraal. Zonder variant = ongewijzigd (mobiel). */
   variant?: "desktop-new" | "desktop-edit";
+  /** Toon de keuze Klus / Uitleen (alleen bij nieuw project). */
+  toonSoortKeuze?: boolean;
 }
 
-export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, errors = {}, clearError, variant }: Props) {
+export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, errors = {}, clearError, variant, toonSoortKeuze }: Props) {
   const isDesktop = !!variant;
   const update = (field: keyof FormState, value: string | null) => {
     setForm(f => ({ ...f, [field]: value }));
@@ -43,8 +49,58 @@ export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, er
     { key: '', Icon: HelpCircle, label: 'Nog onbekend', desc: 'Later bepalen in Forecast tab' },
   ];
 
+  const soortKeuze = toonSoortKeuze && (
+    <div className="grid grid-cols-2 gap-2">
+      {([["project", "Klus", "Eigen project met fase, forecast en intake"], ["uitleen", "Uitleen", "Monteurs bij een ander bedrijf"]] as const).map(([k, label, desc]) => {
+        const active = form.soort === k;
+        return (
+          <button key={k} type="button" onClick={() => setForm(f => ({ ...f, soort: k }))} className="p-3 rounded-xl text-left transition-colors"
+            style={{ background: active ? "var(--accent-light)" : "var(--bg-surface)", border: active ? "1.5px solid var(--accent-border)" : "1.5px solid var(--planning-border-soft)" }}>
+            <p className="text-sm font-semibold" style={{ color: active ? "var(--accent)" : "var(--text-primary)" }}>{label}</p>
+            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{desc}</p>
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  if (form.soort === "uitleen") {
+    return (
+      <>
+        {soortKeuze}
+        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Uitleen</p>
+        <div className="grid grid-cols-2 gap-2">
+          <FormField label="Nummer" error={errors.nummer} required>
+            <ValidatedInput value={form.nummer} onChange={e => update("nummer", e.target.value)} placeholder="Nummer" error={errors.nummer} />
+          </FormField>
+          <FormField label="Naam" error={errors.naam} required>
+            <ValidatedInput value={form.naam} onChange={e => update("naam", e.target.value)} placeholder="Bijv. Hanab" error={errors.naam} />
+          </FormField>
+        </div>
+        <FormField label="Opdrachtgever">
+          <select value={form.opdrachtgever_id || ""} onChange={e => update("opdrachtgever_id", e.target.value || null)} className="w-full px-3 py-2.5 rounded-xl text-sm" style={selectStyle}>
+            <option value="">Geen opdrachtgever</option>
+            {opdrachtgevers.map(og => <option key={og.id} value={og.id}>{og.naam}</option>)}
+          </select>
+        </FormField>
+        <FormField label="Standaard werklocatie">
+          <ValidatedInput value={form.werklocatie} onChange={e => update("werklocatie", e.target.value)} placeholder="Optioneel" />
+        </FormField>
+        <div className="grid grid-cols-2 gap-2">
+          <FormField label="Contactpersoon">
+            <ValidatedInput value={form.contactpersoon_naam} onChange={e => update("contactpersoon_naam", e.target.value)} placeholder="Optioneel" />
+          </FormField>
+          <FormField label="Telefoon">
+            <ValidatedInput type="tel" value={form.contactpersoon_tel} onChange={e => update("contactpersoon_tel", e.target.value)} placeholder="Optioneel" />
+          </FormField>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
+      {soortKeuze}
       <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Projectgegevens</p>
       <div className="grid grid-cols-2 gap-2">
         <FormField label="Casenummer" error={errors.nummer} required>
