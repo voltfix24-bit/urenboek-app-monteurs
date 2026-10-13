@@ -37,6 +37,17 @@ export function BewerkPaneel({ cel, naam, weekNumber, projects, weekProjectIds, 
   const [notitie, setNotitie] = useState(cel.notitie ?? "");
   const [zoek, setZoek] = useState("");
   const [helePloeg, setHelePloeg] = useState(true);
+  const [werklocatie, setWerklocatie] = useState(cel.werklocatie ?? "");
+  const [contact, setContact] = useState(cel.contactpersoon ?? "");
+  const [telefoon, setTelefoon] = useState(cel.contact_telefoon ?? "");
+  const project = projects.find((p) => p.id === projectId);
+  const isUitleen = project?.soort === "uitleen";
+  const kiesProject = (id: string) => {
+    setProjectId(id);
+    if (id === cel.project_id) return;
+    const p = projects.find((x) => x.id === id);
+    setWerklocatie(p?.adres ?? ""); setContact(p?.contactpersoon_naam ?? ""); setTelefoon(p?.contactpersoon_tel ?? "");
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -89,7 +100,7 @@ export function BewerkPaneel({ cel, naam, weekNumber, projects, weekProjectIds, 
             <Input value={zoek} onChange={(e) => setZoek(e.target.value)} placeholder="Zoek project" className="mb-2 h-9" disabled={alleenLezen} aria-label="Zoek project" />
             <div className="wp-project-list">
               {lijst.map((p) => (
-                <button key={p.id} type="button" className="wp-project-card" aria-pressed={projectId === p.id} disabled={alleenLezen} onClick={() => setProjectId(p.id)}>
+                <button key={p.id} type="button" className="wp-project-card" aria-pressed={projectId === p.id} disabled={alleenLezen} onClick={() => kiesProject(p.id)}>
                   <i style={{ background: projectKleur(p.id, weekProjectIds).color }} />
                   <span className="min-w-0"><strong className="truncate">{p.naam || p.nummer}</strong><small className="truncate">{p.nummer}{p.stad ? ` · ${p.stad}` : ""}</small></span>
                 </button>
@@ -111,6 +122,18 @@ export function BewerkPaneel({ cel, naam, weekNumber, projects, weekProjectIds, 
             </div>
             <p className="wp-hint mt-1">{tijdFout || `${formatUrenGetal(berekenUren(start, eind))} u netto · 60 min vaste pauze`}</p>
           </div>
+
+          {isUitleen && (
+            <div className="space-y-2">
+              <p className="wp-panel-label">Werklocatie</p>
+              <Input value={werklocatie} onChange={(e) => setWerklocatie(e.target.value)} placeholder="Optioneel" className="h-9" disabled={alleenLezen} aria-label="Werklocatie" />
+              <p className="wp-panel-label">Contactpersoon / telefoon</p>
+              <div className="flex gap-2">
+                <Input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Naam" className="h-9" disabled={alleenLezen} aria-label="Contactpersoon" />
+                <Input type="tel" value={telefoon} onChange={(e) => setTelefoon(e.target.value)} placeholder="Telefoon" className="h-9" disabled={alleenLezen} aria-label="Telefoon contactpersoon" />
+              </div>
+            </div>
+          )}
 
           <div>
             <p className="wp-panel-label">Notitie</p>
@@ -134,7 +157,12 @@ export function BewerkPaneel({ cel, naam, weekNumber, projects, weekProjectIds, 
           <span className="flex-1" />
           <Button type="button" variant="outline" onClick={onClose}>Annuleren</Button>
           <Button type="button" className="wp-btn-primary" disabled={busy || alleenLezen || !projectId || !!tijdFout}
-            onClick={() => onSave({ project_id: projectId, starttijd: start, eindtijd: eind, notitie }, helePloeg)}>
+            onClick={() => onSave({
+              project_id: projectId, starttijd: start, eindtijd: eind, notitie,
+              werklocatie: isUitleen ? werklocatie.trim() || null : null,
+              contactpersoon: isUitleen ? contact.trim() || null : null,
+              contact_telefoon: isUitleen ? telefoon.trim() || null : null,
+            }, helePloeg)}>
             Bijwerken
           </Button>
         </div>
