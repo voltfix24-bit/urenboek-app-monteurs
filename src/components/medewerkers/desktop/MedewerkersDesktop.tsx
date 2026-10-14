@@ -15,11 +15,12 @@ import { useProfile } from "@/hooks/useProfile";
 import { genereerAanwijsbrievenPdf } from "@/lib/aanwijsbrievenPdf";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { useNavBadges } from "@/hooks/useNavBadges";
+import { DetacheringenKaart, TariefKaart } from "./DetacheringenKaart";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
 export default function MedewerkersDesktop() {
-  const { profielen, certificaten, aanwijzingen, partijen, dbaChecks, contracten, tarieven, planning, bedrijf, loading, refetch } = useMedewerkersDesktop();
+  const { profielen, certificaten, aanwijzingen, partijen, dbaChecks, contracten, tarieven, planning, bedrijf, detacheringen, opdrachtgevers, kostentarieven, verkooptarieven, loading, refetch } = useMedewerkersDesktop();
   const { profileId } = useProfile();
   const { badges } = useNavBadges();
   const [chip, setChip] = useState<string>("planbaar");
@@ -175,6 +176,8 @@ export default function MedewerkersDesktop() {
               certificaten={certificaten} aanwijzingen={aanwijzingen} partijen={partijen}
               dbaChecks={dbaChecks} contracten={contracten} tarieven={tarieven} planning={planning}
               bedrijf={bedrijf} profielen={profielen} profileId={profileId}
+              detacheringen={detacheringen} opdrachtgevers={opdrachtgevers}
+              kostentarieven={kostentarieven} verkooptarieven={verkooptarieven}
               menuOpen={menuOpen} setMenuOpen={setMenuOpen}
               showUitDienst={showUitDienst} setShowUitDienst={setShowUitDienst}
               showAanwijzing={showAanwijzing} setShowAanwijzing={setShowAanwijzing}
@@ -202,6 +205,8 @@ interface DetailProps {
   emp: DesktopProfiel; tab: string; setTab: (t: any) => void; issues: Issue[];
   certificaten: any[]; aanwijzingen: any[]; partijen: any[]; dbaChecks: any[]; contracten: any[];
   tarieven: any[]; planning: any[]; bedrijf: { dba_signaal_weken: number }; profielen: DesktopProfiel[];
+  detacheringen: any[]; opdrachtgevers: { id: string; naam: string }[];
+  kostentarieven: any[]; verkooptarieven: any[];
   profileId: string | null;
   menuOpen: boolean; setMenuOpen: (b: boolean) => void;
   showUitDienst: boolean; setShowUitDienst: (b: boolean) => void;
