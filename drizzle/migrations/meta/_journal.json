@@ -50,6 +50,13 @@
       "when": 1791961958880,
       "tag": "0006_manager_insert_beschikbaarheid",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791967525134,
+      "tag": "0007_medewerkers_dossier",
+      "breakpoints": true
     }
   ]
 }

@@ -14,6 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      aanwijs_partijen: {
+        Row: {
+          id: string
+          naam: string
+        }
+        Insert: {
+          id?: string
+          naam: string
+        }
+        Update: {
+          id?: string
+          naam?: string
+        }
+        Relationships: []
+      }
+      aanwijzingen: {
+        Row: {
+          aangewezen_door: string
+          aangewezen_op: string
+          brief_url: string | null
+          created_at: string
+          geldig_tot: string
+          id: string
+          medewerker_id: string
+          norm: string
+          partij_id: string
+          rol: string
+        }
+        Insert: {
+          aangewezen_door: string
+          aangewezen_op: string
+          brief_url?: string | null
+          created_at?: string
+          geldig_tot: string
+          id?: string
+          medewerker_id: string
+          norm: string
+          partij_id: string
+          rol: string
+        }
+        Update: {
+          aangewezen_door?: string
+          aangewezen_op?: string
+          brief_url?: string | null
+          created_at?: string
+          geldig_tot?: string
+          id?: string
+          medewerker_id?: string
+          norm?: string
+          partij_id?: string
+          rol?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aanwijzingen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aanwijzingen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aanwijzingen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aanwijzingen_partij_id_fkey"
+            columns: ["partij_id"]
+            isOneToOne: false
+            referencedRelation: "aanwijs_partijen"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_setup: {
         Row: {
           created_at: string
@@ -37,6 +120,7 @@ export type Database = {
           bedrijfsnaam: string
           betalingstermijn: number
           btw_nummer: string | null
+          dba_signaal_weken: number
           email: string | null
           iban: string | null
           iban_naam: string | null
@@ -57,6 +141,7 @@ export type Database = {
           bedrijfsnaam: string
           betalingstermijn?: number
           btw_nummer?: string | null
+          dba_signaal_weken?: number
           email?: string | null
           iban?: string | null
           iban_naam?: string | null
@@ -77,6 +162,7 @@ export type Database = {
           bedrijfsnaam?: string
           betalingstermijn?: number
           btw_nummer?: string | null
+          dba_signaal_weken?: number
           email?: string | null
           iban?: string | null
           iban_naam?: string | null
@@ -541,6 +627,76 @@ export type Database = {
           {
             foreignKeyName: "contracten_profiel_id_fkey"
             columns: ["profiel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dba_checks: {
+        Row: {
+          antwoorden: Json
+          created_at: string
+          id: string
+          medewerker_id: string
+          vastgelegd_door: string | null
+          vastgelegd_op: string
+        }
+        Insert: {
+          antwoorden: Json
+          created_at?: string
+          id?: string
+          medewerker_id: string
+          vastgelegd_door?: string | null
+          vastgelegd_op?: string
+        }
+        Update: {
+          antwoorden?: Json
+          created_at?: string
+          id?: string
+          medewerker_id?: string
+          vastgelegd_door?: string | null
+          vastgelegd_op?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dba_checks_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dba_checks_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dba_checks_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dba_checks_vastgelegd_door_fkey"
+            columns: ["vastgelegd_door"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dba_checks_vastgelegd_door_fkey"
+            columns: ["vastgelegd_door"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dba_checks_vastgelegd_door_fkey"
+            columns: ["vastgelegd_door"]
             isOneToOne: false
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
@@ -1822,6 +1978,7 @@ export type Database = {
           activated_at: string | null
           adres: string
           avatar_url: string | null
+          avb_polis_tot: string | null
           bedrijfsgegevens_updated_at: string | null
           bedrijfsgegevens_updated_by: string | null
           bedrijfsnaam: string | null
@@ -1833,6 +1990,7 @@ export type Database = {
           email: string | null
           factuuradres: string | null
           full_name: string
+          g_rekening: string | null
           geboortedatum: string | null
           geverifieerd_door: string | null
           geverifieerd_op: string | null
@@ -1841,6 +1999,7 @@ export type Database = {
           invited_at: string | null
           is_onderaannemer: boolean
           kvk_nummer: string | null
+          kvk_uittreksel_op: string | null
           noodcontact_naam: string | null
           noodcontact_tel: string | null
           onboarding_voltooid: boolean
@@ -1850,20 +2009,27 @@ export type Database = {
           onderaannemer_reiskosten_per_ploeg: boolean
           onderaannemer_startlocatie: string | null
           onderaannemer_vrije_km_per_dag: number
+          planbaar: boolean
+          planbaar_reden: string | null
+          planbaar_tot: string | null
           planner_monteur_id: string | null
           planning_partner_ids: string[]
           rijbewijs: boolean
           telefoon: string
+          uit_dienst_op: string | null
+          uit_dienst_reden: string | null
           updated_at: string
           user_id: string
           uurtarief: number | null
           vaste_vrije_dagen: number[]
+          verklaring_betalingsgedrag_op: string | null
         }
         Insert: {
           account_status?: string
           activated_at?: string | null
           adres?: string
           avatar_url?: string | null
+          avb_polis_tot?: string | null
           bedrijfsgegevens_updated_at?: string | null
           bedrijfsgegevens_updated_by?: string | null
           bedrijfsnaam?: string | null
@@ -1875,6 +2041,7 @@ export type Database = {
           email?: string | null
           factuuradres?: string | null
           full_name: string
+          g_rekening?: string | null
           geboortedatum?: string | null
           geverifieerd_door?: string | null
           geverifieerd_op?: string | null
@@ -1883,6 +2050,7 @@ export type Database = {
           invited_at?: string | null
           is_onderaannemer?: boolean
           kvk_nummer?: string | null
+          kvk_uittreksel_op?: string | null
           noodcontact_naam?: string | null
           noodcontact_tel?: string | null
           onboarding_voltooid?: boolean
@@ -1892,20 +2060,27 @@ export type Database = {
           onderaannemer_reiskosten_per_ploeg?: boolean
           onderaannemer_startlocatie?: string | null
           onderaannemer_vrije_km_per_dag?: number
+          planbaar?: boolean
+          planbaar_reden?: string | null
+          planbaar_tot?: string | null
           planner_monteur_id?: string | null
           planning_partner_ids?: string[]
           rijbewijs?: boolean
           telefoon?: string
+          uit_dienst_op?: string | null
+          uit_dienst_reden?: string | null
           updated_at?: string
           user_id: string
           uurtarief?: number | null
           vaste_vrije_dagen?: number[]
+          verklaring_betalingsgedrag_op?: string | null
         }
         Update: {
           account_status?: string
           activated_at?: string | null
           adres?: string
           avatar_url?: string | null
+          avb_polis_tot?: string | null
           bedrijfsgegevens_updated_at?: string | null
           bedrijfsgegevens_updated_by?: string | null
           bedrijfsnaam?: string | null
@@ -1917,6 +2092,7 @@ export type Database = {
           email?: string | null
           factuuradres?: string | null
           full_name?: string
+          g_rekening?: string | null
           geboortedatum?: string | null
           geverifieerd_door?: string | null
           geverifieerd_op?: string | null
@@ -1925,6 +2101,7 @@ export type Database = {
           invited_at?: string | null
           is_onderaannemer?: boolean
           kvk_nummer?: string | null
+          kvk_uittreksel_op?: string | null
           noodcontact_naam?: string | null
           noodcontact_tel?: string | null
           onboarding_voltooid?: boolean
@@ -1934,14 +2111,20 @@ export type Database = {
           onderaannemer_reiskosten_per_ploeg?: boolean
           onderaannemer_startlocatie?: string | null
           onderaannemer_vrije_km_per_dag?: number
+          planbaar?: boolean
+          planbaar_reden?: string | null
+          planbaar_tot?: string | null
           planner_monteur_id?: string | null
           planning_partner_ids?: string[]
           rijbewijs?: boolean
           telefoon?: string
+          uit_dienst_op?: string | null
+          uit_dienst_reden?: string | null
           updated_at?: string
           user_id?: string
           uurtarief?: number | null
           vaste_vrije_dagen?: number[]
+          verklaring_betalingsgedrag_op?: string | null
         }
         Relationships: [
           {
@@ -2406,6 +2589,46 @@ export type Database = {
           {
             foreignKeyName: "spec_code_tarieven_updated_by_fkey"
             columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tarieven: {
+        Row: {
+          jaar: number
+          medewerker_id: string
+          uurtarief: number
+        }
+        Insert: {
+          jaar: number
+          medewerker_id: string
+          uurtarief: number
+        }
+        Update: {
+          jaar?: number
+          medewerker_id?: string
+          uurtarief?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarieven_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarieven_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tarieven_medewerker_id_fkey"
+            columns: ["medewerker_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
