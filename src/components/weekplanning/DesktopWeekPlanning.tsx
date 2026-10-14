@@ -17,10 +17,10 @@ import { generatePersoneelsPdf, generatePlanningPdf } from "@/lib/planningPdf";
 import { formatUren, formatUrenGetal } from "@/lib/formatting";
 import { useWeekPlanningData } from "@/hooks/useWeekPlanningData";
 import {
-  actieVoorBewerken, actieVoorVerwijderen, bepaalAfwezigheid, bepaalDoelen, berekenUren, bouwCellen, bouwNieuwConcepten,
+  actieVoorBewerken, actieVoorVerwijderen, bepaalAfwezigheid, berekenUren, bouwCellen, bouwNieuwConcepten,
   celBezet, celKey, celTelt, parseWeekParam, telConcepten, type Cel, type PlanWaarden,
 } from "@/lib/weekPlanning";
-import { ActieBalk } from "./ActieBalk";
+import { ActieBalk, doelenVoorCellen, type SelCel } from "./ActieBalk";
 import { BewerkPaneel } from "./BewerkPaneel";
 import { PubliceerDialoog } from "./PubliceerDialoog";
 import { PerKlusWeergave } from "./PerKlusWeergave";
