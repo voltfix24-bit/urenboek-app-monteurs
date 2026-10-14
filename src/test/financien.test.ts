@@ -190,6 +190,22 @@ describe("financieel overzicht", () => {
     expect(r.uitbetaling.ruimte).toBeCloseTo(190 - 176 - 100, 2);
   });
 
+  it("houdt bij welke uren geen prijs gevonden is", () => {
+    // Hanab heeft hier geen "alle rollen"-rij: de monteur zonder detachering
+    // en zonder aanwijzing blijft dus zonder prijs, de WV niet.
+    const r = berekenFinannen(input({
+      uren: [
+        { medewerker_id: "m-wv", project_id: "p-hanab", datum: "2026-10-14", uren: 8, verwachte: false },
+        { medewerker_id: "m-monteur", project_id: "p-hanab", datum: "2026-10-14", uren: 6, verwachte: false },
+      ],
+      verkooptarieven: verkoop.filter((v) => !(v.opdrachtgever_id === "og-hanab" && v.rol === null)),
+    }));
+    const hanab = r.regels.find((x) => x.project_id === "p-hanab")!;
+    expect(hanab.uren_zonder_tarief).toBe(6);
+    expect(hanab.omzet).toBeCloseTo(880, 2);
+    expect(hanab.tarief_onbekend).toBe(true);
+  });
+
   it("toont eigenaren apart met €0 kostprijs", () => {
     const r = berekenFinannen(input({
       uren: [{ medewerker_id: "m-eigenaar", project_id: "p-hanab", datum: "2026-10-14", uren: 10, verwachte: false }],

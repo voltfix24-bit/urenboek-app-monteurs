@@ -65,9 +65,9 @@ export function exporteerFinancienPdf(u: FinancienUitkomst, periode: string) {
   const projectRijen = u.regels.map((r) => `<tr>
     <td>${esc(r.project_naam)}<small>${esc(r.project_nummer)} · ${r.soort === "uitleen" ? "Uitleen" : "Klus"}${r.opdrachtgever_naam !== "—" ? " · " + esc(r.opdrachtgever_naam) : ""}</small></td>
     <td class="r">${formatUrenGetal(r.uren)}</td>
-    <td class="r">${r.tarief_onbekend ? "€ ?" : euroDecimals(r.omzet)}</td>
+    <td class="r">${euroDecimals(r.omzet)}${r.uren_zonder_tarief > 0 ? ' <small class="onbekend">+€ ?</small>' : ""}</td>
     <td class="r">${euroDecimals(r.g_rekening)}</td>
-    <td class="r">${euroDecimals(r.kosten)}</td>
+    <td class="r">${euroDecimals(r.kosten)}${r.uren_zonder_kostentarief > 0 ? ' <small class="onbekend">+€ ?</small>' : ""}</td>
     <td class="r">${euroDecimals(r.marge)}</td>
     <td class="r">${r.omzet > 0 ? ((r.marge / r.omzet) * 100).toFixed(1) + "%" : "—"}</td>
   </tr>`).join("");
