@@ -47,6 +47,20 @@ const isUitleen = (p: { soort?: string | null }) => p.soort === "uitleen";
 const sorteerProjecten = <T extends { active: boolean; created_at?: string }>(lijst: T[]) =>
   [...lijst].sort((a, b) => Number(b.active) - Number(a.active) || (b.created_at ?? "").localeCompare(a.created_at ?? ""));
 
+/** State die bewaard blijft bij heen-en-weer navigeren (sessiegebonden). */
+function usePersistentState<T>(initial: T, key: string): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const [value, setValue] = useState<T>(() => {
+    try {
+      const raw = sessionStorage.getItem(key);
+      return raw !== null ? (JSON.parse(raw) as T) : initial;
+    } catch { return initial; }
+  });
+  useEffect(() => {
+    try { sessionStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
+  }, [key, value]);
+  return [value, setValue];
+}
+
 export default function Projecten() {
   const { isManager, permissies } = useAuth(); const navigate = useNavigate();
   const { profile, profileId } = useProfile();
