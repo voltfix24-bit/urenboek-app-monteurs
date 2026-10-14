@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { addDays, format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { adminProjects } from "@/lib/projectsAdmin";
+import { planningProjects } from "@/lib/projectsAdmin";
 import type { BeschikbaarheidBasis, ConceptRij, MedewerkerBasis, PlanningRij } from "@/lib/weekPlanning";
 
 export interface WpMedewerker extends MedewerkerBasis { role: string | null }
@@ -30,7 +30,7 @@ export function useWeekPlanningData(weekStart: Date) {
         .gte("datum", startStr).lte("datum", endStr),
       supabase.from("planning_concept").select("*").gte("datum", startStr).lte("datum", endStr),
       supabase.from("profiles").select("id, user_id, full_name, vaste_vrije_dagen, planning_partner_ids").eq("account_status", "active").order("full_name"),
-      adminProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel").eq("active", true).order("nummer"),
+      planningProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("user_roles").select("user_id, role"),
       supabase.from("bedrijfsgegevens").select("planning_conceptmodus").limit(1).maybeSingle(),
