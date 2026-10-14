@@ -48,7 +48,7 @@ const sorteerProjecten = <T extends { active: boolean; created_at?: string }>(li
   [...lijst].sort((a, b) => Number(b.active) - Number(a.active) || (b.created_at ?? "").localeCompare(a.created_at ?? ""));
 
 /** State die bewaard blijft bij heen-en-weer navigeren (sessiegebonden). */
-function usePersistentState<T>(initial: T, key: string): [T, React.Dispatch<React.SetStateAction<T>>] {
+function usePersistentState<T>(initial: T, key: string): [T, Dispatch<SetStateAction<T>>] {
   const [value, setValue] = useState<T>(() => {
     try {
       const raw = sessionStorage.getItem(key);
