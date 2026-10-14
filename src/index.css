@@ -995,7 +995,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
 }
 
 /* ===== Medewerkers desktop (Stap 3) ===== */
-.mw-root { display: flex; flex-direction: column; min-height: 100vh; background: var(--app-navy); }
+.mw-root { display: flex; flex-direction: column; min-height: 100vh; margin-left: 240px; background: var(--app-navy); }
 .mw-header { padding: 24px 32px 14px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
 .mw-title { font-size: 26px; font-weight: 800; color: var(--text-primary); }
 .mw-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 4px; }

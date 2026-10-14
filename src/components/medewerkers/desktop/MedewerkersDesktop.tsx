@@ -13,12 +13,15 @@ import {
 } from "./derive";
 import { useProfile } from "@/hooks/useProfile";
 import { genereerAanwijsbrievenPdf } from "@/lib/aanwijsbrievenPdf";
+import { DesktopSidebar } from "@/components/DesktopSidebar";
+import { useNavBadges } from "@/hooks/useNavBadges";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
 export default function MedewerkersDesktop() {
   const { profielen, certificaten, aanwijzingen, partijen, dbaChecks, contracten, tarieven, planning, bedrijf, loading, refetch } = useMedewerkersDesktop();
   const { profileId } = useProfile();
+  const { badges } = useNavBadges();
   const [chip, setChip] = useState<string>("planbaar");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -113,6 +116,8 @@ export default function MedewerkersDesktop() {
   }
 
   return (
+    <>
+    <DesktopSidebar badges={badges} />
     <div className="mw-root">
       <div className="mw-header">
         <div>
@@ -181,6 +186,7 @@ export default function MedewerkersDesktop() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
