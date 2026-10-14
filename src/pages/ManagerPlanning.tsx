@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TeamPlanningGrid } from "@/components/TeamPlanningGrid";
 import { PlanningDialog } from "@/components/PlanningDialog";
-import { adminProjects } from "@/lib/projectsAdmin";
+import { planningProjects } from "@/lib/projectsAdmin";
 import { formatUren } from "@/lib/formatting";
 
 interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; planning_group_id: string | null; werklocatie?: string | null; contactpersoon?: string | null; contact_telefoon?: string | null; }
@@ -142,7 +142,7 @@ function MobileManagerPlanning() {
     const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }, { data: rolesData }] = await Promise.all([
       supabase.from("planning").select("*, activiteit, activiteit_kleur, planning_group_id").gte("datum", startStr).lte("datum", endStr),
       supabase.from("profiles").select("id, full_name, vaste_vrije_dagen, planning_partner_ids").eq("account_status", "active").order("full_name"),
-      adminProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel").eq("active", true).order("nummer"),
+      planningProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("user_roles").select("user_id, role"),
     ]);

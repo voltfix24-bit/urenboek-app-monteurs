@@ -36,6 +36,13 @@
       "when": 1791908380206,
       "tag": "0004_uitleen_werklocatie",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791960655159,
+      "tag": "0005_migration",
+      "breakpoints": true
     }
   ]
 }
