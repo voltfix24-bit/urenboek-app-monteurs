@@ -49,7 +49,7 @@ export default function DesktopWeekPlanning() {
   const [repeatOpen, setRepeatOpen] = useState(false);
   const undoStack = useRef<Array<() => Promise<void>>>([]);
   const undoBusy = useRef(false);
-  const pendingCursor = useRef<GridPoint | null>(null);
+  const pendingCursor = useRef<(GridPoint & { week: string }) | null>(null);
   const lastTime = useRef<[string, string]>(["07:00", "16:00"]);
   const [view, setView] = useState<"grid" | "klus">("grid");
   const [filterProject, setFilterProject] = useState<string | null>(urlProject);
@@ -152,14 +152,14 @@ export default function DesktopWeekPlanning() {
     return () => document.removeEventListener("mouseup", up);
   }, [dragging, rijen, datums, cellen]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => { setSelSet(new Set()); setPanelKey(null); if (!pendingCursor.current) setCursor(null); }, [weekStart]);
   useEffect(() => {
-    if (loading || !pendingCursor.current) return;
+    if (loading || !pendingCursor.current || pendingCursor.current.week !== datums[0]) return;
     const p = pendingCursor.current;
     pendingCursor.current = null;
     const med = rijen[p.row];
     if (med) { setCursor(p); setSelSet(new Set([celKey(med.id, datums[p.day])])); }
   }, [loading, datums, rijen]);
-  useEffect(() => { setSelSet(new Set()); setPanelKey(null); if (!pendingCursor.current) setCursor(null); }, [weekStart]);
 
   // ── Schrijfacties ──
   const run = async (fn: () => Promise<void>) => {
@@ -358,7 +358,12 @@ export default function DesktopWeekPlanning() {
   });
 
   const rememberUndo = (undo: () => Promise<void>) => { undoStack.current.push(undo); if (undoStack.current.length > 30) undoStack.current.shift(); };
-  const undoToast = (undo: () => Promise<void>) => ({ action: { label: "Ongedaan maken", onClick: () => void run(async () => { await undo(); const i = undoStack.current.indexOf(undo); if (i >= 0) undoStack.current.splice(i, 1); }) } });
+  const undoToast = (undo: () => Promise<void>) => ({ action: { label: "Ongedaan maken", onClick: () => void run(async () => {
+    const i = undoStack.current.indexOf(undo);
+    if (i < 0) return;
+    if (i !== undoStack.current.length - 1) { toast.info("Maak eerst de laatste wijziging ongedaan"); return; }
+    await undo(); undoStack.current.pop();
+  }) } });
   const capture = async (targets: Array<{ medewerker_id: string; datum: string }>) => {
     const unique = [...new Map(targets.map((p) => [celKey(p.medewerker_id, p.datum), p])).values()];
     const keys = new Set(unique.map((p) => celKey(p.medewerker_id, p.datum)));
@@ -441,7 +446,7 @@ export default function DesktopWeekPlanning() {
       const mod = e.ctrlKey || e.metaKey;
       if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); if (!busy && !undoBusy.current) { const undo = undoStack.current.pop(); if (undo) { undoBusy.current = true; void run(async () => { try { await undo(); toast.success("Ongedaan gemaakt"); } finally { undoBusy.current = false; } }); } } return; }
       if (e.key === "Escape") { wisSel(); return; }
-      if (mod && e.key.toLowerCase() === "c") { const copied = copyDays(selSet, rijen, datums, cellen); if (copied.length) { e.preventDefault(); setClipboard(copied); toast.success(`${copied.length} dagen gekopieerd`); } return; }
+      if (mod && e.key.toLowerCase() === "c") { const copied = copyDays(selSet, rijen, datums, cellen); if (copied.length) { e.preventDefault(); const previous = clipboard; setClipboard(copied); toast.success(`${copied.length} dagen gekopieerd`, { action: { label: "Ongedaan maken", onClick: () => setClipboard(previous) } }); } return; }
       const selected = [...selSet].map(splitCellKey).map((p) => ({ row: rijen.findIndex((m) => m.id === p.medewerker_id), day: datums.indexOf(p.datum) })).filter((p) => p.row >= 0 && p.day >= 0);
       const anchor = cursor ?? (selected.length ? { row: Math.min(...selected.map((p) => p.row)), day: Math.min(...selected.map((p) => p.day)) } : null);
       if (mod && e.key.toLowerCase() === "v" && clipboard.length && anchor) { e.preventDefault(); void run(() => paste(clipboard, anchor)); return; }
@@ -450,7 +455,11 @@ export default function DesktopWeekPlanning() {
       if (!e.key.startsWith("Arrow")) return;
       e.preventDefault(); let next = anchor ?? { row: 0, day: 0 };
       next = { row: Math.max(0, Math.min(rijen.length - 1, next.row + (e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0))), day: next.day + (e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0) };
-      if (next.day < 0 || next.day > 4) { pendingCursor.current = { row: next.row, day: next.day < 0 ? 4 : 0 }; setWeekStart((w) => addWeeks(w, next.day < 0 ? -1 : 1)); return; }
+      if (next.day < 0 || next.day > 4) {
+        const nextWeek = addWeeks(weekStart, next.day < 0 ? -1 : 1);
+        pendingCursor.current = { row: next.row, day: next.day < 0 ? 4 : 0, week: format(nextWeek, "yyyy-MM-dd") };
+        setWeekStart(nextWeek); return;
+      }
       const med = rijen[next.row]; if (!med) return;
       setCursor(next); const key = celKey(med.id, datums[next.day]);
       if (e.shiftKey) setSelSet(new Set([...selSet, key]));
@@ -465,7 +474,8 @@ export default function DesktopWeekPlanning() {
   const quickPlan = (pairs: SelCel[], projectId: string) => run(async () => {
     if (!profileId) return;
     const { doelen, overgeslagen } = doelenVoorCellen(pairs, cellen, medewerkers, beschikbaarheid);
-    const rows = bouwNieuwConcepten(doelen, { project_id: projectId, starttijd: lastTime.current[0], eindtijd: lastTime.current[1], notitie: "" }, profileId);
+    const project = projMap.get(projectId);
+    const rows = bouwNieuwConcepten(doelen, { project_id: projectId, starttijd: lastTime.current[0], eindtijd: lastTime.current[1], notitie: "", ...(project?.soort === "uitleen" ? { werklocatie: project.adres, contactpersoon: project.contactpersoon_naam, contact_telefoon: project.contactpersoon_tel } : {}) }, profileId);
     if (!rows.length) { toast.info("Geen beschikbare lege dagen"); return; }
     const undo = await capture(rows);
     const { error } = await supabase.from("planning_concept").insert(rows);
