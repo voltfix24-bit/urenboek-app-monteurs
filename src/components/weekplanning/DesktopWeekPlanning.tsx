@@ -19,6 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { generatePersoneelsPdf, generatePlanningPdf } from "@/lib/planningPdf";
 import { formatUren, formatUrenGetal } from "@/lib/formatting";
 import { useWeekPlanningData } from "@/hooks/useWeekPlanningData";
+import { groepeerRijen, filterToon, vrijOpDag, wijzigingenOpDag, bouwLiveRegels, dubbeleBoekingTekst, berekenWeekUren, vergelijkBoeking, isLegeWerkdag, type GroepMode, type ToonMode } from "@/lib/weekPlanningV2";
 import {
   actieVoorBewerken, actieVoorVerwijderen, bepaalAfwezigheid, berekenUren, bouwCellen, bouwNieuwConcepten,
   celBezet, celKey, celTelt, ELDERS_TYPE, parseWeekParam, telConcepten, type Cel, type PlanWaarden,
@@ -41,7 +42,12 @@ export default function DesktopWeekPlanning() {
   const [searchParams] = useSearchParams();
   const urlProject = searchParams.get("project");
   const [weekStart, setWeekStart] = useState(() => parseWeekParam(searchParams.get("week")) ?? startOfISOWeek(new Date()));
-  const { bevoegdheden, planning, concepten, medewerkers, projects, beschikbaarheid, loading, refetch } = useWeekPlanningData(weekStart);
+  const [weeksCount, setWeeksCount] = useState<1 | 2 | 4>(1);
+  const [groepMode, setGroepMode] = useState<GroepMode>("geen");
+  const [toonMode, setToonMode] = useState<ToonMode>("iedereen");
+  const [vrijFilter, setVrijFilter] = useState<string | null>(null);
+  const { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, boekingen, weekgrens, loading, refetch } = useWeekPlanningData(weekStart, weeksCount);
+  const [aandachtFilter, setAandachtFilter] = useState<null | "dubbel" | "weekgrens" | "leeg" | "afwijkend">(null);
 
   const conceptModus = true;
   const [cursor, setCursor] = useState<GridPoint | null>(null);
@@ -65,8 +71,9 @@ export default function DesktopWeekPlanning() {
   dragRef.current = drag;
 
   const weekNumber = getISOWeek(weekStart);
-  const weekDates = useMemo(() => Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+  const weekDates = useMemo(() => Array.from({ length: 5 * weeksCount }, (_, i) => addDays(weekStart, 7 * Math.floor(i / 5) + (i % 5))), [weekStart, weeksCount]);
   const datums = useMemo(() => weekDates.map((d) => format(d, "yyyy-MM-dd")), [weekDates]);
+  const compact = weeksCount > 1;
   const isHuidigeWeek = isSameDay(weekStart, startOfISOWeek(new Date()));
   const vandaag = format(new Date(), "yyyy-MM-dd");
 
@@ -83,12 +90,24 @@ export default function DesktopWeekPlanning() {
     return ids;
   }, [celLijst, urlProject, projMap]);
 
-  const rijen = useMemo(() => [...medewerkers].sort((a, b) => {
+  const zichtbareMedewerkers = useMemo(() => {
+    let m = filterToon(medewerkers, toonMode);
+    if (vrijFilter) { const ids = new Set(vrijOpDag(vrijFilter, m, cellen, beschikbaarheid).map((x) => x.id)); m = m.filter((x) => ids.has(x.id)); }
+    return m;
+  }, [medewerkers, toonMode, vrijFilter, cellen, beschikbaarheid]);
+  const rijen = useMemo(() => [...zichtbareMedewerkers].sort((a, b) => {
     const ah = datums.some((d) => celBezet(cellen.get(celKey(a.id, d))));
     const bh = datums.some((d) => celBezet(cellen.get(celKey(b.id, d))));
     if (ah !== bh) return ah ? -1 : 1;
     return a.full_name.localeCompare(b.full_name, "nl", { sensitivity: "base" });
-  }), [medewerkers, cellen, datums]);
+  }), [zichtbareMedewerkers, cellen, datums]);
+  const naamVoor = useCallback((id: string) => korteNaam(medMap.get(id)?.full_name ?? "?"), [medMap]);
+  const rowIndexOf = useMemo(() => new Map(rijen.map((r, i) => [r.id, i])), [rijen]);
+  const groepen = useMemo(() => groepeerRijen(rijen, groepMode, {
+    rolLabel: (rol) => (rolLabel(rol) ?? "Monteurs").toUpperCase(),
+    isUitleenAlleen: (id) => { const dagen = datums.map((d) => cellen.get(celKey(id, d))).filter(celTelt); return dagen.length > 0 && dagen.every((c) => projMap.get(c.project_id ?? "")?.soort === "uitleen"); },
+    naamVoor,
+  }), [rijen, groepMode, datums, cellen, projMap, naamVoor]);
 
   // Overplanning (bestaande regel: meer dan 5 unieke dagen per week), inclusief concepten
   const overgepland = useMemo(() => {
@@ -100,8 +119,23 @@ export default function DesktopWeekPlanning() {
     return new Set(Array.from(tel.entries()).filter(([, s]) => s.size > 5).map(([id]) => id));
   }, [celLijst]);
 
+  // Stap 3: live regels per medewerker+datum (voor dubbele-boeking-detectie, buiten de 1-rij-per-cel van bouwCellen om).
+  const liveRegels = useMemo(() => bouwLiveRegels(planning, concepten), [planning, concepten]);
+  const dubbelTekst = useCallback((cel: Cel | undefined) => {
+    if (!celTelt(cel)) return null;
+    const regels = liveRegels.get(celKey(cel.medewerker_id, cel.datum)) ?? [];
+    return dubbeleBoekingTekst(regels.map((r) => ({ naam: projMap.get(r.project_id ?? "")?.naam ?? "Onbekend project", starttijd: r.starttijd, eindtijd: r.eindtijd })));
+  }, [liveRegels, projMap]);
+  const isDubbel = useCallback((cel: Cel | undefined) => {
+    if (!celTelt(cel)) return false;
+    if (dubbelTekst(cel)) return true;
+    return !!bepaalAfwezigheid(medMap.get(cel.medewerker_id), cel.datum, beschikbaarheid);
+  }, [dubbelTekst, medMap, beschikbaarheid]);
+
   const conflictTekst = useCallback((cel: Cel | undefined) => {
     if (!celTelt(cel)) return null;
+    const dubbel = dubbelTekst(cel);
+    if (dubbel) return dubbel;
     const naam = medMap.get(cel.medewerker_id)?.full_name ?? "Medewerker";
     const delen: string[] = [];
     const afw = bepaalAfwezigheid(medMap.get(cel.medewerker_id), cel.datum, beschikbaarheid);
@@ -115,7 +149,7 @@ export default function DesktopWeekPlanning() {
       else if (b.vcaTot < cel.datum) delen.push("VCA VOL verlopen");
     }
     return delen.length ? `${naam}: ${delen.join(" · ")}` : null;
-  }, [medMap, projMap, beschikbaarheid, bevoegdheden]);
+  }, [medMap, projMap, beschikbaarheid, bevoegdheden, dubbelTekst]);
 
   const alleConflicten = useMemo(() => celLijst.map(conflictTekst).filter((x): x is string => !!x), [celLijst, conflictTekst]);
   const tellers = telConcepten(concepten);
@@ -494,6 +528,15 @@ export default function DesktopWeekPlanning() {
     toast.success(`${rows.length} dagen ingepland (concept) · ${overgeslagen.length} overgeslagen`, undoToast(undo));
   });
 
+  const herinnerGelezen = async (med: typeof medewerkers[number]) => {
+    if (!profileId) return;
+    const { error } = await supabase.functions.invoke("mededeling-verzenden", {
+      body: { titel: "Nieuwe planning", inhoud: "Er staat een nieuwe planning voor je klaar. Open de app om hem te bekijken.", ontvangerType: "persoon", ontvangerId: med.id, profileId },
+    });
+    if (error) toast.error("Versturen van de herinnering is mislukt");
+    else toast.success(`Herinnering verstuurd naar ${korteNaam(med.full_name)}`);
+  };
+
   const publiceer = () => run(async () => {
     const { data, error } = await supabase.rpc("publiceer_planning", { p_van: datums[0], p_tot: datums[4] });
     if (error) throw error;
@@ -517,11 +560,50 @@ export default function DesktopWeekPlanning() {
   };
 
   // ── Render ──
+  const dagVrij = useMemo(() => datums.map((d) => vrijOpDag(d, medewerkers, cellen, beschikbaarheid)), [datums, medewerkers, cellen, beschikbaarheid]);
+  const dagWijzig = useMemo(() => datums.map((d) => wijzigingenOpDag(concepten, d)), [datums, concepten]);
   const dagTotalen = datums.map((d) => {
     const c = celLijst.filter((x) => x.datum === d && celTelt(x));
     return { aantal: new Set(c.map((x) => x.medewerker_id)).size, uren: c.reduce((s, x) => s + berekenUren(x.starttijd, x.eindtijd), 0) };
   });
   const weekTotaal = dagTotalen.reduce((s, d) => s + d.uren, 0);
+
+  // Stap 3: weekgrens — per weergegeven week (5 werkdagen) de netto uren per medewerker.
+  const weekChunks = useMemo(() => Array.from({ length: weeksCount }, (_, w) => datums.slice(w * 5, w * 5 + 5)), [datums, weeksCount]);
+  const weekUrenPerChunk = useMemo(() => weekChunks.map((chunk) => berekenWeekUren(celLijst.filter(celTelt), chunk, berekenUren)), [weekChunks, celLijst]);
+  const bovenWeekgrens = useCallback((medewerkerId: string) => weekChunks.some((chunk, i) => (weekUrenPerChunk[i].get(medewerkerId) ?? 0) > weekgrens), [weekChunks, weekUrenPerChunk, weekgrens]);
+
+  // Stap 5: boekingen (alleen lezen) en lege dagen.
+  const boekingMap = useMemo(() => { const m = new Map<string, number>(); boekingen.forEach((b) => m.set(celKey(b.medewerker_id, b.datum), (m.get(celKey(b.medewerker_id, b.datum)) ?? 0) + b.uren)); return m; }, [boekingen]);
+  const isLeeg = useCallback((med: typeof medewerkers[number], datum: string) => isLegeWerkdag(celBezet(cellen.get(celKey(med.id, datum))), !!bepaalAfwezigheid(med, datum, beschikbaarheid)), [cellen, beschikbaarheid]);
+
+  // Aandachtspunten: aantallen voor de chips rechts in de bedieningsrij.
+  const aandachtAantallen = useMemo(() => {
+    let dubbel = 0, afwijkend = 0, leeg = 0;
+    const weekgrensMeds = new Set<string>();
+    zichtbareMedewerkers.forEach((med) => {
+      if (bovenWeekgrens(med.id)) weekgrensMeds.add(med.id);
+      datums.forEach((d) => {
+        const cel = cellen.get(celKey(med.id, d));
+        if (celTelt(cel) && isDubbel(cel)) dubbel++;
+        if (isLeeg(med, d)) leeg++;
+        if (celTelt(cel) && d < vandaag) {
+          const geboekt = boekingMap.get(celKey(med.id, d)) ?? 0;
+          if (vergelijkBoeking(berekenUren(cel.starttijd, cel.eindtijd), geboekt) === "afwijkend") afwijkend++;
+        }
+      });
+    });
+    return { dubbel, weekgrens: weekgrensMeds.size, leeg, afwijkend };
+  }, [zichtbareMedewerkers, datums, cellen, isDubbel, isLeeg, boekingMap, bovenWeekgrens, vandaag]);
+
+  const matchtAandacht = useCallback((med: typeof medewerkers[number], datum: string, cel: Cel | undefined) => {
+    if (!aandachtFilter) return true;
+    if (aandachtFilter === "dubbel") return celTelt(cel) && isDubbel(cel);
+    if (aandachtFilter === "weekgrens") return bovenWeekgrens(med.id);
+    if (aandachtFilter === "leeg") return isLeeg(med, datum);
+    if (aandachtFilter === "afwijkend") return celTelt(cel) && datum < vandaag && vergelijkBoeking(berekenUren(cel.starttijd, cel.eindtijd), boekingMap.get(celKey(med.id, datum)) ?? 0) === "afwijkend";
+    return true;
+  }, [aandachtFilter, isDubbel, bovenWeekgrens, isLeeg, boekingMap, vandaag]);
 
   const renderCel = (med: typeof rijen[number], r: number, c: number) => {
     const datum = datums[c];
@@ -547,7 +629,17 @@ export default function DesktopWeekPlanning() {
       if (isTarget) cls.push(afw || gevuld ? "is-drop-blocked" : "is-drop-target");
     }
     if (filterProject && gevuld && cel?.project_id !== filterProject) cls.push("is-dimmed");
+    if (!matchtAandacht(med, datum, cel)) cls.push("is-dimmed");
+    const legDezeDag = isLeeg(med, datum);
+    if (aandachtFilter === "leeg" && legDezeDag) cls.push("is-leeg-actief");
+    if (c % 5 === 0 && c > 0) cls.push("wp-weeksep");
     const uren = cel ? berekenUren(cel.starttijd, cel.eindtijd) : 0;
+    const regels = cel ? liveRegels.get(celKey(med.id, datum)) ?? [] : [];
+    const boekInfo = gevuld && cel && datum < vandaag ? (() => {
+      const geboekt = boekingMap.get(celKey(med.id, datum)) ?? 0;
+      return { geboekt, vergelijking: vergelijkBoeking(berekenUren(cel.starttijd, cel.eindtijd), geboekt) };
+    })() : null;
+    if (boekInfo) cls.push(`wp-boek-${boekInfo.vergelijking}`);
     const label = gevuld
       ? `${med.full_name}, ${DAG_KORT[c]}: ${proj?.naam ?? "project"}, ${formatUrenGetal(uren)} uur${cel?.status !== "pub" ? `, concept ${cel?.status}` : ""}`
       : `${med.full_name}, ${DAG_KORT[c]}${afw ? `, ${AFW_CEL[afw]}` : ""}, leeg`;
@@ -573,6 +665,18 @@ export default function DesktopWeekPlanning() {
         onMouseEnter={(e) => { if (dragging) setDrag((s) => (s ? { ...s, r1: r, c1: c, copy: e.altKey } : s)); }}
       >
         {gevuld && cel ? (
+          compact ? (
+            <div className="wp-cell-compact"><i style={{ background: kleur.color }} /><span>{proj?.naam || proj?.nummer || "Onbekend project"}</span></div>
+          ) : regels.length >= 2 ? (
+            <>
+              <div className="wp-cell-stack">
+                {regels.map((r, i) => (
+                  <div key={i} className="wp-cell-stack-row">{projMap.get(r.project_id ?? "")?.naam ?? "Onbekend project"} {r.starttijd}–{r.eindtijd}</div>
+                ))}
+              </div>
+              {conflict && <span className="wp-conflict-dot" aria-hidden="true">!</span>}
+            </>
+          ) : (
           <>
             <div className="wp-cell-title"><i /><span>{proj?.naam || proj?.nummer || "Onbekend project"}</span></div>
             <div className="wp-cell-meta">{formatUrenGetal(uren)} u · {cel.starttijd}–{cel.eindtijd}{cel.notitie ? " · ✎" : ""}</div>
@@ -581,11 +685,16 @@ export default function DesktopWeekPlanning() {
             {cel.beschermd && <Lock className="wp-cell-lock" aria-label="Planner-koppeling" />}
             {cel.werklocatie && <Crosshair className="wp-cell-loc" aria-label={`Werklocatie: ${cel.werklocatie}`}><title>{cel.werklocatie}</title></Crosshair>}
           </>
+          )
         ) : afw ? <span className="wp-afw-label">{AFW_CEL[afw]}</span> : null}
+        {boekInfo && boekInfo.vergelijking !== "gelijk" && (
+          <span className="wp-boek-label">{boekInfo.vergelijking === "niet-geboekt" ? "nog niet geboekt" : `geboekt ${formatUrenGetal(boekInfo.geboekt)} u`}</span>
+        )}
       </div>
     );
-    if (!conflict) return inhoud;
-    return <Tooltip key={datum}><TooltipTrigger asChild>{inhoud}</TooltipTrigger><TooltipContent>{conflict}</TooltipContent></Tooltip>;
+    const tooltipText = conflict ?? (boekInfo ? `Gepland ${formatUrenGetal(uren)} u, geboekt ${formatUrenGetal(boekInfo.geboekt)} u` : null);
+    if (!tooltipText) return inhoud;
+    return <Tooltip key={datum}><TooltipTrigger asChild>{inhoud}</TooltipTrigger><TooltipContent>{tooltipText}</TooltipContent></Tooltip>;
   };
 
   const panelMed = panelCel ? medMap.get(panelCel.medewerker_id) : undefined;
@@ -628,6 +737,24 @@ export default function DesktopWeekPlanning() {
           <div className="wp-segmented" aria-label="Weergave">
             {(["grid", "klus"] as const).map((v) => <button key={v} type="button" aria-pressed={view === v} onClick={() => setView(v)}>{v === "grid" ? "Overzicht" : "Per klus"}</button>)}
           </div>
+          <div className="wp-segmented" aria-label="Aantal weken">
+            {([1, 2, 4] as const).map((n) => <button key={n} type="button" aria-pressed={weeksCount === n} onClick={() => setWeeksCount(n)}>{n} {n === 1 ? "week" : "weken"}</button>)}
+          </div>
+          <select className="wp-select" aria-label="Groeperen" value={groepMode} onChange={(e) => setGroepMode(e.target.value as GroepMode)}>
+            <option value="geen">Groeperen: geen</option>
+            <option value="rol">Groeperen: rol</option>
+            <option value="ploeg">Groeperen: ploeg</option>
+          </select>
+          <select className="wp-select" aria-label="Toon" value={toonMode} onChange={(e) => setToonMode(e.target.value as ToonMode)}>
+            <option value="iedereen">Toon: iedereen</option>
+            <option value="monteurs">Toon: monteurs</option>
+            <option value="leerlingen">Toon: leerlingen</option>
+          </select>
+          {vrijFilter && (
+            <button type="button" className="wp-chip" aria-pressed onClick={() => setVrijFilter(null)}>
+              Alleen vrij op {format(new Date(`${vrijFilter}T12:00:00`), "EEE d MMM", { locale: nl })} ×
+            </button>
+          )}
           {weekProjectIds.length > 0 && (
             <>
               <span className="wp-filter-label">Project</span>
@@ -646,53 +773,108 @@ export default function DesktopWeekPlanning() {
               </div>
             </>
           )}
+          <span className="wp-controls-spacer" />
+          {aandachtAantallen.dubbel > 0 && (
+            <button type="button" className="wp-chip wp-chip-attn" aria-pressed={aandachtFilter === "dubbel"} onClick={() => setAandachtFilter((f) => (f === "dubbel" ? null : "dubbel"))}>{aandachtAantallen.dubbel} dubbel geboekt</button>
+          )}
+          {aandachtAantallen.weekgrens > 0 && (
+            <button type="button" className="wp-chip wp-chip-attn" aria-pressed={aandachtFilter === "weekgrens"} onClick={() => setAandachtFilter((f) => (f === "weekgrens" ? null : "weekgrens"))}>{aandachtAantallen.weekgrens} boven {weekgrens} u</button>
+          )}
+          {aandachtAantallen.leeg > 0 && (
+            <button type="button" className="wp-chip wp-chip-attn" aria-pressed={aandachtFilter === "leeg"} onClick={() => setAandachtFilter((f) => (f === "leeg" ? null : "leeg"))}>{aandachtAantallen.leeg} lege werkdagen</button>
+          )}
+          {aandachtAantallen.afwijkend > 0 && (
+            <button type="button" className="wp-chip wp-chip-attn" aria-pressed={aandachtFilter === "afwijkend"} onClick={() => setAandachtFilter((f) => (f === "afwijkend" ? null : "afwijkend"))}>{aandachtAantallen.afwijkend} afwijkend geboekt</button>
+          )}
         </div>
 
         <main className="wp-body">
           {clipboard.length > 0 && <div className="wp-clipboard"><Copy size={14} /><span>Gekopieerd: {clipboard.length} dagen · klik een dag en druk Ctrl+V (ook in een andere week)</span><Button variant="ghost" size="icon" aria-label="Kopie wissen" onClick={() => setClipboard([])}><X size={15} /></Button></div>}
           {loading ? <Spinner padding="py-16" /> : view === "klus" ? (
-            <PerKlusWeergave cellen={celLijst} weekDates={weekDates} projects={projects} medewerkers={medewerkers} weekProjectIds={weekProjectIds} filterProject={filterProject} />
+            <PerKlusWeergave cellen={celLijst} weekDates={weekDates} projects={projects} medewerkers={medewerkers} weekProjectIds={weekProjectIds} filterProject={filterProject} onVrijOpDag={(datum) => { setView("grid"); setVrijFilter(datum); }} />
           ) : (
             <>
-              <div className="wp-grid" role="grid" aria-label={`Weekplanning week ${weekNumber}`}>
+              <div className="wp-grid-scroll" style={{ overflowX: "auto" }}>
+              <div className="wp-grid" role="grid" aria-label={`Weekplanning week ${weekNumber}`} style={{ gridTemplateColumns: `240px repeat(${5 * weeksCount}, minmax(${compact ? 76 : 120}px, 1fr)) 96px`, minWidth: 240 + 5 * weeksCount * (compact ? 76 : 120) + 96 }}>
                 <div className="wp-head" role="columnheader">Medewerker</div>
-                {weekDates.map((d, i) => (
-                  <div key={datums[i]} role="columnheader" className={`wp-head ${datums[i] === vandaag ? "is-today" : ""}`}>
-                    <span>{DAG_KORT[i]}</span><strong>{format(d, "d MMM", { locale: nl })}</strong>
-                  </div>
-                ))}
-                <div className="wp-head is-total" role="columnheader">Totaal</div>
-
-                {rijen.map((med, r) => {
-                  const rolTekst = rolLabel(med.role);
-                  const partners = med.planning_partner_ids.map((p) => medMap.get(p)?.full_name).filter((n): n is string => !!n).map(korteNaam);
-                  const vrij = med.vaste_vrije_dagen.filter((d) => d >= 1 && d <= 5).map((d) => DAG_KORT[d - 1].toLowerCase());
-                  const sub = [rolTekst, partners.length ? `Vaste ploeg met ${partners.join(", ")}` : null, vrij.length ? `Vrij op ${vrij.join(", ")}` : null].filter(Boolean).join(" · ");
-                  const telt = datums.map((d) => cellen.get(celKey(med.id, d))).filter(celTelt);
-                  const uren = telt.reduce((s, c) => s + berekenUren(c.starttijd, c.eindtijd), 0);
-                  const over = overgepland.has(med.id);
-                  const totaal = (
-                    <div className={`wp-total ${over ? "is-over" : ""}`} role="gridcell">
-                      <strong>{formatUren(uren)}</strong><small>{telt.length} {telt.length === 1 ? "dag" : "dagen"}</small>
-                    </div>
-                  );
+                {weekDates.map((d, i) => {
+                  const datum = datums[i];
+                  const isWeekStart = i % 5 === 0;
+                  const vrij = dagVrij[i];
+                  const wijzig = dagWijzig[i];
                   return (
-                    <div className="contents" role="row" key={med.id}>
-                      <div className="wp-name" role="rowheader">
-                        <span className="wp-avatar" aria-hidden="true">{initialen(med.full_name)}</span>
-                        <span className="min-w-0"><strong title={med.full_name}>{med.full_name}</strong>{sub && <small title={sub}>{sub}</small>}</span>
-                      </div>
-                      {datums.map((_, c) => renderCel(med, r, c))}
-                      {over ? <Tooltip><TooltipTrigger asChild>{totaal}</TooltipTrigger><TooltipContent>Meer dan 5 dagen ingepland deze week</TooltipContent></Tooltip> : totaal}
+                    <div key={datum} role="columnheader" className={`wp-head ${datum === vandaag ? "is-today" : ""} ${isWeekStart && i > 0 ? "wp-weeksep" : ""}`}>
+                      {isWeekStart && <span className="wp-wk-label">WK {getISOWeek(d)}</span>}
+                      <span>{DAG_KORT[i % 5]}</span><strong>{format(d, "d MMM", { locale: nl })}</strong>
+                      {!compact && (
+                        <div className="wp-head-pills">
+                          {vrij.length > 0 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button type="button" className="wp-pill" aria-pressed={vrijFilter === datum} onClick={() => setVrijFilter((cur) => (cur === datum ? null : datum))}>{vrij.length} vrij</button>
+                              </TooltipTrigger>
+                              <TooltipContent>{vrij.map((m) => m.full_name).join(", ")}</TooltipContent>
+                            </Tooltip>
+                          )}
+                          {wijzig > 0 && <span className="wp-pill wp-pill-blue">{wijzig} wijzigingen</span>}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
+                <div className="wp-head is-total" role="columnheader">Totaal</div>
+
+                {groepen.map((g) => (
+                  <div className="contents" key={g.label || "__all"}>
+                    {g.label && <div className="wp-group-head" role="row">{g.label.toUpperCase()} · {g.rows.length}</div>}
+                    {g.rows.map((med) => {
+                      const r = rowIndexOf.get(med.id) ?? 0;
+                      const rolTekst = rolLabel(med.role);
+                      const partners = med.planning_partner_ids.map((p) => medMap.get(p)?.full_name).filter((n): n is string => !!n).map(korteNaam);
+                      const vrijDagen = med.vaste_vrije_dagen.filter((d) => d >= 1 && d <= 5).map((d) => DAG_KORT[d - 1].toLowerCase());
+                      const sub = [rolTekst, partners.length ? `Vaste ploeg met ${partners.join(", ")}` : null, vrijDagen.length ? `Vrij op ${vrijDagen.join(", ")}` : null].filter(Boolean).join(" · ");
+                      const telt = datums.map((d) => cellen.get(celKey(med.id, d))).filter(celTelt);
+                      const uren = telt.reduce((s, c) => s + berekenUren(c.starttijd, c.eindtijd), 0);
+                      const over = overgepland.has(med.id);
+                      const gl = gelezen?.get(med.id);
+                      const ongelezen = gl?.laatst_gepubliceerd_op && (!gl.gelezen_op || gl.gelezen_op < gl.laatst_gepubliceerd_op);
+                      const overGrens = bovenWeekgrens(med.id);
+                      const legeDagenAantal = datums.filter((d) => isLeeg(med, d)).length;
+                      const totaal = (
+                        <div className={`wp-total ${over ? "is-over" : ""}`} role="gridcell">
+                          <strong>{formatUren(uren)}</strong><small>{telt.length} {telt.length === 1 ? "dag" : "dagen"}</small>
+                          {overGrens && <small className="wp-total-grens">boven {weekgrens} u</small>}
+                          {legeDagenAantal > 0 && <small className="wp-total-leeg">{legeDagenAantal} {legeDagenAantal === 1 ? "dag" : "dagen"} leeg</small>}
+                        </div>
+                      );
+                      return (
+                        <div className="contents" role="row" key={med.id}>
+                          <div className="wp-name" role="rowheader">
+                            <span className="wp-avatar" aria-hidden="true">{initialen(med.full_name)}</span>
+                            <span className="min-w-0">
+                              <strong title={med.full_name}>{med.full_name}</strong>
+                              {sub && <small title={sub}>{sub}</small>}
+                              {gl?.laatst_gepubliceerd_op && (ongelezen ? (
+                                <button type="button" className="wp-gelezen is-ongelezen" onClick={() => void herinnerGelezen(med)}>● Nieuwe planning nog niet geopend</button>
+                              ) : (
+                                <span className="wp-gelezen is-gelezen">✓ Gelezen {gl.gelezen_op ? format(new Date(gl.gelezen_op), "EEE HH:mm", { locale: nl }) : ""}</span>
+                              ))}
+                            </span>
+                          </div>
+                          {datums.map((_, c) => renderCel(med, r, c))}
+                          {over ? <Tooltip><TooltipTrigger asChild>{totaal}</TooltipTrigger><TooltipContent>Meer dan 5 dagen ingepland deze week</TooltipContent></Tooltip> : totaal}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
 
                 <div className="wp-foot"><strong>Dagtotaal</strong></div>
                 {dagTotalen.map((d, i) => (
                   <div key={datums[i]} className="wp-foot"><span>{d.aantal} {d.aantal === 1 ? "monteur" : "monteurs"}</span><strong>{formatUren(d.uren)}</strong></div>
                 ))}
                 <div className="wp-foot is-total"><span>Week</span><strong>{formatUren(weekTotaal)}</strong></div>
+              </div>
               </div>
 
               <div className="wp-legend">
@@ -703,6 +885,10 @@ export default function DesktopWeekPlanning() {
                 <span><i style={{ background: "repeating-linear-gradient(135deg, var(--wp-verlof-a) 0 3px, var(--wp-verlof-b) 3px 6px)" }} />Verlof</span>
                 <span><i style={{ background: "var(--wp-vrij-bg)" }} />Vaste vrije dag</span>
                 <span><Lock size={13} aria-hidden="true" />Planner-koppeling</span>
+                <span><i style={{ background: "rgba(16,185,129,.55)" }} />Geboekt gelijk aan gepland</span>
+                <span><i style={{ background: "var(--wp-boek-afwijkend)" }} />Afwijkend geboekt</span>
+                <span><i style={{ background: "var(--wp-boek-niet)" }} />Nog niet geboekt</span>
+                <span><i style={{ background: "var(--wp-leeg-bg)", boxShadow: "inset 0 0 0 1.5px var(--wp-leeg-border)" }} />Lege werkdag (filter actief)</span>
               </div>
             </>
           )}
@@ -724,6 +910,9 @@ export default function DesktopWeekPlanning() {
           projectId={barProject}
           busy={busy}
           conceptModus={conceptModus}
+          weekgrens={weekgrens}
+          weekChunks={weekChunks}
+          weekUrenPerChunk={weekUrenPerChunk}
           onProjectChange={setBarProject}
           onPlan={plan}
           onVerwijder={verwijderSel}

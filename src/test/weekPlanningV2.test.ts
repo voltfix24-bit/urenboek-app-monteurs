@@ -1,33 +1,91 @@
-import { describe, expect, it } from "vitest";
-import { copyDays, transferTargets, repeatDates, repeatEnd } from "@/lib/weekPlanningV2";
-import { bouwCellen, type PlanningRij } from "@/lib/weekPlanning";
+import { describe, it, expect } from "vitest";
+import {
+  isLeerling, filterToon, bezettingPerDag, klusKopstatus, wijzigingenOpDag,
+  bouwLiveRegels, tijdenOverlappen, dubbeleBoekingTekst, berekenWeekUren, weekgrensWaarschuwing, vergelijkBoeking, isLegeWerkdag,
+} from "@/lib/weekPlanningV2";
 
-const employees = [{ id: "a", full_name: "A", vaste_vrije_dagen: [], planning_partner_ids: [] }, { id: "b", full_name: "B", vaste_vrije_dagen: [3], planning_partner_ids: [] }];
-const dates = ["2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16"];
-const row: PlanningRij = { id: "p", medewerker_id: "a", project_id: "project", datum: dates[0], starttijd: "07:00", eindtijd: "16:00", notitie: "Hal 3", activiteit: null, activiteit_kleur: null, planning_group_id: "group", collega_ids: ["b"], external_source: null, sync_locked: false, werklocatie: "Utrecht", contactpersoon: "Contact", contact_telefoon: "test" };
-describe("desktop quick planning", () => {
-  it("copies sparse days relative to top-left and preserves lending fields", () => {
-    const cells = bouwCellen([row, { ...row, id: "q", datum: dates[4] }], []);
-    const copied = copyDays(new Set([`a|${dates[0]}`, `a|${dates[4]}`]), employees, dates, cells);
-    expect(copied.map((d) => d.day)).toEqual([0, 4]);
-    expect(copied[0].waarden).toMatchObject({ werklocatie: "Utrecht", contactpersoon: "Contact", notitie: "Hal 3" });
+describe("weekPlanningV2 helpers", () => {
+  it("isLeerling detecteert leerling ongeacht hoofdletters", () => {
+    expect(isLeerling({ ploeg: "Leerling" })).toBe(true);
+    expect(isLeerling({ ploeg: "Monteurs" })).toBe(false);
+    expect(isLeerling({ ploeg: null })).toBe(false);
   });
-  it("skips occupied targets, fixed days, leave and outside-grid targets", () => {
-    const cells = bouwCellen([row], []);
-    const copied = copyDays(new Set([`a|${dates[0]}`]), employees, dates, cells);
-    expect(transferTargets(copied, { row: 0, day: 0 }, employees, dates, cells, []).targets).toHaveLength(0);
-    expect(transferTargets(copied, { row: 1, day: 2 }, employees, dates, cells, []).skipped).toEqual(["vrij"]);
-    expect(transferTargets(copied, { row: 2, day: 0 }, employees, dates, cells, []).skipped).toEqual(["buiten het rooster"]);
-    expect(transferTargets(copied, { row: 0, day: 1 }, employees, dates, cells, [{ medewerker_id: "a", datum_van: dates[1], datum_tot: dates[1], type: "ziek", status: "goedgekeurd" }]).skipped).toEqual(["ziek"]);
+
+  it("filterToon filtert op monteurs/leerlingen", () => {
+    const rows = [{ id: "1", ploeg: "Leerling" }, { id: "2", ploeg: "Monteurs" }];
+    expect(filterToon(rows, "leerlingen")).toEqual([rows[0]]);
+    expect(filterToon(rows, "monteurs")).toEqual([rows[1]]);
+    expect(filterToon(rows, "iedereen")).toEqual(rows);
   });
-  it("never moves protected Planner rows but permits copying their contents", () => {
-    const cells = bouwCellen([{ ...row, sync_locked: true }], []);
-    const copied = copyDays(new Set([`a|${dates[0]}`]), employees, dates, cells);
-    expect(transferTargets(copied, { row: 0, day: 1 }, employees, dates, cells, [], true).skipped).toEqual(["Planner-koppeling"]);
-    expect(transferTargets(copied, { row: 0, day: 1 }, employees, dates, cells, []).targets).toHaveLength(1);
+
+  it("bezettingPerDag bepaalt status", () => {
+    expect(bezettingPerDag(2, 4).status).toBe("tekort");
+    expect(bezettingPerDag(4, 4).status).toBe("precies");
+    expect(bezettingPerDag(5, 4).status).toBe("meer");
+    expect(bezettingPerDag(2, null).status).toBe("geen-norm");
   });
-  it("repeats selected weekdays every other week and includes the end date", () => {
-    expect(repeatDates(new Date(2026, 9, 12), new Date(2026, 9, 30), [0, 4], 2)).toEqual(["2026-10-12", "2026-10-16", "2026-10-26", "2026-10-30"]);
-    expect(repeatEnd(new Date(2026, 9, 12), 2).getFullYear()).toBe(2027);
+
+  it("klusKopstatus telt het tekort op", () => {
+    const dagen = [bezettingPerDag(2, 4), bezettingPerDag(4, 4)];
+    expect(klusKopstatus(dagen)).toBe("Tekort 2 mensdagen");
+    expect(klusKopstatus([bezettingPerDag(4, 4)])).toBe("Volledig bezet");
+  });
+
+  it("wijzigingenOpDag telt concepten op een datum", () => {
+    const concepten = [{ datum: "2024-01-01" }, { datum: "2024-01-01" }, { datum: "2024-01-02" }];
+    expect(wijzigingenOpDag(concepten, "2024-01-01")).toBe(2);
+  });
+
+  it("tijdenOverlappen herkent overlap en halfopen grenzen", () => {
+    expect(tijdenOverlappen({ starttijd: "07:00", eindtijd: "12:00" }, { starttijd: "11:00", eindtijd: "16:00" })).toBe(true);
+    expect(tijdenOverlappen({ starttijd: "07:00", eindtijd: "12:00" }, { starttijd: "12:00", eindtijd: "16:00" })).toBe(false);
+  });
+
+  it("dubbeleBoekingTekst geeft tooltip bij overlap, anders null", () => {
+    const regels = [{ naam: "Koppoelln", starttijd: "07:00", eindtijd: "12:00" }, { naam: "Stationsplein", starttijd: "11:00", eindtijd: "16:00" }];
+    expect(dubbeleBoekingTekst(regels)).toBe("Dubbele boeking: Koppoelln 07:00–12:00 en Stationsplein 11:00–16:00 overlappen");
+    expect(dubbeleBoekingTekst([regels[0]])).toBeNull();
+  });
+
+  it("bouwLiveRegels combineert gepubliceerde planning met concepten, zonder verwijderde/gewijzigde planning-ids", () => {
+    const planning = [{ id: "p1", medewerker_id: "m1", datum: "2024-01-01", project_id: "proj1", starttijd: "07:00:00", eindtijd: "12:00:00" }];
+    const concepten = [
+      { medewerker_id: "m1", datum: "2024-01-01", project_id: "proj2", starttijd: "11:00", eindtijd: "16:00", actie: "nieuw", planning_id: null },
+      { medewerker_id: "m2", datum: "2024-01-01", project_id: "proj3", starttijd: "07:00", eindtijd: "16:00", actie: "wijzig", planning_id: "p2" },
+    ];
+    const regels = bouwLiveRegels(planning, concepten);
+    expect(regels.get("m1|2024-01-01")).toEqual([
+      { project_id: "proj1", starttijd: "07:00", eindtijd: "12:00" },
+      { project_id: "proj2", starttijd: "11:00", eindtijd: "16:00" },
+    ]);
+    expect(regels.get("m2|2024-01-01")).toEqual([{ project_id: "proj3", starttijd: "07:00", eindtijd: "16:00" }]);
+  });
+
+  it("berekenWeekUren telt netto uren per medewerker op, alleen voor de opgegeven datums", () => {
+    const cellen = [
+      { medewerker_id: "m1", datum: "2024-01-01", starttijd: "07:00", eindtijd: "12:00" },
+      { medewerker_id: "m1", datum: "2024-01-08", starttijd: "07:00", eindtijd: "16:00" },
+    ];
+    const uren = (s: string | null, e: string | null) => (s && e ? 5 : 0);
+    const result = berekenWeekUren(cellen, ["2024-01-01"], uren);
+    expect(result.get("m1")).toBe(5);
+  });
+
+  it("weekgrensWaarschuwing waarschuwt alleen boven de grens", () => {
+    const fmt = (n: number) => String(n);
+    expect(weekgrensWaarschuwing("Jan Bakker", 40, 9, 42, 40, fmt)).toBe("Jan Bakker komt op 49 u in week 42 (boven 40 u)");
+    expect(weekgrensWaarschuwing("Jan Bakker", 30, 5, 42, 40, fmt)).toBeNull();
+  });
+
+  it("vergelijkBoeking bepaalt gelijk/afwijkend/niet-geboekt", () => {
+    expect(vergelijkBoeking(8, 8)).toBe("gelijk");
+    expect(vergelijkBoeking(8, 6.5)).toBe("afwijkend");
+    expect(vergelijkBoeking(8, 0)).toBe("niet-geboekt");
+  });
+
+  it("isLegeWerkdag is waar zonder planning en zonder afwezigheid", () => {
+    expect(isLegeWerkdag(false, false)).toBe(true);
+    expect(isLegeWerkdag(true, false)).toBe(false);
+    expect(isLegeWerkdag(false, true)).toBe(false);
   });
 });

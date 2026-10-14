@@ -19,6 +19,7 @@ import { MedewerkerDetail } from "@/components/medewerkers/MedewerkerDetail";
 import { NieuweGebruikerForm } from "@/components/medewerkers/NieuweGebruikerForm";
 import { ListSkeleton, MedewerkerSkeleton } from "@/components/ui/Skeletons";
 import { EmptyState } from "@/components/ui/EmptyState";
+import MedewerkersDesktop from "@/components/medewerkers/desktop/MedewerkersDesktop";
 interface CreatedUser { email: string; fullName: string; role: string; password?: string; inviteOnly?: boolean; }
 
 export default function Medewerkers() {
@@ -34,6 +35,7 @@ export default function Medewerkers() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [employeeCerts, setEmployeeCerts] = useState<any[]>([]);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [isDesktopLg, setIsDesktopLg] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingEvent, setPendingEvent] = useState<React.FormEvent | null>(null);
 
@@ -58,6 +60,13 @@ export default function Medewerkers() {
     const handler = () => setIsDesktop(window.innerWidth >= 768);
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
+  }, []);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const handler = () => setIsDesktopLg(mql.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
   }, []);
 
   const { medewerkers: medewerkersData, loading: medewerkersLoading, refetch: refetchMedewerkers } = useMedewerkers();
@@ -181,6 +190,8 @@ export default function Medewerkers() {
   };
 
   if (!isManager) return <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--app-navy)" }}><p style={{ color: "var(--text-muted)" }}>Alleen managers hebben toegang.</p></div>;
+
+  if (isDesktopLg) return <MedewerkersDesktop />;
 
   const monteurs = employees.filter(e => e.role !== "manager" && e.role !== "–");
   const managers = employees.filter(e => e.role === "manager");

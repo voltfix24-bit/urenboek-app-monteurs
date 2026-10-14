@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { bepaalAfwezigheid, bepaalDoelen, celBezet, celKey, celTelt, TIJDBLOKKEN, type BeschikbaarheidBasis, type Cel } from "@/lib/weekPlanning";
+import { getISOWeek } from "date-fns";
+import { bepaalAfwezigheid, bepaalDoelen, berekenUren, celBezet, celKey, celTelt, TIJDBLOKKEN, type BeschikbaarheidBasis, type Cel } from "@/lib/weekPlanning";
+import { weekgrensWaarschuwing } from "@/lib/weekPlanningV2";
+import { formatUrenGetal } from "@/lib/formatting";
 import type { WpMedewerker, WpProject } from "@/hooks/useWeekPlanningData";
 import { DAG_KORT, korteNaam, leesRecent, projectKleur } from "./wpUtils";
 import { ProjectZoeker } from "./ProjectZoeker";
@@ -41,6 +44,9 @@ interface Props {
   projectId: string | null;
   busy: boolean;
   conceptModus: boolean;
+  weekgrens: number;
+  weekChunks: string[][];
+  weekUrenPerChunk: Map<string, number>[];
   onProjectChange: (id: string) => void;
   onPlan: (paren: SelCel[], tijd: [string, string], notitie: string, uitleen?: UitleenWaarden) => void;
   onVerwijder: (cellen: Cel[]) => void;
@@ -52,7 +58,7 @@ interface Props {
 }
 
 export function ActieBalk(props: Props) {
-  const { medewerkers, selCellen, weekDates, cellen, beschikbaarheid, projects, weekProjectIds, projectId, busy } = props;
+  const { medewerkers, selCellen, weekDates, cellen, beschikbaarheid, projects, weekProjectIds, projectId, busy, weekgrens, weekChunks, weekUrenPerChunk } = props;
   const [notitie, setNotitie] = useState("");
   const [ploegMee, setPloegMee] = useState(true);
   const project = projects.find((p) => p.id === projectId);
@@ -89,6 +95,22 @@ export function ActieBalk(props: Props) {
   const ingevuld = selCellen.map((s) => cellen.get(celKey(s.medId, s.datum))).filter((c): c is Cel => celTelt(c));
   const heeftInhoud = ingevuld.length > 0;
   const [tijd, setTijd] = useState<[string, string] | null>(() => (heeftInhoud ? null : TIJDBLOKKEN[0]));
+  const tijdRef = useRef(tijd);
+  tijdRef.current = tijd;
+  const weekgrensWaarschuwingTekst = useMemo(() => {
+    if (!tijdRef.current || doelen.length === 0) return null;
+    const toeTeVoegen = berekenUren(tijdRef.current[0], tijdRef.current[1]);
+    for (const d of doelen) {
+      const chunkIdx = weekChunks.findIndex((c) => c.includes(d.datum));
+      if (chunkIdx < 0) continue;
+      const bestaand = weekUrenPerChunk[chunkIdx]?.get(d.medewerker_id) ?? 0;
+      const naam = medMap.get(d.medewerker_id)?.full_name ?? "Medewerker";
+      const dag = weekDates.find((_, i) => weekDatums[i] === d.datum) ?? weekDates[0];
+      const msg = weekgrensWaarschuwing(naam, bestaand, toeTeVoegen, getISOWeek(dag), weekgrens, formatUrenGetal);
+      if (msg) return msg;
+    }
+    return null;
+  }, [doelen, weekChunks, weekUrenPerChunk, weekgrens, medMap, weekDates, weekDatums]);
   const [projectGekozen, setProjectGekozen] = useState(!heeftInhoud);
   const kiesProject = (id: string) => { setProjectGekozen(true); props.onProjectChange(id); };
   const uitleenWaarden = (): UitleenWaarden => ({ werklocatie: werklocatie.trim() || null, contactpersoon: contact.trim() || null, contact_telefoon: telefoon.trim() || null });
@@ -166,6 +188,10 @@ export function ActieBalk(props: Props) {
           <input className="wp-bar-note" placeholder="Contactpersoon (optioneel)" value={contact} onChange={(e) => setContact(e.target.value)} aria-label="Contactpersoon" />
           <input className="wp-bar-note" type="tel" placeholder="Telefoon (optioneel)" value={telefoon} onChange={(e) => setTelefoon(e.target.value)} aria-label="Telefoon contactpersoon" />
         </div>
+      )}
+
+      {weekgrensWaarschuwingTekst && !heeftInhoud && (
+        <div className="wp-bar-warn-row">{weekgrensWaarschuwingTekst}</div>
       )}
 
       {overgeslagen.length > 0 && (

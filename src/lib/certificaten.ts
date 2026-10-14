@@ -101,4 +101,19 @@ LET OP: als je een aanwijzing hebt, MOET je de professional-optie kiezen. De bez
     heeftVervaldatum: true,
     info: null,
   },
+  {
+    type: "BHV",
+    label: "BHV",
+    heeftNiveau: false,
+    heeftVervaldatum: true,
+    info: null,
+  },
+  {
+    type: "ASBEST",
+    label: "Asbest",
+    heeftNiveau: true,
+    niveaus: ["module_1", "module_2", "module_4"],
+    heeftVervaldatum: true,
+    info: null,
+  },
 ];

@@ -9,6 +9,7 @@ export interface FormState {
   projectjaar: string;
   soort: 'project' | 'uitleen';
   werklocatie: string;
+  benodigd_per_dag: string;
 }
 
 export const emptyForm: FormState = {
@@ -19,6 +20,7 @@ export const emptyForm: FormState = {
   projectjaar: "",
   soort: "project",
   werklocatie: "",
+  benodigd_per_dag: "",
 };
 
 const selectStyle = { background: "var(--app-navy)", border: "1px solid var(--planning-border-soft)", color: "var(--text-primary)" };
@@ -86,6 +88,11 @@ export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, er
         <FormField label="Standaard werklocatie">
           <ValidatedInput value={form.werklocatie} onChange={e => update("werklocatie", e.target.value)} placeholder="Optioneel" />
         </FormField>
+        {isDesktop && (
+          <FormField label="Mensen nodig per dag">
+            <ValidatedInput type="number" min="0" value={form.benodigd_per_dag} onChange={e => update("benodigd_per_dag", e.target.value.replace(/[^\d]/g, ""))} placeholder="Optioneel, bijv. 2" />
+          </FormField>
+        )}
         <div className="grid grid-cols-2 gap-2">
           <FormField label="Contactpersoon">
             <ValidatedInput value={form.contactpersoon_naam} onChange={e => update("contactpersoon_naam", e.target.value)} placeholder="Optioneel" />
@@ -157,6 +164,11 @@ export function ProjectFormFields({ form, setForm, opdrachtgevers, isManager, er
             error={errors.projectjaar}
           />
         </FormField>
+        {isDesktop && (
+          <FormField label="Mensen nodig per dag">
+            <ValidatedInput type="number" min="0" value={form.benodigd_per_dag} onChange={e => update("benodigd_per_dag", e.target.value.replace(/[^\d]/g, ""))} placeholder="Optioneel" />
+          </FormField>
+        )}
       </div>
 
       {/* Vergoedingsmethode */}

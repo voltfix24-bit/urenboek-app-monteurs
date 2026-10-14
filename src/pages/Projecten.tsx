@@ -37,6 +37,7 @@ interface Project {
   intake_gedaan: boolean; rmu_merk: string | null; rmu_configuratie_id: string | null;
   status: string;
   projectjaar: number | null;
+  benodigd_per_dag?: number | null;
   soort?: string;
   created_at?: string;
 }
@@ -172,6 +173,7 @@ export default function Projecten() {
       adres: form.werklocatie.trim() || null,
       contactpersoon_naam: form.contactpersoon_naam.trim() || null,
       contactpersoon_tel: form.contactpersoon_tel.trim() || null,
+      benodigd_per_dag: form.benodigd_per_dag.trim() ? Number(form.benodigd_per_dag) : null,
     };
     if (isNew) {
       const { error } = await supabase.from("projects").insert(data);
@@ -211,6 +213,7 @@ export default function Projecten() {
       data.contactpersoon_naam = form.contactpersoon_naam.trim() || null;
       data.contactpersoon_tel = form.contactpersoon_tel.trim() || null;
       data.contactpersoon_email = form.contactpersoon_email.trim() || null;
+      data.benodigd_per_dag = form.benodigd_per_dag.trim() ? Number(form.benodigd_per_dag) : null;
     }
     if (isNew) {
       const { data: newP, error } = await supabase.from("projects").insert(data).select("id").single();
@@ -241,12 +244,12 @@ export default function Projecten() {
 
   function startEdit(p: Project) {
     setEditId(p.id); setExpandedId(null); setShowAdd(false);
-    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "", vergoed_methode: "", projectjaar: p.projectjaar != null ? String(p.projectjaar) : "", soort: isUitleen(p) ? "uitleen" : "project", werklocatie: p.adres || "" });
+    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "", vergoed_methode: "", projectjaar: p.projectjaar != null ? String(p.projectjaar) : "", soort: isUitleen(p) ? "uitleen" : "project", werklocatie: p.adres || "", benodigd_per_dag: p.benodigd_per_dag != null ? String(p.benodigd_per_dag) : "" });
   }
 
   function startDesktopEdit(p: Project) {
     setDesktopMode("edit"); setSelectedId(p.id);
-    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "", vergoed_methode: "", projectjaar: p.projectjaar != null ? String(p.projectjaar) : "", soort: isUitleen(p) ? "uitleen" : "project", werklocatie: p.adres || "" });
+    setForm({ nummer: p.nummer, naam: p.naam, opdrachtgever_id: p.opdrachtgever_id, stationsnaam: p.stationsnaam || "", straat: p.straat || "", postcode: p.postcode || "", stad: p.stad || "", case_type: p.case_type || "", contactpersoon_naam: p.contactpersoon_naam || "", contactpersoon_tel: p.contactpersoon_tel || "", contactpersoon_email: p.contactpersoon_email || "", vergoed_methode: "", projectjaar: p.projectjaar != null ? String(p.projectjaar) : "", soort: isUitleen(p) ? "uitleen" : "project", werklocatie: p.adres || "", benodigd_per_dag: p.benodigd_per_dag != null ? String(p.benodigd_per_dag) : "" });
   }
 
   const activeProjects = projects.filter(p => p.active);
