@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { query, mutate } from "@/lib/supabaseHelpers";
 import { GROEP_LABELS, type SpecCode, loadSpecCodes } from "@/lib/specCodes";
+import { forecastOmzet, forecastUrenKosten } from "@/lib/forecastCalculatie";
 import {
   Plus, Trash2, Search, ChevronDown, ChevronUp, Minus, ClipboardList, Clock,
   Check, Info, Download, FileSpreadsheet, AlertTriangle, RefreshCw, CheckCircle2,
