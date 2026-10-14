@@ -31,7 +31,7 @@ export function useWeekPlanningData(weekStart: Date) {
       supabase.from("planning_concept").select("*").gte("datum", startStr).lte("datum", endStr),
       supabase.from("profiles").select("id, user_id, full_name, vaste_vrije_dagen, planning_partner_ids").eq("account_status", "active").order("full_name"),
       planningProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel").eq("active", true).order("nummer"),
-      supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
+      supabase.from("beschikbaarheid").select("id, medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("user_roles").select("user_id, role"),
       supabase.from("bedrijfsgegevens").select("planning_conceptmodus").limit(1).maybeSingle(),
     ]);

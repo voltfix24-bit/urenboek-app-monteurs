@@ -27,7 +27,7 @@ interface Props {
   onClose: () => void;
 }
 
-const AFW_TEKST: Record<Afwezigheid, string> = { verlof: "heeft verlof", ziek: "is ziek gemeld", vrij: "heeft een vaste vrije dag" };
+const AFW_TEKST: Record<Afwezigheid, string> = { verlof: "heeft verlof", ziek: "is ziek gemeld", vrij: "heeft een vaste vrije dag", elders: "werkt voor een andere opdracht" };
 const STATUS_TEKST = { nieuw: "nieuw", gewijzigd: "gewijzigd", verwijderd: "wordt verwijderd" } as const;
 
 export function BewerkPaneel({ cel, naam, weekNumber, projects, weekProjectIds, afwezigheid, ploegGrootte, conceptModus, busy, onSave, onDelete, onRevert, onClose }: Props) {

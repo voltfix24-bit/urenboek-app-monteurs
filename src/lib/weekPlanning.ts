@@ -76,6 +76,7 @@ export interface MedewerkerBasis {
 }
 
 export interface BeschikbaarheidBasis {
+  id?: string;
   medewerker_id: string;
   datum_van: string;
   datum_tot: string;
@@ -83,7 +84,9 @@ export interface BeschikbaarheidBasis {
   status: string;
 }
 
-export type Afwezigheid = "verlof" | "ziek" | "vrij";
+/** "elders" = zzp'er werkt die dag voor een andere opdrachtgever (door manager ingevoerd). */
+export type Afwezigheid = "verlof" | "ziek" | "vrij" | "elders";
+export const ELDERS_TYPE = "elders";
 
 export const PAUZE_MINUTEN = 60;
 export const TIJDBLOKKEN: Array<[string, string]> = [["07:00", "16:00"], ["07:30", "16:30"], ["08:00", "17:00"]];
@@ -178,13 +181,13 @@ export const celBezet = (cel: Cel | undefined) => !!cel && cel.status !== "leeg"
 export function bepaalAfwezigheid(med: MedewerkerBasis | undefined, datum: string, beschikbaarheid: BeschikbaarheidBasis[]): Afwezigheid | null {
   if (!med) return null;
   const b = beschikbaarheid.find((x) => x.medewerker_id === med.id && x.status === "goedgekeurd" && datum >= x.datum_van && datum <= x.datum_tot);
-  if (b) return b.type === "ziek" ? "ziek" : "verlof";
+  if (b) return b.type === "ziek" ? "ziek" : b.type === ELDERS_TYPE ? "elders" : "verlof";
   const dag = new Date(`${datum}T12:00:00`).getDay();
   if (med.vaste_vrije_dagen?.includes(dag)) return "vrij";
   return null;
 }
 
-export const AFWEZIG_LABEL: Record<Afwezigheid, string> = { verlof: "verlof", ziek: "ziek", vrij: "vaste vrije dag" };
+export const AFWEZIG_LABEL: Record<Afwezigheid, string> = { verlof: "verlof", ziek: "ziek", vrij: "vaste vrije dag", elders: "andere opdracht" };
 
 export interface Doel { medewerker_id: string; datum: string }
 export interface Overgeslagen extends Doel { reden: string }
