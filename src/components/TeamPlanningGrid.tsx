@@ -19,6 +19,7 @@ export interface TeamPlanningMedewerker {
   id: string;
   full_name: string;
   role?: string | null;
+  niet_planbaar?: boolean;
 }
 
 export interface TeamPlanningProject {
@@ -109,12 +110,13 @@ export function TeamPlanningGrid({ medewerkers, entries, projects, beschikbaarhe
             const expanded = expandedMedewerker === medewerker.id;
             return (
               <div className="contents" key={medewerker.id}>
-                <div className="team-planning-row" role="row">
+                <div className="team-planning-row" role="row" style={medewerker.niet_planbaar ? { opacity: 0.55 } : undefined}>
                   <div className="team-planning-name" role="rowheader">
                     <span className="team-planning-avatar" aria-hidden="true">{initialen(medewerker.full_name)}</span>
                     <span className="team-planning-person">
                       <strong className="team-planning-name-full" title={medewerker.full_name}>{medewerker.full_name}</strong>
                       <strong className="team-planning-name-short" title={medewerker.full_name}>{korteNaam(medewerker.full_name)}</strong>
+                      {medewerker.niet_planbaar && <small style={{ color: "var(--text-muted)" }}>niet planbaar</small>}
 
                       {medewerker.role && medewerker.role !== "monteur" && <small>{medewerker.role === "wv" ? "Werkvoorbereider" : medewerker.role.charAt(0).toUpperCase() + medewerker.role.slice(1)}</small>}
                     </span>

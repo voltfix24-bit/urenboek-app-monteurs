@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { planningProjects } from "@/lib/projectsAdmin";
 import type { BeschikbaarheidBasis, ConceptRij, MedewerkerBasis, PlanningRij } from "@/lib/weekPlanning";
 
-export interface WpMedewerker extends MedewerkerBasis { role: string | null; ploeg: string | null }
+export interface WpMedewerker extends MedewerkerBasis { role: string | null; ploeg: string | null; niet_planbaar?: boolean }
 export interface WpProject { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null;
   soort?: string | null; contactpersoon_naam?: string | null; contactpersoon_tel?: string | null; benodigd_per_dag?: number | null }
 
@@ -38,7 +38,7 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
         .select("id, medewerker_id, project_id, datum, starttijd, eindtijd, notitie, activiteit, activiteit_kleur, planning_group_id, collega_ids, external_source, sync_locked, werklocatie, contactpersoon, contact_telefoon")
         .gte("datum", startStr).lte("datum", endStr),
       supabase.from("planning_concept").select("*").gte("datum", startStr).lte("datum", endStr),
-      supabase.from("profiles").select("id, user_id, full_name, vaste_vrije_dagen, planning_partner_ids, ploeg").eq("account_status", "active").eq("is_onderaannemer", false).order("full_name"),
+      supabase.from("profiles").select("id, user_id, full_name, vaste_vrije_dagen, planning_partner_ids, ploeg").eq("account_status", "active").eq("is_onderaannemer", false).eq("planbaar", true).order("full_name"),
       planningProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("id, medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("user_roles").select("user_id, role"),
@@ -61,10 +61,18 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
     });
     setPlanning((plan.data ?? []) as PlanningRij[]);
     setConcepten((conc.data ?? []) as ConceptRij[]);
-    setMedewerkers((prof.data ?? []).map((p) => ({
+    // Niet-planbare mensen die in deze periode al ingepland staan blijven zichtbaar (grijs).
+    const planbaarIds = new Set((prof.data ?? []).map((p) => p.id));
+    const extraIds = Array.from(new Set([...(plan.data ?? []), ...(conc.data ?? [])].map((r: { medewerker_id: string }) => r.medewerker_id))).filter((id) => !planbaarIds.has(id));
+    const extra = extraIds.length
+      ? (await supabase.from("profiles").select("id, user_id, full_name, vaste_vrije_dagen, planning_partner_ids, ploeg").in("id", extraIds)).data ?? []
+      : [];
+    const naarMed = (p: (typeof extra)[number], niet_planbaar: boolean): WpMedewerker => ({
       id: p.id, full_name: p.full_name, vaste_vrije_dagen: p.vaste_vrije_dagen ?? [],
       planning_partner_ids: p.planning_partner_ids ?? [], role: rolMap.get(p.user_id) ?? null, ploeg: (p as { ploeg?: string | null }).ploeg ?? null,
-    })));
+      ...(niet_planbaar ? { niet_planbaar: true } : {}),
+    });
+    setMedewerkers([...(prof.data ?? []).map((p) => naarMed(p, false)), ...extra.map((p) => naarMed(p, true))]);
     const nodigMap = new Map((nodig.data ?? []).map((r) => [r.id, r.benodigd_per_dag]));
     setProjects(((proj.data ?? []) as WpProject[]).map((p) => ({ ...p, benodigd_per_dag: nodigMap.get(p.id) ?? null })));
     setBeschikbaarheid((besch.data ?? []) as BeschikbaarheidBasis[]);

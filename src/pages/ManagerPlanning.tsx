@@ -21,7 +21,7 @@ import { planningProjects } from "@/lib/projectsAdmin";
 import { formatUren } from "@/lib/formatting";
 
 interface PlanningEntry { id: string; medewerker_id: string; project_id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; activiteit: string | null; activiteit_kleur: string | null; planning_group_id: string | null; werklocatie?: string | null; contactpersoon?: string | null; contact_telefoon?: string | null; }
-interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; planning_partner_ids: string[]; role?: string | null; }
+interface MedewerkerInfo { id: string; full_name: string; vaste_vrije_dagen: number[]; planning_partner_ids: string[]; role?: string | null; niet_planbaar?: boolean; }
 interface ProjectInfo { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; }
 interface BeschikbaarheidItem { medewerker_id: string; datum_van: string; datum_tot: string; type: string; status: string; }
 
@@ -141,7 +141,7 @@ function MobileManagerPlanning() {
     const endStr = format(addDays(weekStart, 4), "yyyy-MM-dd");
     const [{ data: planData }, { data: profData }, { data: projData }, { data: beschData }, { data: rolesData }] = await Promise.all([
       supabase.from("planning").select("*, activiteit, activiteit_kleur, planning_group_id").gte("datum", startStr).lte("datum", endStr),
-      supabase.from("profiles").select("id, full_name, vaste_vrije_dagen, planning_partner_ids").eq("account_status", "active").order("full_name"),
+      supabase.from("profiles").select("id, full_name, vaste_vrije_dagen, planning_partner_ids").eq("account_status", "active").eq("is_onderaannemer", false).eq("planbaar", true).order("full_name"),
       planningProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("user_roles").select("user_id, role"),
@@ -158,7 +158,12 @@ function MobileManagerPlanning() {
       if (!prev || (rolePriority[r.role] ?? 0) > (rolePriority[prev] ?? 0)) userRoleMap.set(r.user_id, r.role);
     });
     setEntries((planData ?? []).map((d: any) => ({ id: d.id, medewerker_id: d.medewerker_id, project_id: d.project_id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5), eindtijd: d.eindtijd?.slice(0, 5), notitie: d.notitie || "", activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, planning_group_id: d.planning_group_id || null, werklocatie: d.werklocatie ?? null, contactpersoon: d.contactpersoon ?? null, contact_telefoon: d.contact_telefoon ?? null })));
-    setMedewerkers(((profData ?? []) as any[]).map((p) => ({ ...p, planning_partner_ids: p.planning_partner_ids || [], role: userRoleMap.get(profIdToUserId.get(p.id) || "") || null })) as any);
+    // Niet-planbare mensen die deze week al ingepland staan blijven zichtbaar (grijs).
+    const planbaarIds = new Set(((profData ?? []) as any[]).map((p) => p.id));
+    const extraIds = Array.from(new Set(((planData ?? []) as any[]).map((d) => d.medewerker_id))).filter((id) => !planbaarIds.has(id));
+    const extraData = extraIds.length ? (await supabase.from("profiles").select("id, full_name, vaste_vrije_dagen, planning_partner_ids").in("id", extraIds)).data ?? [] : [];
+    const naarMed = (p: any, niet_planbaar: boolean) => ({ ...p, planning_partner_ids: p.planning_partner_ids || [], role: userRoleMap.get(profIdToUserId.get(p.id) || "") || null, ...(niet_planbaar ? { niet_planbaar: true } : {}) });
+    setMedewerkers([...((profData ?? []) as any[]).map((p) => naarMed(p, false)), ...(extraData as any[]).map((p) => naarMed(p, true))] as any);
     setProjects((projData ?? []) as any);
     setBeschikbaarheid((beschData ?? []) as any);
     setLoading(false);
@@ -520,6 +525,7 @@ function MobileManagerPlanning() {
                             const initials = monteur?.full_name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('') || 'XX';
                             return (
                               <div key={entry.id} style={{
+                                opacity: monteur?.niet_planbaar ? 0.55 : 1,
                                 display: 'flex',
                                 alignItems: 'center',
                                 padding: '12px 20px',
@@ -546,6 +552,7 @@ function MobileManagerPlanning() {
                                 </div>
                                 <span style={{ flex: 1, fontSize: 14, fontWeight: 600, fontFamily: 'Hanken Grotesk', color: 'var(--text-primary)' }}>
                                   {monteur?.full_name || 'Onbekend'}
+                                  {monteur?.niet_planbaar && <span style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>niet planbaar</span>}
                                 </span>
                                 <div style={{
                                   padding: '4px 12px',
