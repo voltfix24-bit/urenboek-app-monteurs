@@ -6,5 +6,6 @@
 - [x] Herontwerp Teamplanning als één weekraster met totalen, sortering, legenda en responsive sticky kolom.
 - [x] Vernieuw kop, weekbediening, filters, tooltips en voeg veilig `Week kopiëren` toe.
 - [x] Herontwerp het inplanvenster als compacte toegankelijke modal met projectzoeker en tijdvalidatie.
-- [x] Controleer desktop en onder 900px, interacties, build en tests.- [x] FINANCIEN stap 2–4: Tarieven-scherm (verkoop- en kostentarieven per ingangsdatum, historie), detacheringen op de Medewerkers-pagina + uitleenprojectdetail + "Uitleen invullen" in de weekplanning, en `/financien` met weekkiezer, vier kerncijfers, tabellen, eigenaren apart, fictief-tariefblok, 12-weken-grafiek en CSV/PDF-export.
+- [x] Controleer desktop en onder 900px, interacties, build en tests.
+- [x] FINANCIEN stap 2–4: Tarieven-scherm (verkoop- en kostentarieven per ingangsdatum, historie), detacheringen op de Medewerkers-pagina + uitleenprojectdetail + "Uitleen invullen" in de weekplanning, en `/financien` met weekkiezer, vier kerncijfers, tabellen, eigenaren apart, fictief-tariefblok, 12-weken-grafiek en CSV/PDF-export.
 - [ ] FINANCIEN: vaste kosten per week staan nog op €0 — manager moet het eigen bedrag invullen op `/financien`.
