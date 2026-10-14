@@ -8,7 +8,7 @@ const PROFILE_FIELDS = [
   "vaste_vrije_dagen", "planning_partner_ids", "noodcontact_naam", "noodcontact_tel",
   "planbaar", "planbaar_reden", "planbaar_tot", "uit_dienst_op", "uit_dienst_reden",
   "avb_polis_tot", "g_rekening", "verklaring_betalingsgedrag_op", "kvk_uittreksel_op",
-  "ploeg", "contract_einddatum", "rijbewijs", "created_at",
+  "ploeg", "contract_einddatum", "rijbewijs", "created_at", "is_eigenaar",
 ].join(", ");
 
 export interface DesktopProfiel {
@@ -21,7 +21,7 @@ export interface DesktopProfiel {
   planbaar_tot: string | null; uit_dienst_op: string | null; uit_dienst_reden: string | null;
   avb_polis_tot: string | null; g_rekening: string | null; verklaring_betalingsgedrag_op: string | null;
   kvk_uittreksel_op: string | null; ploeg: string | null; contract_einddatum: string | null;
-  rijbewijs: boolean; role: string;
+  rijbewijs: boolean; role: string; is_eigenaar: boolean;
 }
 
 export function useMedewerkersDesktop() {

@@ -265,7 +265,7 @@ function DetailPane(p: DetailProps) {
   );
 }
 
-function TabOverzicht({ emp, issues, setTab, onTogglePlanbaar }: DetailProps) {
+function TabOverzicht({ emp, issues, setTab, onTogglePlanbaar, detacheringen, opdrachtgevers, verkooptarieven, onRefresh }: DetailProps) {
   if (emp.account_status === "uit_dienst") {
     return (
       <div className="mw-card">
@@ -327,11 +327,18 @@ function TabOverzicht({ emp, issues, setTab, onTogglePlanbaar }: DetailProps) {
           <div className="mw-kv"><div className="mw-kv-label">Noodcontact</div><div className="mw-kv-val">{emp.noodcontact_naam ? `${emp.noodcontact_naam} (${emp.noodcontact_tel || "—"})` : "—"}</div></div>
         </div>
       </div>
+      <DetacheringenKaart
+        medewerkerId={emp.id}
+        detacheringen={detacheringen}
+        opdrachtgevers={opdrachtgevers}
+        verkooptarieven={verkooptarieven}
+        onRefresh={onRefresh}
+      />
     </div>
   );
 }
 
-function TabDossier({ emp, contracten, tarieven, onRefresh }: DetailProps) {
+function TabDossier({ emp, contracten, tarieven, kostentarieven, onRefresh }: DetailProps) {
   const contract = contractVan(emp.id, contracten);
   const jaarTarieven = tarieven.filter((t) => t.medewerker_id === emp.id);
 
@@ -358,6 +365,7 @@ function TabDossier({ emp, contracten, tarieven, onRefresh }: DetailProps) {
   }
 
   return (
+    <div className="mw-stack">
     <div className="mw-cols">
       <div className="mw-card">
         <div className="mw-card-title">Zzp-gegevens</div>
@@ -374,6 +382,13 @@ function TabDossier({ emp, contracten, tarieven, onRefresh }: DetailProps) {
           <div className="mw-kv" key={t.jaar}><div className="mw-kv-label">{t.jaar}</div><div className="mw-kv-val">€ {Number(t.uurtarief).toFixed(2)}/u</div></div>
         ))}
       </div>
+    </div>
+    <TariefKaart
+      medewerkerId={emp.id}
+      isEigenaar={!!emp.is_eigenaar}
+      kostentarieven={kostentarieven}
+      onRefresh={onRefresh}
+    />
     </div>
   );
 }
