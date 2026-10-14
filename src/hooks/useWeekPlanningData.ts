@@ -15,6 +15,7 @@ const ROL_PRIORITEIT: Record<string, number> = { manager: 5, uitvoerder: 4, wv: 
 /** Bevoegdheid per medewerker: laatste geldig_tot van aanwijzingen en VCA (null = geen). */
 export interface WpBevoegdheid { aanwijzingTot: string | null; vcaTot: string | null }
 export interface WpGelezen { gelezen_op: string | null; laatst_gepubliceerd_op: string | null }
+export interface WpBoeking { medewerker_id: string; datum: string; uren: number }
 
 export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
   const { isManager } = useAuth();
@@ -26,13 +27,15 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
   const [projects, setProjects] = useState<WpProject[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidBasis[]>([]);
   const [conceptModus, setConceptModus] = useState(true);
+  const [boekingen, setBoekingen] = useState<WpBoeking[]>([]);
+  const [weekgrens, setWeekgrens] = useState(40);
   const [loading, setLoading] = useState(true);
 
   const startStr = format(weekStart, "yyyy-MM-dd");
   const endStr = format(addDays(weekStart, 7 * (weeks - 1) + 4), "yyyy-MM-dd");
 
   const fetchAll = useCallback(async () => {
-    const [plan, conc, prof, proj, besch, roles, bedrijf] = await Promise.all([
+    const [plan, conc, prof, proj, besch, roles, bedrijf, boek] = await Promise.all([
       supabase.from("planning")
         .select("id, medewerker_id, project_id, datum, starttijd, eindtijd, notitie, activiteit, activiteit_kleur, planning_group_id, collega_ids, external_source, sync_locked, werklocatie, contactpersoon, contact_telefoon")
         .gte("datum", startStr).lte("datum", endStr),
@@ -41,7 +44,8 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
       planningProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel, benodigd_per_dag").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("id, medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("user_roles").select("user_id, role"),
-      supabase.from("bedrijfsgegevens").select("planning_conceptmodus").limit(1).maybeSingle(),
+      supabase.from("bedrijfsgegevens").select("planning_conceptmodus, planning_weekgrens").limit(1).maybeSingle(),
+      supabase.from("uren_boekingen").select("medewerker_id, datum, uren").neq("status", "afgekeurd").gte("datum", startStr).lte("datum", endStr),
     ]);
     // Aanwijzingen/certificaten zijn alleen voor managers leesbaar; anders geen waarschuwingen tonen.
     if (isManager) {
@@ -75,6 +79,8 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
     setProjects((proj.data ?? []) as WpProject[]);
     setBeschikbaarheid((besch.data ?? []) as BeschikbaarheidBasis[]);
     setConceptModus(bedrijf.data?.planning_conceptmodus ?? true);
+    setWeekgrens((bedrijf.data as { planning_weekgrens?: number } | null)?.planning_weekgrens ?? 40);
+    setBoekingen((boek.data ?? []) as WpBoeking[]);
     setLoading(false);
   }, [startStr, endStr, isManager]);
 
@@ -88,5 +94,5 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
     return () => { supabase.removeChannel(channel); };
   }, [fetchAll]);
 
-  return { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, conceptModus, loading, refetch: fetchAll };
+  return { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, conceptModus, boekingen, weekgrens, loading, refetch: fetchAll };
 }

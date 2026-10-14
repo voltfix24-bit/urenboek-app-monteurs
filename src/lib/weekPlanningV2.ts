@@ -110,3 +110,75 @@ export function klusKopstatus(dagen: KlusBezetting[]): string {
   const tekort = dagen.reduce((s, d) => s + (d.status === "tekort" && d.nodig != null ? d.nodig - d.ingepland : 0), 0);
   return tekort > 0 ? `Tekort ${tekort} mensdagen` : "Volledig bezet";
 }
+
+// ── Stap 3: fouten voorkomen (dubbele boeking, weekgrens) ──
+
+export interface LiveRegel { project_id: string | null; starttijd: string; eindtijd: string }
+
+/** Live regels (gepubliceerd min concepten, plus nieuwe/gewijzigde concepten) per medewerker+datum. */
+export function bouwLiveRegels(
+  planning: Array<{ id: string; medewerker_id: string; datum: string; project_id: string; starttijd: string; eindtijd: string }>,
+  concepten: Array<{ medewerker_id: string; datum: string; project_id: string | null; starttijd: string | null; eindtijd: string | null; actie: string; planning_id: string | null }>,
+): Map<string, LiveRegel[]> {
+  const removed = new Set(concepten.filter((c) => c.planning_id && (c.actie === "verwijder" || c.actie === "wijzig")).map((c) => c.planning_id));
+  const map = new Map<string, LiveRegel[]>();
+  const push = (medewerker_id: string, datum: string, regel: LiveRegel) => {
+    const key = `${medewerker_id}|${datum}`;
+    map.set(key, [...(map.get(key) ?? []), regel]);
+  };
+  planning.forEach((p) => { if (!removed.has(p.id)) push(p.medewerker_id, p.datum, { project_id: p.project_id, starttijd: p.starttijd.slice(0, 5), eindtijd: p.eindtijd.slice(0, 5) }); });
+  concepten.filter((c) => c.actie === "nieuw" || c.actie === "wijzig").forEach((c) => push(c.medewerker_id, c.datum, { project_id: c.project_id, starttijd: c.starttijd ?? "07:00", eindtijd: c.eindtijd ?? "16:00" }));
+  return map;
+}
+
+/** Twee tijdblokken overlappen (halfopen interval). */
+export function tijdenOverlappen(a: { starttijd: string; eindtijd: string }, b: { starttijd: string; eindtijd: string }): boolean {
+  return a.starttijd < b.eindtijd && b.starttijd < a.eindtijd;
+}
+
+/** Tooltip-tekst voor een dubbele boeking door overlappende tijden, of null als er geen overlap is. */
+export function dubbeleBoekingTekst(regels: Array<{ naam: string; starttijd: string; eindtijd: string }>): string | null {
+  for (let i = 0; i < regels.length; i++) {
+    for (let j = i + 1; j < regels.length; j++) {
+      if (tijdenOverlappen(regels[i], regels[j])) {
+        return `Dubbele boeking: ${regels[i].naam} ${regels[i].starttijd}–${regels[i].eindtijd} en ${regels[j].naam} ${regels[j].starttijd}–${regels[j].eindtijd} overlappen`;
+      }
+    }
+  }
+  return null;
+}
+
+/** Netto weekuren per medewerker, voor een set datums (meestal 5 werkdagen). */
+export function berekenWeekUren<C extends { medewerker_id: string; datum: string; starttijd: string | null; eindtijd: string | null }>(
+  cellen: C[],
+  datums: string[],
+  uren: (starttijd: string | null, eindtijd: string | null) => number,
+): Map<string, number> {
+  const set = new Set(datums);
+  const m = new Map<string, number>();
+  cellen.filter((c) => set.has(c.datum)).forEach((c) => m.set(c.medewerker_id, (m.get(c.medewerker_id) ?? 0) + uren(c.starttijd, c.eindtijd)));
+  return m;
+}
+
+/** Waarschuwing (geen blokkade) als een medewerker door een nieuwe planning boven de weekgrens komt. */
+export function weekgrensWaarschuwing(naam: string, bestaandeUren: number, toeTeVoegenUren: number, weeknummer: number, grens: number, format: (n: number) => string): string | null {
+  const totaal = bestaandeUren + toeTeVoegenUren;
+  if (totaal <= grens) return null;
+  return `${naam} komt op ${format(totaal)} u in week ${weeknummer} (boven ${grens} u)`;
+}
+
+// ── Stap 5: na afloop (geboekt vs. gepland, lege dagen) ──
+
+export type BoekVergelijking = "gelijk" | "afwijkend" | "niet-geboekt";
+
+/** Vergelijkt geplande netto uren met geboekte uren voor een afgelopen dag. */
+export function vergelijkBoeking(geplandUren: number, geboektUren: number): BoekVergelijking {
+  if (geboektUren <= 0) return "niet-geboekt";
+  if (Math.abs(geboektUren - geplandUren) < 0.01) return "gelijk";
+  return "afwijkend";
+}
+
+/** Een werkdag is leeg als er geen planning en geen afwezigheid op staat. */
+export function isLegeWerkdag(gevuld: boolean, afwezig: boolean): boolean {
+  return !gevuld && !afwezig;
+}

@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { generatePersoneelsPdf, generatePlanningPdf } from "@/lib/planningPdf";
 import { formatUren, formatUrenGetal } from "@/lib/formatting";
 import { useWeekPlanningData } from "@/hooks/useWeekPlanningData";
-import { groepeerRijen, filterToon, vrijOpDag, wijzigingenOpDag, type GroepMode, type ToonMode } from "@/lib/weekPlanningV2";
+import { groepeerRijen, filterToon, vrijOpDag, wijzigingenOpDag, bouwLiveRegels, dubbeleBoekingTekst, berekenWeekUren, vergelijkBoeking, isLegeWerkdag, type GroepMode, type ToonMode } from "@/lib/weekPlanningV2";
 import {
   actieVoorBewerken, actieVoorVerwijderen, bepaalAfwezigheid, berekenUren, bouwCellen, bouwNieuwConcepten,
   celBezet, celKey, celTelt, ELDERS_TYPE, parseWeekParam, telConcepten, type Cel, type PlanWaarden,
@@ -46,7 +46,8 @@ export default function DesktopWeekPlanning() {
   const [groepMode, setGroepMode] = useState<GroepMode>("geen");
   const [toonMode, setToonMode] = useState<ToonMode>("iedereen");
   const [vrijFilter, setVrijFilter] = useState<string | null>(null);
-  const { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, loading, refetch } = useWeekPlanningData(weekStart, weeksCount);
+  const { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, boekingen, weekgrens, loading, refetch } = useWeekPlanningData(weekStart, weeksCount);
+  const [aandachtFilter, setAandachtFilter] = useState<null | "dubbel" | "weekgrens" | "leeg" | "afwijkend">(null);
 
   const conceptModus = true;
   const [cursor, setCursor] = useState<GridPoint | null>(null);
@@ -118,8 +119,23 @@ export default function DesktopWeekPlanning() {
     return new Set(Array.from(tel.entries()).filter(([, s]) => s.size > 5).map(([id]) => id));
   }, [celLijst]);
 
+  // Stap 3: live regels per medewerker+datum (voor dubbele-boeking-detectie, buiten de 1-rij-per-cel van bouwCellen om).
+  const liveRegels = useMemo(() => bouwLiveRegels(planning, concepten), [planning, concepten]);
+  const dubbelTekst = useCallback((cel: Cel | undefined) => {
+    if (!celTelt(cel)) return null;
+    const regels = liveRegels.get(celKey(cel.medewerker_id, cel.datum)) ?? [];
+    return dubbeleBoekingTekst(regels.map((r) => ({ naam: projMap.get(r.project_id ?? "")?.naam ?? "Onbekend project", starttijd: r.starttijd, eindtijd: r.eindtijd })));
+  }, [liveRegels, projMap]);
+  const isDubbel = useCallback((cel: Cel | undefined) => {
+    if (!celTelt(cel)) return false;
+    if (dubbelTekst(cel)) return true;
+    return !!bepaalAfwezigheid(medMap.get(cel.medewerker_id), cel.datum, beschikbaarheid);
+  }, [dubbelTekst, medMap, beschikbaarheid]);
+
   const conflictTekst = useCallback((cel: Cel | undefined) => {
     if (!celTelt(cel)) return null;
+    const dubbel = dubbelTekst(cel);
+    if (dubbel) return dubbel;
     const naam = medMap.get(cel.medewerker_id)?.full_name ?? "Medewerker";
     const delen: string[] = [];
     const afw = bepaalAfwezigheid(medMap.get(cel.medewerker_id), cel.datum, beschikbaarheid);
@@ -133,7 +149,7 @@ export default function DesktopWeekPlanning() {
       else if (b.vcaTot < cel.datum) delen.push("VCA VOL verlopen");
     }
     return delen.length ? `${naam}: ${delen.join(" · ")}` : null;
-  }, [medMap, projMap, beschikbaarheid, bevoegdheden]);
+  }, [medMap, projMap, beschikbaarheid, bevoegdheden, dubbelTekst]);
 
   const alleConflicten = useMemo(() => celLijst.map(conflictTekst).filter((x): x is string => !!x), [celLijst, conflictTekst]);
   const tellers = telConcepten(concepten);
@@ -551,6 +567,43 @@ export default function DesktopWeekPlanning() {
     return { aantal: new Set(c.map((x) => x.medewerker_id)).size, uren: c.reduce((s, x) => s + berekenUren(x.starttijd, x.eindtijd), 0) };
   });
   const weekTotaal = dagTotalen.reduce((s, d) => s + d.uren, 0);
+
+  // Stap 3: weekgrens — per weergegeven week (5 werkdagen) de netto uren per medewerker.
+  const weekChunks = useMemo(() => Array.from({ length: weeksCount }, (_, w) => datums.slice(w * 5, w * 5 + 5)), [datums, weeksCount]);
+  const weekUrenPerChunk = useMemo(() => weekChunks.map((chunk) => berekenWeekUren(celLijst.filter(celTelt), chunk, berekenUren)), [weekChunks, celLijst]);
+  const bovenWeekgrens = useCallback((medewerkerId: string) => weekChunks.some((chunk, i) => (weekUrenPerChunk[i].get(medewerkerId) ?? 0) > weekgrens), [weekChunks, weekUrenPerChunk, weekgrens]);
+
+  // Stap 5: boekingen (alleen lezen) en lege dagen.
+  const boekingMap = useMemo(() => { const m = new Map<string, number>(); boekingen.forEach((b) => m.set(celKey(b.medewerker_id, b.datum), (m.get(celKey(b.medewerker_id, b.datum)) ?? 0) + b.uren)); return m; }, [boekingen]);
+  const isLeeg = useCallback((med: typeof medewerkers[number], datum: string) => isLegeWerkdag(celBezet(cellen.get(celKey(med.id, datum))), !!bepaalAfwezigheid(med, datum, beschikbaarheid)), [cellen, beschikbaarheid]);
+
+  // Aandachtspunten: aantallen voor de chips rechts in de bedieningsrij.
+  const aandachtAantallen = useMemo(() => {
+    let dubbel = 0, afwijkend = 0, leeg = 0;
+    const weekgrensMeds = new Set<string>();
+    zichtbareMedewerkers.forEach((med) => {
+      if (bovenWeekgrens(med.id)) weekgrensMeds.add(med.id);
+      datums.forEach((d) => {
+        const cel = cellen.get(celKey(med.id, d));
+        if (celTelt(cel) && isDubbel(cel)) dubbel++;
+        if (isLeeg(med, d)) leeg++;
+        if (celTelt(cel) && d < vandaag) {
+          const geboekt = boekingMap.get(celKey(med.id, d)) ?? 0;
+          if (vergelijkBoeking(berekenUren(cel.starttijd, cel.eindtijd), geboekt) === "afwijkend") afwijkend++;
+        }
+      });
+    });
+    return { dubbel, weekgrens: weekgrensMeds.size, leeg, afwijkend };
+  }, [zichtbareMedewerkers, datums, cellen, isDubbel, isLeeg, boekingMap, bovenWeekgrens, vandaag]);
+
+  const matchtAandacht = useCallback((med: typeof medewerkers[number], datum: string, cel: Cel | undefined) => {
+    if (!aandachtFilter) return true;
+    if (aandachtFilter === "dubbel") return celTelt(cel) && isDubbel(cel);
+    if (aandachtFilter === "weekgrens") return bovenWeekgrens(med.id);
+    if (aandachtFilter === "leeg") return isLeeg(med, datum);
+    if (aandachtFilter === "afwijkend") return celTelt(cel) && datum < vandaag && vergelijkBoeking(berekenUren(cel.starttijd, cel.eindtijd), boekingMap.get(celKey(med.id, datum)) ?? 0) === "afwijkend";
+    return true;
+  }, [aandachtFilter, isDubbel, bovenWeekgrens, isLeeg, boekingMap, vandaag]);
 
   const renderCel = (med: typeof rijen[number], r: number, c: number) => {
     const datum = datums[c];
