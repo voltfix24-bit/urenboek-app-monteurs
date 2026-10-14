@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, type Dispatch, type SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
 import { useAuth } from "@/hooks/useAuth";
@@ -47,6 +47,20 @@ const isUitleen = (p: { soort?: string | null }) => p.soort === "uitleen";
 const sorteerProjecten = <T extends { active: boolean; created_at?: string }>(lijst: T[]) =>
   [...lijst].sort((a, b) => Number(b.active) - Number(a.active) || (b.created_at ?? "").localeCompare(a.created_at ?? ""));
 
+/** State die bewaard blijft bij heen-en-weer navigeren (sessiegebonden). */
+function usePersistentState<T>(initial: T, key: string): [T, Dispatch<SetStateAction<T>>] {
+  const [value, setValue] = useState<T>(() => {
+    try {
+      const raw = sessionStorage.getItem(key);
+      return raw !== null ? (JSON.parse(raw) as T) : initial;
+    } catch { return initial; }
+  });
+  useEffect(() => {
+    try { sessionStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
+  }, [key, value]);
+  return [value, setValue];
+}
+
 export default function Projecten() {
   const { isManager, permissies } = useAuth(); const navigate = useNavigate();
   const { profile, profileId } = useProfile();
@@ -65,10 +79,10 @@ export default function Projecten() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
-  const [statusFilter, setStatusFilter] = useState("alle");
-  const [deskFase, setDeskFase] = useState<string>("alle");
-  const [deskArchief, setDeskArchief] = useState(false);
-  const [mobielArchief, setMobielArchief] = useState(false);
+  const [statusFilter, setStatusFilter] = usePersistentState("alle", "projecten:statusFilter");
+  const [deskFase, setDeskFase] = usePersistentState<string>("alle", "projecten:deskFase");
+  const [deskArchief, setDeskArchief] = usePersistentState(false, "projecten:deskArchief");
+  const [mobielArchief, setMobielArchief] = usePersistentState(false, "projecten:mobielArchief");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const { focus, clear: clearFocus } = useFocusParam();
   useClearFocusOnClose(selectedId !== null);
