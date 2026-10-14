@@ -16,6 +16,18 @@ export const STATUS_VOLGORDE: ProjectStatus[] = [
   'opgeleverd', 'gefactureerd', 'gesloten'
 ];
 
+/** Groepering voor de projectlijst: lopende klussen, uitleen, afgerond. */
+export const LOPEND_STATUS: ProjectStatus[] = ['nieuw', 'gepland', 'in_uitvoering'];
+export const AFGEROND_STATUS: ProjectStatus[] = ['opgeleverd', 'gefactureerd', 'gesloten'];
+
+export type ProjectGroep = 'lopend' | 'uitleen' | 'afgerond';
+
+export function projectGroep(p: { soort?: string | null; status?: string }): ProjectGroep {
+  if (p.soort === 'uitleen') return 'uitleen';
+  const s = (p.status || 'nieuw') as ProjectStatus;
+  return AFGEROND_STATUS.includes(s) ? 'afgerond' : 'lopend';
+}
+
 export const STATUS_TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
   nieuw: ['gepland', 'gesloten'],
   gepland: ['in_uitvoering', 'nieuw', 'gesloten'],

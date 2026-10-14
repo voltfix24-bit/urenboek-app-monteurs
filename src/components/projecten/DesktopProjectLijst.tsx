@@ -19,10 +19,14 @@ interface Props {
   toonMarge: boolean;
   loading: boolean;
   uitleenWeekUren?: Map<string, number>;
+  /** Bij "Alles": gegroepeerde weergave met koppen (Lopende klussen / Uitleen / Afgerond / Archief). */
+  groepen?: { label: string; projects: Project[] }[];
 }
 
 /** Desktop projectlijst: naam, "nummer · case type · stad", fasepill en open punten of marge. */
-export function DesktopProjectLijst({ projects, searchQuery, setSearchQuery, selectedId, onSelect, margeMap, toonMarge, loading, uitleenWeekUren }: Props) {
+export function DesktopProjectLijst({ projects, searchQuery, setSearchQuery, selectedId, onSelect, margeMap, toonMarge, loading, uitleenWeekUren, groepen }: Props) {
+  const sections = groepen ?? [{ label: "", projects }];
+  const totaal = sections.reduce((n, s) => n + s.projects.length, 0);
   return (
     <div className="pj-list">
       <div className="pj-search">
@@ -41,9 +45,12 @@ export function DesktopProjectLijst({ projects, searchQuery, setSearchQuery, sel
 
       {loading ? (
         <div className="py-8 text-center"><div className="mx-auto h-8 w-8 animate-spin rounded-full border-2" style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }} /></div>
-      ) : projects.length === 0 ? (
+      ) : totaal === 0 ? (
         <p className="py-8 text-center text-sm" style={{ color: "var(--text-muted)" }}>Geen projecten gevonden</p>
-      ) : projects.map((p) => {
+      ) : sections.map((sec) => (
+        <div key={sec.label || "lijst"}>
+          {sec.label && <p className="pj-group-label">{sec.label}</p>}
+          {sec.projects.map((p) => {
         const open = openPunten({ straat: p.straat, postcode: p.postcode ?? null, stad: p.stad, projectjaar: p.projectjaar ?? null, opdrachtgever_id: p.opdrachtgever_id, intake_gedaan: !!p.intake_gedaan });
         const marge = margeMap.get(p.id);
         const uitleen = p.soort === "uitleen";
@@ -68,7 +75,9 @@ export function DesktopProjectLijst({ projects, searchQuery, setSearchQuery, sel
             </span>
           </button>
         );
-      })}
+          })}
+        </div>
+      ))}
     </div>
   );
 }
