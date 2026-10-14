@@ -28,7 +28,7 @@ import { bewaarRecent, DAG_KORT, initialen, korteNaam, projectKleur, rolLabel } 
 
 type ConceptInsert = TablesInsert<"planning_concept">;
 type PlanningInsert = TablesInsert<"planning">;
-interface Sel { r0: number; c0: number; r1: number; c1: number }
+interface Drag { r0: number; c0: number; r1: number; c1: number; base: Set<string>; additief: boolean }
 
 const AFW_CEL: Record<string, string> = { verlof: "Verlof", ziek: "Ziek", vrij: "Vaste vrije dag" };
 
@@ -44,13 +44,14 @@ export default function DesktopWeekPlanning() {
   const [filterProject, setFilterProject] = useState<string | null>(urlProject);
   const [barProject, setBarProject] = useState<string | null>(urlProject);
   const [tijd, setTijd] = useState<[string, string]>(["07:00", "16:00"]);
-  const [sel, setSel] = useState<Sel | null>(null);
-  const [dragging, setDragging] = useState(false);
+  const [selSet, setSelSet] = useState<Set<string>>(() => new Set());
+  const [drag, setDrag] = useState<Drag | null>(null);
+  const dragging = !!drag;
   const [panelKey, setPanelKey] = useState<string | null>(null);
   const [publishOpen, setPublishOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const selRef = useRef<Sel | null>(null);
-  selRef.current = sel;
+  const dragRef = useRef<Drag | null>(null);
+  dragRef.current = drag;
 
   const weekNumber = getISOWeek(weekStart);
   const weekDates = useMemo(() => Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)), [weekStart]);
@@ -101,34 +102,49 @@ export default function DesktopWeekPlanning() {
   const geraakteNamen = Array.from(new Set(concepten.map((c) => c.medewerker_id))).map((id) => korteNaam(medMap.get(id)?.full_name ?? "?"));
   const ingeplandAantal = new Set(celLijst.filter(celTelt).map((c) => c.medewerker_id)).size;
 
-  // ── Selectie ──
-  const norm = sel ? { rmin: Math.min(sel.r0, sel.r1), rmax: Math.max(sel.r0, sel.r1), cmin: Math.min(sel.c0, sel.c1), cmax: Math.max(sel.c0, sel.c1) } : null;
-  const selMedIds = norm ? rijen.slice(norm.rmin, norm.rmax + 1).map((m) => m.id) : [];
-  const selColumns = norm ? Array.from({ length: norm.cmax - norm.cmin + 1 }, (_, i) => norm.cmin + i) : [];
-  const inSel = (r: number, c: number) => !!norm && r >= norm.rmin && r <= norm.rmax && c >= norm.cmin && c <= norm.cmax;
+  // ── Selectie (set losse cellen) ──
+  const rectKeys = (d: Drag) => {
+    const keys: string[] = [];
+    for (let r = Math.min(d.r0, d.r1); r <= Math.max(d.r0, d.r1); r++)
+      for (let c = Math.min(d.c0, d.c1); c <= Math.max(d.c0, d.c1); c++)
+        if (rijen[r]) keys.push(celKey(rijen[r].id, datums[c]));
+    return keys;
+  };
+  const effSel = useMemo(() => (drag ? new Set([...drag.base, ...rectKeys(drag)]) : selSet), [drag, selSet, rijen, datums]); // eslint-disable-line react-hooks/exhaustive-deps
+  const selCellen: SelCel[] = Array.from(selSet).map((k) => { const i = k.indexOf("|"); return { medId: k.slice(0, i), datum: k.slice(i + 1) }; });
+  const selKeyStr = Array.from(selSet).sort().join(",");
+  const inSel = (r: number, c: number) => !!rijen[r] && effSel.has(celKey(rijen[r].id, datums[c]));
+  const wisSel = () => setSelSet(new Set());
 
   useEffect(() => {
     if (!dragging) return;
     const up = () => {
-      setDragging(false);
-      const s = selRef.current;
-      if (s && s.r0 === s.r1 && s.c0 === s.c1) {
-        const med = rijen[s.r0];
-        const key = celKey(med.id, datums[s.c0]);
-        if (celBezet(cellen.get(key))) { setPanelKey(key); setSel(null); }
+      const d = dragRef.current;
+      setDrag(null);
+      if (!d) return;
+      const enkel = d.r0 === d.r1 && d.c0 === d.c1;
+      const key = rijen[d.r0] ? celKey(rijen[d.r0].id, datums[d.c0]) : null;
+      if (enkel && key && d.additief) {
+        const next = new Set(d.base);
+        if (next.has(key)) next.delete(key); else next.add(key);
+        setSelSet(next);
+      } else if (enkel && key && celBezet(cellen.get(key))) {
+        setPanelKey(key); setSelSet(new Set());
+      } else {
+        setSelSet(new Set([...d.base, ...rectKeys(d)]));
       }
     };
     document.addEventListener("mouseup", up);
     return () => document.removeEventListener("mouseup", up);
-  }, [dragging, rijen, datums, cellen]);
+  }, [dragging, rijen, datums, cellen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !panelKey) setSel(null); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !panelKey) setSelSet(new Set()); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [panelKey]);
 
-  useEffect(() => { setSel(null); setPanelKey(null); }, [weekStart]);
+  useEffect(() => { setSelSet(new Set()); setPanelKey(null); }, [weekStart]);
 
   // ── Schrijfacties ──
   const run = async (fn: () => Promise<void>) => {
@@ -157,28 +173,12 @@ export default function DesktopWeekPlanning() {
     if (error) throw error;
   };
 
-  const plan = (medIds: string[], doelDatums: string[], notitie: string, uitleen?: Pick<PlanWaarden, "werklocatie" | "contactpersoon" | "contact_telefoon">) => run(async () => {
+  const plan = (paren: SelCel[], notitie: string, uitleen?: Pick<PlanWaarden, "werklocatie" | "contactpersoon" | "contact_telefoon">) => run(async () => {
     if (!profileId || !barProject) return;
-    const { doelen, overgeslagen } = bepaalDoelen(medIds, doelDatums, cellen, medewerkers, beschikbaarheid);
-    if (doelen.length === 0) { toast.error("Niets ingepland: alle dagen zijn bezet of niet beschikbaar."); return; }
-    const waarden: PlanWaarden = { project_id: barProject, starttijd: tijd[0], eindtijd: tijd[1], notitie, ...(uitleen ?? {}) };
-    const rows = bouwNieuwConcepten(doelen, waarden, profileId);
-    const projectNaam = projMap.get(barProject)?.naam ?? "project";
-    let ids: string[] = [];
-    if (conceptModus) {
-      const { data, error } = await supabase.from("planning_concept").insert(rows as ConceptInsert[]).select("id");
-      if (error) throw error;
-      ids = (data ?? []).map((r) => r.id);
-    } else {
-      const direct: PlanningInsert[] = rows.map(({ actie: _a, planning_id: _p, ...r }) => r);
-      const { data, error } = await supabase.from("planning").insert(direct).select("id");
-      if (error) throw error;
-      ids = (data ?? []).map((r) => r.id);
-      await markeerDefinitief([barProject]);
-    }
-    bewaarRecent(barProject);
+    const { doelen, overgeslagen } = doelenVoorCellen(paren, cellen, medewerkers, beschikbaarheid);
+...
     await markeerGepland([barProject]);
-    setSel(null);
+    wisSel();
     const tabel = conceptModus ? "planning_concept" : "planning";
     toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingepland op ${projectNaam}${conceptModus ? " (concept)" : ""}`, {
       action: { label: "Ongedaan maken", onClick: async () => { await supabase.from(tabel).delete().in("id", ids); refetch(); } },
@@ -209,9 +209,9 @@ export default function DesktopWeekPlanning() {
   };
 
   const leegmaken = () => run(async () => {
-    const doel = selMedIds.flatMap((m) => selColumns.map((c) => cellen.get(celKey(m, datums[c])))).filter((c): c is Cel => celBezet(c));
+    const doel = selCellen.map((s) => cellen.get(celKey(s.medId, s.datum))).filter((c): c is Cel => celBezet(c));
     const { aantal, beschermd } = await verwijderCellen(doel);
-    setSel(null);
+    wisSel();
     toast.success(`${aantal} ${aantal === 1 ? "dag" : "dagen"} leeggemaakt${conceptModus ? " (concept)" : ""}`);
     if (beschermd) toast.warning(`${beschermd} ${beschermd === 1 ? "dag komt" : "dagen komen"} uit de Planner-koppeling en ${beschermd === 1 ? "is" : "zijn"} niet aangepast`);
   });
@@ -353,12 +353,17 @@ export default function DesktopWeekPlanning() {
         aria-selected={inSel(r, c)}
         className={cls.join(" ")}
         style={gevuld ? ({ "--cell-color": kleur.color, "--cell-tint": kleur.tint } as CSSProperties) : undefined}
-        onMouseDown={(e) => { if (e.button !== 0) return; e.preventDefault(); setPanelKey(null); setSel({ r0: r, c0: c, r1: r, c1: c }); setDragging(true); }}
-        onMouseEnter={() => { if (dragging) setSel((s) => (s ? { ...s, r1: r, c1: c } : s)); }}
+        onMouseDown={(e) => {
+          if (e.button !== 0) return;
+          e.preventDefault(); setPanelKey(null);
+          const additief = e.shiftKey || e.ctrlKey || e.metaKey;
+          setDrag({ r0: r, c0: c, r1: r, c1: c, base: additief ? new Set(selSet) : new Set(), additief });
+        }}
+        onMouseEnter={() => { if (dragging) setDrag((s) => (s ? { ...s, r1: r, c1: c } : s)); }}
         onKeyDown={(e) => {
           if (e.key !== "Enter" && e.key !== " ") return;
           e.preventDefault();
-          if (gevuld) setPanelKey(celKey(med.id, datum)); else setSel({ r0: r, c0: c, r1: r, c1: c });
+          if (gevuld) setPanelKey(celKey(med.id, datum)); else setSelSet(new Set([celKey(med.id, datum)]));
         }}
       >
         {gevuld && cel ? (
@@ -483,7 +488,7 @@ export default function DesktopWeekPlanning() {
               </div>
 
               <div className="wp-legend">
-                <span>Sleep over dagen en medewerkers om te selecteren · klik op een ingevulde dag om te bewerken</span>
+                <span>Sleep om te selecteren · Shift+klik voegt losse dagen toe</span>
                 <span className="flex-1" />
                 {conceptModus && <span><i style={{ boxShadow: "inset 0 0 0 1.5px var(--wp-concept-dot)", background: "var(--bg-surface)" }} />Concept</span>}
                 <span><i style={{ boxShadow: "inset 0 0 0 2px var(--danger)", background: "var(--bg-surface)" }} />Conflict</span>
@@ -496,12 +501,11 @@ export default function DesktopWeekPlanning() {
         </main>
       </div>
 
-      {sel && !dragging && !panelKey && selMedIds.length > 0 && (
+      {!dragging && !panelKey && selCellen.length > 0 && (
         <ActieBalk
-          key={`${selMedIds.join(",")}|${selColumns.join(",")}`}
+          key={selKeyStr}
           medewerkers={medewerkers}
-          selMedIds={selMedIds}
-          selColumns={selColumns}
+          selCellen={selCellen}
           weekDates={weekDates}
           cellen={cellen}
           beschikbaarheid={beschikbaarheid}
@@ -515,7 +519,7 @@ export default function DesktopWeekPlanning() {
           onTijdChange={setTijd}
           onPlan={plan}
           onClear={leegmaken}
-          onClose={() => setSel(null)}
+          onClose={wisSel}
         />
       )}
 
