@@ -226,6 +226,7 @@ export interface FinancienUitkomst {
   kosten: number;
   kosten_uren: number;
   reiskosten: number;
+  vaste_kosten: number;
   g_rekening: number;
   g_rekening_uitleen: number;
   marge: number;
@@ -413,6 +414,7 @@ export function berekenFinannen(input: FinancienInput): FinancienUitkomst {
     kosten,
     kosten_uren: kostenUren,
     reiskosten: reiskosten || 0,
+    vaste_kosten: vasteKosten || 0,
     g_rekening: gRekening,
     g_rekening_uitleen: gRekeningUitleen,
     marge,

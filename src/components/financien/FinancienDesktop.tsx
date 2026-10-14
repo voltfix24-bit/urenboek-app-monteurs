@@ -261,10 +261,7 @@ export function FinancienDesktop() {
               <span>− Naar G-rekening</span><b>{fmt(-u.g_rekening)}</b>
             </div>
             <div className="fn-ruimte-rij">
-              <span>− Vaste kosten</span>
-              <b className="fn-inline">
-                {fmt(-u.uitbetaling.ruimte - u.marge + u.g_rekening === 0 ? 0 : -(u.uitbetaling.ruimte + u.g_rekening + (u.uitbetaling.ruimte ? 0 : 0)) ) }
-              </b>
+              <span>− Vaste kosten</span><b>{fmt(-u.vaste_kosten)}</b>
             </div>
             <div className="fn-ruimte-totaal">
               <span>Ruimte voor eigen uitbetaling</span><b>{fmt(u.uitbetaling.ruimte)}</b>
