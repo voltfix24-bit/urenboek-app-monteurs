@@ -847,6 +847,30 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .wp-klus-chips span { display: inline-flex; height: 24px; min-width: 28px; align-items: center; justify-content: center; padding: 0 6px; border-radius: 999px; background: var(--planning-avatar-bg); color: var(--info-dark); font-size: 11px; font-weight: 700; }
 .wp-klus-chips span.is-concept { background: var(--wp-concept-bg); color: var(--wp-concept-text); }
 .wp-mono { font-family: 'DM Mono', monospace; }
+.wp-group-head { grid-column: 1 / -1; padding: 7px 14px; background: var(--bg-surface-2); font-size: 11px; font-weight: 800; letter-spacing: .04em; color: var(--text-muted); }
+.wp-head-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.wp-pill { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; border: 1px solid var(--planning-border-soft); background: var(--bg-surface); font-size: 11px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
+.wp-pill[aria-pressed="true"] { background: var(--accent-light); color: var(--accent-dark); border-color: var(--accent-dark); }
+.wp-pill-blue { background: var(--wp-concept-bg); color: var(--wp-concept-text); border-color: var(--wp-concept-dot); cursor: default; }
+.wp-head.wp-weeksep { box-shadow: inset 2px 0 0 #b8c8e8; }
+.wp-grid .wp-name.wp-weeksep, .wp-grid .wp-cell.wp-weeksep, .wp-grid .wp-total.wp-weeksep { box-shadow: inset 2px 0 0 #b8c8e8; }
+.wp-wk-label { position: absolute; top: -16px; left: 4px; font-size: 10px; font-weight: 800; color: var(--text-muted); }
+.wp-head { position: relative; }
+.wp-cell-compact { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 11px; font-weight: 700; }
+.wp-cell-compact i { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 2px; }
+.wp-cell-compact span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wp-gelezen { display: inline-flex; align-items: center; margin-top: 2px; font-size: 11px; font-weight: 700; background: none; border: none; padding: 0; cursor: default; text-align: left; }
+.wp-gelezen.is-gelezen { color: #006c49; }
+.wp-gelezen.is-ongelezen { color: #8b6914; cursor: pointer; }
+.wp-gelezen.is-ongelezen:hover { text-decoration: underline; }
+.wp-klus-status { font-size: 11px; font-weight: 700; color: var(--text-muted); }
+.wp-klus-status.is-tekort { color: #93000a; }
+.wp-klus-norm { font-size: 12px; font-weight: 700; padding: 1px 7px; border-radius: 6px; }
+.wp-klus-day.is-tekort { background: #ffdad6; }
+.wp-klus-day.is-tekort .wp-klus-norm { background: #ffdad6; color: #93000a; }
+.wp-klus-day.is-precies .wp-klus-norm { background: var(--success-light, #d7f3e3); color: #006c49; }
+.wp-klus-day.is-meer .wp-klus-norm { background: var(--wp-concept-bg); color: var(--wp-concept-text); }
+.wp-klus-day.is-tekort { cursor: pointer; }
 .wp-cell.is-concept .wp-cell-title, .wp-cell.is-deleted .wp-cell-title { padding-right: 52px; }
 
 @media (min-width: 1024px) {
