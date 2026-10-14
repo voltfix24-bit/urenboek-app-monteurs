@@ -13,6 +13,8 @@ import {
 } from "./derive";
 import { useProfile } from "@/hooks/useProfile";
 import { genereerAanwijsbrievenPdf } from "@/lib/aanwijsbrievenPdf";
+import { DesktopSidebar } from "@/components/DesktopSidebar";
+import { useNavBadges } from "@/hooks/useNavBadges";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
