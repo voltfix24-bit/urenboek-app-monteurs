@@ -142,7 +142,7 @@ export function FinancienDesktop() {
           <div className="fn-kern">
             <span className="fn-kern-label"><Landmark className="h-3.5 w-3.5" /> Naar G-rekening</span>
             <span className="fn-kern-waarde">{fmt(u.g_rekening)}</span>
-            <span className="fn-kern-sub">davon uitleen {fmt(u.g_rekening_uitleen)}</span>
+            <span className="fn-kern-sub">hiervan uitleen {fmt(u.g_rekening_uitleen)}</span>
           </div>
           <div className="fn-kern">
             <span className="fn-kern-label"><PiggyBank className="h-3.5 w-3.5" /> Marge</span>
@@ -194,9 +194,15 @@ export function FinancienDesktop() {
                     </div>
                   </td>
                   <td className="fn-r">{formatUrenGetal(r.uren)}</td>
-                  <td className="fn-r">{r.tarief_onbekend ? <span className="fn-onbekend">€ ?</span> : fmt(r.omzet)}</td>
+                  <td className="fn-r">
+                    {fmt(r.omzet)}
+                    {r.uren_zonder_tarief > 0 && <span className="fn-onbekend"> +€ ?</span>}
+                  </td>
                   <td className="fn-r">{fmt(r.g_rekening)}</td>
-                  <td className="fn-r">{r.kosten_onbekend && r.kosten === 0 ? <span className="fn-onbekend">€ ?</span> : fmt(r.kosten)}</td>
+                  <td className="fn-r">
+                    {fmt(r.kosten)}
+                    {r.uren_zonder_kostentarief > 0 && <span className="fn-onbekend"> +€ ?</span>}
+                  </td>
                   <td className="fn-r">{fmt(r.marge)}</td>
                   <td className="fn-r">{r.omzet > 0 ? `${((r.marge / r.omzet) * 100).toFixed(1)}%` : "—"}</td>
                 </tr>

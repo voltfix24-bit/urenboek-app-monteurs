@@ -196,6 +196,10 @@ export interface RegelRegel {
   marge: number;
   tarief_onbekend: boolean;
   kosten_onbekend: boolean;
+  /** Uren in deze periode waar geen geldig verkooptarief voor gevonden is. */
+  uren_zonder_tarief: number;
+  /** Uren in deze periode waar geen geldig kostentarief voor gevonden is. */
+  uren_zonder_kostentarief: number;
 }
 
 export interface PersoonRegel {
@@ -280,6 +284,8 @@ export function berekenFinannen(input: FinancienInput): FinancienUitkomst {
       marge: 0,
       tarief_onbekend: false,
       kosten_onbekend: false,
+      uren_zonder_tarief: 0,
+      uren_zonder_kostentarief: 0,
     };
     perProject.set(p.id, nieuw);
     return nieuw;
@@ -330,6 +336,7 @@ export function berekenFinannen(input: FinancienInput): FinancienUitkomst {
     const kostentarief = bepaalKostentarief(kostentarieven, !!persoon?.is_eigenaar, u.medewerker_id, u.datum);
     if (kostentarief === null) {
       prRegel.kosten_onbekend = true;
+      prRegel.uren_zonder_kostentarief += u.uren;
       if (!gemeldeKostenPersonen.has(u.medewerker_id)) {
         gemeldeKostenPersonen.add(u.medewerker_id);
         waarschuwingen.push({
@@ -354,6 +361,7 @@ export function berekenFinannen(input: FinancienInput): FinancienUitkomst {
       const perUur = d?.tarief_override != null ? Number(d.tarief_override) : tarief?.uurtarief ?? null;
       if (perUur === null) {
         prRegel.tarief_onbekend = true;
+        prRegel.uren_zonder_tarief += u.uren;
         if (!gemeldeTariefProjecten.has(p.id)) {
           gemeldeTariefProjecten.add(p.id);
           waarschuwingen.push({
