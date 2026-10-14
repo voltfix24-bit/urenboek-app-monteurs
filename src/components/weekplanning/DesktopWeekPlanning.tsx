@@ -19,6 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { generatePersoneelsPdf, generatePlanningPdf } from "@/lib/planningPdf";
 import { formatUren, formatUrenGetal } from "@/lib/formatting";
 import { useWeekPlanningData } from "@/hooks/useWeekPlanningData";
+import { groepeerRijen, filterToon, vrijOpDag, wijzigingenOpDag, type GroepMode, type ToonMode } from "@/lib/weekPlanningV2";
 import {
   actieVoorBewerken, actieVoorVerwijderen, bepaalAfwezigheid, berekenUren, bouwCellen, bouwNieuwConcepten,
   celBezet, celKey, celTelt, ELDERS_TYPE, parseWeekParam, telConcepten, type Cel, type PlanWaarden,
@@ -41,7 +42,11 @@ export default function DesktopWeekPlanning() {
   const [searchParams] = useSearchParams();
   const urlProject = searchParams.get("project");
   const [weekStart, setWeekStart] = useState(() => parseWeekParam(searchParams.get("week")) ?? startOfISOWeek(new Date()));
-  const { bevoegdheden, planning, concepten, medewerkers, projects, beschikbaarheid, loading, refetch } = useWeekPlanningData(weekStart);
+  const [weeksCount, setWeeksCount] = useState<1 | 2 | 4>(1);
+  const [groepMode, setGroepMode] = useState<GroepMode>("geen");
+  const [toonMode, setToonMode] = useState<ToonMode>("iedereen");
+  const [vrijFilter, setVrijFilter] = useState<string | null>(null);
+  const { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, loading, refetch } = useWeekPlanningData(weekStart, weeksCount);
 
   const conceptModus = true;
   const [cursor, setCursor] = useState<GridPoint | null>(null);
@@ -65,8 +70,9 @@ export default function DesktopWeekPlanning() {
   dragRef.current = drag;
 
   const weekNumber = getISOWeek(weekStart);
-  const weekDates = useMemo(() => Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+  const weekDates = useMemo(() => Array.from({ length: 5 * weeksCount }, (_, i) => addDays(weekStart, 7 * Math.floor(i / 5) + (i % 5))), [weekStart, weeksCount]);
   const datums = useMemo(() => weekDates.map((d) => format(d, "yyyy-MM-dd")), [weekDates]);
+  const compact = weeksCount > 1;
   const isHuidigeWeek = isSameDay(weekStart, startOfISOWeek(new Date()));
   const vandaag = format(new Date(), "yyyy-MM-dd");
 
@@ -83,12 +89,23 @@ export default function DesktopWeekPlanning() {
     return ids;
   }, [celLijst, urlProject, projMap]);
 
-  const rijen = useMemo(() => [...medewerkers].sort((a, b) => {
+  const zichtbareMedewerkers = useMemo(() => {
+    let m = filterToon(medewerkers, toonMode);
+    if (vrijFilter) { const ids = new Set(vrijOpDag(vrijFilter, m, cellen, beschikbaarheid).map((x) => x.id)); m = m.filter((x) => ids.has(x.id)); }
+    return m;
+  }, [medewerkers, toonMode, vrijFilter, cellen, beschikbaarheid]);
+  const rijen = useMemo(() => [...zichtbareMedewerkers].sort((a, b) => {
     const ah = datums.some((d) => celBezet(cellen.get(celKey(a.id, d))));
     const bh = datums.some((d) => celBezet(cellen.get(celKey(b.id, d))));
     if (ah !== bh) return ah ? -1 : 1;
     return a.full_name.localeCompare(b.full_name, "nl", { sensitivity: "base" });
-  }), [medewerkers, cellen, datums]);
+  }), [zichtbareMedewerkers, cellen, datums]);
+  const naamVoor = useCallback((id: string) => korteNaam(medMap.get(id)?.full_name ?? "?"), [medMap]);
+  const groepen = useMemo(() => groepeerRijen(rijen, groepMode, {
+    rolLabel: (rol) => (rolLabel(rol) ?? "Monteurs").toUpperCase(),
+    isUitleenAlleen: (id) => { const dagen = datums.map((d) => cellen.get(celKey(id, d))).filter(celTelt); return dagen.length > 0 && dagen.every((c) => projMap.get(c.project_id ?? "")?.soort === "uitleen"); },
+    naamVoor,
+  }), [rijen, groepMode, datums, cellen, projMap, naamVoor]);
 
   // Overplanning (bestaande regel: meer dan 5 unieke dagen per week), inclusief concepten
   const overgepland = useMemo(() => {
@@ -628,6 +645,24 @@ export default function DesktopWeekPlanning() {
           <div className="wp-segmented" aria-label="Weergave">
             {(["grid", "klus"] as const).map((v) => <button key={v} type="button" aria-pressed={view === v} onClick={() => setView(v)}>{v === "grid" ? "Overzicht" : "Per klus"}</button>)}
           </div>
+          <div className="wp-segmented" aria-label="Aantal weken">
+            {([1, 2, 4] as const).map((n) => <button key={n} type="button" aria-pressed={weeksCount === n} onClick={() => setWeeksCount(n)}>{n} {n === 1 ? "week" : "weken"}</button>)}
+          </div>
+          <select className="wp-select" aria-label="Groeperen" value={groepMode} onChange={(e) => setGroepMode(e.target.value as GroepMode)}>
+            <option value="geen">Groeperen: geen</option>
+            <option value="rol">Groeperen: rol</option>
+            <option value="ploeg">Groeperen: ploeg</option>
+          </select>
+          <select className="wp-select" aria-label="Toon" value={toonMode} onChange={(e) => setToonMode(e.target.value as ToonMode)}>
+            <option value="iedereen">Toon: iedereen</option>
+            <option value="monteurs">Toon: monteurs</option>
+            <option value="leerlingen">Toon: leerlingen</option>
+          </select>
+          {vrijFilter && (
+            <button type="button" className="wp-chip" aria-pressed onClick={() => setVrijFilter(null)}>
+              Alleen vrij op {format(new Date(`${vrijFilter}T12:00:00`), "EEE d MMM", { locale: nl })} ×
+            </button>
+          )}
           {weekProjectIds.length > 0 && (
             <>
               <span className="wp-filter-label">Project</span>

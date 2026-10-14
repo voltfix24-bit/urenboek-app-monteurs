@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { titel, inhoud, urgentie, ontvangerType, profileId } = await req.json();
+    const { titel, inhoud, urgentie, ontvangerType, profileId, ontvangerId } = await req.json();
     if (!titel || !profileId) {
       return new Response(JSON.stringify({ error: "titel en profileId zijn verplicht" }), {
         status: 400,
@@ -96,6 +96,8 @@ Deno.serve(async (req) => {
         .select("id")
         .neq("id", profileId);
       recipientIds = allProfiles?.map((p) => p.id) ?? [];
+    } else if (ontvangerType === "persoon" && ontvangerId) {
+      recipientIds = [ontvangerId];
     } else if (ontvangerType === "monteurs") {
       const { data: allProfiles } = await adminClient.from("profiles").select("id, user_id");
       if (allProfiles) {

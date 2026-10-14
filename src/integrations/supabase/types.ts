@@ -128,6 +128,7 @@ export type Database = {
           kvk_nummer: string | null
           land: string
           planning_conceptmodus: boolean
+          planning_weekgrens: number
           postcode: string | null
           rechtsvorm: string | null
           stad: string | null
@@ -149,6 +150,7 @@ export type Database = {
           kvk_nummer?: string | null
           land?: string
           planning_conceptmodus?: boolean
+          planning_weekgrens?: number
           postcode?: string | null
           rechtsvorm?: string | null
           stad?: string | null
@@ -170,6 +172,7 @@ export type Database = {
           kvk_nummer?: string | null
           land?: string
           planning_conceptmodus?: boolean
+          planning_weekgrens?: number
           postcode?: string | null
           rechtsvorm?: string | null
           stad?: string | null
@@ -1368,6 +1371,21 @@ export type Database = {
           },
         ]
       }
+      medewerker_meldingen_log: {
+        Row: {
+          created_at: string
+          sleutel: string
+        }
+        Insert: {
+          created_at?: string
+          sleutel: string
+        }
+        Update: {
+          created_at?: string
+          sleutel?: string
+        }
+        Relationships: []
+      }
       onderaannemer_koppeling_audit: {
         Row: {
           created_at: string
@@ -1914,6 +1932,46 @@ export type Database = {
           },
         ]
       }
+      planning_gelezen: {
+        Row: {
+          gelezen_op: string | null
+          laatst_gepubliceerd_op: string | null
+          medewerker_id: string
+        }
+        Insert: {
+          gelezen_op?: string | null
+          laatst_gepubliceerd_op?: string | null
+          medewerker_id: string
+        }
+        Update: {
+          gelezen_op?: string | null
+          laatst_gepubliceerd_op?: string | null
+          medewerker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planning_gelezen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: true
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_gelezen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planning_gelezen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       planning_templates: {
         Row: {
           activiteiten: string[]
@@ -2014,6 +2072,7 @@ export type Database = {
           planbaar_tot: string | null
           planner_monteur_id: string | null
           planning_partner_ids: string[]
+          ploeg: string | null
           rijbewijs: boolean
           telefoon: string
           uit_dienst_op: string | null
@@ -2065,6 +2124,7 @@ export type Database = {
           planbaar_tot?: string | null
           planner_monteur_id?: string | null
           planning_partner_ids?: string[]
+          ploeg?: string | null
           rijbewijs?: boolean
           telefoon?: string
           uit_dienst_op?: string | null
@@ -2116,6 +2176,7 @@ export type Database = {
           planbaar_tot?: string | null
           planner_monteur_id?: string | null
           planning_partner_ids?: string[]
+          ploeg?: string | null
           rijbewijs?: boolean
           telefoon?: string
           uit_dienst_op?: string | null
@@ -2358,6 +2419,7 @@ export type Database = {
         Row: {
           active: boolean
           adres: string | null
+          benodigd_per_dag: number | null
           case_type: string | null
           contactpersoon_email: string | null
           contactpersoon_naam: string | null
@@ -2387,6 +2449,7 @@ export type Database = {
         Insert: {
           active?: boolean
           adres?: string | null
+          benodigd_per_dag?: number | null
           case_type?: string | null
           contactpersoon_email?: string | null
           contactpersoon_naam?: string | null
@@ -2416,6 +2479,7 @@ export type Database = {
         Update: {
           active?: boolean
           adres?: string | null
+          benodigd_per_dag?: number | null
           case_type?: string | null
           contactpersoon_email?: string | null
           contactpersoon_naam?: string | null
@@ -2936,6 +3000,7 @@ export type Database = {
         Returns: {
           active: boolean
           adres: string | null
+          benodigd_per_dag: number | null
           case_type: string | null
           contactpersoon_email: string | null
           contactpersoon_naam: string | null

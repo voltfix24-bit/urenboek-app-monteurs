@@ -35,6 +35,15 @@ export default function Planning() {
   const onderaannemerZonderMonteurs = isOnderaannemer && team.length <= 1;
   const queryProfileId = onderaannemerZonderMonteurs ? null : (activeProfileId || profileId);
   const navigate = useNavigate();
+
+  // Stap 4 (Weekplanning v2): registreer dat de medewerker de planning heeft geopend.
+  useEffect(() => {
+    if (!profileId) return;
+    supabase.from("planning_gelezen").upsert(
+      { medewerker_id: profileId, gelezen_op: new Date().toISOString() },
+      { onConflict: "medewerker_id" },
+    );
+  }, [profileId]);
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [items, setItems] = useState<PlanningItem[]>([]);
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidItem[]>([]);
