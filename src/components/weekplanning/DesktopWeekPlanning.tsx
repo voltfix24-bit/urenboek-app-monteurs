@@ -46,7 +46,7 @@ export default function DesktopWeekPlanning() {
   const [groepMode, setGroepMode] = useState<GroepMode>("geen");
   const [toonMode, setToonMode] = useState<ToonMode>("iedereen");
   const [vrijFilter, setVrijFilter] = useState<string | null>(null);
-  const { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, boekingen, detacheringen, weekgrens, loading, refetch } = useWeekPlanningData(weekStart, weeksCount);
+  const { gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, boekingen, detacheringen, weekgrens, loading, refetch } = useWeekPlanningData(weekStart, weeksCount);
   const [aandachtFilter, setAandachtFilter] = useState<null | "dubbel" | "weekgrens" | "leeg" | "afwijkend">(null);
 
   const conceptModus = true;

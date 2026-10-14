@@ -12,14 +12,11 @@ export interface WpProject { id: string; naam: string; nummer: string; straat?: 
 const ROL_PRIORITEIT: Record<string, number> = { manager: 5, uitvoerder: 4, wv: 3, schakelmonteur: 2, monteur: 1 };
 
 /** Data voor de desktop-weekplanning: gepubliceerde planning + concepten voor ma–vr × N weken. */
-/** Bevoegdheid per medewerker: laatste geldig_tot van aanwijzingen en VCA (null = geen). */
-export interface WpBevoegdheid { aanwijzingTot: string | null; vcaTot: string | null }
 export interface WpGelezen { gelezen_op: string | null; laatst_gepubliceerd_op: string | null }
 export interface WpBoeking { medewerker_id: string; datum: string; uren: number }
 
 export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
   const { isManager } = useAuth();
-  const [bevoegdheden, setBevoegdheden] = useState<Map<string, WpBevoegdheid> | null>(null);
   const [gelezen, setGelezen] = useState<Map<string, WpGelezen> | null>(null);
   const [planning, setPlanning] = useState<PlanningRij[]>([]);
   const [concepten, setConcepten] = useState<ConceptRij[]>([]);
@@ -88,5 +85,5 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
     return () => { supabase.removeChannel(channel); };
   }, [fetchAll]);
 
-  return { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, conceptModus, boekingen, detacheringen, weekgrens, loading, refetch: fetchAll };
+  return { gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, conceptModus, boekingen, detacheringen, weekgrens, loading, refetch: fetchAll };
 }
