@@ -129,7 +129,7 @@ export function ActieBalk(props: Props) {
         <span className="wp-bar-sub">8 u netto per dag (60 min pauze)</span>
         <input className="wp-bar-note" placeholder="Notitie (optioneel)" value={notitie} onChange={(e) => setNotitie(e.target.value)} aria-label="Notitie" />
         {heeftInhoud && <button type="button" className="wp-bar-clear" disabled={busy} onClick={props.onClear}>Leegmaken</button>}
-        <button type="button" className="wp-bar-plan" disabled={busy || !projectId || doelen.length === 0} onClick={() => props.onPlan(medIds, datums, notitie, isUitleen ? { werklocatie: werklocatie.trim() || null, contactpersoon: contact.trim() || null, contact_telefoon: telefoon.trim() || null } : undefined)}>
+        <button type="button" className="wp-bar-plan" disabled={busy || !projectId || doelen.length === 0} onClick={() => props.onPlan(paren, notitie, isUitleen ? { werklocatie: werklocatie.trim() || null, contactpersoon: contact.trim() || null, contact_telefoon: telefoon.trim() || null } : undefined)}>
           Inplannen ({doelen.length})
         </button>
       </div>
