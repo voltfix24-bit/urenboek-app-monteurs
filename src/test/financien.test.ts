@@ -116,14 +116,29 @@ describe("financieel overzicht", () => {
 
   it("rekent uitleen-uren tegen het verkooptarief van de detachering", () => {
     const r = berekenFinannen(input({ uren }));
-    // WV: 8 × 110 = 880, monteur: 8 × 97,5 = 780 → samen 1660 omzet.
-    expect(r.omzet_uitleen).toBeCloseTo(1660, 2);
-    expect(r.omzet).toBeCloseTo(1660, 2);
-    // G-rekening: 20% van beide = 332.
-    expect(r.g_rekening).toBeCloseTo(332, 2);
+    // WV via detachering: 8 × 110 = 880 (20% G-rekening).
+    // Monteur zonder detachering én zonder aanwijzing: rol onbekend → tarief "alle rollen" 8 × 90 = 720 (0%).
+    expect(r.omzet_uitleen).toBeCloseTo(1600, 2);
+    expect(r.omzet).toBeCloseTo(1600, 2);
+    expect(r.g_rekening).toBeCloseTo(176, 2);
     // Kosten: 8 × 80 + 8 × 70 = 1200.
     expect(r.kosten).toBeCloseTo(1200, 2);
-    expect(r.marge).toBeCloseTo(460, 2);
+    expect(r.marge).toBeCloseTo(400, 2);
+  });
+
+  it("neemt het roltarief zodra de rol uit de detachering komt", () => {
+    const r = berekenFinannen(input({
+      uren: [{ medewerker_id: "m-monteur", project_id: "p-hanab", datum: "2026-10-14", uren: 8, verwachte: false }],
+      detacheringen: [
+        ...detacheringen,
+        {
+          id: "d2", medewerker_id: "m-monteur", opdrachtgever_id: "og-hanab", project_id: "p-hanab",
+          rol: "monteur", van: "2026-01-01", tot: null, uren_per_week: 40, tarief_override: null,
+        },
+      ],
+    }));
+    expect(r.omzet_uitleen).toBeCloseTo(8 * 97.5, 2);
+    expect(r.g_rekening).toBeCloseTo(8 * 97.5 * 0.2, 2);
   });
 
   it("markeert geplande uren apart en telt ze mee", () => {
