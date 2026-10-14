@@ -215,7 +215,7 @@ export function TariefKaart(p: {
         <div className="mw-card-sub">Nog geen kostentarief vastgelegd.</div>
       ) : (
         <table className="mw-table">
-          <thead><tr><th>Geldig vanaf</th><th className="fn-r">Tarief</th></tr></thead>
+          <thead><tr><th>Geldig vanaf</th><th className="fn-r" style={{ width: 140 }}>Tarief</th></tr></thead>
           <tbody>
             {eigen.map((k, i) => (
               <tr key={k.id} className={i === 0 ? "" : "fn-historie-rij"}>
