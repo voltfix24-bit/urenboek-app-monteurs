@@ -60,6 +60,7 @@ export default function DesktopWeekPlanning() {
   const [panelKey, setPanelKey] = useState<string | null>(null);
   const [publishOpen, setPublishOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const mutationBusy = useRef(false);
   const dragRef = useRef<Drag | null>(null);
   dragRef.current = drag;
 
@@ -162,17 +163,10 @@ export default function DesktopWeekPlanning() {
 
   // ── Schrijfacties ──
   const run = async (fn: () => Promise<void>) => {
-    if (busy) return;
+    if (mutationBusy.current) return;
+    mutationBusy.current = true;
     setBusy(true);
-    try { await fn(); } catch (err) { console.error(err); toast.error("Er ging iets mis. Probeer opnieuw."); } finally { setBusy(false); refetch(); }
-  };
-
-  /** Project met fase "nieuw" gaat naar "gepland" zodra er een concept of planning voor bestaat. */
-  const markeerGepland = async (projectIds: string[]) => {
-    const ids = Array.from(new Set(projectIds));
-    if (!ids.length || !profileId) return;
-    await supabase.from("projects").update({ status: "gepland", status_gewijzigd_op: new Date().toISOString(), status_gewijzigd_door: profileId })
-      .in("id", ids).eq("status", "nieuw");
+    try { await fn(); } catch (err) { console.error(err); toast.error("Er ging iets mis. Probeer opnieuw."); } finally { await refetch(); mutationBusy.current = false; setBusy(false); }
   };
 
   const plan = (paren: SelCel[], tijd: [string, string], notitie: string, uitleen?: Pick<PlanWaarden, "werklocatie" | "contactpersoon" | "contact_telefoon">) => run(async () => {
@@ -188,12 +182,9 @@ export default function DesktopWeekPlanning() {
     const ids = (data ?? []).map((r) => r.id);
     lastTime.current = tijd;
     bewaarRecent(barProject);
-    await markeerGepland([barProject]);
     wisSel();
     rememberUndo(undo);
-    toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingepland op ${projectNaam}${conceptModus ? " (concept)" : ""}`, {
-      action: { label: "Ongedaan maken", onClick: async () => { await undo(); refetch(); } },
-    });
+    toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingepland op ${projectNaam} (concept)`, undoToast(undo));
     if (overgeslagen.length > 0) toast.info(`${overgeslagen.length} ${overgeslagen.length === 1 ? "dag" : "dagen"} overgeslagen (verlof, ziek of vrij)`);
   });
 
@@ -221,9 +212,7 @@ export default function DesktopWeekPlanning() {
     const { aantal, beschermd } = await verwijderCellen(doel);
     rememberUndo(undo);
     wisSel();
-    toast.success(`${dagenTekst(aantal)} verwijderd${conceptModus ? " (concept)" : ""}`, {
-      action: { label: "Ongedaan maken", onClick: async () => { await undo(); refetch(); } },
-    });
+    toast.success(`${dagenTekst(aantal)} verwijderd (concept)`, undoToast(undo));
     if (beschermd) toast.warning(`${beschermd} ${beschermd === 1 ? "dag komt" : "dagen komen"} uit de Planner-koppeling en ${beschermd === 1 ? "is" : "zijn"} niet aangepast`);
   });
 
@@ -252,11 +241,9 @@ export default function DesktopWeekPlanning() {
     }
     if (aantal) rememberUndo(undo);
     if (keuze.tijd) lastTime.current = keuze.tijd;
-    if (keuze.project_id) { bewaarRecent(keuze.project_id); await markeerGepland([keuze.project_id]); }
+    if (keuze.project_id) bewaarRecent(keuze.project_id);
     wisSel();
-    toast.success(`${dagenTekst(aantal)} gewijzigd${conceptModus ? " (concept)" : ""}`, {
-      action: { label: "Ongedaan maken", onClick: async () => { await undo(); refetch(); } },
-    });
+    toast.success(`${dagenTekst(aantal)} gewijzigd (concept)`, undoToast(undo));
     if (beschermd) toast.warning("Dagen uit de Planner-koppeling zijn niet aangepast");
   });
 
@@ -364,27 +351,31 @@ export default function DesktopWeekPlanning() {
       const undo = await capture(rows);
       const { error: insErr } = await supabase.from("planning_concept").insert(rows.map((r) => ({ ...r, actie: "nieuw" as const })));
       if (insErr) throw insErr;
-      await markeerGepland(rows.map((r) => r.project_id));
       rememberUndo(undo);
-      toast.success(`${rows.length} dagen gekopieerd (concept)`, undoToast(undo));
+      toast.success(`${rows.length} dagen gekopieerd uit week ${getISOWeek(vorige)} (concept)${overgeslagen ? ` · ${overgeslagen} overgeslagen` : ""}`, undoToast(undo));
     }
-    toast.success(`${rows.length} ${rows.length === 1 ? "dag" : "dagen"} gekopieerd uit week ${getISOWeek(vorige)}${conceptModus ? " (concept)" : ""}${overgeslagen ? ` · ${overgeslagen} overgeslagen` : ""}`);
+    if (!rows.length) toast.info("Geen beschikbare dagen om te kopiëren");
   });
 
   const rememberUndo = (undo: () => Promise<void>) => { undoStack.current.push(undo); if (undoStack.current.length > 30) undoStack.current.shift(); };
   const undoToast = (undo: () => Promise<void>) => ({ action: { label: "Ongedaan maken", onClick: () => void run(async () => { await undo(); const i = undoStack.current.indexOf(undo); if (i >= 0) undoStack.current.splice(i, 1); }) } });
   const capture = async (targets: Array<{ medewerker_id: string; datum: string }>) => {
     const unique = [...new Map(targets.map((p) => [celKey(p.medewerker_id, p.datum), p])).values()];
-    const before: ConceptInsert[] = [];
-    for (const p of unique) {
-      const { data, error } = await supabase.from("planning_concept").select("*").eq("medewerker_id", p.medewerker_id).eq("datum", p.datum);
+    const keys = new Set(unique.map((p) => celKey(p.medewerker_id, p.datum)));
+    const ids = [...new Set(unique.map((p) => p.medewerker_id))];
+    const dates = unique.map((p) => p.datum).sort();
+    const load = async () => {
+      if (!ids.length) return [];
+      const { data, error } = await supabase.from("planning_concept").select("*").in("medewerker_id", ids).gte("datum", dates[0]).lte("datum", dates[dates.length - 1]);
       if (error) throw error;
-      before.push(...(data ?? []));
-    }
+      return (data ?? []).filter((p) => keys.has(celKey(p.medewerker_id, p.datum)));
+    };
+    const before: ConceptInsert[] = await load();
     let used = false;
     return async () => {
       if (used) return;
-      for (const p of unique) { const { error } = await supabase.from("planning_concept").delete().eq("medewerker_id", p.medewerker_id).eq("datum", p.datum); if (error) throw error; }
+      const current = await load();
+      if (current.length) { const { error } = await supabase.from("planning_concept").delete().in("id", current.map((p) => p.id)); if (error) throw error; }
       if (before.length) { const { error } = await supabase.from("planning_concept").insert(before); if (error) throw error; }
       used = true;
     };
@@ -462,7 +453,11 @@ export default function DesktopWeekPlanning() {
       if (next.day < 0 || next.day > 4) { pendingCursor.current = { row: next.row, day: next.day < 0 ? 4 : 0 }; setWeekStart((w) => addWeeks(w, next.day < 0 ? -1 : 1)); return; }
       const med = rijen[next.row]; if (!med) return;
       setCursor(next); const key = celKey(med.id, datums[next.day]);
-      setSelSet(e.shiftKey ? new Set([...selSet, key]) : new Set([key]));
+      if (e.shiftKey) setSelSet(new Set([...selSet, key]));
+      else if (selected.length > 1 && anchor) {
+        const dr = next.row - anchor.row, dc = next.day - anchor.day;
+        setSelSet(new Set(selected.flatMap((p) => { const m = rijen[p.row + dr], date = datums[p.day + dc]; return m && date ? [celKey(m.id, date)] : []; })));
+      } else setSelSet(new Set([key]));
     };
     document.addEventListener("keydown", onKey); document.addEventListener("keyup", onKey);
     return () => { document.removeEventListener("keydown", onKey); document.removeEventListener("keyup", onKey); };
@@ -482,6 +477,8 @@ export default function DesktopWeekPlanning() {
   const publiceer = () => run(async () => {
     const { data, error } = await supabase.rpc("publiceer_planning", { p_van: datums[0], p_tot: datums[4] });
     if (error) throw error;
+    undoStack.current = [];
+    toast.dismiss();
     const res = (data ?? {}) as { nieuw?: number; gewijzigd?: number; verwijderd?: number; overgeslagen?: Array<{ medewerker_id: string; datum: string; reden: string }>; medewerker_ids?: string[] };
     setPublishOpen(false);
     const n = res.medewerker_ids?.length ?? 0;
