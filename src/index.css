@@ -758,6 +758,8 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .wp-grid .wp-cell.is-verlof { background: repeating-linear-gradient(135deg, var(--wp-verlof-a) 0 6px, var(--wp-verlof-b) 6px 12px); }
 .wp-grid .wp-cell.is-ziek { background: repeating-linear-gradient(135deg, var(--wp-ziek-a) 0 6px, var(--wp-ziek-b) 6px 12px); }
 .wp-grid .wp-cell.is-vrij { background: var(--wp-vrij-bg); }
+.wp-grid .wp-cell.is-elders { background: repeating-linear-gradient(135deg, var(--wp-vrij-bg) 0 6px, var(--bg-surface) 6px 12px); }
+.wp-cell.is-elders .wp-afw-label { color: var(--text-muted); font-weight: 600; }
 .wp-afw-label { font-size: 12px; font-weight: 700; }
 .wp-cell.is-verlof .wp-afw-label { color: var(--wp-verlof-text); }
 .wp-cell.is-ziek .wp-afw-label { color: var(--wp-ziek-text); }

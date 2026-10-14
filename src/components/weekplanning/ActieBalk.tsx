@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { bepaalDoelen, celBezet, celKey, celTelt, TIJDBLOKKEN, type BeschikbaarheidBasis, type Cel } from "@/lib/weekPlanning";
+import { bepaalAfwezigheid, bepaalDoelen, celBezet, celKey, celTelt, TIJDBLOKKEN, type BeschikbaarheidBasis, type Cel } from "@/lib/weekPlanning";
 import type { WpMedewerker, WpProject } from "@/hooks/useWeekPlanningData";
 import { DAG_KORT, korteNaam, leesRecent, projectKleur } from "./wpUtils";
 import { ProjectZoeker } from "./ProjectZoeker";
@@ -44,6 +44,7 @@ interface Props {
   onPlan: (paren: SelCel[], tijd: [string, string], notitie: string, uitleen?: UitleenWaarden) => void;
   onVerwijder: (cellen: Cel[]) => void;
   onWijzig: (cellen: Cel[], keuze: WijzigKeuze) => void;
+  onBeschikbaarheid: (paren: SelCel[], beschikbaar: boolean) => void;
   onClose: () => void;
 }
 
@@ -93,6 +94,8 @@ export function ActieBalk(props: Props) {
     ...(tijd ? { tijd } : {}),
     ...(notitie.trim() ? { notitie } : {}),
   };
+  const leegBeschikbaar = selCellen.filter((s) => !celBezet(cellen.get(celKey(s.medId, s.datum))) && !bepaalAfwezigheid(medMap.get(s.medId), s.datum, beschikbaarheid));
+  const elders = selCellen.filter((s) => bepaalAfwezigheid(medMap.get(s.medId), s.datum, beschikbaarheid) === "elders");
   const ietsGekozen = !!(keuze.project_id || keuze.tijd || keuze.notitie);
 
   const recent = leesRecent().filter((id) => !weekProjectIds.includes(id) && projects.some((p) => p.id === id)).slice(0, 3);
@@ -142,6 +145,8 @@ export function ActieBalk(props: Props) {
         ))}
         <span className="wp-bar-sub">8 u netto per dag (60 min pauze)</span>
         <input className="wp-bar-note" placeholder="Notitie (optioneel)" value={notitie} onChange={(e) => setNotitie(e.target.value)} aria-label="Notitie" />
+        {leegBeschikbaar.length > 0 && <button type="button" className="wp-bar-btn" disabled={busy} title="Werkt deze dag(en) voor een andere opdracht" onClick={() => props.onBeschikbaarheid(leegBeschikbaar, false)}>Niet beschikbaar ({leegBeschikbaar.length})</button>}
+        {elders.length > 0 && <button type="button" className="wp-bar-btn" disabled={busy} onClick={() => props.onBeschikbaarheid(elders, true)}>Weer beschikbaar ({elders.length})</button>}
         {heeftInhoud && <button type="button" className="wp-bar-clear" disabled={busy} onClick={() => props.onVerwijder(ingevuld)}>Verwijderen ({ingevuld.length})</button>}
         {heeftInhoud && <button type="button" className="wp-bar-btn" disabled={busy || !ietsGekozen} onClick={() => props.onWijzig(ingevuld, keuze)}>Wijzigen ({ingevuld.length})</button>}
         {(doelen.length > 0 || !heeftInhoud) && (

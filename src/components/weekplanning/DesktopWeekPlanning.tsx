@@ -18,7 +18,7 @@ import { formatUren, formatUrenGetal } from "@/lib/formatting";
 import { useWeekPlanningData } from "@/hooks/useWeekPlanningData";
 import {
   actieVoorBewerken, actieVoorVerwijderen, bepaalAfwezigheid, berekenUren, bouwCellen, bouwNieuwConcepten,
-  celBezet, celKey, celTelt, parseWeekParam, telConcepten, type Cel, type PlanWaarden,
+  celBezet, celKey, celTelt, ELDERS_TYPE, parseWeekParam, telConcepten, type Cel, type PlanWaarden,
 } from "@/lib/weekPlanning";
 import { ActieBalk, doelenVoorCellen, type SelCel, type WijzigKeuze } from "./ActieBalk";
 import { BewerkPaneel } from "./BewerkPaneel";
@@ -30,7 +30,7 @@ type ConceptInsert = TablesInsert<"planning_concept">;
 type PlanningInsert = TablesInsert<"planning">;
 interface Drag { r0: number; c0: number; r1: number; c1: number; base: Set<string>; additief: boolean }
 
-const AFW_CEL: Record<string, string> = { verlof: "Verlof", ziek: "Ziek", vrij: "Vaste vrije dag" };
+const AFW_CEL: Record<string, string> = { verlof: "Verlof", ziek: "Ziek", vrij: "Vaste vrije dag", elders: "Andere opdracht" };
 
 export default function DesktopWeekPlanning() {
   const { badges } = useNavBadges();
@@ -100,6 +100,8 @@ export default function DesktopWeekPlanning() {
   const conceptAantal = concepten.length;
   const geraakteNamen = Array.from(new Set(concepten.map((c) => c.medewerker_id))).map((id) => korteNaam(medMap.get(id)?.full_name ?? "?"));
   const ingeplandAantal = new Set(celLijst.filter(celTelt).map((c) => c.medewerker_id)).size;
+  // Medewerkers die de hele week niet beschikbaar zijn (verlof, ziek, vrij, andere opdracht) tellen niet als "niet ingepland"
+  const inzetbaarAantal = medewerkers.filter((m) => datums.some((d) => celTelt(cellen.get(celKey(m.id, d))) || !bepaalAfwezigheid(m, d, beschikbaarheid))).length;
 
   // ── Selectie (set losse cellen) ──
   const rectKeys = (d: Drag) => {
@@ -306,6 +308,35 @@ export default function DesktopWeekPlanning() {
     if (beschermd) toast.warning("Dagen uit de Planner-koppeling zijn niet aangepast");
   });
 
+  /** Zzp'ers: dagen markeren als "andere opdracht" (niet beschikbaar) of weer vrijgeven. Raakt de planning zelf niet. */
+  const zetBeschikbaarheid = (paren: SelCel[], beschikbaar: boolean) => run(async () => {
+    if (!profileId || !paren.length) return;
+    if (!beschikbaar) {
+      const rijen = paren.map((p) => ({ medewerker_id: p.medId, type: ELDERS_TYPE, datum_van: p.datum, datum_tot: p.datum, status: "goedgekeurd", reden: "Andere opdracht", behandeld_door: profileId }));
+      const { data, error } = await supabase.from("beschikbaarheid").insert(rijen).select("id");
+      if (error) throw error;
+      const ids = (data ?? []).map((r) => r.id);
+      wisSel();
+      toast.success(`${dagenTekst(ids.length)} niet beschikbaar (andere opdracht)`, {
+        action: { label: "Ongedaan maken", onClick: async () => { await supabase.from("beschikbaarheid").delete().in("id", ids); refetch(); } },
+      });
+      return;
+    }
+    const dag = (d: string, n: number) => format(addDays(new Date(`${d}T12:00:00`), n), "yyyy-MM-dd");
+    for (const p of paren) {
+      const recs = beschikbaarheid.filter((b) => b.id && b.medewerker_id === p.medId && b.type === ELDERS_TYPE && p.datum >= b.datum_van && p.datum <= b.datum_tot);
+      for (const b of recs) {
+        if (b.datum_van === b.datum_tot) { const { error } = await supabase.from("beschikbaarheid").delete().eq("id", b.id!); if (error) throw error; continue; }
+        if (b.datum_van === p.datum) { await supabase.from("beschikbaarheid").update({ datum_van: dag(p.datum, 1) }).eq("id", b.id!); continue; }
+        if (b.datum_tot === p.datum) { await supabase.from("beschikbaarheid").update({ datum_tot: dag(p.datum, -1) }).eq("id", b.id!); continue; }
+        await supabase.from("beschikbaarheid").update({ datum_tot: dag(p.datum, -1) }).eq("id", b.id!);
+        await supabase.from("beschikbaarheid").insert({ medewerker_id: p.medId, type: ELDERS_TYPE, datum_van: dag(p.datum, 1), datum_tot: b.datum_tot, status: "goedgekeurd", reden: "Andere opdracht", behandeld_door: profileId });
+      }
+    }
+    wisSel();
+    toast.success(`${dagenTekst(paren.length)} weer beschikbaar`);
+  });
+
   const ploegVan = (cel: Cel) => cel.planning_group_id
     ? celLijst.filter((c) => c.planning_group_id === cel.planning_group_id && c.datum === cel.datum && c.status !== "verwijderd")
     : [cel];
@@ -483,7 +514,7 @@ export default function DesktopWeekPlanning() {
             <button type="button" className="wp-icon-btn" aria-label="Vorige week" onClick={() => setWeekStart((w) => addWeeks(w, -1))}><ChevronLeft size={18} /></button>
             <div>
               <h1>Week {weekNumber}</h1>
-              <p>{format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 4), "d MMM", { locale: nl })} · {ingeplandAantal} van {medewerkers.length} ingepland</p>
+              <p>{format(weekStart, "d MMM", { locale: nl })} – {format(addDays(weekStart, 4), "d MMM", { locale: nl })} · {ingeplandAantal} van {inzetbaarAantal} ingepland</p>
             </div>
             <button type="button" className="wp-icon-btn" aria-label="Volgende week" onClick={() => setWeekStart((w) => addWeeks(w, 1))}><ChevronRight size={18} /></button>
             {!isHuidigeWeek && <Button variant="outline" size="sm" onClick={() => setWeekStart(startOfISOWeek(new Date()))}>Deze week</Button>}
@@ -608,6 +639,7 @@ export default function DesktopWeekPlanning() {
           onPlan={plan}
           onVerwijder={verwijderSel}
           onWijzig={wijzigSel}
+          onBeschikbaarheid={zetBeschikbaarheid}
           onClose={wisSel}
         />
       )}
