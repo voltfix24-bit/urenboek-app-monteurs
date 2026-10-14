@@ -24,6 +24,7 @@ export const SEARCH_PAGES: SearchPage[] = [
   { label: "Goedkeuring", path: "/goedkeuring", check: (p) => p.zietGoedkeuring, keywords: ["uren", "keuren"] },
   { label: "Overuren", path: "/overuren", check: (p) => p.zietOveruren },
   { label: "Rapportage", path: "/rapportage", check: (p) => p.zietRapportage, keywords: ["rapport", "export"] },
+  { label: "Financiën", path: "/financien", check: (p) => p.zietFinancien, keywords: ["omzet", "marge", "g-rekening", "uitlenen"] },
 
   { label: "Inkooporders", path: "/inkooporders", check: (p) => p.zietAlleInkooporders, keywords: ["facturatie", "order"] },
   { label: "Mijn orders", path: "/mijn-orders", check: (p) => p.zietInkooporders && !p.zietAlleInkooporders, keywords: ["eigen order"] },

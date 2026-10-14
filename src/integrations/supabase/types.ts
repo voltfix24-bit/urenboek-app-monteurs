@@ -136,6 +136,7 @@ export type Database = {
           telefoon: string | null
           updated_at: string
           updated_by: string | null
+          vaste_kosten_per_week: number
           website: string | null
         }
         Insert: {
@@ -158,6 +159,7 @@ export type Database = {
           telefoon?: string | null
           updated_at?: string
           updated_by?: string | null
+          vaste_kosten_per_week?: number
           website?: string | null
         }
         Update: {
@@ -180,6 +182,7 @@ export type Database = {
           telefoon?: string | null
           updated_at?: string
           updated_by?: string | null
+          vaste_kosten_per_week?: number
           website?: string | null
         }
         Relationships: [

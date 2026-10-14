@@ -28,6 +28,7 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
   const [beschikbaarheid, setBeschikbaarheid] = useState<BeschikbaarheidBasis[]>([]);
   const [conceptModus, setConceptModus] = useState(true);
   const [boekingen, setBoekingen] = useState<WpBoeking[]>([]);
+  const [detacheringen, setDetacheringen] = useState<any[]>([]);
   const [weekgrens, setWeekgrens] = useState(40);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +36,7 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
   const endStr = format(addDays(weekStart, 7 * (weeks - 1) + 4), "yyyy-MM-dd");
 
   const fetchAll = useCallback(async () => {
-    const [plan, conc, prof, proj, besch, roles, bedrijf, boek, nodig] = await Promise.all([
+    const [plan, conc, prof, proj, besch, roles, bedrijf, boek, nodig, det] = await Promise.all([
       supabase.from("planning")
         .select("id, medewerker_id, project_id, datum, starttijd, eindtijd, notitie, activiteit, activiteit_kleur, planning_group_id, collega_ids, external_source, sync_locked, werklocatie, contactpersoon, contact_telefoon")
         .gte("datum", startStr).lte("datum", endStr),
@@ -47,6 +48,7 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
       supabase.from("bedrijfsgegevens").select("planning_conceptmodus, planning_weekgrens").limit(1).maybeSingle(),
       supabase.from("uren_boekingen").select("medewerker_id, datum, uren").neq("status", "afgekeurd").gte("datum", startStr).lte("datum", endStr),
       supabase.from("projects").select("id, benodigd_per_dag").eq("active", true),
+      supabase.from("detacheringen").select("medewerker_id, project_id, opdrachtgever_id, rol, van, tot").order("van"),
     ]);
     // Aanwijzingen/certificaten zijn alleen voor managers leesbaar; anders geen waarschuwingen tonen.
     if (isManager) {
@@ -83,6 +85,7 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
     setConceptModus(bedrijf.data?.planning_conceptmodus ?? true);
     setWeekgrens((bedrijf.data as { planning_weekgrens?: number } | null)?.planning_weekgrens ?? 40);
     setBoekingen((boek.data ?? []) as WpBoeking[]);
+    setDetacheringen(det.data ?? []);
     setLoading(false);
   }, [startStr, endStr, isManager]);
 
@@ -96,5 +99,5 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
     return () => { supabase.removeChannel(channel); };
   }, [fetchAll]);
 
-  return { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, conceptModus, boekingen, weekgrens, loading, refetch: fetchAll };
+  return { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, conceptModus, boekingen, detacheringen, weekgrens, loading, refetch: fetchAll };
 }

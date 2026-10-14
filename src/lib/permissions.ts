@@ -8,6 +8,7 @@ export interface RolPermissies {
   zietManagerPlanning: boolean;
   zietProjecten: boolean;
   zietProjectFinancien: boolean;
+  zietFinancien: boolean;
   zietRapportage: boolean;
   zietTeam: boolean;
   zietMededelingen: boolean;
@@ -31,7 +32,7 @@ export const PERMISSIES: Record<Rol, RolPermissies> = {
   manager: {
     zietDashboard: true, zietUren: true, zietAlleUren: true, zietGoedkeuring: true,
     zietOveruren: true, zietPlanning: true, zietManagerPlanning: true, zietProjecten: true,
-    zietProjectFinancien: true, zietRapportage: true, zietTeam: true, zietMededelingen: true,
+    zietProjectFinancien: true, zietFinancien: true, zietRapportage: true, zietTeam: true, zietMededelingen: true,
     zietProfiel: true, zietInkooporders: true, zietAlleInkooporders: true, zietBeheer: true,
     zietKandidaten: true, magContractenBeheren: true, zietEigenContract: true,
     magPlanningWijzigen: true, magUrenGoedkeuren: true, magProjectenWijzigen: true,
@@ -40,7 +41,7 @@ export const PERMISSIES: Record<Rol, RolPermissies> = {
   uitvoerder: {
     zietDashboard: true, zietUren: true, zietAlleUren: false, zietGoedkeuring: false,
     zietOveruren: false, zietPlanning: true, zietManagerPlanning: true, zietProjecten: true,
-    zietProjectFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
+    zietProjectFinancien: false, zietFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
     zietProfiel: true, zietInkooporders: true, zietAlleInkooporders: false, zietBeheer: false,
     zietKandidaten: false, magContractenBeheren: false, zietEigenContract: true,
     magPlanningWijzigen: true, magUrenGoedkeuren: false, magProjectenWijzigen: false,
@@ -49,7 +50,7 @@ export const PERMISSIES: Record<Rol, RolPermissies> = {
   wv: {
     zietDashboard: true, zietUren: true, zietAlleUren: false, zietGoedkeuring: false,
     zietOveruren: false, zietPlanning: true, zietManagerPlanning: true, zietProjecten: true,
-    zietProjectFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
+    zietProjectFinancien: false, zietFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
     zietProfiel: true, zietInkooporders: true, zietAlleInkooporders: false, zietBeheer: false,
     zietKandidaten: false, magContractenBeheren: false, zietEigenContract: true,
     magPlanningWijzigen: true, magUrenGoedkeuren: false, magProjectenWijzigen: false,
@@ -58,7 +59,7 @@ export const PERMISSIES: Record<Rol, RolPermissies> = {
   monteur: {
     zietDashboard: false, zietUren: true, zietAlleUren: false, zietGoedkeuring: false,
     zietOveruren: false, zietPlanning: true, zietManagerPlanning: false, zietProjecten: false,
-    zietProjectFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
+    zietProjectFinancien: false, zietFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
     zietProfiel: true, zietInkooporders: true, zietAlleInkooporders: false, zietBeheer: false,
     zietKandidaten: false, magContractenBeheren: false, zietEigenContract: true,
     magPlanningWijzigen: false, magUrenGoedkeuren: false, magProjectenWijzigen: false,
@@ -67,7 +68,7 @@ export const PERMISSIES: Record<Rol, RolPermissies> = {
   schakelmonteur: {
     zietDashboard: false, zietUren: true, zietAlleUren: false, zietGoedkeuring: false,
     zietOveruren: false, zietPlanning: true, zietManagerPlanning: false, zietProjecten: false,
-    zietProjectFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
+    zietProjectFinancien: false, zietFinancien: false, zietRapportage: false, zietTeam: false, zietMededelingen: true,
     zietProfiel: true, zietInkooporders: true, zietAlleInkooporders: false, zietBeheer: false,
     zietKandidaten: false, magContractenBeheren: false, zietEigenContract: true,
     magPlanningWijzigen: false, magUrenGoedkeuren: false, magProjectenWijzigen: false,

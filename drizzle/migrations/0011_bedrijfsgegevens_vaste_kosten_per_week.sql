@@ -1,0 +1,2 @@
+ALTER TABLE public.bedrijfsgegevens ADD COLUMN IF NOT EXISTS vaste_kosten_per_week numeric NOT NULL DEFAULT 0;
+COMMENT ON COLUMN public.bedrijfsgegevens.vaste_kosten_per_week IS 'Instelbare vaste kosten per week (bus, verzekering, software) die in het financieel overzicht van de marge worden afgetrokken.';

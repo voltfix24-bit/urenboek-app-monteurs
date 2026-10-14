@@ -40,6 +40,7 @@ const Medewerkers = lazy(() => import("./pages/Medewerkers"));
 const Onderaannemers = lazy(() => import("./pages/Onderaannemers"));
 const IntakeRegelBeheer = lazy(() => import("./pages/IntakeRegelBeheer"));
 const TarievenBeheer = lazy(() => import("./pages/TarievenBeheer"));
+const Financien = lazy(() => import("./pages/Financien"));
 const Inkooporders = lazy(() => import("./pages/Inkooporders"));
 const MijnOrders = lazy(() => import("./pages/MijnOrders"));
 const BedrijfsgegevensBeheer = lazy(() => import("./pages/BedrijfsgegevensBeheer"));
@@ -154,6 +155,7 @@ const App = () => (
               <Route path="/overuren" element={<RoleRoute check={ROUTE_ACCESS["/overuren"]}><L><Overuren /></L></RoleRoute>} />
               <Route path="/rapportage" element={<RoleRoute check={ROUTE_ACCESS["/rapportage"]}><L><Rapportage /></L></RoleRoute>} />
               <Route path="/manager-planning" element={<RoleRoute check={ROUTE_ACCESS["/manager-planning"]}><L><ManagerPlanning /></L></RoleRoute>} />
+              <Route path="/financien" element={<RoleRoute check={ROUTE_ACCESS["/financien"]}><L><Financien /></L></RoleRoute>} />
               <Route path="/projecten" element={<RoleRoute check={ROUTE_ACCESS["/projecten"]}><L><Projecten /></L></RoleRoute>} />
               <Route path="/projecten/:projectId/planning" element={<RoleRoute check={ROUTE_ACCESS["/projecten/:projectId/planning"]}><L><ProjectPlanning /></L></RoleRoute>} />
               <Route path="/opdrachtgevers" element={<RoleRoute check={ROUTE_ACCESS["/opdrachtgevers"]}><L><Opdrachtgevers /></L></RoleRoute>} />

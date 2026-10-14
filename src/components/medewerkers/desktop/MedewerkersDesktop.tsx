@@ -15,11 +15,12 @@ import { useProfile } from "@/hooks/useProfile";
 import { genereerAanwijsbrievenPdf } from "@/lib/aanwijsbrievenPdf";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { useNavBadges } from "@/hooks/useNavBadges";
+import { DetacheringenKaart, TariefKaart } from "./DetacheringenKaart";
 
 const DAGEN = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
 export default function MedewerkersDesktop() {
-  const { profielen, certificaten, aanwijzingen, partijen, dbaChecks, contracten, tarieven, planning, bedrijf, loading, refetch } = useMedewerkersDesktop();
+  const { profielen, certificaten, aanwijzingen, partijen, dbaChecks, contracten, tarieven, planning, bedrijf, detacheringen, opdrachtgevers, kostentarieven, verkooptarieven, loading, refetch } = useMedewerkersDesktop();
   const { profileId } = useProfile();
   const { badges } = useNavBadges();
   const [chip, setChip] = useState<string>("planbaar");
@@ -175,6 +176,8 @@ export default function MedewerkersDesktop() {
               certificaten={certificaten} aanwijzingen={aanwijzingen} partijen={partijen}
               dbaChecks={dbaChecks} contracten={contracten} tarieven={tarieven} planning={planning}
               bedrijf={bedrijf} profielen={profielen} profileId={profileId}
+              detacheringen={detacheringen} opdrachtgevers={opdrachtgevers}
+              kostentarieven={kostentarieven} verkooptarieven={verkooptarieven}
               menuOpen={menuOpen} setMenuOpen={setMenuOpen}
               showUitDienst={showUitDienst} setShowUitDienst={setShowUitDienst}
               showAanwijzing={showAanwijzing} setShowAanwijzing={setShowAanwijzing}
@@ -202,6 +205,8 @@ interface DetailProps {
   emp: DesktopProfiel; tab: string; setTab: (t: any) => void; issues: Issue[];
   certificaten: any[]; aanwijzingen: any[]; partijen: any[]; dbaChecks: any[]; contracten: any[];
   tarieven: any[]; planning: any[]; bedrijf: { dba_signaal_weken: number }; profielen: DesktopProfiel[];
+  detacheringen: any[]; opdrachtgevers: { id: string; naam: string }[];
+  kostentarieven: any[]; verkooptarieven: any[];
   profileId: string | null;
   menuOpen: boolean; setMenuOpen: (b: boolean) => void;
   showUitDienst: boolean; setShowUitDienst: (b: boolean) => void;
@@ -260,7 +265,7 @@ function DetailPane(p: DetailProps) {
   );
 }
 
-function TabOverzicht({ emp, issues, setTab, onTogglePlanbaar }: DetailProps) {
+function TabOverzicht({ emp, issues, setTab, onTogglePlanbaar, detacheringen, opdrachtgevers, verkooptarieven, onRefresh }: DetailProps) {
   if (emp.account_status === "uit_dienst") {
     return (
       <div className="mw-card">
@@ -322,11 +327,18 @@ function TabOverzicht({ emp, issues, setTab, onTogglePlanbaar }: DetailProps) {
           <div className="mw-kv"><div className="mw-kv-label">Noodcontact</div><div className="mw-kv-val">{emp.noodcontact_naam ? `${emp.noodcontact_naam} (${emp.noodcontact_tel || "—"})` : "—"}</div></div>
         </div>
       </div>
+      <DetacheringenKaart
+        medewerkerId={emp.id}
+        detacheringen={detacheringen}
+        opdrachtgevers={opdrachtgevers}
+        verkooptarieven={verkooptarieven}
+        onRefresh={onRefresh}
+      />
     </div>
   );
 }
 
-function TabDossier({ emp, contracten, tarieven, onRefresh }: DetailProps) {
+function TabDossier({ emp, contracten, tarieven, kostentarieven, onRefresh }: DetailProps) {
   const contract = contractVan(emp.id, contracten);
   const jaarTarieven = tarieven.filter((t) => t.medewerker_id === emp.id);
 
@@ -353,6 +365,7 @@ function TabDossier({ emp, contracten, tarieven, onRefresh }: DetailProps) {
   }
 
   return (
+    <div className="mw-stack">
     <div className="mw-cols">
       <div className="mw-card">
         <div className="mw-card-title">Zzp-gegevens</div>
@@ -369,6 +382,13 @@ function TabDossier({ emp, contracten, tarieven, onRefresh }: DetailProps) {
           <div className="mw-kv" key={t.jaar}><div className="mw-kv-label">{t.jaar}</div><div className="mw-kv-val">€ {Number(t.uurtarief).toFixed(2)}/u</div></div>
         ))}
       </div>
+    </div>
+    <TariefKaart
+      medewerkerId={emp.id}
+      isEigenaar={!!emp.is_eigenaar}
+      kostentarieven={kostentarieven}
+      onRefresh={onRefresh}
+    />
     </div>
   );
 }

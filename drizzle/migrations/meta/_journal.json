@@ -78,6 +78,13 @@
       "when": 1791969970296,
       "tag": "0010_protect_eigenaar_velden",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791973272826,
+      "tag": "0011_bedrijfsgegevens_vaste_kosten_per_week",
+      "breakpoints": true
     }
   ]
 }
