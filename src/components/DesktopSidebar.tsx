@@ -9,7 +9,7 @@ import terrevoltLogo from "@/assets/terrevolt-logo.svg";
 import {
   LayoutDashboard, CheckCircle, CalendarDays, FolderOpen, Users,
   BarChart3, Bell, LogOut, Search, AlertTriangle, Receipt,
-  Building2, Cpu, Euro, UserPlus, type LucideIcon,
+  Building2, Cpu, Euro, UserPlus, Wallet, type LucideIcon,
 } from "lucide-react";
 
 interface NavItem {
@@ -43,6 +43,7 @@ const MANAGER_GROEPEN: NavGroep[] = [
       { path: "/rapportage", icon: BarChart3, label: "Rapportage" },
       { path: "/inkooporders", icon: Receipt, label: "Inkooporders", badgeKey: "openOrders" },
       { path: "/beheer/tarieven", icon: Euro, label: "Tarieven" },
+      { path: "/financien", icon: Wallet, label: "Financiën" },
     ],
   },
   {
@@ -69,6 +70,7 @@ const PATH_PERMISSION_MAP: Record<string, keyof RolPermissies> = {
   "/rapportage": "zietRapportage",
   "/inkooporders": "zietAlleInkooporders",
   "/beheer/tarieven": "zietBeheer",
+  "/financien": "zietFinancien",
   "/manager-planning": "zietManagerPlanning",
   "/projecten": "zietProjecten",
   "/opdrachtgevers": "magTeamBeheren",

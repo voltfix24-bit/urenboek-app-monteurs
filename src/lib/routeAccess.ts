@@ -16,6 +16,7 @@ export const ROUTE_ACCESS: Record<string, AccessCheck> = {
   "/overuren": (p) => p.zietOveruren,
   "/rapportage": (p) => p.zietRapportage,
   "/manager-planning": (p) => p.zietManagerPlanning,
+  "/financien": (p) => p.zietFinancien,
 
   "/projecten": (p) => p.zietProjecten,
   "/projecten/:projectId/planning": (p) => p.zietProjecten,
