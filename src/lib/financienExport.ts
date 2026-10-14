@@ -98,6 +98,7 @@ export function exporteerFinancienPdf(u: FinancienUitkomst, periode: string) {
   td { padding: 6px; border-bottom: 1px solid #f0f2f5; }
   td small { display: block; color: #6c7a71; font-size: 11px; }
   .r { text-align: right; font-family: 'DM Mono', monospace; }
+  .onbekend { color: #ba1a1a; font-weight: 700; }
   .voet { margin-top: 24px; font-size: 11px; color: #6c7a71; display: flex; justify-content: space-between; }
 </style></head><body>
 <h1>Financieel overzicht</h1>
