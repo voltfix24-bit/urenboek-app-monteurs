@@ -386,7 +386,7 @@ export function berekenFinannen(input: FinancienInput): FinancienUitkomst {
   }
 
   const regels = Array.from(perProject.values()).map((r) => ({ ...r, marge: r.omzet - r.kosten }));
-  const personen_ = Array.from(perPersoon.values()).map((p) => ({ ...p, bijdrage: p.omzet - p.kosten }));
+  const personenUitkomst = Array.from(perPersoon.values()).map((p) => ({ ...p, bijdrage: p.omzet - p.kosten }));
 
   const omzetCases = regels.filter((r) => r.soort === "project").reduce((s, r) => s + r.omzet, 0);
   const omzetUitleen = regels.filter((r) => r.soort === "uitleen").reduce((s, r) => s + r.omzet, 0);
@@ -398,8 +398,8 @@ export function berekenFinannen(input: FinancienInput): FinancienUitkomst {
   const marge = omzet - kosten;
   const margePct = omzet > 0 ? (marge / omzet) * 100 : 0;
 
-  const eigenaren = personen_.filter((p) => p.is_eigenaar);
-  const nietEigenaren = personen_.filter((p) => !p.is_eigenaar);
+  const eigenaren = personenUitkomst.filter((p) => p.is_eigenaar);
+  const nietEigenaren = personenUitkomst.filter((p) => !p.is_eigenaar);
   const eigenUren = eigenaren.reduce((s, p) => s + p.uren, 0);
   const fictiefTarief = eigenaren.find((p) => p.fictief_uurtarief != null)?.fictief_uurtarief ?? null;
   const ruimte = marge - gRekening - (vasteKosten || 0);
