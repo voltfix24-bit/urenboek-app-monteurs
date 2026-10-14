@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DesktopSidebar } from "@/components/DesktopSidebar";
+import { TarievenDesktop } from "@/components/tarieven/TarievenDesktop";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { useProfile } from "@/hooks/useProfile";
@@ -44,6 +45,15 @@ export default function TarievenBeheer() {
   useEffect(() => { fetch(); }, [fetch]);
   useEffect(() => { if (!isManager) navigate("/"); }, [isManager, navigate]);
 
+  // Desktop (lg+) krijgt het nieuwe tariefscherm; mobiel blijft exact zoals het was.
+  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const luister = () => setIsDesktop(mq.matches);
+    mq.addEventListener("change", luister);
+    return () => mq.removeEventListener("change", luister);
+  }, []);
+
   const grouped = tarieven.reduce<Record<string, Tarief[]>>((acc, t) => {
     const g = t.groep || "Overig";
     (acc[g] = acc[g] || []).push(t);
@@ -73,6 +83,8 @@ export default function TarievenBeheer() {
     a.href = url; a.download = "tarieven_van_gelder.csv"; a.click();
     URL.revokeObjectURL(url);
   }
+
+  if (isDesktop) return <TarievenDesktop />;
 
   return (
     <>
