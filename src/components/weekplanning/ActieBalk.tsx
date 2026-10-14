@@ -3,14 +3,17 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { bepaalDoelen, celBezet, celKey, TIJDBLOKKEN, type BeschikbaarheidBasis, type Cel } from "@/lib/weekPlanning";
+import { bepaalDoelen, celBezet, celKey, celTelt, TIJDBLOKKEN, type BeschikbaarheidBasis, type Cel } from "@/lib/weekPlanning";
 import type { WpMedewerker, WpProject } from "@/hooks/useWeekPlanningData";
 import { DAG_KORT, korteNaam, leesRecent, projectKleur } from "./wpUtils";
 import { ProjectZoeker } from "./ProjectZoeker";
 
 export interface SelCel { medId: string; datum: string }
+export type UitleenWaarden = { werklocatie: string | null; contactpersoon: string | null; contact_telefoon: string | null };
+/** Velden die bij "Wijzigen" gekozen zijn; ontbrekende velden blijven per dag ongewijzigd. */
+export interface WijzigKeuze { project_id?: string; tijd?: [string, string]; notitie?: string; uitleen?: UitleenWaarden }
 
-/** Bepaalt doelen per losse geselecteerde cel (overslaan bij verlof/ziek/al ingepland). */
+/** Bepaalt doelen per losse geselecteerde lege cel (ingevulde cellen tellen niet mee, verlof/ziek wordt overgeslagen). */
 export function doelenVoorCellen(paren: SelCel[], cellen: Map<string, Cel>, medewerkers: WpMedewerker[], beschikbaarheid: BeschikbaarheidBasis[]) {
   const doelen: ReturnType<typeof bepaalDoelen>["doelen"] = [];
   const overgeslagen: ReturnType<typeof bepaalDoelen>["overgeslagen"] = [];
@@ -19,6 +22,7 @@ export function doelenVoorCellen(paren: SelCel[], cellen: Map<string, Cel>, mede
     const k = celKey(p.medId, p.datum);
     if (gezien.has(k)) return;
     gezien.add(k);
+    if (celBezet(cellen.get(k))) return;
     const r = bepaalDoelen([p.medId], [p.datum], cellen, medewerkers, beschikbaarheid);
     doelen.push(...r.doelen); overgeslagen.push(...r.overgeslagen);
   });
@@ -34,18 +38,17 @@ interface Props {
   projects: WpProject[];
   weekProjectIds: string[];
   projectId: string | null;
-  tijd: [string, string];
   busy: boolean;
   conceptModus: boolean;
   onProjectChange: (id: string) => void;
-  onTijdChange: (t: [string, string]) => void;
-  onPlan: (paren: SelCel[], notitie: string, uitleen?: { werklocatie: string | null; contactpersoon: string | null; contact_telefoon: string | null }) => void;
-  onClear: () => void;
+  onPlan: (paren: SelCel[], tijd: [string, string], notitie: string, uitleen?: UitleenWaarden) => void;
+  onVerwijder: (cellen: Cel[]) => void;
+  onWijzig: (cellen: Cel[], keuze: WijzigKeuze) => void;
   onClose: () => void;
 }
 
 export function ActieBalk(props: Props) {
-  const { medewerkers, selCellen, weekDates, cellen, beschikbaarheid, projects, weekProjectIds, projectId, tijd, busy } = props;
+  const { medewerkers, selCellen, weekDates, cellen, beschikbaarheid, projects, weekProjectIds, projectId, busy } = props;
   const [notitie, setNotitie] = useState("");
   const [ploegMee, setPloegMee] = useState(true);
   const project = projects.find((p) => p.id === projectId);
@@ -79,7 +82,18 @@ export function ActieBalk(props: Props) {
 
   const paren = ploegMee ? [...selCellen, ...partnerParen] : selCellen;
   const { doelen, overgeslagen } = doelenVoorCellen(paren, cellen, medewerkers, beschikbaarheid);
-  const heeftInhoud = selCellen.some((s) => celBezet(cellen.get(celKey(s.medId, s.datum))));
+  const ingevuld = selCellen.map((s) => cellen.get(celKey(s.medId, s.datum))).filter((c): c is Cel => celTelt(c));
+  const heeftInhoud = ingevuld.length > 0;
+  const [tijd, setTijd] = useState<[string, string] | null>(() => (heeftInhoud ? null : TIJDBLOKKEN[0]));
+  const [projectGekozen, setProjectGekozen] = useState(!heeftInhoud);
+  const kiesProject = (id: string) => { setProjectGekozen(true); props.onProjectChange(id); };
+  const uitleenWaarden = (): UitleenWaarden => ({ werklocatie: werklocatie.trim() || null, contactpersoon: contact.trim() || null, contact_telefoon: telefoon.trim() || null });
+  const keuze: WijzigKeuze = {
+    ...(projectGekozen && projectId ? { project_id: projectId, ...(isUitleen ? { uitleen: uitleenWaarden() } : {}) } : {}),
+    ...(tijd ? { tijd } : {}),
+    ...(notitie.trim() ? { notitie } : {}),
+  };
+  const ietsGekozen = !!(keuze.project_id || keuze.tijd || keuze.notitie);
 
   const recent = leesRecent().filter((id) => !weekProjectIds.includes(id) && projects.some((p) => p.id === id)).slice(0, 3);
   const knoppen = [...weekProjectIds.slice(0, 5), ...recent];
@@ -114,24 +128,27 @@ export function ActieBalk(props: Props) {
           const p = projects.find((x) => x.id === id);
           if (!p) return null;
           return (
-            <button key={id} type="button" className="wp-bar-btn" aria-pressed={projectId === id} title={`${p.nummer} · ${p.naam}`} onClick={() => props.onProjectChange(id)}>
+            <button key={id} type="button" className="wp-bar-btn" aria-pressed={projectGekozen && projectId === id} title={`${p.nummer} · ${p.naam}`} onClick={() => kiesProject(id)}>
               <i style={{ background: projectKleur(id, weekProjectIds).color }} /><span>{p.naam || p.nummer}</span>
             </button>
           );
         })}
-        <ProjectZoeker projects={projects} onSelect={props.onProjectChange} className="wp-bar-btn" />
+        <ProjectZoeker projects={projects} onSelect={kiesProject} className="wp-bar-btn" />
       </div>
 
       <div className="wp-bar-row">
         {TIJDBLOKKEN.map(([s, e]) => (
-          <button key={s} type="button" className="wp-bar-btn is-mono" aria-pressed={tijd[0] === s && tijd[1] === e} onClick={() => props.onTijdChange([s, e])}>{s}–{e}</button>
+          <button key={s} type="button" className="wp-bar-btn is-mono" aria-pressed={tijd?.[0] === s && tijd?.[1] === e} onClick={() => setTijd(tijd?.[0] === s && tijd?.[1] === e ? null : [s, e])}>{s}–{e}</button>
         ))}
         <span className="wp-bar-sub">8 u netto per dag (60 min pauze)</span>
         <input className="wp-bar-note" placeholder="Notitie (optioneel)" value={notitie} onChange={(e) => setNotitie(e.target.value)} aria-label="Notitie" />
-        {heeftInhoud && <button type="button" className="wp-bar-clear" disabled={busy} onClick={props.onClear}>Leegmaken</button>}
-        <button type="button" className="wp-bar-plan" disabled={busy || !projectId || doelen.length === 0} onClick={() => props.onPlan(paren, notitie, isUitleen ? { werklocatie: werklocatie.trim() || null, contactpersoon: contact.trim() || null, contact_telefoon: telefoon.trim() || null } : undefined)}>
-          Inplannen ({doelen.length})
-        </button>
+        {heeftInhoud && <button type="button" className="wp-bar-clear" disabled={busy} onClick={() => props.onVerwijder(ingevuld)}>Verwijderen ({ingevuld.length})</button>}
+        {heeftInhoud && <button type="button" className="wp-bar-btn" disabled={busy || !ietsGekozen} onClick={() => props.onWijzig(ingevuld, keuze)}>Wijzigen ({ingevuld.length})</button>}
+        {(doelen.length > 0 || !heeftInhoud) && (
+          <button type="button" className="wp-bar-plan" disabled={busy || !projectId || !projectGekozen || !tijd || doelen.length === 0} onClick={() => tijd && props.onPlan(paren, tijd, notitie, isUitleen ? uitleenWaarden() : undefined)}>
+            Inplannen ({doelen.length})
+          </button>
+        )}
       </div>
 
       {isUitleen && (

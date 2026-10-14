@@ -20,7 +20,7 @@ import {
   actieVoorBewerken, actieVoorVerwijderen, bepaalAfwezigheid, berekenUren, bouwCellen, bouwNieuwConcepten,
   celBezet, celKey, celTelt, parseWeekParam, telConcepten, type Cel, type PlanWaarden,
 } from "@/lib/weekPlanning";
-import { ActieBalk, doelenVoorCellen, type SelCel } from "./ActieBalk";
+import { ActieBalk, doelenVoorCellen, type SelCel, type WijzigKeuze } from "./ActieBalk";
 import { BewerkPaneel } from "./BewerkPaneel";
 import { PubliceerDialoog } from "./PubliceerDialoog";
 import { PerKlusWeergave } from "./PerKlusWeergave";
@@ -43,7 +43,6 @@ export default function DesktopWeekPlanning() {
   const [view, setView] = useState<"grid" | "klus">("grid");
   const [filterProject, setFilterProject] = useState<string | null>(urlProject);
   const [barProject, setBarProject] = useState<string | null>(urlProject);
-  const [tijd, setTijd] = useState<[string, string]>(["07:00", "16:00"]);
   const [selSet, setSelSet] = useState<Set<string>>(() => new Set());
   const [drag, setDrag] = useState<Drag | null>(null);
   const dragging = !!drag;
@@ -173,10 +172,10 @@ export default function DesktopWeekPlanning() {
     if (error) throw error;
   };
 
-  const plan = (paren: SelCel[], notitie: string, uitleen?: Pick<PlanWaarden, "werklocatie" | "contactpersoon" | "contact_telefoon">) => run(async () => {
+  const plan = (paren: SelCel[], tijd: [string, string], notitie: string, uitleen?: Pick<PlanWaarden, "werklocatie" | "contactpersoon" | "contact_telefoon">) => run(async () => {
     if (!profileId || !barProject) return;
     const { doelen, overgeslagen } = doelenVoorCellen(paren, cellen, medewerkers, beschikbaarheid);
-    if (doelen.length === 0) { toast.error("Niets ingepland: alle dagen zijn bezet of niet beschikbaar."); return; }
+    if (doelen.length === 0) { toast.error("Niets ingepland: geen lege, beschikbare dagen geselecteerd."); return; }
     const waarden: PlanWaarden = { project_id: barProject, starttijd: tijd[0], eindtijd: tijd[1], notitie, ...(uitleen ?? {}) };
     const rows = bouwNieuwConcepten(doelen, waarden, profileId);
     const projectNaam = projMap.get(barProject)?.naam ?? "project";
@@ -199,7 +198,7 @@ export default function DesktopWeekPlanning() {
     toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingepland op ${projectNaam}${conceptModus ? " (concept)" : ""}`, {
       action: { label: "Ongedaan maken", onClick: async () => { await supabase.from(tabel).delete().in("id", ids); refetch(); } },
     });
-    if (overgeslagen.length > 0) toast.info(`${overgeslagen.length} ${overgeslagen.length === 1 ? "dag" : "dagen"} overgeslagen (verlof, vrij of al ingepland)`);
+    if (overgeslagen.length > 0) toast.info(`${overgeslagen.length} ${overgeslagen.length === 1 ? "dag" : "dagen"} overgeslagen (verlof, ziek of vrij)`);
   });
 
   /** Voert verwijder-acties uit voor een set cellen. */
@@ -224,12 +223,87 @@ export default function DesktopWeekPlanning() {
     return { aantal: deleteIds.length + upserts.length, beschermd };
   };
 
-  const leegmaken = () => run(async () => {
-    const doel = selCellen.map((s) => cellen.get(celKey(s.medId, s.datum))).filter((c): c is Cel => celBezet(c));
+  /** Snapshot van bestaande concepten voor een set cellen, voor "Ongedaan maken". */
+  const snapshotConcepten = async (doel: Cel[]) => {
+    const ids = doel.map((c) => c.concept?.id).filter((x): x is string => !!x);
+    if (!ids.length) return [] as ConceptInsert[];
+    const { data, error } = await supabase.from("planning_concept").select("*").in("id", ids);
+    if (error) throw error;
+    return (data ?? []) as ConceptInsert[];
+  };
+  const herstelConcepten = async (doel: Cel[], vorige: ConceptInsert[]) => {
+    for (const c of doel) await supabase.from("planning_concept").delete().eq("medewerker_id", c.medewerker_id).eq("datum", c.datum);
+    if (vorige.length) await supabase.from("planning_concept").insert(vorige);
+  };
+  const dagenTekst = (n: number) => `${n} ${n === 1 ? "dag" : "dagen"}`;
+
+  const verwijderSel = (doel: Cel[]) => run(async () => {
+    if (!profileId) return;
+    let undo: () => Promise<void>;
+    if (conceptModus) {
+      const vorige = await snapshotConcepten(doel);
+      undo = () => herstelConcepten(doel, vorige);
+    } else {
+      const ids = doel.filter((c) => c.planning && !c.beschermd && c.status === "pub").map((c) => c.planning!.id);
+      const { data, error } = ids.length ? await supabase.from("planning").select("*").in("id", ids) : { data: [], error: null };
+      if (error) throw error;
+      const rijen = (data ?? []) as PlanningInsert[];
+      undo = async () => { if (rijen.length) await supabase.from("planning").insert(rijen); };
+    }
     const { aantal, beschermd } = await verwijderCellen(doel);
     wisSel();
-    toast.success(`${aantal} ${aantal === 1 ? "dag" : "dagen"} leeggemaakt${conceptModus ? " (concept)" : ""}`);
+    toast.success(`${dagenTekst(aantal)} verwijderd${conceptModus ? " (concept)" : ""}`, {
+      action: { label: "Ongedaan maken", onClick: async () => { await undo(); refetch(); } },
+    });
     if (beschermd) toast.warning(`${beschermd} ${beschermd === 1 ? "dag komt" : "dagen komen"} uit de Planner-koppeling en ${beschermd === 1 ? "is" : "zijn"} niet aangepast`);
+  });
+
+  /** Wijzigt alleen de geselecteerde cellen (niet de hele ploeg) en alleen de gekozen velden. */
+  const wijzigSel = (doel: Cel[], keuze: WijzigKeuze) => run(async () => {
+    if (!profileId) return;
+    let beschermd = 0;
+    let aantal = 0;
+    let undo: () => Promise<void>;
+    if (!conceptModus) {
+      const bewerkbaar = doel.filter((c) => c.planning && !c.beschermd);
+      beschermd = doel.length - bewerkbaar.length;
+      const vorige = bewerkbaar.map((c) => ({ id: c.planning!.id, project_id: c.planning!.project_id, starttijd: c.planning!.starttijd, eindtijd: c.planning!.eindtijd, notitie: c.planning!.notitie,
+        werklocatie: c.planning!.werklocatie ?? null, contactpersoon: c.planning!.contactpersoon ?? null, contact_telefoon: c.planning!.contact_telefoon ?? null }));
+      const patch = {
+        ...(keuze.project_id ? { project_id: keuze.project_id } : {}),
+        ...(keuze.tijd ? { starttijd: keuze.tijd[0], eindtijd: keuze.tijd[1] } : {}),
+        ...(keuze.notitie !== undefined ? { notitie: keuze.notitie } : {}),
+        ...(keuze.uitleen ?? {}),
+      };
+      const ids = bewerkbaar.map((c) => c.planning!.id);
+      if (ids.length) { const { error } = await supabase.from("planning").update(patch).in("id", ids); if (error) throw error; }
+      if (ids.length) await markeerDefinitief(bewerkbaar.map((c) => keuze.project_id ?? c.project_id));
+      aantal = ids.length;
+      undo = async () => { for (const { id, ...v } of vorige) await supabase.from("planning").update(v).eq("id", id); };
+    } else {
+      const vorige = await snapshotConcepten(doel);
+      for (const c of doel) {
+        const waarden: PlanWaarden = {
+          project_id: keuze.project_id ?? c.project_id ?? "",
+          starttijd: keuze.tijd?.[0] ?? c.starttijd ?? "07:00",
+          eindtijd: keuze.tijd?.[1] ?? c.eindtijd ?? "16:00",
+          notitie: keuze.notitie ?? c.notitie ?? "",
+          ...(keuze.uitleen ?? {}),
+        };
+        if (!waarden.project_id) continue;
+        const a = actieVoorBewerken(c, waarden, profileId);
+        if (a.type === "update-concept") { const { error } = await supabase.from("planning_concept").update(a.patch).eq("id", a.id); if (error) throw error; aantal++; }
+        else if (a.type === "upsert") { const { error } = await supabase.from("planning_concept").upsert(a.rij as ConceptInsert, { onConflict: "medewerker_id,datum" }); if (error) throw error; aantal++; }
+        else if (a.type === "beschermd") beschermd++;
+      }
+      undo = () => herstelConcepten(doel, vorige);
+    }
+    if (keuze.project_id) { bewaarRecent(keuze.project_id); await markeerGepland([keuze.project_id]); }
+    wisSel();
+    toast.success(`${dagenTekst(aantal)} gewijzigd${conceptModus ? " (concept)" : ""}`, {
+      action: { label: "Ongedaan maken", onClick: async () => { await undo(); refetch(); } },
+    });
+    if (beschermd) toast.warning("Dagen uit de Planner-koppeling zijn niet aangepast");
   });
 
   const ploegVan = (cel: Cel) => cel.planning_group_id
@@ -528,13 +602,12 @@ export default function DesktopWeekPlanning() {
           projects={projects}
           weekProjectIds={weekProjectIds}
           projectId={barProject}
-          tijd={tijd}
           busy={busy}
           conceptModus={conceptModus}
           onProjectChange={setBarProject}
-          onTijdChange={setTijd}
           onPlan={plan}
-          onClear={leegmaken}
+          onVerwijder={verwijderSel}
+          onWijzig={wijzigSel}
           onClose={wisSel}
         />
       )}
