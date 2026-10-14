@@ -397,8 +397,8 @@ export default function Projecten() {
         </header>
 
         <div className="pj-filters" role="toolbar" aria-label="Filter op fase">
-          {[{ key: "lopend", label: "Lopend", dot: null }, { key: "aandacht", label: "Aandacht nodig", dot: "var(--danger)" },
-            ...STATUS_VOLGORDE.map(s => ({ key: s, label: STATUS_CONFIG[s].label, dot: STATUS_CONFIG[s].dot as string })), { key: "uitleen", label: "Uitleen", dot: "var(--text-muted)" }].map(f => (
+          {[{ key: "alle", label: "Alles", dot: null }, { key: "lopend", label: "Lopend", dot: null }, { key: "aandacht", label: "Aandacht nodig", dot: "var(--danger)" },
+            { key: "uitleen", label: "Uitleen", dot: "var(--text-muted)" }, { key: "afgerond", label: "Afgerond", dot: null }].map(f => (
             <button key={f.key} type="button" className="pj-chip" aria-pressed={deskFase === f.key} onClick={() => setDeskFase(f.key)}>
               {f.dot && <i style={{ background: f.dot }} />}{f.label}<b>{deskCounts[f.key] ?? 0}</b>
             </button>
@@ -410,7 +410,7 @@ export default function Projecten() {
         </div>
 
         <div className="pj-columns">
-          <DesktopProjectLijst projects={desktopProjects} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} toonMarge={permissies.zietProjectFinancien} loading={loading} uitleenWeekUren={uitleenWeekUren} />
+          <DesktopProjectLijst projects={desktopProjects} groepen={deskFase === "alle" ? desktopGroepen : undefined} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedId={selectedId} onSelect={p => { setSelectedId(p.id); setDesktopMode("view"); setEditId(null); setForm(emptyForm); }} margeMap={margeMap} toonMarge={permissies.zietProjectFinancien} loading={loading} uitleenWeekUren={uitleenWeekUren} />
 
           <div className="pj-detail">
             {desktopMode === "add" ? (
@@ -459,10 +459,10 @@ export default function Projecten() {
             <div style={{ display: "flex", gap: 8, marginBottom: 24, overflowX: "auto", scrollbarWidth: "none" }}>
               {[
                 { key: "alle", label: "Alles" },
-                { key: "actief", label: `Actief (${activeProjects.length})` },
-                { key: "concept", label: `Concept (${projects.filter(p => p.status === "concept").length})` },
-                { key: "afgerond", label: "Voltooid" },
+                { key: "lopend", label: `Lopend (${projects.filter(p => matchFase(p, "lopend")).length})` },
+                { key: "aandacht", label: `Aandacht nodig (${projects.filter(p => matchFase(p, "aandacht")).length})` },
                 { key: "uitleen", label: `Uitleen (${projects.filter(isUitleen).length})` },
+                { key: "afgerond", label: `Afgerond (${projects.filter(p => matchFase(p, "afgerond")).length})` },
               ].map(f => (
                 <button key={f.key} onClick={() => setStatusFilter(f.key)} style={{
                   padding: "8px 16px", borderRadius: 9999,
