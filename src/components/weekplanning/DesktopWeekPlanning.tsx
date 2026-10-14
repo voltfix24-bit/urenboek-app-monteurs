@@ -176,7 +176,23 @@ export default function DesktopWeekPlanning() {
   const plan = (paren: SelCel[], notitie: string, uitleen?: Pick<PlanWaarden, "werklocatie" | "contactpersoon" | "contact_telefoon">) => run(async () => {
     if (!profileId || !barProject) return;
     const { doelen, overgeslagen } = doelenVoorCellen(paren, cellen, medewerkers, beschikbaarheid);
-...
+    if (doelen.length === 0) { toast.error("Niets ingepland: alle dagen zijn bezet of niet beschikbaar."); return; }
+    const waarden: PlanWaarden = { project_id: barProject, starttijd: tijd[0], eindtijd: tijd[1], notitie, ...(uitleen ?? {}) };
+    const rows = bouwNieuwConcepten(doelen, waarden, profileId);
+    const projectNaam = projMap.get(barProject)?.naam ?? "project";
+    let ids: string[] = [];
+    if (conceptModus) {
+      const { data, error } = await supabase.from("planning_concept").insert(rows as ConceptInsert[]).select("id");
+      if (error) throw error;
+      ids = (data ?? []).map((r) => r.id);
+    } else {
+      const direct: PlanningInsert[] = rows.map(({ actie: _a, planning_id: _p, ...r }) => r);
+      const { data, error } = await supabase.from("planning").insert(direct).select("id");
+      if (error) throw error;
+      ids = (data ?? []).map((r) => r.id);
+      await markeerDefinitief([barProject]);
+    }
+    bewaarRecent(barProject);
     await markeerGepland([barProject]);
     wisSel();
     const tabel = conceptModus ? "planning_concept" : "planning";
