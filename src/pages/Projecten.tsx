@@ -23,7 +23,7 @@ import { DesktopProjectDetail, DesktopFormPanel } from "@/components/projecten/D
 import { valideer, projectSchema, projectEditSchema } from "@/lib/validatie";
 import { ListSkeleton, ProjectCardSkeleton } from "@/components/ui/Skeletons";
 import { Button } from "@/components/ui/button";
-import { STATUS_CONFIG, STATUS_VOLGORDE, projectGroep } from "@/lib/projectStatus";
+import { projectGroep } from "@/lib/projectStatus";
 import { isLopend, openPunten } from "@/lib/projectChecklist";
 import { UitleenUrenKaart } from "@/components/projecten/UitleenUrenKaart";
 import { endOfISOWeek, format as fmtDatum, startOfISOWeek } from "date-fns";
