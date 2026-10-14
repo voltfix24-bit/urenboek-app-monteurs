@@ -19,6 +19,7 @@ import { useProjectInzet } from "@/hooks/useProjectInzet";
 import { berekenUren } from "@/lib/weekPlanning";
 import { formatUren } from "@/lib/formatting";
 import { UitleenUrenKaart } from "./UitleenUrenKaart";
+import { UitleenDetacheringen } from "./UitleenDetacheringen";
 
 const initialen = (n: string) => n.split(" ").filter(Boolean).map((d) => d[0]).slice(0, 2).join("").toUpperCase();
 const isoWeek = (datum: string) => { const d = new Date(`${datum}T12:00:00`); return `${getISOWeekYear(d)}-W${String(getISOWeek(d)).padStart(2, "0")}`; };
@@ -187,6 +188,7 @@ export function DesktopProjectDetail({ project, ogNaam, isManager, zietFinancien
             </dl>
           </section>
           <UitleenUrenKaart projectId={project.id} />
+          <UitleenDetacheringen projectId={project.id} opdrachtgeverId={project.opdrachtgever_id ?? null} />
         </div>
       )}
 
