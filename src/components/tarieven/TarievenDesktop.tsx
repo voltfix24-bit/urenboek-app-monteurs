@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { adminProjects } from "@/lib/projectsAdmin";
+import { DesktopSidebar } from "@/components/DesktopSidebar";
+import { useNavBadges } from "@/hooks/useNavBadges";
 import { euroDecimals as fmt } from "@/lib/formatting";
 import { toast } from "sonner";
 import { AlertTriangle, ChevronDown, ChevronRight, Pencil, Plus } from "lucide-react";
@@ -84,7 +86,7 @@ export function TarievenDesktop() {
   const huidigeKost = useMemo(() => {
     const perPersoon = new Map<string, KostentariefRij>();
     for (const r of kost) {
-      const bestaand = perPerPersoon(perPersoon, r.medewerker_id);
+      const bestaand = perPersoon.get(r.medewerker_id);
       if (!bestaand || r.geldig_vanaf > bestaand.geldig_vanaf) perPersoon.set(r.medewerker_id, r);
     }
     return perPersoon;
@@ -153,7 +155,16 @@ export function TarievenDesktop() {
   if (loading) return <div className="fn-body"><Spinner padding="py-10" /></div>;
 
   return (
-    <div className="fn-body">
+    <>
+      <DesktopSidebar badges={badges} />
+      <div className="fn-root">
+        <header className="fn-header">
+          <div>
+            <h1 className="fn-title">Tarieven</h1>
+            <p className="fn-subtitle">Verkooptarieven per opdrachtgever en rol, kostentarieven per professional. Elk tarief heeft een ingangsdatum; oude rijen blijven staan.</p>
+          </div>
+        </header>
+      <div className="fn-body">
       <div className="fn-mode" role="group" aria-label="Tariefsoort">
         <button aria-pressed={tab === "verkoop"} onClick={() => setTab("verkoop")}>Verkooptarieven</button>
         <button aria-pressed={tab === "kost"} onClick={() => setTab("kost")}>Kostentarieven</button>
@@ -299,6 +310,10 @@ export function TarievenDesktop() {
       )}
     </div>
   );
+}
+
+function perPerPersoon(map: Map<string, KostentariefRij>, id: string) {
+  return map.get(id);
 }
 
 function perPerPersoon(map: Map<string, KostentariefRij>, id: string) {
