@@ -46,7 +46,7 @@ export default function DesktopWeekPlanning() {
   const [groepMode, setGroepMode] = useState<GroepMode>("geen");
   const [toonMode, setToonMode] = useState<ToonMode>("iedereen");
   const [vrijFilter, setVrijFilter] = useState<string | null>(null);
-  const { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, boekingen, detacheringen, weekgrens, loading, refetch } = useWeekPlanningData(weekStart, weeksCount);
+  const { gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, boekingen, detacheringen, weekgrens, loading, refetch } = useWeekPlanningData(weekStart, weeksCount);
   const [aandachtFilter, setAandachtFilter] = useState<null | "dubbel" | "weekgrens" | "leeg" | "afwijkend">(null);
 
   const conceptModus = true;
@@ -140,16 +140,8 @@ export default function DesktopWeekPlanning() {
     const delen: string[] = [];
     const afw = bepaalAfwezigheid(medMap.get(cel.medewerker_id), cel.datum, beschikbaarheid);
     if (afw) delen.push(`${AFW_CEL[afw]} maar wel ingepland op ${projMap.get(cel.project_id ?? "")?.naam ?? "een project"}`);
-    // Waarschuwing (geen blokkade): geen geldige aanwijzing of VCA op deze dag
-    if (bevoegdheden) {
-      const b = bevoegdheden.get(cel.medewerker_id);
-      if (!b?.aanwijzingTot) delen.push("geen aanwijzing");
-      else if (b.aanwijzingTot < cel.datum) delen.push("alle aanwijzingen verlopen");
-      if (!b?.vcaTot) delen.push("geen VCA VOL");
-      else if (b.vcaTot < cel.datum) delen.push("VCA VOL verlopen");
-    }
     return delen.length ? `${naam}: ${delen.join(" · ")}` : null;
-  }, [medMap, projMap, beschikbaarheid, bevoegdheden, dubbelTekst]);
+  }, [medMap, projMap, beschikbaarheid, dubbelTekst]);
 
   const alleConflicten = useMemo(() => celLijst.map(conflictTekst).filter((x): x is string => !!x), [celLijst, conflictTekst]);
   const tellers = telConcepten(concepten);

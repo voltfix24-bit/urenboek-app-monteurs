@@ -12,14 +12,11 @@ export interface WpProject { id: string; naam: string; nummer: string; straat?: 
 const ROL_PRIORITEIT: Record<string, number> = { manager: 5, uitvoerder: 4, wv: 3, schakelmonteur: 2, monteur: 1 };
 
 /** Data voor de desktop-weekplanning: gepubliceerde planning + concepten voor ma–vr × N weken. */
-/** Bevoegdheid per medewerker: laatste geldig_tot van aanwijzingen en VCA (null = geen). */
-export interface WpBevoegdheid { aanwijzingTot: string | null; vcaTot: string | null }
 export interface WpGelezen { gelezen_op: string | null; laatst_gepubliceerd_op: string | null }
 export interface WpBoeking { medewerker_id: string; datum: string; uren: number }
 
 export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
   const { isManager } = useAuth();
-  const [bevoegdheden, setBevoegdheden] = useState<Map<string, WpBevoegdheid> | null>(null);
   const [gelezen, setGelezen] = useState<Map<string, WpGelezen> | null>(null);
   const [planning, setPlanning] = useState<PlanningRij[]>([]);
   const [concepten, setConcepten] = useState<ConceptRij[]>([]);
@@ -41,7 +38,7 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
         .select("id, medewerker_id, project_id, datum, starttijd, eindtijd, notitie, activiteit, activiteit_kleur, planning_group_id, collega_ids, external_source, sync_locked, werklocatie, contactpersoon, contact_telefoon")
         .gte("datum", startStr).lte("datum", endStr),
       supabase.from("planning_concept").select("*").gte("datum", startStr).lte("datum", endStr),
-      supabase.from("profiles").select("id, user_id, full_name, vaste_vrije_dagen, planning_partner_ids, ploeg").eq("account_status", "active").eq("planbaar", true).eq("is_onderaannemer", false).order("full_name"),
+      supabase.from("profiles").select("id, user_id, full_name, vaste_vrije_dagen, planning_partner_ids, ploeg").eq("account_status", "active").eq("is_onderaannemer", false).order("full_name"),
       planningProjects().select("id, naam, nummer, straat, postcode, stad, adres, soort, contactpersoon_naam, contactpersoon_tel").eq("active", true).order("nummer"),
       supabase.from("beschikbaarheid").select("id, medewerker_id, datum_van, datum_tot, type, status").eq("status", "goedgekeurd").lte("datum_van", endStr).gte("datum_tot", startStr),
       supabase.from("user_roles").select("user_id, role"),
@@ -50,24 +47,13 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
       supabase.from("projects").select("id, benodigd_per_dag").eq("active", true),
       supabase.from("detacheringen").select("medewerker_id, project_id, opdrachtgever_id, rol, van, tot").order("van"),
     ]);
-    // Aanwijzingen/certificaten zijn alleen voor managers leesbaar; anders geen waarschuwingen tonen.
+    // Gelezen-status is alleen voor managers leesbaar.
     if (isManager) {
-      const [aw, cert, gel] = await Promise.all([
-        supabase.from("aanwijzingen").select("medewerker_id, geldig_tot"),
-        supabase.from("certificaten").select("medewerker_id, vervaldatum").eq("type", "VCA"),
-        supabase.from("planning_gelezen").select("medewerker_id, gelezen_op, laatst_gepubliceerd_op"),
-      ]);
-      if (!aw.error && !cert.error) {
-        const m = new Map<string, WpBevoegdheid>();
-        const get = (id: string) => { let b = m.get(id); if (!b) { b = { aanwijzingTot: null, vcaTot: null }; m.set(id, b); } return b; };
-        (aw.data ?? []).forEach((r) => { const b = get(r.medewerker_id); if (!b.aanwijzingTot || r.geldig_tot > b.aanwijzingTot) b.aanwijzingTot = r.geldig_tot; });
-        (cert.data ?? []).forEach((r) => { const b = get(r.medewerker_id); if (!b.vcaTot || r.vervaldatum > b.vcaTot) b.vcaTot = r.vervaldatum; });
-        setBevoegdheden(m);
-      } else setBevoegdheden(null);
+      const gel = await supabase.from("planning_gelezen").select("medewerker_id, gelezen_op, laatst_gepubliceerd_op");
       if (!gel.error) {
         setGelezen(new Map((gel.data ?? []).map((g) => [g.medewerker_id, { gelezen_op: g.gelezen_op, laatst_gepubliceerd_op: g.laatst_gepubliceerd_op }])));
       } else setGelezen(null);
-    } else { setBevoegdheden(null); setGelezen(null); }
+    } else { setGelezen(null); }
     const rolMap = new Map<string, string>();
     (roles.data ?? []).forEach((r) => {
       const prev = rolMap.get(r.user_id);
@@ -99,5 +85,5 @@ export function useWeekPlanningData(weekStart: Date, weeks: number = 1) {
     return () => { supabase.removeChannel(channel); };
   }, [fetchAll]);
 
-  return { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, conceptModus, boekingen, detacheringen, weekgrens, loading, refetch: fetchAll };
+  return { gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, conceptModus, boekingen, detacheringen, weekgrens, loading, refetch: fetchAll };
 }
