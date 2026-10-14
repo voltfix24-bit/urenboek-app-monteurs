@@ -921,3 +921,13 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .pj-avatar { display: inline-flex; width: 28px; height: 28px; flex: 0 0 28px; align-items: center; justify-content: center; border-radius: 50%; background: var(--planning-avatar-bg); color: var(--info-dark); font-size: 11px; font-weight: 700; }
 .pj-concept-tag { padding: 1px 6px; border-radius: 5px; background: var(--wp-concept-bg); color: var(--wp-concept-text); font-size: 11px; font-weight: 700; }
 .pj-empty { display: flex; height: 100%; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); font-size: 14px; }
+
+/* Groepkoppen in de projectlijst (Lopende klussen / Uitleen / Afgerond / Archief) */
+.pj-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  padding: 12px 12px 4px;
+}
