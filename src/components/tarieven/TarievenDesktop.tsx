@@ -32,6 +32,7 @@ const vandaag = () => new Date().toISOString().slice(0, 10);
  */
 export function TarievenDesktop() {
   const { profile } = useProfile();
+  const { badges } = useNavBadges();
   const [tab, setTab] = useState<Tab>("verkoop");
   const [verkoop, setVerkoop] = useState<VerkooptariefRij[]>([]);
   const [kost, setKost] = useState<KostentariefRij[]>([]);
