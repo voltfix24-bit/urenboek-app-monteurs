@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { useSearchParams } from "react-router-dom";
 import { addDays, addWeeks, format, getISOWeek, isSameDay, startOfISOWeek } from "date-fns";
 import { nl } from "date-fns/locale";
-import { ChevronDown, ChevronLeft, ChevronRight, Copy, Crosshair, Lock } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Copy, Crosshair, Lock, Keyboard, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesInsert } from "@/integrations/supabase/types";
@@ -10,6 +10,9 @@ import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { HerhaalDialoog, type RepeatChoice } from "./HerhaalDialoog";
+import { copyDays, transferTargets, splitCellKey, type GridPoint, type ClipboardDay } from "@/lib/weekPlanningV2";
 import { Spinner } from "@/components/ui/Spinner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,11 +27,11 @@ import { ActieBalk, doelenVoorCellen, type SelCel, type WijzigKeuze } from "./Ac
 import { BewerkPaneel } from "./BewerkPaneel";
 import { PubliceerDialoog } from "./PubliceerDialoog";
 import { PerKlusWeergave } from "./PerKlusWeergave";
-import { bewaarRecent, DAG_KORT, initialen, korteNaam, projectKleur, rolLabel } from "./wpUtils";
+import { bewaarRecent, leesRecent, DAG_KORT, initialen, korteNaam, projectKleur, rolLabel } from "./wpUtils";
 
 type ConceptInsert = TablesInsert<"planning_concept">;
-type PlanningInsert = TablesInsert<"planning">;
-interface Drag { r0: number; c0: number; r1: number; c1: number; base: Set<string>; additief: boolean }
+
+interface Drag { r0: number; c0: number; r1: number; c1: number; base: Set<string>; additief: boolean; moving?: boolean; copy?: boolean; sources?: Set<string> }
 
 const AFW_CEL: Record<string, string> = { verlof: "Verlof", ziek: "Ziek", vrij: "Vaste vrije dag", elders: "Andere opdracht" };
 
@@ -38,8 +41,16 @@ export default function DesktopWeekPlanning() {
   const [searchParams] = useSearchParams();
   const urlProject = searchParams.get("project");
   const [weekStart, setWeekStart] = useState(() => parseWeekParam(searchParams.get("week")) ?? startOfISOWeek(new Date()));
-  const { planning, concepten, medewerkers, projects, beschikbaarheid, conceptModus, loading, refetch } = useWeekPlanningData(weekStart);
+  const { planning, concepten, medewerkers, projects, beschikbaarheid, loading, refetch } = useWeekPlanningData(weekStart);
 
+  const conceptModus = true;
+  const [cursor, setCursor] = useState<GridPoint | null>(null);
+  const [clipboard, setClipboard] = useState<ClipboardDay[]>([]);
+  const [repeatOpen, setRepeatOpen] = useState(false);
+  const undoStack = useRef<Array<() => Promise<void>>>([]);
+  const undoBusy = useRef(false);
+  const pendingCursor = useRef<(GridPoint & { week: string }) | null>(null);
+  const lastTime = useRef<[string, string]>(["07:00", "16:00"]);
   const [view, setView] = useState<"grid" | "klus">("grid");
   const [filterProject, setFilterProject] = useState<string | null>(urlProject);
   const [barProject, setBarProject] = useState<string | null>(urlProject);
@@ -49,6 +60,7 @@ export default function DesktopWeekPlanning() {
   const [panelKey, setPanelKey] = useState<string | null>(null);
   const [publishOpen, setPublishOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const mutationBusy = useRef(false);
   const dragRef = useRef<Drag | null>(null);
   dragRef.current = drag;
 
@@ -111,7 +123,7 @@ export default function DesktopWeekPlanning() {
         if (rijen[r]) keys.push(celKey(rijen[r].id, datums[c]));
     return keys;
   };
-  const effSel = useMemo(() => (drag ? new Set([...drag.base, ...rectKeys(drag)]) : selSet), [drag, selSet, rijen, datums]); // eslint-disable-line react-hooks/exhaustive-deps
+  const effSel = useMemo(() => (drag && !drag.moving ? new Set([...drag.base, ...rectKeys(drag)]) : selSet), [drag, selSet, rijen, datums]); // eslint-disable-line react-hooks/exhaustive-deps
   const selCellen: SelCel[] = Array.from(selSet).map((k) => { const i = k.indexOf("|"); return { medId: k.slice(0, i), datum: k.slice(i + 1) }; });
   const selKeyStr = Array.from(selSet).sort().join(",");
   const inSel = (r: number, c: number) => !!rijen[r] && effSel.has(celKey(rijen[r].id, datums[c]));
@@ -125,6 +137,7 @@ export default function DesktopWeekPlanning() {
       if (!d) return;
       const enkel = d.r0 === d.r1 && d.c0 === d.c1;
       const key = rijen[d.r0] ? celKey(rijen[d.r0].id, datums[d.c0]) : null;
+      if (!enkel && d.moving) { void transfer(d); return; }
       if (enkel && key && d.additief) {
         const next = new Set(d.base);
         if (next.has(key)) next.delete(key); else next.add(key);
@@ -139,39 +152,21 @@ export default function DesktopWeekPlanning() {
     return () => document.removeEventListener("mouseup", up);
   }, [dragging, rijen, datums, cellen]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => { setSelSet(new Set()); setPanelKey(null); if (!pendingCursor.current) setCursor(null); }, [weekStart]);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !panelKey) setSelSet(new Set()); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [panelKey]);
-
-  useEffect(() => { setSelSet(new Set()); setPanelKey(null); }, [weekStart]);
+    if (loading || !pendingCursor.current || pendingCursor.current.week !== datums[0]) return;
+    const p = pendingCursor.current;
+    pendingCursor.current = null;
+    const med = rijen[p.row];
+    if (med) { setCursor(p); setSelSet(new Set([celKey(med.id, datums[p.day])])); }
+  }, [loading, datums, rijen]);
 
   // ── Schrijfacties ──
   const run = async (fn: () => Promise<void>) => {
-    if (busy) return;
+    if (mutationBusy.current) return;
+    mutationBusy.current = true;
     setBusy(true);
-    try { await fn(); } catch (err) { console.error(err); toast.error("Er ging iets mis. Probeer opnieuw."); } finally { setBusy(false); refetch(); }
-  };
-
-  /** Project met fase "nieuw" gaat naar "gepland" zodra er een concept of planning voor bestaat. */
-  const markeerGepland = async (projectIds: string[]) => {
-    const ids = Array.from(new Set(projectIds));
-    if (!ids.length || !profileId) return;
-    await supabase.from("projects").update({ status: "gepland", status_gewijzigd_op: new Date().toISOString(), status_gewijzigd_door: profileId })
-      .in("id", ids).eq("status", "nieuw");
-  };
-
-  /** Directe modus: inplannen zet het project op definitief, zodat monteurs uren kunnen boeken. */
-  const markeerDefinitief = async (projectIds: (string | null | undefined)[]) => {
-    const ids = Array.from(new Set(projectIds.filter((x): x is string => !!x)));
-    if (!ids.length || !profileId) return;
-    const nu = new Date().toISOString();
-    const { error } = await supabase.from("project_planning_status").upsert(
-      ids.map((project_id) => ({ project_id, is_definitief: true, definitief_op: nu, definitief_door: profileId })),
-      { onConflict: "project_id" },
-    );
-    if (error) throw error;
+    try { await fn(); } catch (err) { console.error(err); toast.error("Er ging iets mis. Probeer opnieuw."); } finally { await refetch(); mutationBusy.current = false; setBusy(false); }
   };
 
   const plan = (paren: SelCel[], tijd: [string, string], notitie: string, uitleen?: Pick<PlanWaarden, "werklocatie" | "contactpersoon" | "contact_telefoon">) => run(async () => {
@@ -181,41 +176,25 @@ export default function DesktopWeekPlanning() {
     const waarden: PlanWaarden = { project_id: barProject, starttijd: tijd[0], eindtijd: tijd[1], notitie, ...(uitleen ?? {}) };
     const rows = bouwNieuwConcepten(doelen, waarden, profileId);
     const projectNaam = projMap.get(barProject)?.naam ?? "project";
-    let ids: string[] = [];
-    if (conceptModus) {
-      const { data, error } = await supabase.from("planning_concept").insert(rows as ConceptInsert[]).select("id");
-      if (error) throw error;
-      ids = (data ?? []).map((r) => r.id);
-    } else {
-      const direct: PlanningInsert[] = rows.map(({ actie: _a, planning_id: _p, ...r }) => r);
-      const { data, error } = await supabase.from("planning").insert(direct).select("id");
-      if (error) throw error;
-      ids = (data ?? []).map((r) => r.id);
-      await markeerDefinitief([barProject]);
-    }
+    const undo = await capture(rows);
+    const { data, error } = await supabase.from("planning_concept").insert(rows as ConceptInsert[]).select("id");
+    if (error) throw error;
+    const ids = (data ?? []).map((r) => r.id);
+    lastTime.current = tijd;
     bewaarRecent(barProject);
-    await markeerGepland([barProject]);
     wisSel();
-    const tabel = conceptModus ? "planning_concept" : "planning";
-    toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingepland op ${projectNaam}${conceptModus ? " (concept)" : ""}`, {
-      action: { label: "Ongedaan maken", onClick: async () => { await supabase.from(tabel).delete().in("id", ids); refetch(); } },
-    });
+    rememberUndo(undo);
+    toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingepland op ${projectNaam} (concept)`, undoToast(undo));
     if (overgeslagen.length > 0) toast.info(`${overgeslagen.length} ${overgeslagen.length === 1 ? "dag" : "dagen"} overgeslagen (verlof, ziek of vrij)`);
   });
 
   /** Voert verwijder-acties uit voor een set cellen. */
   const verwijderCellen = async (doel: Cel[]) => {
     let beschermd = 0;
-    if (!conceptModus) {
-      const ids = doel.filter((c) => c.planning && !c.beschermd && c.status === "pub").map((c) => c.planning!.id);
-      beschermd = doel.filter((c) => c.beschermd).length;
-      if (ids.length) { const { error } = await supabase.from("planning").delete().in("id", ids); if (error) throw error; }
-      return { aantal: ids.length, beschermd };
-    }
     const deleteIds: string[] = [];
     const upserts: ConceptInsert[] = [];
     doel.forEach((c) => {
-      const a = actieVoorVerwijderen(c, profileId!);
+      const a = actieVoorVerwijderen(c, profileId ?? "");
       if (a.type === "delete-concept") deleteIds.push(a.id);
       else if (a.type === "upsert") upserts.push(a.rij as ConceptInsert);
       else if (a.type === "beschermd") beschermd++;
@@ -225,38 +204,15 @@ export default function DesktopWeekPlanning() {
     return { aantal: deleteIds.length + upserts.length, beschermd };
   };
 
-  /** Snapshot van bestaande concepten voor een set cellen, voor "Ongedaan maken". */
-  const snapshotConcepten = async (doel: Cel[]) => {
-    const ids = doel.map((c) => c.concept?.id).filter((x): x is string => !!x);
-    if (!ids.length) return [] as ConceptInsert[];
-    const { data, error } = await supabase.from("planning_concept").select("*").in("id", ids);
-    if (error) throw error;
-    return (data ?? []) as ConceptInsert[];
-  };
-  const herstelConcepten = async (doel: Cel[], vorige: ConceptInsert[]) => {
-    for (const c of doel) await supabase.from("planning_concept").delete().eq("medewerker_id", c.medewerker_id).eq("datum", c.datum);
-    if (vorige.length) await supabase.from("planning_concept").insert(vorige);
-  };
   const dagenTekst = (n: number) => `${n} ${n === 1 ? "dag" : "dagen"}`;
 
   const verwijderSel = (doel: Cel[]) => run(async () => {
     if (!profileId) return;
-    let undo: () => Promise<void>;
-    if (conceptModus) {
-      const vorige = await snapshotConcepten(doel);
-      undo = () => herstelConcepten(doel, vorige);
-    } else {
-      const ids = doel.filter((c) => c.planning && !c.beschermd && c.status === "pub").map((c) => c.planning!.id);
-      const { data, error } = ids.length ? await supabase.from("planning").select("*").in("id", ids) : { data: [], error: null };
-      if (error) throw error;
-      const rijen = (data ?? []) as PlanningInsert[];
-      undo = async () => { if (rijen.length) await supabase.from("planning").insert(rijen); };
-    }
+    const undo = await capture(doel);
     const { aantal, beschermd } = await verwijderCellen(doel);
+    rememberUndo(undo);
     wisSel();
-    toast.success(`${dagenTekst(aantal)} verwijderd${conceptModus ? " (concept)" : ""}`, {
-      action: { label: "Ongedaan maken", onClick: async () => { await undo(); refetch(); } },
-    });
+    toast.success(`${dagenTekst(aantal)} verwijderd (concept)`, undoToast(undo));
     if (beschermd) toast.warning(`${beschermd} ${beschermd === 1 ? "dag komt" : "dagen komen"} uit de Planner-koppeling en ${beschermd === 1 ? "is" : "zijn"} niet aangepast`);
   });
 
@@ -265,25 +221,8 @@ export default function DesktopWeekPlanning() {
     if (!profileId) return;
     let beschermd = 0;
     let aantal = 0;
-    let undo: () => Promise<void>;
-    if (!conceptModus) {
-      const bewerkbaar = doel.filter((c) => c.planning && !c.beschermd);
-      beschermd = doel.length - bewerkbaar.length;
-      const vorige = bewerkbaar.map((c) => ({ id: c.planning!.id, project_id: c.planning!.project_id, starttijd: c.planning!.starttijd, eindtijd: c.planning!.eindtijd, notitie: c.planning!.notitie,
-        werklocatie: c.planning!.werklocatie ?? null, contactpersoon: c.planning!.contactpersoon ?? null, contact_telefoon: c.planning!.contact_telefoon ?? null }));
-      const patch = {
-        ...(keuze.project_id ? { project_id: keuze.project_id } : {}),
-        ...(keuze.tijd ? { starttijd: keuze.tijd[0], eindtijd: keuze.tijd[1] } : {}),
-        ...(keuze.notitie !== undefined ? { notitie: keuze.notitie } : {}),
-        ...(keuze.uitleen ?? {}),
-      };
-      const ids = bewerkbaar.map((c) => c.planning!.id);
-      if (ids.length) { const { error } = await supabase.from("planning").update(patch).in("id", ids); if (error) throw error; }
-      if (ids.length) await markeerDefinitief(bewerkbaar.map((c) => keuze.project_id ?? c.project_id));
-      aantal = ids.length;
-      undo = async () => { for (const { id, ...v } of vorige) await supabase.from("planning").update(v).eq("id", id); };
-    } else {
-      const vorige = await snapshotConcepten(doel);
+    const undo = await capture(doel);
+    {
       for (const c of doel) {
         const waarden: PlanWaarden = {
           project_id: keuze.project_id ?? c.project_id ?? "",
@@ -298,13 +237,13 @@ export default function DesktopWeekPlanning() {
         else if (a.type === "upsert") { const { error } = await supabase.from("planning_concept").upsert(a.rij as ConceptInsert, { onConflict: "medewerker_id,datum" }); if (error) throw error; aantal++; }
         else if (a.type === "beschermd") beschermd++;
       }
-      undo = () => herstelConcepten(doel, vorige);
+
     }
-    if (keuze.project_id) { bewaarRecent(keuze.project_id); await markeerGepland([keuze.project_id]); }
+    if (aantal) rememberUndo(undo);
+    if (keuze.tijd) lastTime.current = keuze.tijd;
+    if (keuze.project_id) bewaarRecent(keuze.project_id);
     wisSel();
-    toast.success(`${dagenTekst(aantal)} gewijzigd${conceptModus ? " (concept)" : ""}`, {
-      action: { label: "Ongedaan maken", onClick: async () => { await undo(); refetch(); } },
-    });
+    toast.success(`${dagenTekst(aantal)} gewijzigd (concept)`, undoToast(undo));
     if (beschermd) toast.warning("Dagen uit de Planner-koppeling zijn niet aangepast");
   });
 
@@ -326,10 +265,10 @@ export default function DesktopWeekPlanning() {
     for (const p of paren) {
       const recs = beschikbaarheid.filter((b) => b.id && b.medewerker_id === p.medId && b.type === ELDERS_TYPE && p.datum >= b.datum_van && p.datum <= b.datum_tot);
       for (const b of recs) {
-        if (b.datum_van === b.datum_tot) { const { error } = await supabase.from("beschikbaarheid").delete().eq("id", b.id!); if (error) throw error; continue; }
-        if (b.datum_van === p.datum) { await supabase.from("beschikbaarheid").update({ datum_van: dag(p.datum, 1) }).eq("id", b.id!); continue; }
-        if (b.datum_tot === p.datum) { await supabase.from("beschikbaarheid").update({ datum_tot: dag(p.datum, -1) }).eq("id", b.id!); continue; }
-        await supabase.from("beschikbaarheid").update({ datum_tot: dag(p.datum, -1) }).eq("id", b.id!);
+        if (b.datum_van === b.datum_tot) { const { error } = await supabase.from("beschikbaarheid").delete().eq("id", b.id ?? ""); if (error) throw error; continue; }
+        if (b.datum_van === p.datum) { await supabase.from("beschikbaarheid").update({ datum_van: dag(p.datum, 1) }).eq("id", b.id ?? ""); continue; }
+        if (b.datum_tot === p.datum) { await supabase.from("beschikbaarheid").update({ datum_tot: dag(p.datum, -1) }).eq("id", b.id ?? ""); continue; }
+        await supabase.from("beschikbaarheid").update({ datum_tot: dag(p.datum, -1) }).eq("id", b.id ?? "");
         await supabase.from("beschikbaarheid").insert({ medewerker_id: p.medId, type: ELDERS_TYPE, datum_van: dag(p.datum, 1), datum_tot: b.datum_tot, status: "goedgekeurd", reden: "Andere opdracht", behandeld_door: profileId });
       }
     }
@@ -347,12 +286,8 @@ export default function DesktopWeekPlanning() {
     if (!panelCel || !profileId) return;
     const doel = helePloeg ? ploegVan(panelCel) : [panelCel];
     let beschermd = 0;
-    if (!conceptModus) {
-      const ids = doel.filter((c) => c.planning && !c.beschermd).map((c) => c.planning!.id);
-      beschermd = doel.length - ids.length;
-      if (ids.length) { const { error } = await supabase.from("planning").update(waarden).in("id", ids); if (error) throw error; }
-      if (ids.length) await markeerDefinitief([waarden.project_id]);
-    } else {
+    const undo = await capture(doel);
+    {
       for (const c of doel) {
         const a = actieVoorBewerken(c, waarden, profileId);
         if (a.type === "update-concept") { const { error } = await supabase.from("planning_concept").update(a.patch).eq("id", a.id); if (error) throw error; }
@@ -360,26 +295,32 @@ export default function DesktopWeekPlanning() {
         else if (a.type === "beschermd") beschermd++;
       }
     }
+    rememberUndo(undo);
     bewaarRecent(waarden.project_id);
     setPanelKey(null);
-    toast.success(`${doel.length > 1 ? "Planning bijgewerkt voor hele ploeg" : "Planning bijgewerkt"}${conceptModus ? " (concept)" : ""}`);
+    toast.success(`${doel.length > 1 ? "Planning bijgewerkt voor hele ploeg" : "Planning bijgewerkt"} (concept)`, undoToast(undo));
     if (beschermd) toast.warning("Dagen uit de Planner-koppeling zijn niet aangepast");
   });
 
   const verwijder = (helePloeg: boolean) => run(async () => {
     if (!panelCel) return;
-    const { beschermd } = await verwijderCellen(helePloeg ? ploegVan(panelCel) : [panelCel]);
+    const doel = helePloeg ? ploegVan(panelCel) : [panelCel];
+    const undo = await capture(doel);
+    const { beschermd } = await verwijderCellen(doel);
+    rememberUndo(undo);
     setPanelKey(null);
-    toast.success(conceptModus ? "Verwijderd (concept)" : "Verwijderd");
+    toast.success("Verwijderd (concept)", undoToast(undo));
     if (beschermd) toast.warning("Dagen uit de Planner-koppeling zijn niet verwijderd");
   });
 
   const terugdraaien = () => run(async () => {
     if (!panelCel?.concept) return;
+    const undo = await capture([panelCel]);
     const { error } = await supabase.from("planning_concept").delete().eq("id", panelCel.concept.id);
     if (error) throw error;
     setPanelKey(null);
-    toast.success("Concept teruggedraaid");
+    rememberUndo(undo);
+    toast.success("Concept teruggedraaid", undoToast(undo));
   });
 
   const kopieerVorigeWeek = () => run(async () => {
@@ -407,19 +348,147 @@ export default function DesktopWeekPlanning() {
       }];
     });
     if (rows.length) {
-      const { error: insErr } = conceptModus
-        ? await supabase.from("planning_concept").insert(rows.map((r) => ({ ...r, actie: "nieuw" as const })))
-        : await supabase.from("planning").insert(rows);
+      const undo = await capture(rows);
+      const { error: insErr } = await supabase.from("planning_concept").insert(rows.map((r) => ({ ...r, actie: "nieuw" as const })));
       if (insErr) throw insErr;
-      await markeerGepland(rows.map((r) => r.project_id));
-      if (!conceptModus) await markeerDefinitief(rows.map((r) => r.project_id));
+      rememberUndo(undo);
+      toast.success(`${rows.length} dagen gekopieerd uit week ${getISOWeek(vorige)} (concept)${overgeslagen ? ` · ${overgeslagen} overgeslagen` : ""}`, undoToast(undo));
     }
-    toast.success(`${rows.length} ${rows.length === 1 ? "dag" : "dagen"} gekopieerd uit week ${getISOWeek(vorige)}${conceptModus ? " (concept)" : ""}${overgeslagen ? ` · ${overgeslagen} overgeslagen` : ""}`);
+    if (!rows.length) toast.info("Geen beschikbare dagen om te kopiëren");
+  });
+
+  const rememberUndo = (undo: () => Promise<void>) => { undoStack.current.push(undo); if (undoStack.current.length > 30) undoStack.current.shift(); };
+  const undoToast = (undo: () => Promise<void>) => ({ action: { label: "Ongedaan maken", onClick: () => void run(async () => {
+    const i = undoStack.current.indexOf(undo);
+    if (i < 0) return;
+    if (i !== undoStack.current.length - 1) { toast.info("Maak eerst de laatste wijziging ongedaan"); return; }
+    await undo(); undoStack.current.pop();
+  }) } });
+  const capture = async (targets: Array<{ medewerker_id: string; datum: string }>) => {
+    const unique = [...new Map(targets.map((p) => [celKey(p.medewerker_id, p.datum), p])).values()];
+    const keys = new Set(unique.map((p) => celKey(p.medewerker_id, p.datum)));
+    const ids = [...new Set(unique.map((p) => p.medewerker_id))];
+    const dates = unique.map((p) => p.datum).sort();
+    const load = async () => {
+      if (!ids.length) return [];
+      const { data, error } = await supabase.from("planning_concept").select("*").in("medewerker_id", ids).gte("datum", dates[0]).lte("datum", dates[dates.length - 1]);
+      if (error) throw error;
+      return (data ?? []).filter((p) => keys.has(celKey(p.medewerker_id, p.datum)));
+    };
+    const before: ConceptInsert[] = await load();
+    let used = false;
+    return async () => {
+      if (used) return;
+      const current = await load();
+      if (current.length) { const { error } = await supabase.from("planning_concept").delete().in("id", current.map((p) => p.id)); if (error) throw error; }
+      if (before.length) { const { error } = await supabase.from("planning_concept").insert(before); if (error) throw error; }
+      used = true;
+    };
+  };
+  const transfer = (d: Drag) => run(async () => {
+    const sources = d.sources ?? new Set<string>();
+    const items = copyDays(sources, rijen, datums, cellen);
+    const points = [...sources].map(splitCellKey);
+    const top = Math.min(...points.map((p) => rijen.findIndex((r) => r.id === p.medewerker_id)));
+    const left = Math.min(...points.map((p) => datums.indexOf(p.datum)));
+    await paste(items, { row: top + d.r1 - d.r0, day: left + d.c1 - d.c0 }, !d.copy);
+  });
+  const paste = async (items: ClipboardDay[], anchor: GridPoint, moving = false) => {
+    if (!profileId) return;
+    const { targets, skipped } = transferTargets(items, anchor, rijen, datums, cellen, beschikbaarheid, moving);
+    const sources = moving ? targets.flatMap((t) => { const c = cellen.get(t.source.sourceKey); return c ? [c] : []; }) : [];
+    if (!targets.length) { toast.info(`Geen dagen ${moving ? "verplaatst" : "geplakt"} · ${skipped.length} overgeslagen`); return; }
+    const undo = await capture([...sources, ...targets]);
+    const rows: ConceptInsert[] = targets.map((t) => ({ ...t.source.waarden, medewerker_id: t.medewerker_id, datum: t.datum, actie: "nieuw", planning_id: null, created_by: profileId, planning_group_id: null, collega_ids: [] }));
+    const { error } = await supabase.from("planning_concept").insert(rows);
+    if (error) throw error;
+    try { if (moving) await verwijderCellen(sources); } catch (error) { await undo(); throw error; }
+    rememberUndo(undo); wisSel();
+    toast.success(`${targets.length} dagen ${moving ? "verplaatst" : "gekopieerd"} (concept)${skipped.length ? ` · ${skipped.length} overgeslagen (${[...new Set(skipped)].join(", ")})` : ""}`, undoToast(undo));
+  };
+  const repeatCheck = async (choice: RepeatChoice) => {
+    const ids = [...new Set(selCellen.map((s) => s.medId))];
+    const from = choice.dates[0], to = choice.dates.at(-1);
+    if (!from || !to || !ids.length) return { count: 0, skipped: [], same: 0, rows: [] as ConceptInsert[] };
+    const [p, c, b] = await Promise.all([
+      supabase.from("planning").select("*").in("medewerker_id", ids).gte("datum", from).lte("datum", to),
+      supabase.from("planning_concept").select("*").in("medewerker_id", ids).gte("datum", from).lte("datum", to),
+      supabase.from("beschikbaarheid").select("*").in("medewerker_id", ids).eq("status", "goedgekeurd").lte("datum_van", to).gte("datum_tot", from),
+    ]);
+    if (p.error || c.error || b.error) throw p.error ?? c.error ?? b.error;
+    const all = bouwCellen(p.data ?? [], c.data ?? []);
+    const skipped: string[] = [], rows: ConceptInsert[] = []; let same = 0;
+    for (const id of ids) for (const datum of choice.dates) {
+      const existing = all.get(celKey(id, datum));
+      if (celTelt(existing) && existing.project_id === choice.projectId) { same++; continue; }
+      const afw = bepaalAfwezigheid(medMap.get(id), datum, b.data ?? []);
+      if (afw || celBezet(existing)) { skipped.push(`${korteNaam(medMap.get(id)?.full_name ?? "")} ${format(new Date(`${datum}T12:00:00`), "d/M")} (${afw ?? "al ingepland"})`); continue; }
+      const project = projMap.get(choice.projectId);
+      rows.push({ medewerker_id: id, datum, project_id: choice.projectId, starttijd: "07:00", eindtijd: "16:00", notitie: "", actie: "nieuw", planning_id: null, created_by: profileId, ...(project?.soort === "uitleen" ? { werklocatie: project.adres, contactpersoon: project.contactpersoon_naam, contact_telefoon: project.contactpersoon_tel } : {}) });
+    }
+    return { count: rows.length, same, skipped, rows };
+  };
+  const repeat = (choice: RepeatChoice) => run(async () => {
+    const result = await repeatCheck(choice);
+    if (!result.rows.length) return;
+    const undo = await capture(result.rows.map((r) => ({ medewerker_id: r.medewerker_id, datum: r.datum })));
+    const { error } = await supabase.from("planning_concept").upsert(result.rows, { onConflict: "medewerker_id,datum" });
+    if (error) throw error;
+    rememberUndo(undo); bewaarRecent(choice.projectId); setRepeatOpen(false);
+    toast.success(`${result.count} dagen ingepland (concept) · ${result.skipped.length} overgeslagen`, undoToast(undo));
+  });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target;
+      if (target instanceof HTMLElement && (target.closest('input, textarea, select, [contenteditable="true"], [role="dialog"], [role="combobox"]') || target.isContentEditable)) return;
+      if (e.key === "Alt") { setDrag((d) => d ? { ...d, copy: e.type === "keydown" } : d); return; }
+      if (e.type !== "keydown" || panelKey || repeatOpen || view !== "grid") return;
+      const mod = e.ctrlKey || e.metaKey;
+      if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); if (!busy && !undoBusy.current) { const undo = undoStack.current.pop(); if (undo) { undoBusy.current = true; void run(async () => { try { await undo(); toast.success("Ongedaan gemaakt"); } finally { undoBusy.current = false; } }); } } return; }
+      if (e.key === "Escape") { wisSel(); return; }
+      if (mod && e.key.toLowerCase() === "c") { const copied = copyDays(selSet, rijen, datums, cellen); if (copied.length) { e.preventDefault(); const previous = clipboard; setClipboard(copied); toast.success(`${copied.length} dagen gekopieerd`, { action: { label: "Ongedaan maken", onClick: () => setClipboard(previous) } }); } return; }
+      const selected = [...selSet].map(splitCellKey).map((p) => ({ row: rijen.findIndex((m) => m.id === p.medewerker_id), day: datums.indexOf(p.datum) })).filter((p) => p.row >= 0 && p.day >= 0);
+      const anchor = cursor ?? (selected.length ? { row: Math.min(...selected.map((p) => p.row)), day: Math.min(...selected.map((p) => p.day)) } : null);
+      if (mod && e.key.toLowerCase() === "v" && clipboard.length && anchor) { e.preventDefault(); void run(() => paste(clipboard, anchor)); return; }
+      if (["Delete", "Backspace"].includes(e.key) && selSet.size) { e.preventDefault(); void verwijderSel([...selSet].map((k) => cellen.get(k)).filter((c): c is Cel => celTelt(c))); return; }
+      if (e.key === "Enter" && selCellen.length) { e.preventDefault(); const project = barProject ?? leesRecent().find((id) => projMap.has(id)); if (project) { setBarProject(project); const empty = selCellen.filter((p) => !celBezet(cellen.get(celKey(p.medId, p.datum)))); void quickPlan(empty, project); } return; }
+      if (!e.key.startsWith("Arrow")) return;
+      e.preventDefault(); let next = anchor ?? { row: 0, day: 0 };
+      next = { row: Math.max(0, Math.min(rijen.length - 1, next.row + (e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0))), day: next.day + (e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0) };
+      if (next.day < 0 || next.day > 4) {
+        const nextWeek = addWeeks(weekStart, next.day < 0 ? -1 : 1);
+        pendingCursor.current = { row: next.row, day: next.day < 0 ? 4 : 0, week: format(nextWeek, "yyyy-MM-dd") };
+        setWeekStart(nextWeek); return;
+      }
+      const med = rijen[next.row]; if (!med) return;
+      setCursor(next); const key = celKey(med.id, datums[next.day]);
+      if (e.shiftKey) setSelSet(new Set([...selSet, key]));
+      else if (selected.length > 1 && anchor) {
+        const dr = next.row - anchor.row, dc = next.day - anchor.day;
+        setSelSet(new Set(selected.flatMap((p) => { const m = rijen[p.row + dr], date = datums[p.day + dc]; return m && date ? [celKey(m.id, date)] : []; })));
+      } else setSelSet(new Set([key]));
+    };
+    document.addEventListener("keydown", onKey); document.addEventListener("keyup", onKey);
+    return () => { document.removeEventListener("keydown", onKey); document.removeEventListener("keyup", onKey); };
+  });
+  const quickPlan = (pairs: SelCel[], projectId: string) => run(async () => {
+    if (!profileId) return;
+    const { doelen, overgeslagen } = doelenVoorCellen(pairs, cellen, medewerkers, beschikbaarheid);
+    const project = projMap.get(projectId);
+    const rows = bouwNieuwConcepten(doelen, { project_id: projectId, starttijd: lastTime.current[0], eindtijd: lastTime.current[1], notitie: "", ...(project?.soort === "uitleen" ? { werklocatie: project.adres, contactpersoon: project.contactpersoon_naam, contact_telefoon: project.contactpersoon_tel } : {}) }, profileId);
+    if (!rows.length) { toast.info("Geen beschikbare lege dagen"); return; }
+    const undo = await capture(rows);
+    const { error } = await supabase.from("planning_concept").insert(rows);
+    if (error) throw error;
+    rememberUndo(undo); bewaarRecent(projectId); wisSel();
+    toast.success(`${rows.length} dagen ingepland (concept) · ${overgeslagen.length} overgeslagen`, undoToast(undo));
   });
 
   const publiceer = () => run(async () => {
     const { data, error } = await supabase.rpc("publiceer_planning", { p_van: datums[0], p_tot: datums[4] });
     if (error) throw error;
+    undoStack.current = [];
+    toast.dismiss();
     const res = (data ?? {}) as { nieuw?: number; gewijzigd?: number; verwijderd?: number; overgeslagen?: Array<{ medewerker_id: string; datum: string; reden: string }>; medewerker_ids?: string[] };
     setPublishOpen(false);
     const n = res.medewerker_ids?.length ?? 0;
@@ -459,6 +528,14 @@ export default function DesktopWeekPlanning() {
     if (!gevuld && afw) cls.push(`is-${afw}`);
     if (conflict) cls.push("is-conflict");
     if (inSel(r, c)) cls.push("is-selected");
+    if (cursor?.row === r && cursor.day === c) cls.push("is-cursor");
+    if (drag?.moving && (drag.r0 !== drag.r1 || drag.c0 !== drag.c1)) {
+      const sourceKeys = drag.sources ?? new Set<string>();
+      if (!drag.copy && sourceKeys.has(celKey(med.id, datum))) cls.push("is-move-source");
+      const dr = drag.r1 - drag.r0, dc = drag.c1 - drag.c0;
+      const isTarget = [...sourceKeys].some((key) => { const p = splitCellKey(key); return rijen.findIndex((m) => m.id === p.medewerker_id) + dr === r && datums.indexOf(p.datum) + dc === c; });
+      if (isTarget) cls.push(afw || gevuld ? "is-drop-blocked" : "is-drop-target");
+    }
     if (filterProject && gevuld && cel?.project_id !== filterProject) cls.push("is-dimmed");
     const uren = cel ? berekenUren(cel.starttijd, cel.eindtijd) : 0;
     const label = gevuld
@@ -478,14 +555,12 @@ export default function DesktopWeekPlanning() {
           if (e.button !== 0) return;
           e.preventDefault(); setPanelKey(null);
           const additief = e.shiftKey || e.ctrlKey || e.metaKey;
-          setDrag({ r0: r, c0: c, r1: r, c1: c, base: additief ? new Set(selSet) : new Set(), additief });
+          setCursor({ row: r, day: c });
+          const key = celKey(med.id, datum);
+          const moving = celTelt(cel) && !additief;
+          setDrag({ r0: r, c0: c, r1: r, c1: c, base: additief ? new Set(selSet) : new Set(), additief, moving, copy: e.altKey, sources: moving ? (selSet.has(key) ? new Set(selSet) : new Set([key])) : undefined });
         }}
-        onMouseEnter={() => { if (dragging) setDrag((s) => (s ? { ...s, r1: r, c1: c } : s)); }}
-        onKeyDown={(e) => {
-          if (e.key !== "Enter" && e.key !== " ") return;
-          e.preventDefault();
-          if (gevuld) setPanelKey(celKey(med.id, datum)); else setSelSet(new Set([celKey(med.id, datum)]));
-        }}
+        onMouseEnter={(e) => { if (dragging) setDrag((s) => (s ? { ...s, r1: r, c1: c, copy: e.altKey } : s)); }}
       >
         {gevuld && cel ? (
           <>
@@ -520,6 +595,7 @@ export default function DesktopWeekPlanning() {
             {!isHuidigeWeek && <Button variant="outline" size="sm" onClick={() => setWeekStart(startOfISOWeek(new Date()))}>Deze week</Button>}
           </div>
           <div className="wp-header-actions">
+            <Popover><PopoverTrigger asChild><Button variant="outline"><Keyboard size={15} />Sneltoetsen</Button></PopoverTrigger><PopoverContent className="wp-shortcuts" align="end">{[["Slepen", "Verplaatsen"], ["Alt + slepen", "Kopiëren"], ["Shift + klik / slepen", "Selectie toevoegen"], ["Ctrl/Cmd + C / V", "Kopiëren / plakken, ook in een andere week"], ["← ↑ → ↓", "Cursor verplaatsen"], ["Shift + pijl", "Selectie uitbreiden"], ["Enter", "Inplannen met het laatst gebruikte project"], ["Delete / Backspace", "Verwijderen"], ["Ctrl/Cmd + Z", "Ongedaan maken"], ["Esc", "Selectie wissen"]].map(([key, text]) => <div key={key}><kbd>{key}</kbd><span>{text}</span></div>)}</PopoverContent></Popover>
             <Button variant="outline" onClick={kopieerVorigeWeek} disabled={busy}><Copy size={15} />Vorige week kopiëren</Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild><Button variant="outline">PDF <ChevronDown size={15} /></Button></DropdownMenuTrigger>
@@ -563,6 +639,7 @@ export default function DesktopWeekPlanning() {
         </div>
 
         <main className="wp-body">
+          {clipboard.length > 0 && <div className="wp-clipboard"><Copy size={14} /><span>Gekopieerd: {clipboard.length} dagen · klik een dag en druk Ctrl+V (ook in een andere week)</span><Button variant="ghost" size="icon" aria-label="Kopie wissen" onClick={() => setClipboard([])}><X size={15} /></Button></div>}
           {loading ? <Spinner padding="py-16" /> : view === "klus" ? (
             <PerKlusWeergave cellen={celLijst} weekDates={weekDates} projects={projects} medewerkers={medewerkers} weekProjectIds={weekProjectIds} filterProject={filterProject} />
           ) : (
@@ -578,7 +655,7 @@ export default function DesktopWeekPlanning() {
 
                 {rijen.map((med, r) => {
                   const rolTekst = rolLabel(med.role);
-                  const partners = med.planning_partner_ids.map((p) => medMap.get(p)?.full_name).filter(Boolean).map((n) => korteNaam(n!));
+                  const partners = med.planning_partner_ids.map((p) => medMap.get(p)?.full_name).filter((n): n is string => !!n).map(korteNaam);
                   const vrij = med.vaste_vrije_dagen.filter((d) => d >= 1 && d <= 5).map((d) => DAG_KORT[d - 1].toLowerCase());
                   const sub = [rolTekst, partners.length ? `Vaste ploeg met ${partners.join(", ")}` : null, vrij.length ? `Vrij op ${vrij.join(", ")}` : null].filter(Boolean).join(" · ");
                   const telt = datums.map((d) => cellen.get(celKey(med.id, d))).filter(celTelt);
@@ -609,7 +686,7 @@ export default function DesktopWeekPlanning() {
               </div>
 
               <div className="wp-legend">
-                <span>Sleep om te selecteren · Shift+klik voegt losse dagen toe</span>
+                <span>Sleep een ingevulde dag om te verplaatsen (Alt = kopiëren) · Shift+klik voegt dagen toe · Ctrl+C / Ctrl+V · pijltjes + Enter · Delete</span>
                 <span className="flex-1" />
                 {conceptModus && <span><i style={{ boxShadow: "inset 0 0 0 1.5px var(--wp-concept-dot)", background: "var(--bg-surface)" }} />Concept</span>}
                 <span><i style={{ boxShadow: "inset 0 0 0 2px var(--danger)", background: "var(--bg-surface)" }} />Conflict</span>
@@ -622,6 +699,8 @@ export default function DesktopWeekPlanning() {
         </main>
       </div>
 
+      {drag?.moving && (drag.r0 !== drag.r1 || drag.c0 !== drag.c1) && <div className="wp-drag-pill">{drag.copy ? "Kopiëren" : "Verplaatsen"}: {copyDays(drag.sources ?? new Set(), rijen, datums, cellen).length} dagen → {format(weekDates[drag.c1], "EEE d MMM", { locale: nl })} · {rijen[drag.r1]?.full_name} · Houd Alt ingedrukt om te kopiëren</div>}
+      {repeatOpen && <HerhaalDialoog open onClose={() => setRepeatOpen(false)} projects={projects} initialProject={selCellen.map((p) => cellen.get(celKey(p.medId, p.datum))).find(celTelt)?.project_id ?? barProject ?? leesRecent()[0] ?? null} initialDays={[...new Set(selCellen.map((p) => datums.indexOf(p.datum)))].filter((d) => d >= 0)} start={weekStart} busy={busy} onPreview={repeatCheck} onConfirm={repeat} />}
       {!dragging && !panelKey && selCellen.length > 0 && (
         <ActieBalk
           key={selKeyStr}
@@ -640,13 +719,15 @@ export default function DesktopWeekPlanning() {
           onVerwijder={verwijderSel}
           onWijzig={wijzigSel}
           onBeschikbaarheid={zetBeschikbaarheid}
+          onRepeat={() => setRepeatOpen(true)}
+          enterProjectId={barProject ?? leesRecent()[0] ?? null}
           onClose={wisSel}
         />
       )}
 
       {panelCel && panelMed && (
         <BewerkPaneel
-          key={panelKey!}
+          key={panelKey ?? "panel"}
           cel={panelCel}
           naam={panelMed.full_name}
           weekNumber={weekNumber}

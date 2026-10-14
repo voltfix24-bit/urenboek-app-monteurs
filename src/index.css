@@ -849,6 +849,22 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .wp-mono { font-family: 'DM Mono', monospace; }
 .wp-cell.is-concept .wp-cell-title, .wp-cell.is-deleted .wp-cell-title { padding-right: 52px; }
 
+@media (min-width: 1024px) {
+  .wp-grid .wp-cell.is-cursor { box-shadow: inset 0 0 0 2px var(--wp-concept-dot); }
+  .wp-grid .wp-cell.is-cursor.is-selected { box-shadow: inset 0 0 0 3px var(--accent-dark); }
+  .wp-grid .wp-cell.is-move-source { opacity: .45; }
+  .wp-grid .wp-cell.is-drop-target { background: var(--wp-concept-bg); box-shadow: inset 0 0 0 2px var(--wp-concept-dot); }
+  .wp-grid .wp-cell.is-drop-blocked { background: var(--danger-light); box-shadow: inset 0 0 0 2px var(--danger); }
+  .wp-drag-pill { position: fixed; bottom: 24px; left: calc(240px + (100vw - 240px) / 2); transform: translateX(-50%); z-index: 45; max-width: calc(100vw - 280px); padding: 12px 18px; border-radius: 24px; color: var(--wp-concept-text); background: var(--wp-concept-bg); border: 1px solid var(--wp-concept-dot); pointer-events: none; font-size: 13px; }
+  .wp-clipboard { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; margin-bottom: 12px; padding: 4px 12px; border-radius: 8px; background: var(--wp-concept-bg); color: var(--wp-concept-text); font-size: 13px; }
+  .wp-shortcuts { width: 440px; max-width: calc(100vw - 32px); }
+  .wp-shortcuts > div { display: grid; grid-template-columns: 145px 1fr; gap: 12px; margin: 8px 0; font-size: 13px; }
+  .wp-shortcuts kbd { font-weight: 700; }
+  .wp-repeat { max-width: 600px; color: var(--text-primary); background: var(--bg-surface); }
+  .wp-repeat .wp-bar-btn { background: var(--bg-surface-2); color: var(--text-primary); border-color: var(--planning-border-soft); max-width: 100%; }
+  .wp-repeat-skipped { max-height: 160px; overflow-y: auto; color: var(--warn-text); font-size: 13px; margin-top: 8px; }
+}
+
 /* Fasepill */
 .fase-pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; font-weight: 600; white-space: nowrap; padding: 3px 10px; font-size: 12px; line-height: 18px; }
 .fase-pill i { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 7px; }

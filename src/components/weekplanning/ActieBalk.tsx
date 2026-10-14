@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { bepaalAfwezigheid, bepaalDoelen, celBezet, celKey, celTelt, TIJDBLOKKEN, type BeschikbaarheidBasis, type Cel } from "@/lib/weekPlanning";
 import type { WpMedewerker, WpProject } from "@/hooks/useWeekPlanningData";
 import { DAG_KORT, korteNaam, leesRecent, projectKleur } from "./wpUtils";
@@ -45,6 +46,8 @@ interface Props {
   onVerwijder: (cellen: Cel[]) => void;
   onWijzig: (cellen: Cel[], keuze: WijzigKeuze) => void;
   onBeschikbaarheid: (paren: SelCel[], beschikbaar: boolean) => void;
+  onRepeat: () => void;
+  enterProjectId: string | null;
   onClose: () => void;
 }
 
@@ -132,7 +135,7 @@ export function ActieBalk(props: Props) {
           if (!p) return null;
           return (
             <button key={id} type="button" className="wp-bar-btn" aria-pressed={projectGekozen && projectId === id} title={`${p.nummer} · ${p.naam}`} onClick={() => kiesProject(id)}>
-              <i style={{ background: projectKleur(id, weekProjectIds).color }} /><span>{p.naam || p.nummer}</span>
+              <i style={{ background: projectKleur(id, weekProjectIds).color }} /><span>{p.naam || p.nummer}{props.enterProjectId === id ? " ↵" : ""}</span>
             </button>
           );
         })}
@@ -140,6 +143,7 @@ export function ActieBalk(props: Props) {
       </div>
 
       <div className="wp-bar-row">
+        <Button variant="outline" className="wp-bar-btn" disabled={busy} onClick={props.onRepeat}>Herhalen…</Button>
         {TIJDBLOKKEN.map(([s, e]) => (
           <button key={s} type="button" className="wp-bar-btn is-mono" aria-pressed={tijd?.[0] === s && tijd?.[1] === e} onClick={() => setTijd(tijd?.[0] === s && tijd?.[1] === e ? null : [s, e])}>{s}–{e}</button>
         ))}
