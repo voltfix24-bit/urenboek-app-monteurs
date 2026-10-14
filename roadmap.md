@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Weekplanning v2 stap 1: desktop altijd concept, verplaatsen/kopiëren, clipboard, herhalen, toetsenbord en 30 acties ongedaan maken; testen en wachten op akkoord.
+- [x] Weekplanning v2 stap 1: desktop altijd concept, verplaatsen/kopiëren, clipboard, herhalen, toetsenbord en 30 acties ongedaan maken; tests en manager-browsercontrole uitgevoerd, tijdelijke concepten opgeruimd.
 - [ ] Weekplanning v2 stap 2–5: wachten op afzonderlijk akkoord na de voorgaande stap.
 
 - [x] Herontwerp Teamplanning als één weekraster met totalen, sortering, legenda en responsive sticky kolom.
