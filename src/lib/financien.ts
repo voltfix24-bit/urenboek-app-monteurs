@@ -115,13 +115,15 @@ export function bepaalVerkooptarief(
   datum: string
 ): TariefResultaat | null {
   if (!opdrachtgever_id) return null;
-  const kandidaten = rijen.filter(
-    (r) => r.opdrachtgever_id === opdrachtgever_id && r.geldig_vanaf <= datum
-      && (rol === null || r.rol === rol || r.rol === null)
-  );
-  if (kandidaten.length === 0) return null;
-  const metRol = rol !== null ? kandidaten.filter((r) => r.rol === rol) : kandidaten;
-  const pool = metRol.length > 0 ? metRol : kandidaten.filter((r) => r.rol === null);
+  const geldig = rijen.filter((r) => r.opdrachtgever_id === opdrachtgever_id && r.geldig_vanaf <= datum);
+  if (geldig.length === 0) return null;
+  // Geen rol bekend → alleen het tarief dat voor iedereen geldt.
+  const pool = rol === null
+    ? geldig.filter((r) => r.rol === null)
+    : (() => {
+        const exact = geldig.filter((r) => r.rol === rol);
+        return exact.length > 0 ? exact : geldig.filter((r) => r.rol === null);
+      })();
   if (pool.length === 0) return null;
   const gekozen = pool.reduce((best, r) => (r.geldig_vanaf > best.geldig_vanaf ? r : best));
   return {
