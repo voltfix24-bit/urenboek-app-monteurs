@@ -2746,6 +2746,22 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_projects_planning_v1: {
+        Args: never
+        Returns: {
+          active: boolean
+          adres: string
+          contactpersoon_naam: string
+          contactpersoon_tel: string
+          id: string
+          naam: string
+          nummer: string
+          postcode: string
+          soort: string
+          stad: string
+          straat: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

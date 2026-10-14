@@ -12,3 +12,11 @@ export const PROJECT_SAFE_COLUMNS =
 export function adminProjects(client: any = supabase) {
   return client.rpc("get_projects_admin_v1");
 }
+
+/**
+ * Projectlijst voor de (week)planning: alleen de kolommen die het inplannen nodig heeft.
+ * Server-side beperkt tot rollen met planningsrechten (manager, uitvoerder, wv).
+ */
+export function planningProjects(client: any = supabase) {
+  return client.rpc("get_projects_planning_v1");
+}
