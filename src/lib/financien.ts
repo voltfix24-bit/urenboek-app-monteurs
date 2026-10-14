@@ -157,10 +157,10 @@ export function detacheringVoor(
   opdrachtgever_id: string,
   datum: string
 ): DetacheringRij | null {
-  const.pass = detacheringen
+  const kandidaten = detacheringen
     .filter((d) => d.medewerker_id === medewerker_id && d.opdrachtgever_id === opdrachtgever_id && isActieveDetachering(d, datum))
     .sort((a, b) => a.van.localeCompare(b.van));
-  return .pass.length > 0 ? .pass[.pass.length - 1] : null;
+  return kandidaten.length > 0 ? kandidaten[kandidaten.length - 1] : null;
 }
 
 export function rolVoorUur(
@@ -211,7 +211,7 @@ export interface PersoonRegel {
 
 export interface Waarschuwing {
   type: "geen_verkooptarief" | "geen_kostentarief";
- boodschap: string;
+  boodschap: string;
   medewerker_id?: string;
   project_id?: string;
   opdrachtgever_id?: string;
