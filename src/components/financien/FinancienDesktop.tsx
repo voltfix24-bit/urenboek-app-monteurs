@@ -15,6 +15,8 @@ import { euroDecimals as fmt, formatUrenGetal } from "@/lib/formatting";
 import { exporteerFinancienCsv, exporteerFinancienPdf } from "@/lib/financienExport";
 import { Spinner } from "@/components/ui/Spinner";
 import { supabase } from "@/integrations/supabase/client";
+import { DesktopSidebar } from "@/components/DesktopSidebar";
+import { useNavBadges } from "@/hooks/useNavBadges";
 import { toast } from "sonner";
 
 type Modus = "week" | "maand" | "kwartaal";
@@ -46,6 +48,7 @@ function berekenPeriode(modus: Modus, anker: Date) {
 
 export function FinancienDesktop() {
   const navigate = useNavigate();
+  const { badges } = useNavBadges();
   const [modus, setModus] = useState<Modus>("week");
   const [anker, setAnker] = useState<Date>(() => new Date());
   const [vasteKosten, setVasteKosten] = useState<string | null>(null);
@@ -86,7 +89,9 @@ export function FinancienDesktop() {
   const maxSerie = Math.max(1, ...serie.map((s) => Math.max(s.omzet, s.kosten)));
 
   return (
-    <div className="fn-root">
+    <>
+      <DesktopSidebar badges={badges} />
+      <div className="fn-root">
       <header className="fn-header">
         <div>
           <h1 className="fn-title">Financiën</h1>
