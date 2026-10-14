@@ -1181,3 +1181,4 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .fn-dialog-rij { display: flex; flex-direction: column; gap: 5px; }
 .fn-dialog-rij label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
 .fn-dialog-voet { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.fn-dialoog-paar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
