@@ -64,6 +64,20 @@
       "when": 1791968429231,
       "tag": "0008_weekplanning_v2_en_meldingen",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791969934397,
+      "tag": "0009_financien_tarieven",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791969970296,
+      "tag": "0010_protect_eigenaar_velden",
+      "breakpoints": true
     }
   ]
 }
