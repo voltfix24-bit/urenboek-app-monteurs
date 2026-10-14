@@ -1169,3 +1169,15 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .fn-staafjes span { flex: 1; border-radius: 3px 3px 0 0; min-height: 2px; }
 .fn-grafiek-label { font: 500 11px 'DM Mono', monospace; color: var(--text-muted); }
 .fn-mobile { padding: 28px 20px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.fn-stapel { display: flex; flex-direction: column; gap: 16px; }
+.fn-mono { font-family: 'DM Mono', monospace; font-size: 13px; }
+.fn-historie-knop { display: inline-flex; align-items: center; gap: 6px; border: none; background: transparent; font: inherit; color: var(--text-primary); font-weight: 700; cursor: pointer; padding: 0; }
+.fn-historie-knop:disabled { cursor: default; }
+.fn-historie-punt { width: 14px; height: 14px; }
+.fn-historie-rij td { background: var(--bg-surface-2); font-size: 13px; color: var(--text-muted); }
+.fn-dialog-maske { position: fixed; inset: 0; background: rgba(18,28,42,.4); display: flex; align-items: center; justify-content: center; z-index: 60; }
+.fn-dialog { width: 420px; max-width: calc(100vw - 40px); background: var(--bg-surface); border: 1px solid var(--planning-border-soft); border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+.fn-dialog-kop { font-size: 16px; font-weight: 800; color: var(--text-primary); }
+.fn-dialog-rij { display: flex; flex-direction: column; gap: 5px; }
+.fn-dialog-rij label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
+.fn-dialog-voet { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }

@@ -308,16 +308,10 @@ export function TarievenDesktop() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+      </div>
+    </>
   );
-}
-
-function perPerPersoon(map: Map<string, KostentariefRij>, id: string) {
-  return map.get(id);
-}
-
-function perPerPersoon(map: Map<string, KostentariefRij>, id: string) {
-  return map.get(id);
 }
 
 function RijGroep(p: {
