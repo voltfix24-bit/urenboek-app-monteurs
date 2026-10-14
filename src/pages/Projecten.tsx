@@ -65,10 +65,10 @@ export default function Projecten() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
-  const [statusFilter, setStatusFilter] = useState("alle");
-  const [deskFase, setDeskFase] = useState<string>("alle");
-  const [deskArchief, setDeskArchief] = useState(false);
-  const [mobielArchief, setMobielArchief] = useState(false);
+  const [statusFilter, setStatusFilter] = usePersistentState("alle", "projecten:statusFilter");
+  const [deskFase, setDeskFase] = usePersistentState<string>("alle", "projecten:deskFase");
+  const [deskArchief, setDeskArchief] = usePersistentState(false, "projecten:deskArchief");
+  const [mobielArchief, setMobielArchief] = usePersistentState(false, "projecten:mobielArchief");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const { focus, clear: clearFocus } = useFocusParam();
   useClearFocusOnClose(selectedId !== null);
