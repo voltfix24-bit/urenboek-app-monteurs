@@ -77,6 +77,7 @@ Deno.serve(async (req) => {
         urgentie: urgentie || "normaal",
         ontvanger_type: ontvangerType || "iedereen",
         verzonden_door: profileId,
+        ...(ontvangerType === "persoon" && ontvangerId ? { ontvanger_id: ontvangerId } : {}),
       })
       .select("id")
       .single();

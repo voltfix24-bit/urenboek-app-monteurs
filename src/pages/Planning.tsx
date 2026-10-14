@@ -42,7 +42,7 @@ export default function Planning() {
     supabase.from("planning_gelezen").upsert(
       { medewerker_id: profileId, gelezen_op: new Date().toISOString() },
       { onConflict: "medewerker_id" },
-    );
+    ).then(() => undefined);
   }, [profileId]);
   const [weekStart, setWeekStart] = useState(() => startOfISOWeek(new Date()));
   const [items, setItems] = useState<PlanningItem[]>([]);
