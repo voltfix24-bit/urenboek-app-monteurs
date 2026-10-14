@@ -300,8 +300,9 @@ export function FinancienDesktop() {
           </div>
           {u.uitbetaling.fictief_tarief != null && u.uitbetaling.eigen_uren > 0 && (
             <p className="mw-card-sub">
-              Bij een fictief tarief van {fmt(u.uitbetaling.fictief_tarief)}/u voor eigenaren zou dat{" "}
-              {fmt(u.uitbetaling.fictief_kosten)} kosten ({formatUrenGetal(u.uitbetaling.eigen_uren)}u).
+              Bij de fictieve uurtarieven die per eigenaar zijn ingesteld zou dat{" "}
+              {fmt(u.uitbetaling.fictief_kosten)} kosten over {formatUrenGetal(u.uitbetaling.eigen_uren)}u eigen uren;
+              eigenaren zonder fictief tarief tellen daar niet in mee.
             </p>
           )}
         </section>
