@@ -477,79 +477,31 @@ export default function Projecten() {
             {/* LOADING */}
             {loading && <div style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>Laden...</div>}
 
+            {/* ARCHIEF TOGGLE */}
+            <button onClick={() => setMobielArchief(v => !v)} style={{ background: "none", border: "none", padding: 0, marginBottom: 16, fontSize: 12, fontWeight: 600, fontFamily: "Hanken Grotesk", color: "var(--text-muted)", cursor: "pointer" }}>
+              {mobielArchief ? "Archief verbergen" : `Archief tonen (${projects.filter(p => !p.active).length})`}
+            </button>
+
             {/* PROJECT CARDS */}
-            {!loading && (
+            {!loading && statusFilter === "alle" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                {mobielGroepen.filter(g => g.items.length > 0).map(g => (
+                  <section key={g.label}>
+                    <p style={groepLabelStyle}>{g.label}</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>{g.items.map(renderProjectCard)}</div>
+                  </section>
+                ))}
+                {mobielGroepen.every(g => g.items.length === 0) && (
+                  <p style={{ textAlign: "center", padding: 40, color: "var(--text-muted)", fontSize: 13 }}>Geen projecten gevonden</p>
+                )}
+              </div>
+            )}
+            {!loading && statusFilter !== "alle" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {sorteerProjecten(projects)
-                  .filter(p => {
-                    if (statusFilter === "uitleen") return isUitleen(p);
-                    if (statusFilter === "actief") return p.active;
-                    if (statusFilter === "concept") return p.status === "concept";
-                    if (statusFilter === "afgerond") return !p.active;
-                    return true;
-                  })
-                  .filter(p => !searchQuery || p.naam?.toLowerCase().includes(searchQuery.toLowerCase()) || p.nummer?.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .map((project) => {
-                    const uitleen = isUitleen(project);
-                    const isConcept = !uitleen && project.status === "concept";
-                    const borderColor = isConcept ? "var(--warn-text)" : "var(--accent)";
-                    return (
-                      <div key={project.id} onClick={() => setSelectedId(project.id)} style={{
-                        background: "var(--bg-surface)",
-                        backdropFilter: "blur(12px)", borderRadius: 20,
-                        border: "1px solid var(--planning-border-soft)", borderLeft: `4px solid ${borderColor}`,
-                        overflow: "hidden", cursor: "pointer",
-                      }}>
-                        <div style={{ padding: 20 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                            <div>
-                              <p style={{ fontSize: 10, fontFamily: "Hanken Grotesk", fontWeight: 700, color: "var(--text-muted)", fontVariant: "tabular-nums", marginBottom: 4 }}>ID #{project.nummer}</p>
-                              <h3 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 16, color: "var(--text-primary)", lineHeight: 1.3 }}>{project.naam}</h3>
-                              {project.stad && (
-                                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
-                                  <span className="material-symbols-outlined" style={{ fontSize: 14, color: "var(--text-muted)" }}>location_on</span>
-                                  <span style={{ fontSize: 13, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>{project.stad}</span>
-                                </div>
-                              )}
-                            </div>
-                            <div style={{ padding: "4px 12px", borderRadius: 9999, background: isConcept ? "var(--warn-light)" : "var(--accent-light)", border: `1px solid ${borderColor}50` }}>
-                              <span style={{ fontSize: 9, fontWeight: 800, fontFamily: "Hanken Grotesk", textTransform: "uppercase", color: borderColor }}>
-                                {uitleen ? "UITLEEN" : isConcept ? "CONCEPT" : project.active ? "ACTIEF" : "AFGEROND"}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Progress */}
-                          {uitleen && (
-                            <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>{formatUrenKort(uitleenWeekUren.get(project.id) ?? 0)} deze week</p>
-                          )}
-                          {!isConcept && !uitleen && (
-                            <div style={{ marginBottom: 8 }}>
-                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                                <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>
-                                  {margeMap.get(project.id)?.omzet ? `€ ${margeMap.get(project.id)!.omzet.toLocaleString("nl")}` : "0 uur geboekt"}
-                                </span>
-                                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", fontFamily: "Hanken Grotesk" }}>
-                                  {margeMap.get(project.id)?.marge ? `${Math.round(margeMap.get(project.id)!.marge)}%` : "—"}
-                                </span>
-                              </div>
-                              <div style={{ height: 4, background: "var(--bg-surface-2)", borderRadius: 9999, overflow: "hidden" }}>
-                                <div style={{ height: "100%", width: `${Math.min(100, margeMap.get(project.id)?.marge || 0)}%`, background: "var(--accent)", borderRadius: 9999, boxShadow: "0 0 8px color-mix(in srgb, var(--accent) 35%, transparent)" }} />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Concept warning */}
-                          {isConcept && (
-                            <div style={{ background: "var(--warn-light)", borderTop: "1px solid rgba(254,179,0,0.15)", padding: "10px 0 0", display: "flex", alignItems: "center", gap: 8 }}>
-                              <span className="material-symbols-outlined" style={{ fontSize: 16, color: "var(--warn-text)", fontVariationSettings: "'FILL' 1" }}>warning</span>
-                              <span style={{ fontSize: 12, color: "var(--warn-text)", fontFamily: "Hanken Grotesk", fontWeight: 600 }}>Nog geen monteurs ingepland</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                {mobielLijst.map(renderProjectCard)}
+                {mobielLijst.length === 0 && (
+                  <p style={{ textAlign: "center", padding: 40, color: "var(--text-muted)", fontSize: 13 }}>Geen projecten gevonden</p>
+                )}
               </div>
             )}
           </main>
