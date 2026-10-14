@@ -867,11 +867,12 @@ export default function DesktopWeekPlanning() {
                         </div>
                       );
                       return (
-                        <div className="contents" role="row" key={med.id}>
+                        <div className="contents" role="row" key={med.id} style={med.niet_planbaar ? { opacity: 0.55 } : undefined}>
                           <div className="wp-name" role="rowheader">
                             <span className="wp-avatar" aria-hidden="true">{initialen(med.full_name)}</span>
                             <span className="min-w-0">
                               <strong title={med.full_name}>{med.full_name}</strong>
+                              {med.niet_planbaar && <small style={{ color: "var(--text-muted)" }}>niet planbaar</small>}
                               {sub && <small title={sub}>{sub}</small>}
                               {gl?.laatst_gepubliceerd_op && (ongelezen ? (
                                 <button type="button" className="wp-gelezen is-ongelezen" onClick={() => void herinnerGelezen(med)}>● Nieuwe planning nog niet geopend</button>

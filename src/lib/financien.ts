@@ -413,6 +413,8 @@ export function berekenFinannen(input: FinancienInput): FinancienUitkomst {
   const nietEigenaren = personenUitkomst.filter((p) => !p.is_eigenaar);
   const eigenUren = eigenaren.reduce((s, p) => s + p.uren, 0);
   const fictiefTarief = eigenaren.find((p) => p.fictief_uurtarief != null)?.fictief_uurtarief ?? null;
+  // Per eigenaar: eigen fictief tarief × eigen uren, daarna optellen.
+  const fictiefKosten = eigenaren.reduce((s, p) => s + (p.fictief_uurtarief != null ? Number(p.fictief_uurtarief) * p.uren : 0), 0);
   const ruimte = marge - gRekening - (vasteKosten || 0);
 
   return {
@@ -437,7 +439,7 @@ export function berekenFinannen(input: FinancienInput): FinancienUitkomst {
       ruimte,
       eigen_uren: eigenUren,
       fictief_tarief: fictiefTarief,
-      fictief_kosten: fictiefTarief != null ? fictiefTarief * eigenUren : 0,
+      fictief_kosten: fictiefKosten,
     },
   };
 }
