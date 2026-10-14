@@ -373,16 +373,11 @@ export function ForecastTab({ projectId }: { projectId: string }) {
 
   // ----- Totals (single source of truth) -----
   const planningKostenTotaal = planningKosten.reduce((s, r) => s + r.kosten, 0);
-  let totaalOmzet = 0;
-  let totaalKosten = 0;
-  if (isStuks) {
-    totaalOmzet = regels.reduce((s, r) => s + (Number(r.tarief) || 0) * (r.aantal ?? 1), 0);
-    // Personeelskosten + reiskosten uit aangemaakte inkooporders.
-    totaalKosten = planningKostenTotaal + reiskosten;
-  } else {
-    totaalOmzet = verwachteOmzet;
-    totaalKosten = regels.reduce((s, r) => s + (r.geplande_uren || 0) * (r.uurtarief_snap || 0), 0) + reiskosten;
-  }
+  // Opbrengst en kosten komen uit de gedeelde forecastberekening (lib/forecastCalculatie).
+  const totaalOmzet = forecastOmzet(methode, regels, verwachteOmzet);
+  const totaalKosten = isStuks
+    ? planningKostenTotaal + reiskosten
+    : forecastUrenKosten(regels) + reiskosten;
   const margeEuro = totaalOmzet - totaalKosten;
   const margePerc = totaalOmzet > 0 ? (margeEuro / totaalOmzet) * 100 : 0;
   const margeColor = totaalOmzet === 0 ? "var(--text-muted)" : margePerc > 30 ? "var(--accent)" : margePerc >= 15 ? "var(--warn-text)" : "var(--danger)";
