@@ -8,10 +8,26 @@ import type { WpMedewerker, WpProject } from "@/hooks/useWeekPlanningData";
 import { DAG_KORT, korteNaam, leesRecent, projectKleur } from "./wpUtils";
 import { ProjectZoeker } from "./ProjectZoeker";
 
+export interface SelCel { medId: string; datum: string }
+
+/** Bepaalt doelen per losse geselecteerde cel (overslaan bij verlof/ziek/al ingepland). */
+export function doelenVoorCellen(paren: SelCel[], cellen: Map<string, Cel>, medewerkers: WpMedewerker[], beschikbaarheid: BeschikbaarheidBasis[]) {
+  const doelen: ReturnType<typeof bepaalDoelen>["doelen"] = [];
+  const overgeslagen: ReturnType<typeof bepaalDoelen>["overgeslagen"] = [];
+  const gezien = new Set<string>();
+  [...paren].sort((a, b) => a.datum.localeCompare(b.datum)).forEach((p) => {
+    const k = celKey(p.medId, p.datum);
+    if (gezien.has(k)) return;
+    gezien.add(k);
+    const r = bepaalDoelen([p.medId], [p.datum], cellen, medewerkers, beschikbaarheid);
+    doelen.push(...r.doelen); overgeslagen.push(...r.overgeslagen);
+  });
+  return { doelen, overgeslagen };
+}
+
 interface Props {
   medewerkers: WpMedewerker[];
-  selMedIds: string[];
-  selColumns: number[];
+  selCellen: SelCel[];
   weekDates: Date[];
   cellen: Map<string, Cel>;
   beschikbaarheid: BeschikbaarheidBasis[];
@@ -23,13 +39,13 @@ interface Props {
   conceptModus: boolean;
   onProjectChange: (id: string) => void;
   onTijdChange: (t: [string, string]) => void;
-  onPlan: (medIds: string[], datums: string[], notitie: string, uitleen?: { werklocatie: string | null; contactpersoon: string | null; contact_telefoon: string | null }) => void;
+  onPlan: (paren: SelCel[], notitie: string, uitleen?: { werklocatie: string | null; contactpersoon: string | null; contact_telefoon: string | null }) => void;
   onClear: () => void;
   onClose: () => void;
 }
 
 export function ActieBalk(props: Props) {
-  const { medewerkers, selMedIds, selColumns, weekDates, cellen, beschikbaarheid, projects, weekProjectIds, projectId, tijd, busy } = props;
+  const { medewerkers, selCellen, weekDates, cellen, beschikbaarheid, projects, weekProjectIds, projectId, tijd, busy } = props;
   const [notitie, setNotitie] = useState("");
   const [ploegMee, setPloegMee] = useState(true);
   const project = projects.find((p) => p.id === projectId);
@@ -43,27 +59,40 @@ export function ActieBalk(props: Props) {
     setTelefoon(project?.contactpersoon_tel ?? "");
   }, [project?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const medMap = useMemo(() => new Map(medewerkers.map((m) => [m.id, m])), [medewerkers]);
-  const datums = selColumns.map((c) => format(weekDates[c], "yyyy-MM-dd"));
+  const weekDatums = weekDates.map((d) => format(d, "yyyy-MM-dd"));
+  const selMedIds = Array.from(new Set(selCellen.map((s) => s.medId)));
+  const selColumns = Array.from(new Set(selCellen.map((s) => weekDatums.indexOf(s.datum)))).filter((c) => c >= 0).sort((a, b) => a - b);
 
-  const partners = useMemo(() => {
-    const ids = new Set<string>();
-    selMedIds.forEach((id) => medMap.get(id)?.planning_partner_ids.forEach((p) => { if (!selMedIds.includes(p) && medMap.has(p)) ids.add(p); }));
-    return Array.from(ids);
-  }, [selMedIds, medMap]);
+  // Partner alleen op de dagen waarop de medewerker zelf geselecteerd is
+  const partnerParen = useMemo(() => {
+    const sel = new Set(selCellen.map((s) => celKey(s.medId, s.datum)));
+    const uit: SelCel[] = [];
+    const extra = new Set<string>();
+    selCellen.forEach((s) => medMap.get(s.medId)?.planning_partner_ids.forEach((p) => {
+      const k = celKey(p, s.datum);
+      if (!medMap.has(p) || sel.has(k) || extra.has(k)) return;
+      extra.add(k); uit.push({ medId: p, datum: s.datum });
+    }));
+    return uit;
+  }, [selCellen, medMap]);
+  const partners = Array.from(new Set(partnerParen.map((p) => p.medId)));
 
-  const medIds = ploegMee ? [...selMedIds, ...partners] : selMedIds;
-  const { doelen, overgeslagen } = bepaalDoelen(medIds, datums, cellen, medewerkers, beschikbaarheid);
-  const heeftInhoud = selMedIds.some((m) => datums.some((d) => celBezet(cellen.get(celKey(m, d)))));
+  const paren = ploegMee ? [...selCellen, ...partnerParen] : selCellen;
+  const { doelen, overgeslagen } = doelenVoorCellen(paren, cellen, medewerkers, beschikbaarheid);
+  const heeftInhoud = selCellen.some((s) => celBezet(cellen.get(celKey(s.medId, s.datum))));
 
   const recent = leesRecent().filter((id) => !weekProjectIds.includes(id) && projects.some((p) => p.id === id)).slice(0, 3);
   const knoppen = [...weekProjectIds.slice(0, 5), ...recent];
   if (projectId && !knoppen.includes(projectId)) knoppen.unshift(projectId);
 
-  const c0 = Math.min(...selColumns);
-  const c1 = Math.max(...selColumns);
+  const c0 = selColumns[0] ?? 0;
+  const c1 = selColumns[selColumns.length - 1] ?? 0;
+  const aaneen = c1 - c0 + 1 === selColumns.length;
   const titel = selMedIds.length === 1 ? medMap.get(selMedIds[0])?.full_name ?? "Medewerker" : `${selMedIds.length} medewerkers`;
   const dagen = `${selColumns.length} ${selColumns.length === 1 ? "dag" : "dagen"}`;
-  const periode = `${DAG_KORT[c0]}${c1 > c0 ? `–${DAG_KORT[c1]}` : ""} ${format(weekDates[c0], "d MMM", { locale: nl })}`;
+  const periode = aaneen
+    ? `${DAG_KORT[c0]}${c1 > c0 ? `–${DAG_KORT[c1]}` : ""} ${format(weekDates[c0], "d MMM", { locale: nl })}`
+    : selColumns.map((c) => `${DAG_KORT[c]} ${format(weekDates[c], "d")}`).join(", ");
 
   return (
     <div className="wp-bar" role="region" aria-label="Inplannen">
@@ -100,7 +129,7 @@ export function ActieBalk(props: Props) {
         <span className="wp-bar-sub">8 u netto per dag (60 min pauze)</span>
         <input className="wp-bar-note" placeholder="Notitie (optioneel)" value={notitie} onChange={(e) => setNotitie(e.target.value)} aria-label="Notitie" />
         {heeftInhoud && <button type="button" className="wp-bar-clear" disabled={busy} onClick={props.onClear}>Leegmaken</button>}
-        <button type="button" className="wp-bar-plan" disabled={busy || !projectId || doelen.length === 0} onClick={() => props.onPlan(medIds, datums, notitie, isUitleen ? { werklocatie: werklocatie.trim() || null, contactpersoon: contact.trim() || null, contact_telefoon: telefoon.trim() || null } : undefined)}>
+        <button type="button" className="wp-bar-plan" disabled={busy || !projectId || doelen.length === 0} onClick={() => props.onPlan(paren, notitie, isUitleen ? { werklocatie: werklocatie.trim() || null, contactpersoon: contact.trim() || null, contact_telefoon: telefoon.trim() || null } : undefined)}>
           Inplannen ({doelen.length})
         </button>
       </div>
