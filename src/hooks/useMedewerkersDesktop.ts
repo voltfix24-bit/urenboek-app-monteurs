@@ -37,6 +37,7 @@ export function useMedewerkersDesktop() {
   const [detacheringen, setDetacheringen] = useState<any[]>([]);
   const [opdrachtgevers, setOpdrachtgevers] = useState<any[]>([]);
   const [kostentarieven, setKostentarieven] = useState<any[]>([]);
+  const [verkooptarieven, setVerkooptarieven] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchAll = useCallback(async () => {
@@ -46,7 +47,7 @@ export function useMedewerkersDesktop() {
       { data: profData }, { data: rolData }, { data: certData }, { data: aanwData },
       { data: partijData }, { data: dbaData }, { data: contrData }, { data: tarData },
       { data: planData }, { data: bedrijfData }, { data: detData }, { data: ogData },
-      { data: kostData },
+      { data: kostData }, { data: verkoopData },
     ] = await Promise.all([
       supabase.from("profiles").select(PROFILE_FIELDS).order("full_name"),
       supabase.from("user_roles").select("user_id, role"),
@@ -61,6 +62,7 @@ export function useMedewerkersDesktop() {
       supabase.from("detacheringen").select("*").order("van"),
       supabase.from("opdrachtgevers").select("id, naam").order("naam"),
       supabase.from("kostentarieven").select("*").order("geldig_vanaf"),
+      supabase.from("verkooptarieven").select("*").order("geldig_vanaf"),
     ]);
 
     const rolMap = new Map((rolData ?? []).map((r: any) => [r.user_id, r.role]));
@@ -75,6 +77,7 @@ export function useMedewerkersDesktop() {
     setDetacheringen(detData ?? []);
     setOpdrachtgevers(ogData ?? []);
     setKostentarieven(kostData ?? []);
+    setVerkooptarieven(verkoopData ?? []);
     if (bedrijfData) setBedrijf({ dba_signaal_weken: bedrijfData.dba_signaal_weken ?? 12 });
     setLoading(false);
   }, []);
@@ -83,7 +86,7 @@ export function useMedewerkersDesktop() {
 
   return {
     profielen, certificaten, aanwijzingen, partijen, dbaChecks, contracten, tarieven,
-    planning, bedrijf, detacheringen, opdrachtgevers, kostentarieven,
+    planning, bedrijf, detacheringen, opdrachtgevers, kostentarieven, verkooptarieven,
     loading, refetch: fetchAll,
   };
 }
