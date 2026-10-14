@@ -706,6 +706,91 @@ export type Database = {
           },
         ]
       }
+      detacheringen: {
+        Row: {
+          created_at: string
+          id: string
+          medewerker_id: string
+          notitie: string | null
+          opdrachtgever_id: string
+          project_id: string | null
+          rol: string
+          tarief_override: number | null
+          tot: string | null
+          uren_per_week: number | null
+          van: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          medewerker_id: string
+          notitie?: string | null
+          opdrachtgever_id: string
+          project_id?: string | null
+          rol: string
+          tarief_override?: number | null
+          tot?: string | null
+          uren_per_week?: number | null
+          van: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          medewerker_id?: string
+          notitie?: string | null
+          opdrachtgever_id?: string
+          project_id?: string | null
+          rol?: string
+          tarief_override?: number | null
+          tot?: string | null
+          uren_per_week?: number | null
+          van?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "detacheringen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "detacheringen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "detacheringen_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "detacheringen_opdrachtgever_id_fkey"
+            columns: ["opdrachtgever_id"]
+            isOneToOne: false
+            referencedRelation: "opdrachtgevers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "detacheringen_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "detacheringen_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects_monteur"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forecast_regels: {
         Row: {
           aantal: number | null
@@ -1214,6 +1299,52 @@ export type Database = {
           {
             foreignKeyName: "kandidaten_profiel_id_fkey"
             columns: ["profiel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kostentarieven: {
+        Row: {
+          created_at: string
+          geldig_vanaf: string
+          id: string
+          medewerker_id: string
+          uurtarief: number
+        }
+        Insert: {
+          created_at?: string
+          geldig_vanaf: string
+          id?: string
+          medewerker_id: string
+          uurtarief: number
+        }
+        Update: {
+          created_at?: string
+          geldig_vanaf?: string
+          id?: string
+          medewerker_id?: string
+          uurtarief?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kostentarieven_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kostentarieven_medewerker_id_fkey"
+            columns: ["medewerker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kostentarieven_medewerker_id_fkey"
+            columns: ["medewerker_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
@@ -2047,6 +2178,7 @@ export type Database = {
           created_at: string
           email: string | null
           factuuradres: string | null
+          fictief_uurtarief: number | null
           full_name: string
           g_rekening: string | null
           geboortedatum: string | null
@@ -2055,6 +2187,7 @@ export type Database = {
           iban: string | null
           id: string
           invited_at: string | null
+          is_eigenaar: boolean
           is_onderaannemer: boolean
           kvk_nummer: string | null
           kvk_uittreksel_op: string | null
@@ -2099,6 +2232,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           factuuradres?: string | null
+          fictief_uurtarief?: number | null
           full_name: string
           g_rekening?: string | null
           geboortedatum?: string | null
@@ -2107,6 +2241,7 @@ export type Database = {
           iban?: string | null
           id?: string
           invited_at?: string | null
+          is_eigenaar?: boolean
           is_onderaannemer?: boolean
           kvk_nummer?: string | null
           kvk_uittreksel_op?: string | null
@@ -2151,6 +2286,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           factuuradres?: string | null
+          fictief_uurtarief?: number | null
           full_name?: string
           g_rekening?: string | null
           geboortedatum?: string | null
@@ -2159,6 +2295,7 @@ export type Database = {
           iban?: string | null
           id?: string
           invited_at?: string | null
+          is_eigenaar?: boolean
           is_onderaannemer?: boolean
           kvk_nummer?: string | null
           kvk_uittreksel_op?: string | null
@@ -2858,6 +2995,71 @@ export type Database = {
         }
         Relationships: []
       }
+      verkooptarieven: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          g_rekening_pct: number
+          geldig_vanaf: string
+          id: string
+          notitie: string | null
+          opdrachtgever_id: string
+          rol: string | null
+          uurtarief: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          g_rekening_pct?: number
+          geldig_vanaf: string
+          id?: string
+          notitie?: string | null
+          opdrachtgever_id: string
+          rol?: string | null
+          uurtarief: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          g_rekening_pct?: number
+          geldig_vanaf?: string
+          id?: string
+          notitie?: string | null
+          opdrachtgever_id?: string
+          rol?: string | null
+          uurtarief?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verkooptarieven_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "monteurs_voor_onderaannemer"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verkooptarieven_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verkooptarieven_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verkooptarieven_opdrachtgever_id_fkey"
+            columns: ["opdrachtgever_id"]
+            isOneToOne: false
+            referencedRelation: "opdrachtgevers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       monteurs_voor_onderaannemer: {
@@ -3069,6 +3271,10 @@ export type Database = {
         }
         Returns: Json
       }
+      kostentarief: {
+        Args: { _datum: string; _medewerker_id: string }
+        Returns: number
+      }
       list_planner_planning_sync_audit_v1: {
         Args: { _limit?: number }
         Returns: {
@@ -3160,6 +3366,15 @@ export type Database = {
           _starttijd: string
         }
         Returns: Json
+      }
+      verkooptarief: {
+        Args: { _datum: string; _opdrachtgever_id: string; _rol: string }
+        Returns: {
+          g_rekening_pct: number
+          geldig_vanaf: string
+          rol: string
+          uurtarief: number
+        }[]
       }
     }
     Enums: {
