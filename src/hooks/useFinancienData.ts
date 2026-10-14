@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { startOfWeek, addWeeks, format } from "date-fns";
 import { adminProjects } from "@/lib/projectsAdmin";
 import { berekenUren } from "@/lib/weekPlanning";
 import { forecastOmzet } from "@/lib/forecastCalculatie";
@@ -8,6 +9,7 @@ import {
   type AanwijzingRol,
   type CaseForecast,
   type DetacheringRij,
+  type FinancienInput,
   type FinancienUitkomst,
   type KostentariefRij,
   type PersoonInfo,
@@ -16,8 +18,16 @@ import {
   type VerkooptariefRij,
 } from "@/lib/financien";
 
+export interface SeriePunt {
+  week: string; // iso maandag
+  omzet: number;
+  kosten: number;
+  marge: number;
+}
+
 export interface FinancienData {
   uitkomst: FinancienUitkomst | null;
+  serie: SeriePunt[];
   loading: boolean;
   fout: string | null;
   vasteKostenPerWeek: number;
@@ -27,13 +37,17 @@ export interface FinancienData {
 /** Namen mogen in beide lijsten anders geschreven zijn (NH Montage B.V. vs nh montage). */
 export const normNaam = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
+const iso = (d: Date) => format(d, "yyyy-MM-dd");
+const WEEKGRENZEN = 12;
+
 /**
  * Haalt alles op wat het financieel overzicht nodig heeft en rekent het door
- * `berekenFinannen`. Tarieven worden hier alleen opgehaald; de bepaling per
- * dag gebeurt in lib/financien.ts (dezelfde regel als in de database).
+ * `berekenFinannen`. Tarieven worden hier alleen opgehaald; de bepaling per dag
+ * gebeurt in lib/financien.ts — dezelfde regel als de databasefuncties.
  */
 export function useFinancienData(van: string, tot: string): FinancienData {
   const [uitkomst, setUitkomst] = useState<FinancienUitkomst | null>(null);
+  const [serie, setSerie] = useState<SeriePunt[]>([]);
   const [loading, setLoading] = useState(true);
   const [fout, setFout] = useState<string | null>(null);
   const [vasteKostenPerWeek, setVasteKostenPerWeek] = useState(0);
@@ -48,6 +62,9 @@ export function useFinancienData(van: string, tot: string): FinancienData {
       setLoading(true);
       setFout(null);
 
+      // Het grafiekblok toont de laatste 12 weken; die halen we meteen mee op.
+      const serieVan = iso(startOfWeek(addWeeks(new Date(van), -(WEEKGRENZEN - 1)), { weekStartsOn: 1 }));
+
       const [
         boekingenRes, planningRes, projectenRes, profielenRes, verkoopRes, kostenRes,
         detRes, ogRes, aanwRes, partijenRes, forecastRes, regelsRes,
@@ -56,10 +73,10 @@ export function useFinancienData(van: string, tot: string): FinancienData {
         supabase.from("uren_boekingen")
           .select("medewerker_id, project_id, datum, uren, status")
           .in("status", ["goedgekeurd", "ingediend"])
-          .gte("datum", van).lte("datum", tot),
+          .gte("datum", serieVan).lte("datum", tot),
         supabase.from("planning")
           .select("medewerker_id, project_id, datum, starttijd, eindtijd")
-          .gte("datum", van).lte("datum", tot),
+          .gte("datum", serieVan).lte("datum", tot),
         adminProjects().select("id, naam, nummer, soort, opdrachtgever_id"),
         supabase.from("profiles").select("id, full_name, is_eigenaar, fictief_uurtarief"),
         supabase.from("verkooptarieven").select("*").order("geldig_vanaf"),
@@ -72,8 +89,8 @@ export function useFinancienData(van: string, tot: string): FinancienData {
         supabase.from("forecast_regels").select("forecast_id, tarief, aantal, geplande_uren, uurtarief_snap"),
         supabase.from("uren_boekingen").select("project_id, uren").neq("status", "afgekeurd"),
         supabase.from("planning").select("project_id, starttijd, eindtijd"),
-        supabase.from("inkooporder_regels").select("bedrag").eq("regel_type", "reiskosten")
-          .gte("datum", van).lte("datum", tot),
+        supabase.from("inkooporder_regels").select("bedrag, datum").eq("regel_type", "reiskosten")
+          .gte("datum", serieVan).lte("datum", tot),
         supabase.from("bedrijfsgegevens").select("vaste_kosten_per_week").limit(1).maybeSingle(),
       ]);
 
@@ -152,10 +169,10 @@ export function useFinancienData(van: string, tot: string): FinancienData {
         }));
 
       // Geboekte uren; geplande uren tellen alleen mee als er die dag nog niets geboekt is.
-      const uren: UrenRij[] = [];
+      const alleUren: UrenRij[] = [];
       const dagGeboekt = new Set<string>();
       for (const b of boekingenRes.data || []) {
-        uren.push({
+        alleUren.push({
           medewerker_id: b.medewerker_id,
           project_id: b.project_id,
           datum: b.datum,
@@ -168,7 +185,7 @@ export function useFinancienData(van: string, tot: string): FinancienData {
         if (dagGeboekt.has(`${p.medewerker_id}|${p.datum}`)) continue;
         const u = berekenUren(p.starttijd, p.eindtijd);
         if (u <= 0) continue;
-        uren.push({
+        alleUren.push({
           medewerker_id: p.medewerker_id,
           project_id: p.project_id,
           datum: p.datum,
@@ -198,16 +215,16 @@ export function useFinancienData(van: string, tot: string): FinancienData {
         totaal_uren: urenPerProject.get(f.project_id) || geplandPerProject.get(f.project_id) || 0,
       }));
 
-      const reiskosten = (reisRes.data || []).reduce((s: number, r: any) => s + Number(r.bedrag || 0), 0);
       const perWeek = Number(bedrijfRes.data?.vaste_kosten_per_week ?? 0) || 0;
       setVasteKostenPerWeek(perWeek);
-      const dagen = (new Date(tot).getTime() - new Date(van).getTime()) / 86400000 + 1;
-      const vasteKosten = perWeek * Math.max(1, Math.ceil(dagen / 7));
 
-      setUitkomst(berekenFinannen({
-        van,
-        tot,
-        uren,
+      const reiskostenPerWeek = new Map<string, number>();
+      for (const r of reisRes.data || []) {
+        const wk = iso(startOfWeek(new Date(r.datum), { weekStartsOn: 1 }));
+        reiskostenPerWeek.set(wk, (reiskostenPerWeek.get(wk) || 0) + Number(r.bedrag || 0));
+      }
+
+      const basis: Omit<FinancienInput, "van" | "tot" | "uren" | "reiskosten" | "vasteKosten"> = {
         projecten,
         personen,
         verkooptarieven,
@@ -215,10 +232,39 @@ export function useFinancienData(van: string, tot: string): FinancienData {
         detacheringen,
         aanwijzingsrollen,
         caseForecasts,
-        reiskosten,
-        vasteKosten,
         opdrachtgevers: ogLijst,
-      }));
+      };
+
+      function voorPeriode(periodeVan: string, periodeTot: string) {
+        const uren = alleUren.filter((u) => u.datum >= periodeVan && u.datum <= periodeTot);
+        const reiskosten = Array.from(reiskostenPerWeek.entries())
+          .filter(([wk]) => wk >= iso(startOfWeek(new Date(periodeVan), { weekStartsOn: 1 })))
+          .filter(([wk]) => wk <= iso(startOfWeek(new Date(periodeTot), { weekStartsOn: 1 })))
+          .reduce((s, [, n]) => s + n, 0);
+        const dagen = (new Date(periodeTot).getTime() - new Date(periodeVan).getTime()) / 86400000 + 1;
+        return berekenFinannen({
+          ...basis,
+          van: periodeVan,
+          tot: periodeTot,
+          uren,
+          reiskosten,
+          vasteKosten: perWeek * Math.max(1, Math.ceil(dagen / 7)),
+        });
+      }
+
+      setUitkomst(voorPeriode(van, tot));
+
+      const seriePunten: SeriePunt[] = [];
+      let wk = new Date(serieVan);
+      const wkEind = startOfWeek(new Date(tot), { weekStartsOn: 1 });
+      while (wk <= wkEind) {
+        const wkVan = iso(wk);
+        const wkTot = iso(addWeeks(wk, 1));
+        const r = voorPeriode(wkVan, wkTot);
+        seriePunten.push({ week: wkVan, omzet: r.omzet, kosten: r.kosten, marge: r.marge });
+        wk = addWeeks(wk, 1);
+      }
+      setSerie(seriePunten.slice(-WEEKGRENZEN));
       setLoading(false);
     }
 
@@ -226,5 +272,5 @@ export function useFinancienData(van: string, tot: string): FinancienData {
     return () => { dood = true; };
   }, [van, tot, poging]);
 
-  return { uitkomst, loading, fout, vasteKostenPerWeek, herladen };
+  return { uitkomst, serie, loading, fout, vasteKostenPerWeek, herladen };
 }
