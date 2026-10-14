@@ -629,8 +629,17 @@ export default function DesktopWeekPlanning() {
       if (isTarget) cls.push(afw || gevuld ? "is-drop-blocked" : "is-drop-target");
     }
     if (filterProject && gevuld && cel?.project_id !== filterProject) cls.push("is-dimmed");
+    if (!matchtAandacht(med, datum, cel)) cls.push("is-dimmed");
+    const legDezeDag = isLeeg(med, datum);
+    if (aandachtFilter === "leeg" && legDezeDag) cls.push("is-leeg-actief");
     if (c % 5 === 0 && c > 0) cls.push("wp-weeksep");
     const uren = cel ? berekenUren(cel.starttijd, cel.eindtijd) : 0;
+    const regels = cel ? liveRegels.get(celKey(med.id, datum)) ?? [] : [];
+    const boekInfo = gevuld && cel && datum < vandaag ? (() => {
+      const geboekt = boekingMap.get(celKey(med.id, datum)) ?? 0;
+      return { geboekt, vergelijking: vergelijkBoeking(berekenUren(cel.starttijd, cel.eindtijd), geboekt) };
+    })() : null;
+    if (boekInfo) cls.push(`wp-boek-${boekInfo.vergelijking}`);
     const label = gevuld
       ? `${med.full_name}, ${DAG_KORT[c]}: ${proj?.naam ?? "project"}, ${formatUrenGetal(uren)} uur${cel?.status !== "pub" ? `, concept ${cel?.status}` : ""}`
       : `${med.full_name}, ${DAG_KORT[c]}${afw ? `, ${AFW_CEL[afw]}` : ""}, leeg`;
@@ -658,6 +667,15 @@ export default function DesktopWeekPlanning() {
         {gevuld && cel ? (
           compact ? (
             <div className="wp-cell-compact"><i style={{ background: kleur.color }} /><span>{proj?.naam || proj?.nummer || "Onbekend project"}</span></div>
+          ) : regels.length >= 2 ? (
+            <>
+              <div className="wp-cell-stack">
+                {regels.map((r, i) => (
+                  <div key={i} className="wp-cell-stack-row">{projMap.get(r.project_id ?? "")?.naam ?? "Onbekend project"} {r.starttijd}–{r.eindtijd}</div>
+                ))}
+              </div>
+              {conflict && <span className="wp-conflict-dot" aria-hidden="true">!</span>}
+            </>
           ) : (
           <>
             <div className="wp-cell-title"><i /><span>{proj?.naam || proj?.nummer || "Onbekend project"}</span></div>
@@ -669,10 +687,14 @@ export default function DesktopWeekPlanning() {
           </>
           )
         ) : afw ? <span className="wp-afw-label">{AFW_CEL[afw]}</span> : null}
+        {boekInfo && boekInfo.vergelijking !== "gelijk" && (
+          <span className="wp-boek-label">{boekInfo.vergelijking === "niet-geboekt" ? "nog niet geboekt" : `geboekt ${formatUrenGetal(boekInfo.geboekt)} u`}</span>
+        )}
       </div>
     );
-    if (!conflict) return inhoud;
-    return <Tooltip key={datum}><TooltipTrigger asChild>{inhoud}</TooltipTrigger><TooltipContent>{conflict}</TooltipContent></Tooltip>;
+    const tooltipText = conflict ?? (boekInfo ? `Gepland ${formatUrenGetal(uren)} u, geboekt ${formatUrenGetal(boekInfo.geboekt)} u` : null);
+    if (!tooltipText) return inhoud;
+    return <Tooltip key={datum}><TooltipTrigger asChild>{inhoud}</TooltipTrigger><TooltipContent>{tooltipText}</TooltipContent></Tooltip>;
   };
 
   const panelMed = panelCel ? medMap.get(panelCel.medewerker_id) : undefined;
@@ -751,6 +773,19 @@ export default function DesktopWeekPlanning() {
               </div>
             </>
           )}
+          <span className="wp-controls-spacer" />
+          {aandachtAantallen.dubbel > 0 && (
+            <button type="button" className="wp-chip wp-chip-attn" aria-pressed={aandachtFilter === "dubbel"} onClick={() => setAandachtFilter((f) => (f === "dubbel" ? null : "dubbel"))}>{aandachtAantallen.dubbel} dubbel geboekt</button>
+          )}
+          {aandachtAantallen.weekgrens > 0 && (
+            <button type="button" className="wp-chip wp-chip-attn" aria-pressed={aandachtFilter === "weekgrens"} onClick={() => setAandachtFilter((f) => (f === "weekgrens" ? null : "weekgrens"))}>{aandachtAantallen.weekgrens} boven {weekgrens} u</button>
+          )}
+          {aandachtAantallen.leeg > 0 && (
+            <button type="button" className="wp-chip wp-chip-attn" aria-pressed={aandachtFilter === "leeg"} onClick={() => setAandachtFilter((f) => (f === "leeg" ? null : "leeg"))}>{aandachtAantallen.leeg} lege werkdagen</button>
+          )}
+          {aandachtAantallen.afwijkend > 0 && (
+            <button type="button" className="wp-chip wp-chip-attn" aria-pressed={aandachtFilter === "afwijkend"} onClick={() => setAandachtFilter((f) => (f === "afwijkend" ? null : "afwijkend"))}>{aandachtAantallen.afwijkend} afwijkend geboekt</button>
+          )}
         </div>
 
         <main className="wp-body">
@@ -803,9 +838,13 @@ export default function DesktopWeekPlanning() {
                       const over = overgepland.has(med.id);
                       const gl = gelezen?.get(med.id);
                       const ongelezen = gl?.laatst_gepubliceerd_op && (!gl.gelezen_op || gl.gelezen_op < gl.laatst_gepubliceerd_op);
+                      const overGrens = bovenWeekgrens(med.id);
+                      const legeDagenAantal = datums.filter((d) => isLeeg(med, d)).length;
                       const totaal = (
                         <div className={`wp-total ${over ? "is-over" : ""}`} role="gridcell">
                           <strong>{formatUren(uren)}</strong><small>{telt.length} {telt.length === 1 ? "dag" : "dagen"}</small>
+                          {overGrens && <small className="wp-total-grens">boven {weekgrens} u</small>}
+                          {legeDagenAantal > 0 && <small className="wp-total-leeg">{legeDagenAantal} {legeDagenAantal === 1 ? "dag" : "dagen"} leeg</small>}
                         </div>
                       );
                       return (
@@ -846,6 +885,10 @@ export default function DesktopWeekPlanning() {
                 <span><i style={{ background: "repeating-linear-gradient(135deg, var(--wp-verlof-a) 0 3px, var(--wp-verlof-b) 3px 6px)" }} />Verlof</span>
                 <span><i style={{ background: "var(--wp-vrij-bg)" }} />Vaste vrije dag</span>
                 <span><Lock size={13} aria-hidden="true" />Planner-koppeling</span>
+                <span><i style={{ background: "rgba(16,185,129,.55)" }} />Geboekt gelijk aan gepland</span>
+                <span><i style={{ background: "var(--wp-boek-afwijkend)" }} />Afwijkend geboekt</span>
+                <span><i style={{ background: "var(--wp-boek-niet)" }} />Nog niet geboekt</span>
+                <span><i style={{ background: "var(--wp-leeg-bg)", boxShadow: "inset 0 0 0 1.5px var(--wp-leeg-border)" }} />Lege werkdag (filter actief)</span>
               </div>
             </>
           )}
@@ -867,6 +910,9 @@ export default function DesktopWeekPlanning() {
           projectId={barProject}
           busy={busy}
           conceptModus={conceptModus}
+          weekgrens={weekgrens}
+          weekChunks={weekChunks}
+          weekUrenPerChunk={weekUrenPerChunk}
           onProjectChange={setBarProject}
           onPlan={plan}
           onVerwijder={verwijderSel}

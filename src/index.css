@@ -126,6 +126,11 @@ p, h1, h2, h3, span.selectable, input, textarea {
     --wp-on-accent:      #06291c;
     --wp-on-dark:        #ffffff;
     --wp-soft-bg:        #f8f9ff;
+    --wp-boek-gelijk:    rgba(16,185,129,.55);
+    --wp-boek-afwijkend: #d4a017;
+    --wp-boek-niet:      #ba1a1a;
+    --wp-leeg-bg:        #fffbef;
+    --wp-leeg-border:    #d4a017;
 
     /* Projectfasen (pill-bg / tekst / dot) */
     --fase-nieuw-bg: #eff4ff; --fase-nieuw-text: #3d4a5c; --fase-nieuw-dot: #8a97ab;
@@ -728,6 +733,8 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .wp-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wp-chip i { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 2px; }
 .wp-chip[aria-pressed="true"] { background: var(--wp-ink); border-color: var(--wp-ink); color: var(--wp-on-dark); }
+.wp-controls-spacer { flex: 1; }
+.wp-chip-attn[aria-pressed="true"] { background: var(--danger); border-color: var(--danger); color: var(--wp-on-dark); }
 
 .wp-body { padding: 6px 32px 0; }
 .wp-grid { display: grid; grid-template-columns: 240px repeat(5, minmax(120px, 1fr)) 96px; gap: 1px; background: var(--wp-grid-line); border: 1px solid var(--planning-border-soft); border-radius: 14px; overflow: hidden; user-select: none; }
@@ -768,10 +775,22 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .wp-conflict-dot { position: absolute; top: 5px; right: 6px; display: flex; width: 18px; height: 18px; align-items: center; justify-content: center; border-radius: 50%; background: var(--danger); color: var(--wp-on-dark); font-size: 11px; font-weight: 800; }
 .wp-grid .wp-cell.is-selected { background: var(--wp-selected); box-shadow: inset 0 0 0 2px var(--accent-dark); }
 .wp-cell.is-dimmed { opacity: .35; }
+.wp-cell.is-leeg-actief { background: var(--wp-leeg-bg) !important; box-shadow: inset 0 0 0 1.5px var(--wp-leeg-border); }
+.wp-cell-stack { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wp-cell-stack-row { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wp-cell.wp-boek-gelijk::after, .wp-cell.wp-boek-afwijkend::after, .wp-cell.wp-boek-niet-geboekt::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; }
+.wp-cell.wp-boek-gelijk::after { background: var(--wp-boek-gelijk); }
+.wp-cell.wp-boek-afwijkend::after { background: var(--wp-boek-afwijkend); }
+.wp-cell.wp-boek-niet-geboekt::after { background: var(--wp-boek-niet); }
+.wp-boek-label { position: absolute; left: 8px; bottom: 5px; font-size: 10px; font-weight: 700; }
+.wp-boek-afwijkend .wp-boek-label { color: var(--wp-boek-afwijkend); }
+.wp-boek-niet-geboekt .wp-boek-label { color: var(--wp-boek-niet); }
 .wp-total { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; height: 66px; padding: 0 12px; }
 .wp-total strong { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; }
 .wp-total small { font-size: 12px; color: var(--text-muted); }
 .wp-total.is-over strong, .wp-total.is-over small { color: var(--danger); }
+.wp-total-grens { color: var(--danger); font-weight: 700; }
+.wp-total-leeg { color: #8b6914; font-weight: 700; }
 .wp-grid .wp-foot { display: flex; flex-direction: column; justify-content: center; min-height: 52px; padding: 8px 12px; background: var(--bg-surface-2); font-size: 12px; color: var(--text-muted); }
 .wp-foot span + strong, .wp-foot.is-total strong { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text-primary); font-weight: 500; }
 .wp-foot.is-total { align-items: flex-end; }
@@ -798,6 +817,7 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .wp-bar-plan { height: 36px; padding: 0 16px; border-radius: 10px; background: var(--accent); color: var(--wp-on-accent); font-size: 14px; font-weight: 800; }
 .wp-bar-plan:disabled { opacity: .45; }
 .wp-bar-skip { font-size: 13px; color: var(--wp-bar-warn); }
+.wp-bar-warn-row { font-size: 13px; font-weight: 600; color: var(--wp-bar-warn); }
 .wp-bar-close { color: var(--wp-bar-muted); }
 
 /* Zijpaneel */
