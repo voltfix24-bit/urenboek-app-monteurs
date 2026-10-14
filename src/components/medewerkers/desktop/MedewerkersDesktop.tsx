@@ -186,6 +186,7 @@ export default function MedewerkersDesktop() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
