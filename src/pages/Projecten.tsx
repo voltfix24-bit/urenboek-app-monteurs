@@ -23,7 +23,7 @@ import { DesktopProjectDetail, DesktopFormPanel } from "@/components/projecten/D
 import { valideer, projectSchema, projectEditSchema } from "@/lib/validatie";
 import { ListSkeleton, ProjectCardSkeleton } from "@/components/ui/Skeletons";
 import { Button } from "@/components/ui/button";
-import { STATUS_CONFIG, STATUS_VOLGORDE } from "@/lib/projectStatus";
+import { STATUS_CONFIG, STATUS_VOLGORDE, projectGroep } from "@/lib/projectStatus";
 import { isLopend, openPunten } from "@/lib/projectChecklist";
 import { UitleenUrenKaart } from "@/components/projecten/UitleenUrenKaart";
 import { endOfISOWeek, format as fmtDatum, startOfISOWeek } from "date-fns";
@@ -66,8 +66,9 @@ export default function Projecten() {
   const [searchQuery, setSearchQuery] = useState("");
   const [desktopMode, setDesktopMode] = useState<"view" | "add" | "edit">("view");
   const [statusFilter, setStatusFilter] = useState("alle");
-  const [deskFase, setDeskFase] = useState<string>("lopend");
+  const [deskFase, setDeskFase] = useState<string>("alle");
   const [deskArchief, setDeskArchief] = useState(false);
+  const [mobielArchief, setMobielArchief] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const { focus, clear: clearFocus } = useFocusParam();
   useClearFocusOnClose(selectedId !== null);
@@ -269,24 +270,112 @@ export default function Projecten() {
     return projects.filter(p => (deskArchief || p.active) && (!q || [p.naam, p.nummer, p.stad, p.stationsnaam].some(v => v?.toLowerCase().includes(q))));
   }, [projects, searchQuery, deskArchief]);
   const matchFase = (p: Project, f: string) => {
-    const s = p.status || "nieuw";
-    if (f === "uitleen") return isUitleen(p);
-    if (isUitleen(p)) return false;
-    if (f === "lopend") return s !== "gesloten";
-    if (f === "aandacht") return isLopend(p) && openPunten(p) > 0;
-    return s === f;
+    if (f === "alle") return true;
+    const g = projectGroep(p);
+    if (f === "uitleen") return g === "uitleen";
+    if (f === "lopend") return g === "lopend";
+    if (f === "afgerond") return g === "afgerond";
+    if (f === "aandacht") return g === "lopend" && openPunten(p) > 0;
+    return (p.status || "nieuw") === f;
   };
   const deskCounts = useMemo(() => {
     const c: Record<string, number> = {};
-    ["lopend", "aandacht", ...STATUS_VOLGORDE, "uitleen"].forEach(f => { c[f] = desktopBase.filter(p => matchFase(p, f)).length; });
+    ["alle", "lopend", "aandacht", "uitleen", "afgerond"].forEach(f => { c[f] = desktopBase.filter(p => matchFase(p, f)).length; });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [desktopBase]);
-  const desktopProjects = useMemo(() => desktopBase.filter(p => matchFase(p, deskFase)).sort((a, b) => Number(b.active) - Number(a.active) || (b.created_at ?? "").localeCompare(a.created_at ?? "")),
+  const byDatumDesc = (a: Project, b: Project) => (b.created_at ?? "").localeCompare(a.created_at ?? "");
+  const desktopProjects = useMemo(() => desktopBase.filter(p => matchFase(p, deskFase)).sort((a, b) => Number(b.active) - Number(a.active) || byDatumDesc(a, b)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [desktopBase, deskFase]);
+  /** "Alles": drie groepen met kop, nieuwste bovenaan; archief onderaan alleen met "Archief tonen". */
+  const desktopGroepen = useMemo(() => {
+    const actief = desktopBase.filter(p => p.active);
+    const groepen = [
+      { label: "Lopende klussen", projects: actief.filter(p => projectGroep(p) === "lopend").sort(byDatumDesc) },
+      { label: "Uitleen", projects: actief.filter(p => projectGroep(p) === "uitleen").sort(byDatumDesc) },
+      { label: "Afgerond", projects: actief.filter(p => projectGroep(p) === "afgerond").sort(byDatumDesc) },
+    ];
+    if (deskArchief) groepen.push({ label: "Archief", projects: desktopBase.filter(p => !p.active).sort(byDatumDesc) });
+    return groepen;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [desktopBase, deskArchief]);
   const lopendTotaal = projects.filter(p => !isUitleen(p) && isLopend(p)).length;
   const aandachtTotaal = projects.filter(p => !isUitleen(p) && isLopend(p) && openPunten(p) > 0).length;
+
+  // ── Mobiel: zelfde groepen en filters ──
+  const zoekMatch = (p: Project) => !searchQuery.trim() || p.naam?.toLowerCase().includes(searchQuery.toLowerCase()) || p.nummer?.toLowerCase().includes(searchQuery.toLowerCase());
+  const mobielBase = projects.filter(zoekMatch).filter(p => mobielArchief || p.active);
+  const mobielGroepen = [
+    { label: "Lopende klussen", items: mobielBase.filter(p => p.active && projectGroep(p) === "lopend").sort(byDatumDesc) },
+    { label: "Uitleen", items: mobielBase.filter(p => p.active && projectGroep(p) === "uitleen").sort(byDatumDesc) },
+    { label: "Afgerond", items: mobielBase.filter(p => p.active && projectGroep(p) === "afgerond").sort(byDatumDesc) },
+    ...(mobielArchief ? [{ label: "Archief", items: mobielBase.filter(p => !p.active).sort(byDatumDesc) }] : []),
+  ];
+  const mobielLijst = sorteerProjecten(mobielBase.filter(p => matchFase(p, statusFilter)));
+  const groepLabelStyle = { fontSize: 10, fontWeight: 700, fontFamily: "Hanken Grotesk", textTransform: "uppercase" as const, letterSpacing: "0.2em", color: "var(--text-muted)", marginBottom: 10 };
+
+  const renderProjectCard = (project: Project) => {
+    const uitleen = isUitleen(project);
+    const isConcept = !uitleen && project.status === "concept";
+    const borderColor = isConcept ? "var(--warn-text)" : "var(--accent)";
+    return (
+      <div key={project.id} onClick={() => setSelectedId(project.id)} style={{
+        background: "var(--bg-surface)",
+        backdropFilter: "blur(12px)", borderRadius: 20,
+        border: "1px solid var(--planning-border-soft)", borderLeft: `4px solid ${borderColor}`,
+        overflow: "hidden", cursor: "pointer",
+      }}>
+        <div style={{ padding: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+            <div>
+              <p style={{ fontSize: 10, fontFamily: "Hanken Grotesk", fontWeight: 700, color: "var(--text-muted)", fontVariant: "tabular-nums", marginBottom: 4 }}>ID #{project.nummer}</p>
+              <h3 style={{ fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 16, color: "var(--text-primary)", lineHeight: 1.3 }}>{project.naam}</h3>
+              {project.stad && (
+                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 14, color: "var(--text-muted)" }}>location_on</span>
+                  <span style={{ fontSize: 13, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>{project.stad}</span>
+                </div>
+              )}
+            </div>
+            <div style={{ padding: "4px 12px", borderRadius: 9999, background: isConcept ? "var(--warn-light)" : "var(--accent-light)", border: `1px solid ${borderColor}50` }}>
+              <span style={{ fontSize: 9, fontWeight: 800, fontFamily: "Hanken Grotesk", textTransform: "uppercase", color: borderColor }}>
+                {uitleen ? "UITLEEN" : isConcept ? "CONCEPT" : project.active ? "ACTIEF" : "AFGEROND"}
+              </span>
+            </div>
+          </div>
+
+          {/* Progress */}
+          {uitleen && (
+            <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>{formatUrenKort(uitleenWeekUren.get(project.id) ?? 0)} deze week</p>
+          )}
+          {!isConcept && !uitleen && (
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>
+                  {margeMap.get(project.id)?.omzet ? `€ ${margeMap.get(project.id)!.omzet.toLocaleString("nl")}` : "0 uur geboekt"}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", fontFamily: "Hanken Grotesk" }}>
+                  {margeMap.get(project.id)?.marge ? `${Math.round(margeMap.get(project.id)!.marge)}%` : "—"}
+                </span>
+              </div>
+              <div style={{ height: 4, background: "var(--bg-surface-2)", borderRadius: 9999, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${Math.min(100, margeMap.get(project.id)?.marge || 0)}%`, background: "var(--accent)", borderRadius: 9999, boxShadow: "0 0 8px color-mix(in srgb, var(--accent) 35%, transparent)" }} />
+              </div>
+            </div>
+          )}
+
+          {/* Concept warning */}
+          {isConcept && (
+            <div style={{ background: "var(--warn-light)", borderTop: "1px solid rgba(254,179,0,0.15)", padding: "10px 0 0", display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 16, color: "var(--warn-text)", fontVariationSettings: "'FILL' 1" }}>warning</span>
+              <span style={{ fontSize: 12, color: "var(--warn-text)", fontFamily: "Hanken Grotesk", fontWeight: 600 }}>Nog geen monteurs ingepland</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <>
