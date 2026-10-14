@@ -43,6 +43,13 @@
       "when": 1791960655159,
       "tag": "0005_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791961958880,
+      "tag": "0006_manager_insert_beschikbaarheid",
+      "breakpoints": true
     }
   ]
 }
