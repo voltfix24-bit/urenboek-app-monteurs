@@ -53,6 +53,9 @@ interface Props {
   onWijzig: (cellen: Cel[], keuze: WijzigKeuze) => void;
   onBeschikbaarheid: (paren: SelCel[], beschikbaar: boolean) => void;
   onRepeat: () => void;
+  /** Actieve detacheringen (manager-only); Used voor "Uitleen invullen". */
+  detacheringen?: { medewerker_id: string; project_id: string | null; van: string; tot: string | null }[];
+  onDetacheringVullen?: (projectId: string, paren: SelCel[]) => void;
   enterProjectId: string | null;
   onClose: () => void;
 }
@@ -123,6 +126,18 @@ export function ActieBalk(props: Props) {
   const elders = selCellen.filter((s) => bepaalAfwezigheid(medMap.get(s.medId), s.datum, beschikbaarheid) === "elders");
   const ietsGekozen = !!(keuze.project_id || keuze.tijd || keuze.notitie);
 
+  // Eén gezamenlijke actieve uitleen van de geselecteerde medewerkers?
+  const detProjecten = useMemo(() => {
+    const nu = new Date().toISOString().slice(0, 10);
+    const set = new Set<string>();
+    for (const id of selMedIds) {
+      const d = (props.detacheringen ?? []).find((x) => x.medewerker_id === id && x.project_id && x.van <= nu && (!x.tot || x.tot >= nu));
+      if (d?.project_id) set.add(d.project_id);
+    }
+    return set;
+  }, [props.detacheringen, selMedIds]);
+  const detProjectId = detProjecten.size === 1 ? Array.from(detProjecten)[0] : null;
+
   const recent = leesRecent().filter((id) => !weekProjectIds.includes(id) && projects.some((p) => p.id === id)).slice(0, 3);
   const knoppen = [...weekProjectIds.slice(0, 5), ...recent];
   if (projectId && !knoppen.includes(projectId)) knoppen.unshift(projectId);
@@ -173,6 +188,11 @@ export function ActieBalk(props: Props) {
         <input className="wp-bar-note" placeholder="Notitie (optioneel)" value={notitie} onChange={(e) => setNotitie(e.target.value)} aria-label="Notitie" />
         {leegBeschikbaar.length > 0 && <button type="button" className="wp-bar-btn" disabled={busy} title="Werkt deze dag(en) voor een andere opdracht" onClick={() => props.onBeschikbaarheid(leegBeschikbaar, false)}>Niet beschikbaar ({leegBeschikbaar.length})</button>}
         {elders.length > 0 && <button type="button" className="wp-bar-btn" disabled={busy} onClick={() => props.onBeschikbaarheid(elders, true)}>Weer beschikbaar ({elders.length})</button>}
+        {detProjectId && props.onDetacheringVullen && leegBeschikbaar.length > 0 && (
+          <button type="button" className="wp-bar-btn" disabled={busy} title="Vult de lege dagen met de actieve uitleen van deze medewerker" onClick={() => props.onDetacheringVullen!(detProjectId, paren)}>
+            Uitleen invullen ({leegBeschikbaar.length})
+          </button>
+        )}
         {heeftInhoud && <button type="button" className="wp-bar-clear" disabled={busy} onClick={() => props.onVerwijder(ingevuld)}>Verwijderen ({ingevuld.length})</button>}
         {heeftInhoud && <button type="button" className="wp-bar-btn" disabled={busy || !ietsGekozen} onClick={() => props.onWijzig(ingevuld, keuze)}>Wijzigen ({ingevuld.length})</button>}
         {(doelen.length > 0 || !heeftInhoud) && (

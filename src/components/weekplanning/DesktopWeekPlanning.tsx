@@ -22,7 +22,7 @@ import { useWeekPlanningData } from "@/hooks/useWeekPlanningData";
 import { groepeerRijen, filterToon, vrijOpDag, wijzigingenOpDag, bouwLiveRegels, dubbeleBoekingTekst, berekenWeekUren, vergelijkBoeking, isLegeWerkdag, type GroepMode, type ToonMode } from "@/lib/weekPlanningV2";
 import {
   actieVoorBewerken, actieVoorVerwijderen, bepaalAfwezigheid, berekenUren, bouwCellen, bouwNieuwConcepten,
-  celBezet, celKey, celTelt, ELDERS_TYPE, parseWeekParam, telConcepten, type Cel, type PlanWaarden,
+  celBezet, celKey, celTelt, ELDERS_TYPE, parseWeekParam, telConcepten, TIJDBLOKKEN, type Cel, type PlanWaarden,
 } from "@/lib/weekPlanning";
 import { ActieBalk, doelenVoorCellen, type SelCel, type WijzigKeuze } from "./ActieBalk";
 import { BewerkPaneel } from "./BewerkPaneel";
@@ -46,7 +46,7 @@ export default function DesktopWeekPlanning() {
   const [groepMode, setGroepMode] = useState<GroepMode>("geen");
   const [toonMode, setToonMode] = useState<ToonMode>("iedereen");
   const [vrijFilter, setVrijFilter] = useState<string | null>(null);
-  const { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, boekingen, weekgrens, loading, refetch } = useWeekPlanningData(weekStart, weeksCount);
+  const { bevoegdheden, gelezen, planning, concepten, medewerkers, projects, beschikbaarheid, boekingen, detacheringen, weekgrens, loading, refetch } = useWeekPlanningData(weekStart, weeksCount);
   const [aandachtFilter, setAandachtFilter] = useState<null | "dubbel" | "weekgrens" | "leeg" | "afwijkend">(null);
 
   const conceptModus = true;
@@ -229,6 +229,33 @@ export default function DesktopWeekPlanning() {
     wisSel();
     rememberUndo(undo);
     toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingepland op ${projectNaam} (concept)`, undoToast(undo));
+    if (overgeslagen.length > 0) toast.info(`${overgeslagen.length} ${overgeslagen.length === 1 ? "dag" : "dagen"} overgeslagen (verlof, ziek of vrij)`);
+  });
+
+  /**
+   * Vult de geselecteerde lege dagen vooraf met de actieve uitleen (detachering)
+   * van de gekozen medewerker(s). Zelfde logica als inplannen en herhalen: alleen
+   * lege dagen, verlof/ziek/vrije dagen worden overgeslagen. Alles blijft concept.
+   */
+  const planDetachering = (projectId: string, paren: SelCel[]) => run(async () => {
+    if (!profileId) return;
+    const { doelen, overgeslagen } = doelenVoorCellen(paren, cellen, medewerkers, beschikbaarheid);
+    if (doelen.length === 0) { toast.error("Niets in te vullen: geen lege, beschikbare dagen geselecteerd."); return; }
+    const p = projMap.get(projectId);
+    const uitleen = p?.soort === "uitleen"
+      ? { werklocatie: p.adres || null, contactpersoon: p.contactpersoon_naam || null, contact_telefoon: p.contactpersoon_tel || null }
+      : {};
+    const [starttijd, eindtijd] = TIJDBLOKKEN[0];
+    const waarden: PlanWaarden = { project_id: projectId, starttijd, eindtijd, notitie: "", ...uitleen };
+    const rows = bouwNieuwConcepten(doelen, waarden, profileId);
+    const undo = await capture(rows);
+    const { data, error } = await supabase.from("planning_concept").insert(rows as ConceptInsert[]).select("id");
+    if (error) throw error;
+    const ids = (data ?? []).map((r) => r.id);
+    bewaarRecent(projectId);
+    wisSel();
+    rememberUndo(undo);
+    toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingevuld op ${p?.naam ?? "uitleen"} (concept)`, undoToast(undo));
     if (overgeslagen.length > 0) toast.info(`${overgeslagen.length} ${overgeslagen.length === 1 ? "dag" : "dagen"} overgeslagen (verlof, ziek of vrij)`);
   });
 
@@ -919,6 +946,8 @@ export default function DesktopWeekPlanning() {
           onWijzig={wijzigSel}
           onBeschikbaarheid={zetBeschikbaarheid}
           onRepeat={() => setRepeatOpen(true)}
+          detacheringen={detacheringen}
+          onDetacheringVullen={planDetachering}
           enterProjectId={barProject ?? leesRecent()[0] ?? null}
           onClose={wisSel}
         />
