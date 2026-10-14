@@ -96,7 +96,7 @@ export function useFinancienData(van: string, tot: string): FinancienData {
 
       if (dood) return;
 
-      if (projektenRes.error) {
+      if (projectenRes.error) {
         setFout("Projectgegevens konden niet worden opgehaald.");
         setLoading(false);
         return;
@@ -107,7 +107,7 @@ export function useFinancienData(van: string, tot: string): FinancienData {
         return;
       }
 
-      const projecten: ProjectInfo[] = (projektenRes.data || []).map((p: any) => ({
+      const projecten: ProjectInfo[] = (projectenRes.data || []).map((p: any) => ({
         id: p.id,
         naam: p.naam,
         nummer: p.nummer,
