@@ -1119,3 +1119,53 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .mw-modal-overlay { position: fixed; inset: 0; background: rgba(18,28,42,.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .mw-modal { background: var(--bg-surface); border-radius: 16px; padding: 20px; width: min(480px, 92vw); max-height: 86vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
 .mw-modal input, .mw-modal select { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--planning-border-soft); font-size: 14px; background: var(--bg-base); color: var(--text-primary); margin-bottom: 10px; }
+
+/* ============ Financieel overzicht (desktop, alleen managers) ============ */
+.fn-root { display: none; }
+@media (min-width: 1024px) {
+  .fn-root { display: flex; flex-direction: column; min-height: 100vh; margin-left: 240px; background: var(--app-navy); }
+}
+.fn-header { padding: 24px 32px 14px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.fn-title { font-size: 26px; font-weight: 800; color: var(--text-primary); }
+.fn-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+.fn-knoppen { display: flex; gap: 8px; }
+.fn-knoppen .mw-btn { display: inline-flex; align-items: center; gap: 6px; }
+.fn-body { padding: 0 32px 60px; display: flex; flex-direction: column; gap: 16px; }
+.fn-balk { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.fn-nav { display: flex; align-items: center; gap: 6px; }
+.fn-pijl { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--planning-border-soft); background: var(--bg-surface); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.fn-pijl:hover { background: var(--bg-surface-2); }
+.fn-periode { font: 500 15px 'DM Mono', monospace; color: var(--text-primary); min-width: 170px; text-align: center; }
+.fn-mode { display: inline-flex; border: 1px solid var(--planning-border-soft); border-radius: 10px; overflow: hidden; background: var(--bg-surface); }
+.fn-mode button { padding: 7px 14px; font-size: 13px; font-weight: 600; border: none; background: transparent; color: var(--text-muted); cursor: pointer; }
+.fn-mode button[aria-pressed="true"] { background: var(--accent-light); color: var(--accent-dark); }
+.fn-kerncijfers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.fn-kern { background: var(--bg-surface); border: 1px solid var(--planning-border-soft); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fn-kern-label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+.fn-kern-waarde { font: 500 26px 'DM Mono', monospace; color: var(--text-primary); }
+.fn-kern-sub { font-size: 12px; color: var(--text-muted); }
+.fn-fouten { display: flex; flex-direction: column; gap: 6px; }
+.fn-waarschuwing { display: flex; align-items: center; gap: 8px; background: var(--warn-light); border: 1px solid var(--warn-border); border-radius: 12px; padding: 10px 14px; font-size: 13px; color: var(--warn-text); }
+.fn-link { margin-left: auto; border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--accent-dark); text-decoration: underline; cursor: pointer; white-space: nowrap; }
+.fn-r { text-align: right; font-family: 'DM Mono', monospace; }
+.fn-cel-naam { display: block; font-weight: 700; color: var(--text-primary); }
+.fn-cel-sub { display: block; font-size: 12px; color: var(--text-muted); }
+.fn-onbekend { color: var(--danger); font-weight: 700; }
+.fn-leeg { color: var(--text-muted); font-size: 13px; padding: 14px 8px; }
+.fn-eigen-kop { margin-top: 14px; font-weight: 700; color: var(--text-secondary); }
+.fn-ruimte { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--planning-border-soft); padding-top: 10px; }
+.fn-ruimte-rij { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-secondary); padding: 3px 0; }
+.fn-ruimte-rij b { font: 500 14px 'DM Mono', monospace; }
+.fn-ruimte-totaal { display: flex; justify-content: space-between; margin-top: 6px; padding-top: 8px; border-top: 1.5px solid var(--accent-border); font-size: 15px; font-weight: 800; color: var(--text-primary); }
+.fn-ruimte-totaal b { font: 500 20px 'DM Mono', monospace; color: var(--accent-dark); }
+.fn-vaste-kosten { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13px; color: var(--text-muted); border-top: 1px dashed var(--planning-border-soft); padding-top: 10px; }
+.fn-inline { display: inline-flex; align-items: center; gap: 6px; }
+.fn-input { width: 110px; padding: 6px 10px; border: 1px solid var(--accent-border); border-radius: 8px; font: 500 14px 'DM Mono', monospace; background: var(--bg-base); color: var(--text-primary); text-align: right; }
+.fn-legenda { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); }
+.fn-legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; }
+.fn-grafiek { display: flex; align-items: flex-end; gap: 8px; height: 150px; padding-top: 10px; }
+.fn-grafiek-week { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; height: 100%; }
+.fn-staafjes { flex: 1; display: flex; align-items: flex-end; gap: 2px; width: 100%; }
+.fn-staafjes span { flex: 1; border-radius: 3px 3px 0 0; min-height: 2px; }
+.fn-grafiek-label { font: 500 11px 'DM Mono', monospace; color: var(--text-muted); }
+.fn-mobile { padding: 28px 20px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
