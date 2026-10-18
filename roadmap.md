@@ -1,7 +1,7 @@
 # Roadmap
 
 - [x] Lever PDF-kopie van Yazans opgeslagen contract met zijn handtekening; alle zeven pagina’s gecontroleerd, TerreVolt heeft nog niet ondertekend.
-- [ ] Voorkom dubbele Verlet-/werkuren: wacht op bevestiging of gedeeltelijk werk plus Verlet op dezelfde dag toegestaan is; blokkeer geen legitiem overwerk.
+- [ ] Voorkom dubbele Verlet-/werkuren via databasecontrole bij boeken, goedkeuren en inkooporders; test met teruggedraaide proefboekingen zonder bestaande gegevens te wijzigen.
 
 - [x] Weekplanning v2 stap 1: desktop altijd concept, verplaatsen/kopiëren, clipboard, herhalen, toetsenbord en 30 acties ongedaan maken; tests en manager-browsercontrole uitgevoerd, tijdelijke concepten opgeruimd.
 - [ ] Weekplanning v2 stap 2–5: wachten op afzonderlijk akkoord na de voorgaande stap.
