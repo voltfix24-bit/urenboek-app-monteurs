@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Lever Yazans bestaande contract met juiste ondertekenstatus.
+- [ ] Voorkom dubbele Verlet-/werkuren op inkooporders zonder legitiem overwerk te blokkeren; controleer de gekozen correctie.
+
 - [x] Weekplanning v2 stap 1: desktop altijd concept, verplaatsen/kopiëren, clipboard, herhalen, toetsenbord en 30 acties ongedaan maken; tests en manager-browsercontrole uitgevoerd, tijdelijke concepten opgeruimd.
 - [ ] Weekplanning v2 stap 2–5: wachten op afzonderlijk akkoord na de voorgaande stap.
 
