@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -51,6 +52,8 @@ export default function Kandidaten() {
   const { permissies } = useAuth();
   const { profileId, profile: profileCtx } = useProfile();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const signHandledRef = useRef<string | null>(null);
   const [kandidaten, setKandidaten] = useState<Kandidaat[]>([]);
   const [contracten, setContracten] = useState<any[]>([]);
   const [berichten, setBerichten] = useState<any[]>([]);
@@ -141,6 +144,19 @@ export default function Kandidaten() {
   }, []);
 
   useEffect(() => { fetchKandidaten(); }, [fetchKandidaten]);
+
+  useEffect(() => {
+    const id = searchParams.get("ondertekenen");
+    if (!id || loading || !profileId || !permissies.magContractenBeheren || signHandledRef.current === id) return;
+    const kandidaat = kandidaten.find(k => k.id === id);
+    const contract = contracten.find(c => c.kandidaat_id === id && c.status === "ondertekend_ot");
+    signHandledRef.current = id;
+    if (kandidaat && contract) void openSignModal(kandidaat);
+    else toast.error("Geen contract dat op jouw handtekening wacht");
+    const next = new URLSearchParams(searchParams);
+    next.delete("ondertekenen");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, loading, profileId, permissies.magContractenBeheren, kandidaten, contracten, setSearchParams]);
 
   const gefilterd = filter === "alle" ? kandidaten : kandidaten.filter(k => k.status === filter);
 
@@ -274,18 +290,19 @@ export default function Kandidaten() {
   }
 
   async function voltooiContract() {
-    if (!signContract || !signKandidaat || !profileId) return;
+    if (!signContract || !signKandidaat || !profileId || !permissies.magContractenBeheren || signing) return;
     const htToUse = (useOpgeslagen && managerHt && !showCanvas) ? managerHt : nieuweHt;
     if (!htToUse) { toast.error("Teken eerst een handtekening"); return; }
 
     setSigning(true);
     try {
       if (saveHt && (nieuweHt || showCanvas)) {
-        await supabase.from("manager_handtekeningen").upsert({
+        const { error: signatureError } = await supabase.from("manager_handtekeningen").upsert({
           profiel_id: profileId,
           handtekening: htToUse,
           updated_op: new Date().toISOString(),
         }, { onConflict: "profiel_id" });
+        if (signatureError) throw signatureError;
       }
 
       const managerNaam = profileCtx?.full_name || "";
@@ -299,9 +316,10 @@ export default function Kandidaten() {
 
       const bestandsnaam = `${signContract.id}.pdf`;
       const blob = dataUriToBlob(dataUri);
-      await supabase.storage.from("contracten").upload(bestandsnaam, blob, { contentType: "application/pdf", upsert: true });
+      const { error: uploadError } = await supabase.storage.from("contracten").upload(bestandsnaam, blob, { contentType: "application/pdf", upsert: true });
+      if (uploadError) throw uploadError;
 
-      await supabase.from("contracten").update({
+      const { data: completed, error: completeError } = await supabase.from("contracten").update({
         og_naam: managerNaam,
         og_handtekening: htToUse,
         og_profiel_id: profileId,
@@ -309,7 +327,8 @@ export default function Kandidaten() {
         status: "ondertekend_beiden",
         pdf_path: bestandsnaam,
         pdf_hash: hash,
-      }).eq("id", signContract.id);
+      }).eq("id", signContract.id).eq("status", "ondertekend_ot").select("id").single();
+      if (completeError || !completed) throw completeError || new Error("Contract kon niet worden voltooid");
 
       await supabase.from("kandidaten").update({ status: "gecontracteerd" }).eq("id", signKandidaat.id);
 
@@ -713,7 +732,7 @@ export default function Kandidaten() {
 
       {/* Manager onderteken modal */}
       {signKandidaat && signContract && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setSignKandidaat(null); setSignContract(null); }}>
+        <div className="fixed inset-0 z-[100] flex items-end justify-center" onClick={() => { setSignKandidaat(null); setSignContract(null); }}>
           <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
           <div className="relative w-full animate-in slide-in-from-bottom rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--planning-border-soft)" }} />
@@ -755,11 +774,10 @@ export default function Kandidaten() {
               )}
             </div>
 
-            <button onClick={voltooiContract} disabled={signing || (!(useOpgeslagen && managerHt && !showCanvas) && !nieuweHt)}
-              className="w-full py-3 rounded-2xl text-sm font-bold disabled:opacity-40"
-              style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))", color: "#fff" }}>
+            <Button onClick={voltooiContract} disabled={signing || (!(useOpgeslagen && managerHt && !showCanvas) && !nieuweHt)}
+              className="w-full h-12 text-sm font-bold">
               {signing ? "Bezig met ondertekenen..." : "Contract voltooien ✓"}
-            </button>
+            </Button>
           </div>
         </div>
       )}

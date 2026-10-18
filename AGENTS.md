@@ -1,5 +1,7 @@
 # AGENTS.md
 
+- Employee contract signing links reuse the manager-only Kandidaten signing flow via an explicit query parameter; stop completion if signature storage, PDF upload or contract update fails. Why: mobile and desktop must produce the same signed document and never report success without persistence.
+
 - Enforce mutually exclusive Verlet/work bookings per employee/day in database triggers on bookings and purchase-order lines; ignore rejected bookings and serialize on the employee profile. Why: all booking/approval/order paths must reject overlaps, including concurrent requests, without capping legitimate overtime.
 
 - Never put real sales prices (tarieven) in client code, fixtures or `public/` assets; load them only from manager-only `spec_code_tarieven` via `loadSpecCodes`, which throws instead of falling back. Why: the JS bundle and public files are readable by anyone.

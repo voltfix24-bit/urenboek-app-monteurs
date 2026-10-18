@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Phone, MapPin, Mail, ShieldAlert, Calendar, Building2, Hash, CreditCard, AlertTriangle, Download, FileText, Check, X, Trash2, Edit2, Save, KeyRound, Copy, Eye, EyeOff, RotateCw } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -434,6 +435,11 @@ export function MedewerkerDetail({ emp, certs, onRefreshCerts, onRefresh, onDele
               <button onClick={downloadPdf} className="flex items-center gap-1.5 text-xs font-medium mt-1" style={{ color: "var(--accent)" }}>
                 <Download className="h-3.5 w-3.5" /> PDF downloaden
               </button>
+            )}
+            {contract.status === "ondertekend_ot" && contract.kandidaat_id && (
+              <Button className="w-full" onClick={() => navigate(`/kandidaten?ondertekenen=${encodeURIComponent(contract.kandidaat_id)}`)}>
+                <Edit2 className="h-4 w-4" /> Contract ondertekenen
+              </Button>
             )}
           </div>
         </Section>
