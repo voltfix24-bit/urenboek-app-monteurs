@@ -86,7 +86,7 @@ export function useGoedkeuring(weekStart: Date, filter: string) {
       .eq("id", id);
 
     if (error) {
-      toast.error("Fout bij goedkeuren");
+      toast.error(error.code === "23514" ? error.message : "Fout bij goedkeuren");
       return false;
     }
     toast.success("Uren goedgekeurd ✓");

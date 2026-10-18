@@ -1,5 +1,7 @@
 # AGENTS.md
 
+- Enforce mutually exclusive Verlet/work bookings per employee/day in database triggers on bookings and purchase-order lines; ignore rejected bookings and serialize on the employee profile. Why: all booking/approval/order paths must reject overlaps, including concurrent requests, without capping legitimate overtime.
+
 - Never put real sales prices (tarieven) in client code, fixtures or `public/` assets; load them only from manager-only `spec_code_tarieven` via `loadSpecCodes`, which throws instead of falling back. Why: the JS bundle and public files are readable by anyone.
 - The prijzenblad Excel template in `public/templates` stays price-free; prices are filled in client-side only after an authorised fetch, and the export aborts when that fetch fails. Why: the template is publicly downloadable.
 - `projects` uses column-level grants: `authenticated` may only SELECT the whitelist in `PROJECT_SAFE_COLUMNS`; managers read sensitive columns via the `get_projects_admin_v1()` RPC (`adminProjects()`); the (week)planning reads only the columns it needs via `get_projects_planning_v1()` (`planningProjects()`), allowed for manager/uitvoerder/wv. Why: RLS cannot hide columns, so monteurs would otherwise see client/contact/sync data, and uitvoerder/wv may plan but may not use the manager-only RPC.
