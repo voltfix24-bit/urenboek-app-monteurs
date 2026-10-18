@@ -85,6 +85,13 @@
       "when": 1791973272826,
       "tag": "0011_bedrijfsgegevens_vaste_kosten_per_week",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792320671279,
+      "tag": "0012_prevent_verlet_workday_overlap",
+      "breakpoints": true
     }
   ]
 }
