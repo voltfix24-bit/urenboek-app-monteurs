@@ -732,7 +732,7 @@ export default function Kandidaten() {
 
       {/* Manager onderteken modal */}
       {signKandidaat && signContract && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setSignKandidaat(null); setSignContract(null); }}>
+        <div className="fixed inset-0 z-[100] flex items-end justify-center" onClick={() => { setSignKandidaat(null); setSignContract(null); }}>
           <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--text-primary) 35%, transparent)", backdropFilter: "blur(6px)" }} />
           <div className="relative w-full animate-in slide-in-from-bottom rounded-t-3xl p-5 space-y-4" style={{ maxWidth: 430, maxHeight: "85vh", overflowY: "auto", background: "var(--bg-surface)", border: "1px solid var(--planning-border-soft)", borderBottom: "none", paddingBottom: 40 }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full mx-auto" style={{ background: "var(--planning-border-soft)" }} />
