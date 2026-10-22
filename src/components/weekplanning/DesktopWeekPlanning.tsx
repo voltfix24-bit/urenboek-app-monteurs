@@ -599,6 +599,16 @@ export default function DesktopWeekPlanning() {
 
   // Stap 3: weekgrens — per weergegeven week (5 werkdagen) de netto uren per medewerker.
   const weekChunks = useMemo(() => Array.from({ length: weeksCount }, (_, w) => datums.slice(w * 5, w * 5 + 5)), [datums, weeksCount]);
+  // Subtiele weekaanduiding boven elke week: weeknummer plus datum bereik.
+  const weekBanden = useMemo(() => Array.from({ length: weeksCount }, (_, w) => {
+    const start = weekDates[w * 5];
+    const eind = weekDates[w * 5 + 4] ?? start;
+    return {
+      start: datums[w * 5],
+      weeknr: getISOWeek(start),
+      range: `${format(start, "d MMM", { locale: nl })} – ${format(eind, "d MMM", { locale: nl })}`,
+    };
+  }), [datums, weekDates, weeksCount]);
   const weekUrenPerChunk = useMemo(() => weekChunks.map((chunk) => berekenWeekUren(celLijst.filter(celTelt), chunk, berekenUren)), [weekChunks, celLijst]);
   const bovenWeekgrens = useCallback((medewerkerId: string) => weekChunks.some((chunk, i) => (weekUrenPerChunk[i].get(medewerkerId) ?? 0) > weekgrens), [weekChunks, weekUrenPerChunk, weekgrens]);
 

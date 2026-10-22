@@ -874,7 +874,11 @@ p, h1, h2, h3, span.selectable, input, textarea {
 .wp-pill-blue { background: var(--wp-concept-bg); color: var(--wp-concept-text); border-color: var(--wp-concept-dot); cursor: default; }
 .wp-head.wp-weeksep { box-shadow: inset 2px 0 0 #b8c8e8; }
 .wp-grid .wp-name.wp-weeksep, .wp-grid .wp-cell.wp-weeksep, .wp-grid .wp-total.wp-weeksep { box-shadow: inset 2px 0 0 #b8c8e8; }
-.wp-wk-label { position: absolute; top: -16px; left: 4px; font-size: 10px; font-weight: 800; color: var(--text-muted); }
+/* Weekband: subtiele weekaanduiding boven elke week in het rooster */
+.wp-weekband { display: flex; align-items: center; gap: 8px; min-height: 26px; padding: 0 12px; background: var(--wp-soft-bg); }
+.wp-weekband span { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--wp-muted-strong); }
+.wp-weekband small { font-size: 11px; color: var(--text-muted); }
+.wp-weekband-side { background: var(--bg-surface-2); }
 .wp-head { position: relative; }
 .wp-cell-compact { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 11px; font-weight: 700; }
 .wp-cell-compact i { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 2px; }
