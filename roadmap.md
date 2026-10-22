@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Verwijder concept/definitief-blokkade bij uren boeken op zichtbare planning; vandaag en verleden toestaan, toekomst blokkeren; urenmaximum en Verlet-regel behouden en testen.
+- [x] Concept/definitief-blokkade bij uren boeken op zichtbare planning verwijderd; vandaag en verleden toegestaan, toekomst geblokkeerd. 37 tests geslaagd; browser als manager op eigen planning: vandaag en gisteren op niet-definitief project 5 uur opgeslagen en teruggelezen, toekomst in scherm en database geweigerd. Tijdelijke data opgeruimd; teruggedraaide databaseproeven bevestigen urenmaximum en Verlet-regel.
 
 - [x] Weekplanning: 8 uur / 4 uur / +1 / −1 en gepubliceerde uren als boekingsmaximum; 34 gerichte tests en teruggedraaide databaseproeven geslaagd. Browser: desktop/telefoon 4+1=5 en −1=4; 5 uur via formulier opgeslagen en teruggelezen, 6 uur geweigerd; proefgegevens opgeruimd, bestaande gegevens behouden.
 
