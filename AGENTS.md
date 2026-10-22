@@ -1,5 +1,7 @@
 # AGENTS.md
 
+- PlannerKoppeling uses PageShell for desktop sidebar and mobile navigation with a single content mount. Why: opening integration settings must never strand the user or duplicate sync effects.
+
 - Employee contract signing links reuse the manager-only Kandidaten signing flow via an explicit query parameter; stop completion if signature storage, PDF upload or contract update fails. Why: mobile and desktop must produce the same signed document and never report success without persistence.
 
 - Enforce mutually exclusive Verlet/work bookings per employee/day in database triggers on bookings and purchase-order lines; ignore rejected bookings and serialize on the employee profile. Why: all booking/approval/order paths must reject overlaps, including concurrent requests.
