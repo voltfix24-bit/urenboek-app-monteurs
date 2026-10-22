@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  bouwCellen, celKey, bepaalDoelen, bouwNieuwConcepten, actieVoorBewerken, actieVoorVerwijderen,
+  bouwCellen, celKey, bepaalAfwezigheid, blokkeertInplannen, bepaalDoelen, bouwNieuwConcepten, actieVoorBewerken, actieVoorVerwijderen,
   berekenUren, parseWeekParam, telConcepten, type PlanningRij, type ConceptRij,
 } from "@/lib/weekPlanning";
 
@@ -38,7 +38,7 @@ describe("bouwCellen", () => {
 });
 
 describe("bepaalDoelen", () => {
-  it("slaat bezette dagen, verlof en vaste vrije dagen over", () => {
+  it("slaat bezette dagen en verlof over, maar laat vaste vrije dagen toe", () => {
     const cellen = bouwCellen([pl("a", "m1", "2026-10-12")], []);
     const besch = [{ medewerker_id: "m1", datum_van: "2026-10-13", datum_tot: "2026-10-13", type: "vakantie", status: "goedgekeurd" }];
     const r = bepaalDoelen(["m1", "m2"], ["2026-10-12", "2026-10-13", "2026-10-14"], cellen, meds, besch);
@@ -46,8 +46,9 @@ describe("bepaalDoelen", () => {
       { medewerker_id: "m2", datum: "2026-10-12" },
       { medewerker_id: "m2", datum: "2026-10-13" },
       { medewerker_id: "m1", datum: "2026-10-14" },
+      { medewerker_id: "m2", datum: "2026-10-14" },
     ]);
-    expect(r.overgeslagen.map((o) => o.reden)).toEqual(["al ingepland", "verlof", "vaste vrije dag"]);
+    expect(r.overgeslagen.map((o) => o.reden)).toEqual(["al ingepland", "verlof"]);
   });
 });
 
@@ -100,5 +101,20 @@ describe("overig", () => {
   });
   it("telConcepten", () => {
     expect(telConcepten([co("1", "nieuw", "m", "d"), co("2", "verwijder", "m", "e")])).toEqual({ nieuw: 1, gewijzigd: 0, verwijderd: 1 });
+  });
+});
+
+ describe("vaste vrije dagen als waarschuwing", () => {
+  const samir = { id: "samir", full_name: "Samir", vaste_vrije_dagen: [3], planning_partner_ids: [] };
+  it("houdt Samirs woensdag informatief en planbaar", () => {
+    const afw = bepaalAfwezigheid(samir, "2026-10-21", []);
+    expect(afw).toBe("vrij");
+    expect(blokkeertInplannen(afw)).toBe(false);
+    expect(bepaalDoelen([samir.id], ["2026-10-21"], new Map(), [samir], []).doelen).toEqual([{ medewerker_id: "samir", datum: "2026-10-21" }]);
+  });
+  it.each(["vakantie", "ziek", "elders"])("blijft expliciete %s op woensdag blokkeren", (type) => {
+    const absence = [{ medewerker_id: samir.id, datum_van: "2026-10-21", datum_tot: "2026-10-21", type, status: "goedgekeurd" }];
+    expect(blokkeertInplannen(bepaalAfwezigheid(samir, "2026-10-21", absence))).toBe(true);
+    expect(bepaalDoelen([samir.id], ["2026-10-21"], new Map(), [samir], absence).doelen).toEqual([]);
   });
 });

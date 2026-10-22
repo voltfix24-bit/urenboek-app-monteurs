@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { getISOWeek } from "date-fns";
-import { bepaalAfwezigheid, bepaalDoelen, berekenUren, celBezet, celKey, celTelt, TIJDBLOKKEN, type BeschikbaarheidBasis, type Cel } from "@/lib/weekPlanning";
+import { blokkeertInplannen, bepaalAfwezigheid, bepaalDoelen, berekenUren, celBezet, celKey, celTelt, TIJDBLOKKEN, type BeschikbaarheidBasis, type Cel } from "@/lib/weekPlanning";
 import { weekgrensWaarschuwing } from "@/lib/weekPlanningV2";
 import { formatUrenGetal } from "@/lib/formatting";
 import type { WpMedewerker, WpProject } from "@/hooks/useWeekPlanningData";
@@ -125,8 +125,9 @@ export function ActieBalk(props: Props) {
     ...(tijd ? { tijd } : urenDelta ? { urenDelta } : {}),
     ...(notitie.trim() ? { notitie } : {}),
   };
-  const leegBeschikbaar = selCellen.filter((s) => !celBezet(cellen.get(celKey(s.medId, s.datum))) && !bepaalAfwezigheid(medMap.get(s.medId), s.datum, beschikbaarheid));
+  const leegBeschikbaar = selCellen.filter((s) => !celBezet(cellen.get(celKey(s.medId, s.datum))) && !blokkeertInplannen(bepaalAfwezigheid(medMap.get(s.medId), s.datum, beschikbaarheid)));
   const elders = selCellen.filter((s) => bepaalAfwezigheid(medMap.get(s.medId), s.datum, beschikbaarheid) === "elders");
+  const vrijeDagen = paren.filter((s) => bepaalAfwezigheid(medMap.get(s.medId), s.datum, beschikbaarheid) === "vrij");
   const ietsGekozen = !!(keuze.project_id || keuze.tijd || keuze.urenDelta || keuze.notitie);
 
   // Eén gezamenlijke actieve uitleen van de geselecteerde medewerkers?
@@ -215,6 +216,10 @@ export function ActieBalk(props: Props) {
 
       {weekgrensWaarschuwingTekst && !heeftInhoud && (
         <div className="wp-bar-warn-row">{weekgrensWaarschuwingTekst}</div>
+      )}
+
+      {vrijeDagen.length > 0 && (
+        <div className="wp-bar-warn-row">Vaste vrije dag: {vrijeDagen.map((s) => `${korteNaam(medMap.get(s.medId)?.full_name ?? "")} ${format(new Date(`${s.datum}T12:00:00`), "EEE d/M", { locale: nl })}`).join(", ")}. Inplannen en uren boeken blijven mogelijk.</div>
       )}
 
       {overgeslagen.length > 0 && (
