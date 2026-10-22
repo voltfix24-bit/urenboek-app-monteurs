@@ -99,6 +99,13 @@
       "when": 1792655378963,
       "tag": "0013_planning_daily_booking_maximum",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792655880902,
+      "tag": "0014_prevent_future_hour_bookings",
+      "breakpoints": true
     }
   ]
 }
