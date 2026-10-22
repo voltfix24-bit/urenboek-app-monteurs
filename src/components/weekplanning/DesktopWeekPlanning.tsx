@@ -599,6 +599,16 @@ export default function DesktopWeekPlanning() {
 
   // Stap 3: weekgrens — per weergegeven week (5 werkdagen) de netto uren per medewerker.
   const weekChunks = useMemo(() => Array.from({ length: weeksCount }, (_, w) => datums.slice(w * 5, w * 5 + 5)), [datums, weeksCount]);
+  // Subtiele weekaanduiding boven elke week: weeknummer plus datum bereik.
+  const weekBanden = useMemo(() => Array.from({ length: weeksCount }, (_, w) => {
+    const start = weekDates[w * 5];
+    const eind = weekDates[w * 5 + 4] ?? start;
+    return {
+      start: datums[w * 5],
+      weeknr: getISOWeek(start),
+      range: `${format(start, "d MMM", { locale: nl })} – ${format(eind, "d MMM", { locale: nl })}`,
+    };
+  }), [datums, weekDates, weeksCount]);
   const weekUrenPerChunk = useMemo(() => weekChunks.map((chunk) => berekenWeekUren(celLijst.filter(celTelt), chunk, berekenUren)), [weekChunks, celLijst]);
   const bovenWeekgrens = useCallback((medewerkerId: string) => weekChunks.some((chunk, i) => (weekUrenPerChunk[i].get(medewerkerId) ?? 0) > weekgrens), [weekChunks, weekUrenPerChunk, weekgrens]);
 
@@ -825,6 +835,14 @@ export default function DesktopWeekPlanning() {
             <>
               <div className="wp-grid-scroll" style={{ overflowX: "auto" }}>
               <div className="wp-grid" role="grid" aria-label={`Weekplanning week ${weekNumber}`} style={{ gridTemplateColumns: `240px repeat(${5 * weeksCount}, minmax(${compact ? 76 : 120}px, 1fr)) 96px`, minWidth: 240 + 5 * weeksCount * (compact ? 76 : 120) + 96 }}>
+                <div className="wp-weekband wp-weekband-side" role="presentation" aria-hidden="true" />
+                {weekBanden.map((wb) => (
+                  <div key={wb.start} className="wp-weekband" role="presentation">
+                    <span>Week {wb.weeknr}</span>
+                    <small>{wb.range}</small>
+                  </div>
+                ))}
+                <div className="wp-weekband wp-weekband-side" role="presentation" aria-hidden="true" />
                 <div className="wp-head" role="columnheader">Medewerker</div>
                 {weekDates.map((d, i) => {
                   const datum = datums[i];
@@ -833,7 +851,6 @@ export default function DesktopWeekPlanning() {
                   const wijzig = dagWijzig[i];
                   return (
                     <div key={datum} role="columnheader" className={`wp-head ${datum === vandaag ? "is-today" : ""} ${isWeekStart && i > 0 ? "wp-weeksep" : ""}`}>
-                      {isWeekStart && <span className="wp-wk-label">WK {getISOWeek(d)}</span>}
                       <span>{DAG_KORT[i % 5]}</span><strong>{format(d, "d MMM", { locale: nl })}</strong>
                       {!compact && (
                         <div className="wp-head-pills">
