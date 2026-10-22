@@ -15,3 +15,8 @@ export function pasPlanningUrenAan(start: string | null, eind: string | null, de
 export function boekingsRuimte(gepland: number, overige: number): number {
   return Math.max(0, gepland - overige);
 }
+
+/** ISO day strings; callers use the local business day, not a UTC timestamp. */
+export function magGeplandeDagBoeken(datum: string, vandaag: string): boolean {
+  return datum <= vandaag;
+}
