@@ -825,6 +825,14 @@ export default function DesktopWeekPlanning() {
             <>
               <div className="wp-grid-scroll" style={{ overflowX: "auto" }}>
               <div className="wp-grid" role="grid" aria-label={`Weekplanning week ${weekNumber}`} style={{ gridTemplateColumns: `240px repeat(${5 * weeksCount}, minmax(${compact ? 76 : 120}px, 1fr)) 96px`, minWidth: 240 + 5 * weeksCount * (compact ? 76 : 120) + 96 }}>
+                <div className="wp-weekband wp-weekband-side" role="presentation" aria-hidden="true" />
+                {weekBanden.map((wb) => (
+                  <div key={wb.start} className="wp-weekband" role="presentation">
+                    <span>Week {wb.weeknr}</span>
+                    <small>{wb.range}</small>
+                  </div>
+                ))}
+                <div className="wp-weekband wp-weekband-side" role="presentation" aria-hidden="true" />
                 <div className="wp-head" role="columnheader">Medewerker</div>
                 {weekDates.map((d, i) => {
                   const datum = datums[i];
@@ -833,7 +841,6 @@ export default function DesktopWeekPlanning() {
                   const wijzig = dagWijzig[i];
                   return (
                     <div key={datum} role="columnheader" className={`wp-head ${datum === vandaag ? "is-today" : ""} ${isWeekStart && i > 0 ? "wp-weeksep" : ""}`}>
-                      {isWeekStart && <span className="wp-wk-label">WK {getISOWeek(d)}</span>}
                       <span>{DAG_KORT[i % 5]}</span><strong>{format(d, "d MMM", { locale: nl })}</strong>
                       {!compact && (
                         <div className="wp-head-pills">
