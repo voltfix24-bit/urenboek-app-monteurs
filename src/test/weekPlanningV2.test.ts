@@ -1,10 +1,34 @@
 import { describe, it, expect } from "vitest";
 import {
-  isLeerling, filterToon, bezettingPerDag, klusKopstatus, wijzigingenOpDag,
+  isLeerling, filterToon, bezettingPerDag, klusKopstatus, wijzigingenOpDag, groepeerRijen, roosterRijen, copyDays, transferTargets,
   bouwLiveRegels, tijdenOverlappen, dubbeleBoekingTekst, berekenWeekUren, weekgrensWaarschuwing, vergelijkBoeking, isLegeWerkdag,
 } from "@/lib/weekPlanningV2";
+import { bouwCellen, celKey } from "@/lib/weekPlanning";
 
 describe("weekPlanningV2 helpers", () => {
+  it.each(["rol", "ploeg", "geen"] as const)("gebruikt de zichtbare %s-volgorde voor selectie, clipboard en verplaatsen", (mode) => {
+    const rows = [
+      { id: "a", full_name: "A", role: "wv", ploeg: "A", planning_partner_ids: [], vaste_vrije_dagen: [] },
+      { id: "b", full_name: "B", role: "monteur", ploeg: "B", planning_partner_ids: [], vaste_vrije_dagen: [] },
+      { id: "c", full_name: "C", role: "wv", ploeg: "A", planning_partner_ids: [], vaste_vrije_dagen: [] },
+      { id: "d", full_name: "D", role: "monteur", ploeg: "B", planning_partner_ids: [], vaste_vrije_dagen: [] },
+    ];
+    const groups = groepeerRijen(rows, mode, { rolLabel: (r) => r, isUitleenAlleen: () => false, naamVoor: (id) => id });
+    const visible = roosterRijen(groups);
+    const expected = mode === "geen" ? ["a", "b", "c", "d"] : mode === "ploeg" ? ["a", "c", "b", "d"] : ["b", "d", "a", "c"];
+    expect(visible.map((r) => r.id)).toEqual(expected);
+    const dates = ["2026-10-19", "2026-10-20"];
+    const cells = bouwCellen(visible.slice(0, 2).map((r) => ({ id: `p-${r.id}`, medewerker_id: r.id, datum: dates[0], project_id: "project", starttijd: "07:00", eindtijd: "16:00", notitie: r.id, activiteit: null, activiteit_kleur: null, planning_group_id: null, collega_ids: [], external_source: null, sync_locked: false })), []);
+    const selected = new Set(visible.slice(0, 2).map((r) => celKey(r.id, dates[0])));
+    expect([...selected]).toEqual(expected.slice(0, 2).map((id) => `${id}|2026-10-19`));
+    const copied = copyDays(selected, visible, dates, cells);
+    expect(copied.map((c) => c.row)).toEqual([0, 1]);
+    const moved = transferTargets(copied, { row: 1, day: 1 }, visible, dates, cells, [], true);
+    expect(moved.targets.map((t) => t.medewerker_id)).toEqual(expected.slice(1, 3));
+    expect(moved.targets.map((t) => t.source.waarden.notitie)).toEqual(expected.slice(0, 2));
+    expect(moved.skipped).toEqual([]);
+  });
+
   it("isLeerling detecteert leerling ongeacht hoofdletters", () => {
     expect(isLeerling({ ploeg: "Leerling" })).toBe(true);
     expect(isLeerling({ ploeg: "Monteurs" })).toBe(false);

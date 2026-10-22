@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { generatePersoneelsPdf, generatePlanningPdf } from "@/lib/planningPdf";
 import { formatUren, formatUrenGetal } from "@/lib/formatting";
 import { useWeekPlanningData } from "@/hooks/useWeekPlanningData";
-import { groepeerRijen, filterToon, vrijOpDag, wijzigingenOpDag, bouwLiveRegels, dubbeleBoekingTekst, berekenWeekUren, vergelijkBoeking, isLegeWerkdag, type GroepMode, type ToonMode } from "@/lib/weekPlanningV2";
+import { groepeerRijen, roosterRijen, filterToon, vrijOpDag, wijzigingenOpDag, bouwLiveRegels, dubbeleBoekingTekst, berekenWeekUren, vergelijkBoeking, isLegeWerkdag, type GroepMode, type ToonMode } from "@/lib/weekPlanningV2";
 import {
   actieVoorBewerken, actieVoorVerwijderen, bepaalAfwezigheid, berekenUren, bouwCellen, bouwNieuwConcepten,
   celBezet, celKey, celTelt, ELDERS_TYPE, parseWeekParam, telConcepten, TIJDBLOKKEN, type Cel, type PlanWaarden,
@@ -95,19 +95,27 @@ export default function DesktopWeekPlanning() {
     if (vrijFilter) { const ids = new Set(vrijOpDag(vrijFilter, m, cellen, beschikbaarheid).map((x) => x.id)); m = m.filter((x) => ids.has(x.id)); }
     return m;
   }, [medewerkers, toonMode, vrijFilter, cellen, beschikbaarheid]);
-  const rijen = useMemo(() => [...zichtbareMedewerkers].sort((a, b) => {
+  const basisRijen = useMemo(() => [...zichtbareMedewerkers].sort((a, b) => {
     const ah = datums.some((d) => celBezet(cellen.get(celKey(a.id, d))));
     const bh = datums.some((d) => celBezet(cellen.get(celKey(b.id, d))));
     if (ah !== bh) return ah ? -1 : 1;
     return a.full_name.localeCompare(b.full_name, "nl", { sensitivity: "base" });
   }), [zichtbareMedewerkers, cellen, datums]);
   const naamVoor = useCallback((id: string) => korteNaam(medMap.get(id)?.full_name ?? "?"), [medMap]);
-  const rowIndexOf = useMemo(() => new Map(rijen.map((r, i) => [r.id, i])), [rijen]);
-  const groepen = useMemo(() => groepeerRijen(rijen, groepMode, {
+  const groepen = useMemo(() => groepeerRijen(basisRijen, groepMode, {
     rolLabel: (rol) => (rolLabel(rol) ?? "Monteurs").toUpperCase(),
     isUitleenAlleen: (id) => { const dagen = datums.map((d) => cellen.get(celKey(id, d))).filter(celTelt); return dagen.length > 0 && dagen.every((c) => projMap.get(c.project_id ?? "")?.soort === "uitleen"); },
     naamVoor,
-  }), [rijen, groepMode, datums, cellen, projMap, naamVoor]);
+  }), [basisRijen, groepMode, datums, cellen, projMap, naamVoor]);
+  const rijen = useMemo(() => roosterRijen(groepen), [groepen]);
+  const rowIndexOf = useMemo(() => new Map(rijen.map((r, i) => [r.id, i])), [rijen]);
+  const rijVolgorde = rijen.map((r) => r.id).join("|");
+  useEffect(() => {
+    // Een oude cursor/sleepafstand hoort niet bij een opnieuw gegroepeerd rooster.
+    setCursor(null);
+    setDrag(null);
+    dragRef.current = null;
+  }, [rijVolgorde]);
 
   // Overplanning (bestaande regel: meer dan 5 unieke dagen per week), inclusief concepten
   const overgepland = useMemo(() => {

@@ -70,6 +70,11 @@ export function filterToon<T extends { ploeg?: string | null }>(rows: T[], toon:
 
 export interface GroepRij<T> { label: string; rows: T[] }
 
+/** Dezelfde medewerkersvolgorde als het rooster, zonder groepskoppen. */
+export function roosterRijen<T>(groepen: GroepRij<T>[]): T[] {
+  return groepen.flatMap((groep) => groep.rows);
+}
+
 /** Groepeert rijen per rol of ploeg. Bij ploeg: `profiles.ploeg`, anders een gedeelde `planning_partner_ids`-set, anders "Zonder ploeg"; medewerkers die alleen uitleenplanning hebben vallen onder "Uitleen". */
 export function groepeerRijen<T extends { id: string; role?: string | null; ploeg?: string | null; planning_partner_ids: string[] }>(
   rows: T[],
