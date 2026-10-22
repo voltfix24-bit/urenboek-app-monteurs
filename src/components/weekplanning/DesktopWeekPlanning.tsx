@@ -109,6 +109,13 @@ export default function DesktopWeekPlanning() {
   }), [basisRijen, groepMode, datums, cellen, projMap, naamVoor]);
   const rijen = useMemo(() => roosterRijen(groepen), [groepen]);
   const rowIndexOf = useMemo(() => new Map(rijen.map((r, i) => [r.id, i])), [rijen]);
+  const rijVolgorde = rijen.map((r) => r.id).join("|");
+  useEffect(() => {
+    // Een oude cursor/sleepafstand hoort niet bij een opnieuw gegroepeerd rooster.
+    setCursor(null);
+    setDrag(null);
+    dragRef.current = null;
+  }, [rijVolgorde]);
 
   // Overplanning (bestaande regel: meer dan 5 unieke dagen per week), inclusief concepten
   const overgepland = useMemo(() => {
