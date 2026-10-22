@@ -4,6 +4,7 @@
 
 - Enforce mutually exclusive Verlet/work bookings per employee/day in database triggers on bookings and purchase-order lines; ignore rejected bookings and serialize on the employee profile. Why: all booking/approval/order paths must reject overlaps, including concurrent requests.
 - Planning hour controls share net-duration conversion with a fixed pause; daily booking caps sum published planning only and exclude rejected bookings, serialized with planning writes on employee profiles. Existing over-limit bookings may be retained or reduced but not increased; unplanned days retain existing behavior. Why: drafts must not change booking capacity and client/approval/offline paths cannot bypass limits.
+- Published planning booking eligibility depends on the day, never project_planning_status; future hour bookings are rejected by a database trigger using the Amsterdam business date. Why: live assignments must remain bookable today/past regardless of stale project status, including cached/offline views, without allowing future bookings.
 
 - Never put real sales prices (tarieven) in client code, fixtures or `public/` assets; load them only from manager-only `spec_code_tarieven` via `loadSpecCodes`, which throws instead of falling back. Why: the JS bundle and public files are readable by anyone.
 - The prijzenblad Excel template in `public/templates` stays price-free; prices are filled in client-side only after an authorised fetch, and the export aborts when that fetch fails. Why: the template is publicly downloadable.
