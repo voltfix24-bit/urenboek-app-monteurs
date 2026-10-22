@@ -187,6 +187,10 @@ export function bepaalAfwezigheid(med: MedewerkerBasis | undefined, datum: strin
   return null;
 }
 
+/** Vaste vrije dagen zijn informatief; expliciete afwezigheid blokkeert inplannen. */
+export const blokkeertInplannen = (afwezigheid: Afwezigheid | null): boolean =>
+  afwezigheid !== null && afwezigheid !== "vrij";
+
 export const AFWEZIG_LABEL: Record<Afwezigheid, string> = { verlof: "verlof", ziek: "ziek", vrij: "vaste vrije dag", elders: "andere opdracht" };
 
 export interface Doel { medewerker_id: string; datum: string }
@@ -205,7 +209,7 @@ export function bepaalDoelen(
   for (const datum of [...datums].sort()) {
     for (const medewerker_id of medewerkerIds) {
       const afw = bepaalAfwezigheid(medMap.get(medewerker_id), datum, beschikbaarheid);
-      if (afw) { overgeslagen.push({ medewerker_id, datum, reden: AFWEZIG_LABEL[afw] }); continue; }
+      if (afw && blokkeertInplannen(afw)) { overgeslagen.push({ medewerker_id, datum, reden: AFWEZIG_LABEL[afw] }); continue; }
       if (celBezet(cellen.get(celKey(medewerker_id, datum)))) { overgeslagen.push({ medewerker_id, datum, reden: "al ingepland" }); continue; }
       doelen.push({ medewerker_id, datum });
     }

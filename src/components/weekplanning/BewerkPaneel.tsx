@@ -95,7 +95,7 @@ export function BewerkPaneel({ cel, naam, weekNumber, projects, weekProjectIds, 
               <Button type="button" size="sm" variant="outline" disabled={busy} onClick={onRevert}>Terugdraaien</Button>
             </div>
           )}
-          {afwezigheid && <div className="wp-alert">{naam} {AFW_TEKST[afwezigheid]} op deze dag.</div>}
+          {afwezigheid && <div className={`wp-alert${afwezigheid === "vrij" ? " is-info" : ""}`}>{naam} {AFW_TEKST[afwezigheid]} op deze dag.{afwezigheid === "vrij" && " Inplannen en uren boeken blijven mogelijk."}</div>}
 
           <div>
             <p className="wp-panel-label">Project</p>

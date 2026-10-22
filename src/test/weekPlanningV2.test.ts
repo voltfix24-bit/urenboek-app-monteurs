@@ -113,3 +113,15 @@ describe("weekPlanningV2 helpers", () => {
     expect(isLegeWerkdag(false, true)).toBe(false);
   });
 });
+
+describe("kopiëren naar een vaste vrije dag", () => {
+  it("laat Samirs woensdag toe als kopieer- en verplaatsdoel", () => {
+    const samir = { id: "samir", full_name: "Samir", vaste_vrije_dagen: [3], planning_partner_ids: [] };
+    const days = [{ row: 0, day: 0, sourceKey: "samir|2026-10-20", waarden: { project_id: "project", starttijd: "07:00", eindtijd: "16:00", notitie: "" } }];
+    for (const moving of [false, true]) {
+      const result = transferTargets(days, { row: 0, day: 0 }, [samir], ["2026-10-21"], new Map(), [], moving);
+      expect(result.targets.map((t) => t.datum)).toEqual(["2026-10-21"]);
+      expect(result.skipped).toEqual([]);
+    }
+  });
+});

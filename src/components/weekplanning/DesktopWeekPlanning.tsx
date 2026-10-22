@@ -21,7 +21,7 @@ import { formatUren, formatUrenGetal } from "@/lib/formatting";
 import { useWeekPlanningData } from "@/hooks/useWeekPlanningData";
 import { groepeerRijen, roosterRijen, filterToon, vrijOpDag, wijzigingenOpDag, bouwLiveRegels, dubbeleBoekingTekst, berekenWeekUren, vergelijkBoeking, isLegeWerkdag, type GroepMode, type ToonMode } from "@/lib/weekPlanningV2";
 import {
-  actieVoorBewerken, actieVoorVerwijderen, bepaalAfwezigheid, berekenUren, bouwCellen, bouwNieuwConcepten,
+  actieVoorBewerken, actieVoorVerwijderen, blokkeertInplannen, bepaalAfwezigheid, berekenUren, bouwCellen, bouwNieuwConcepten,
   celBezet, celKey, celTelt, ELDERS_TYPE, parseWeekParam, telConcepten, TIJDBLOKKEN, type Cel, type PlanWaarden,
 } from "@/lib/weekPlanning";
 import { ActieBalk, doelenVoorCellen, type SelCel, type WijzigKeuze } from "./ActieBalk";
@@ -138,7 +138,7 @@ export default function DesktopWeekPlanning() {
   const isDubbel = useCallback((cel: Cel | undefined) => {
     if (!celTelt(cel)) return false;
     if (dubbelTekst(cel)) return true;
-    return !!bepaalAfwezigheid(medMap.get(cel.medewerker_id), cel.datum, beschikbaarheid);
+    return blokkeertInplannen(bepaalAfwezigheid(medMap.get(cel.medewerker_id), cel.datum, beschikbaarheid));
   }, [dubbelTekst, medMap, beschikbaarheid]);
 
   const conflictTekst = useCallback((cel: Cel | undefined) => {
@@ -148,7 +148,7 @@ export default function DesktopWeekPlanning() {
     const naam = medMap.get(cel.medewerker_id)?.full_name ?? "Medewerker";
     const delen: string[] = [];
     const afw = bepaalAfwezigheid(medMap.get(cel.medewerker_id), cel.datum, beschikbaarheid);
-    if (afw) delen.push(`${AFW_CEL[afw]} maar wel ingepland op ${projMap.get(cel.project_id ?? "")?.naam ?? "een project"}`);
+    if (blokkeertInplannen(afw) && afw) delen.push(`${AFW_CEL[afw]} maar wel ingepland op ${projMap.get(cel.project_id ?? "")?.naam ?? "een project"}`);
     return delen.length ? `${naam}: ${delen.join(" · ")}` : null;
   }, [medMap, projMap, beschikbaarheid, dubbelTekst]);
 
@@ -230,13 +230,13 @@ export default function DesktopWeekPlanning() {
     wisSel();
     rememberUndo(undo);
     toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingepland op ${projectNaam} (concept)`, undoToast(undo));
-    if (overgeslagen.length > 0) toast.info(`${overgeslagen.length} ${overgeslagen.length === 1 ? "dag" : "dagen"} overgeslagen (verlof, ziek of vrij)`);
+    if (overgeslagen.length > 0) toast.info(`${overgeslagen.length} ${overgeslagen.length === 1 ? "dag" : "dagen"} overgeslagen (verlof, ziek, andere opdracht of bezet)`);
   });
 
   /**
    * Vult de geselecteerde lege dagen vooraf met de actieve uitleen (detachering)
    * van de gekozen medewerker(s). Zelfde logica als inplannen en herhalen: alleen
-   * lege dagen, verlof/ziek/vrije dagen worden overgeslagen. Alles blijft concept.
+   * lege dagen, verlof/ziek/andere opdrachten worden overgeslagen. Alles blijft concept.
    */
   const planDetachering = (projectId: string, paren: SelCel[]) => run(async () => {
     if (!profileId) return;
@@ -257,7 +257,7 @@ export default function DesktopWeekPlanning() {
     wisSel();
     rememberUndo(undo);
     toast.success(`${ids.length} ${ids.length === 1 ? "dag" : "dagen"} ingevuld op ${p?.naam ?? "uitleen"} (concept)`, undoToast(undo));
-    if (overgeslagen.length > 0) toast.info(`${overgeslagen.length} ${overgeslagen.length === 1 ? "dag" : "dagen"} overgeslagen (verlof, ziek of vrij)`);
+    if (overgeslagen.length > 0) toast.info(`${overgeslagen.length} ${overgeslagen.length === 1 ? "dag" : "dagen"} overgeslagen (verlof, ziek, andere opdracht of bezet)`);
   });
 
   /** Voert verwijder-acties uit voor een set cellen. */
@@ -411,7 +411,7 @@ export default function DesktopWeekPlanning() {
       const key = celKey(r.medewerker_id, doelDatum);
       if (gezien.has(key)) return [];
       gezien.add(key);
-      if (celBezet(cellen.get(key)) || bepaalAfwezigheid(medMap.get(r.medewerker_id), doelDatum, beschikbaarheid)) { overgeslagen++; return []; }
+      if (celBezet(cellen.get(key)) || blokkeertInplannen(bepaalAfwezigheid(medMap.get(r.medewerker_id), doelDatum, beschikbaarheid))) { overgeslagen++; return []; }
       let groep: string | null = null;
       if (r.planning_group_id) { groep = groepMap.get(r.planning_group_id) ?? crypto.randomUUID(); groepMap.set(r.planning_group_id, groep); }
       return [{
@@ -495,7 +495,7 @@ export default function DesktopWeekPlanning() {
       const existing = all.get(celKey(id, datum));
       if (celTelt(existing) && existing.project_id === choice.projectId) { same++; continue; }
       const afw = bepaalAfwezigheid(medMap.get(id), datum, b.data ?? []);
-      if (afw || celBezet(existing)) { skipped.push(`${korteNaam(medMap.get(id)?.full_name ?? "")} ${format(new Date(`${datum}T12:00:00`), "d/M")} (${afw ?? "al ingepland"})`); continue; }
+      if (blokkeertInplannen(afw) || celBezet(existing)) { skipped.push(`${korteNaam(medMap.get(id)?.full_name ?? "")} ${format(new Date(`${datum}T12:00:00`), "d/M")} (${afw ?? "al ingepland"})`); continue; }
       const project = projMap.get(choice.projectId);
       rows.push({ medewerker_id: id, datum, project_id: choice.projectId, starttijd: "07:00", eindtijd: "16:00", notitie: "", actie: "nieuw", planning_id: null, created_by: profileId, ...(project?.soort === "uitleen" ? { werklocatie: project.adres, contactpersoon: project.contactpersoon_naam, contact_telefoon: project.contactpersoon_tel } : {}) });
     }
@@ -655,7 +655,7 @@ export default function DesktopWeekPlanning() {
       if (!drag.copy && sourceKeys.has(celKey(med.id, datum))) cls.push("is-move-source");
       const dr = drag.r1 - drag.r0, dc = drag.c1 - drag.c0;
       const isTarget = [...sourceKeys].some((key) => { const p = splitCellKey(key); return rijen.findIndex((m) => m.id === p.medewerker_id) + dr === r && datums.indexOf(p.datum) + dc === c; });
-      if (isTarget) cls.push(afw || gevuld ? "is-drop-blocked" : "is-drop-target");
+      if (isTarget) cls.push(blokkeertInplannen(afw) || gevuld ? "is-drop-blocked" : "is-drop-target");
     }
     if (filterProject && gevuld && cel?.project_id !== filterProject) cls.push("is-dimmed");
     if (!matchtAandacht(med, datum, cel)) cls.push("is-dimmed");
@@ -721,7 +721,7 @@ export default function DesktopWeekPlanning() {
         )}
       </div>
     );
-    const tooltipText = conflict ?? (boekInfo ? `Gepland ${formatUrenGetal(uren)} u, geboekt ${formatUrenGetal(boekInfo.geboekt)} u` : null);
+    const tooltipText = conflict ?? (afw === "vrij" ? "Vaste vrije dag — inplannen en uren boeken blijven mogelijk." : null) ?? (boekInfo ? `Gepland ${formatUrenGetal(uren)} u, geboekt ${formatUrenGetal(boekInfo.geboekt)} u` : null);
     if (!tooltipText) return inhoud;
     return <Tooltip key={datum}><TooltipTrigger asChild>{inhoud}</TooltipTrigger><TooltipContent>{tooltipText}</TooltipContent></Tooltip>;
   };

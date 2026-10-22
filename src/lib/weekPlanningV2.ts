@@ -1,5 +1,5 @@
 import { addDays, addWeeks, endOfMonth, format, startOfISOWeek } from "date-fns";
-import { bepaalAfwezigheid, celBezet, celKey, celTelt, type Cel, type MedewerkerBasis, type BeschikbaarheidBasis, type PlanWaarden } from "./weekPlanning";
+import { blokkeertInplannen, bepaalAfwezigheid, celBezet, celKey, celTelt, type Cel, type MedewerkerBasis, type BeschikbaarheidBasis, type PlanWaarden } from "./weekPlanning";
 
 export interface GridPoint { row: number; day: number }
 export interface ClipboardDay { row: number; day: number; sourceKey: string; waarden: PlanWaarden }
@@ -22,7 +22,7 @@ export function transferTargets(days: ClipboardDay[], anchor: GridPoint, rows: M
     if (!med || !datum) { skipped.push("buiten het rooster"); continue; }
     const key = celKey(med.id, datum), afw = bepaalAfwezigheid(med, datum, absence);
     if (moving && cells.get(source.sourceKey)?.beschermd) { skipped.push("Planner-koppeling"); continue; }
-    if (afw || celBezet(cells.get(key))) { skipped.push(afw ?? "al ingepland"); continue; }
+    if (blokkeertInplannen(afw) || celBezet(cells.get(key))) { skipped.push(afw ?? "al ingepland"); continue; }
     targets.push({ source, medewerker_id: med.id, datum });
   }
   return { targets, skipped };
