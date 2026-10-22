@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Weekplanning: 8 uur / 4 uur / +1 / −1 en gepubliceerde uren als boekingsmaximum; 34 gerichte tests en teruggedraaide databaseproeven geslaagd. Browser: desktop/telefoon 4+1=5 en −1=4; 5 uur via formulier opgeslagen en teruggelezen, 6 uur geweigerd; proefgegevens opgeruimd, bestaande gegevens behouden.
+
 - [x] Lever PDF-kopie van Yazans opgeslagen contract met zijn handtekening; alle zeven pagina’s gecontroleerd, TerreVolt heeft nog niet ondertekend.
 - [x] Voorkom dubbele Verlet-/werkuren via databasecontrole bij boeken, goedkeuren en inkooporders; teruggedraaide databaseproeven geslaagd, ingelogde manager-aanvraag geweigerd en dag teruggelezen; 87 bestaande tests geslaagd. Volledige formulierflow en conflicterende inkooporder niet interactief getest.
 

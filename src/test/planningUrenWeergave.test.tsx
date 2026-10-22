@@ -52,20 +52,18 @@ const berekenUren = (starttijd: string | null, eindtijd: string | null) => {
 describe("urenberekening in de inplanmodal", () => {
   it("toont 8,5u voor 07:00–16:30 in plaats van afgerond 9u", () => {
     renderDialog("07:00", "16:30");
-    expect(screen.getByText("8,5u")).toBeInTheDocument();
-    expect(screen.getByText(/9,5 uur, min 60 min vaste pauze/)).toBeInTheDocument();
-    expect(screen.queryByText("9u")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("8,5 uur");
   });
 
   it("toont 8u voor 07:30–16:30 en 8,5u voor 07:30–17:00", () => {
     const { unmount } = renderDialog("07:30", "16:30");
-    expect(screen.getByText("8u")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("8 uur");
     unmount();
     renderDialog("07:30", "17:00");
-    expect(screen.getByText("8,5u")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("8,5 uur");
     unmount();
     renderDialog("07:00", "16:00");
-    expect(screen.getByText("8u")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("8 uur");
   });
 });
 

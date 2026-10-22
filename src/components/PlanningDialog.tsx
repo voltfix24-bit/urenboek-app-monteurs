@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, Clock, MapPin, Search, Users } from "lucide-react";
+import { Check, ChevronDown, MapPin, Search, Users } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { volledigAdres } from "@/lib/utils";
-import { formatUren, formatUrenGetal } from "@/lib/formatting";
+import { UrenKeuze } from "@/components/weekplanning/UrenKeuze";
+import { urenTijdblok, pasPlanningUrenAan } from "@/lib/planningHours";
 
 interface Project { id: string; naam: string; nummer: string; straat?: string | null; postcode?: string | null; stad?: string | null; adres?: string | null; soort?: string | null; contactpersoon_naam?: string | null; contactpersoon_tel?: string | null; }
 interface Medewerker { id: string; full_name: string; }
@@ -37,37 +38,10 @@ interface Props {
 }
 
 const RECENT_KEY = "terrevolt-recent-planning-projects";
-const PRESETS = [["07:00", "16:00"], ["07:30", "16:30"], ["08:00", "17:00"]];
 const PAUZE_MINUTEN = 60;
-const TIME_OPTIONS = Array.from({ length: 49 }, (_, index) => {
-  const minutes = index * 30;
-  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
-});
 
 function numericProjectSort(a: Project, b: Project) {
   return a.nummer.localeCompare(b.nummer, "nl", { numeric: true, sensitivity: "base" });
-}
-
-function TimeField({ label, value, onChange, error }: { label: string; value: string; onChange: (value: string) => void; error?: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="planning-time-field">
-      <label>{label}</label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <div className={`planning-time-input ${error ? "has-error" : ""}`}>
-            <Clock aria-hidden="true" />
-            <input value={value} inputMode="numeric" aria-label={`${label}tijd`} onChange={(event) => onChange(event.target.value)} onFocus={() => setOpen(true)} />
-            <ChevronDown aria-hidden="true" />
-          </div>
-        </PopoverTrigger>
-        <PopoverContent align="start" className="planning-time-menu">
-          {TIME_OPTIONS.map((time) => <button type="button" key={time} className={time === value ? "is-selected" : ""} onClick={() => { onChange(time); setOpen(false); }}>{time}</button>)}
-        </PopoverContent>
-      </Popover>
-      {error && <p className="planning-inline-error">{error}</p>}
-    </div>
-  );
 }
 
 export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerkerNaam, modalStatus, conflicts, form, selectedDates, projects, medewerkers, existingDates, saving, extraMedewerkerIds, onExtraMedewerkerIdsChange, onOpenChange, onFormChange, onToggleDate, onSave, onDelete }: Props) {
@@ -147,16 +121,12 @@ export function PlanningDialog({ open, editId, weekNumber, weekDates, medewerker
             {selectedProject && <p className="planning-address"><MapPin aria-hidden="true" />{volledigAdres(selectedProject) || "Geen adres ingevuld"}</p>}
           </div>
 
-          <div className="planning-time-grid">
-            <TimeField label="Start" value={form.starttijd} onChange={(value) => onFormChange({ ...form, starttijd: value })} />
-            <TimeField label="Eind" value={form.eindtijd} onChange={(value) => onFormChange({ ...form, eindtijd: value })} error={timeError} />
-            <div className="planning-time-field">
-              <label htmlFor="planning-break">Pauze</label>
-              <div className="planning-break-input"><input id="planning-break" type="number" value={PAUZE_MINUTEN} readOnly disabled aria-describedby="planning-break-hint" /><span>min</span></div>
-            </div>
-            <div className="planning-presets">{PRESETS.map(([starttijd, eindtijd]) => <Button key={starttijd} type="button" variant="outline" onClick={() => onFormChange({ ...form, starttijd, eindtijd })}>{starttijd} – {eindtijd}</Button>)}</div>
+          <div className="planning-field-group">
+            <label>Uren</label>
+            <UrenKeuze uren={nettoUren} disabled={saving}
+              onPreset={(n) => { const [starttijd, eindtijd] = urenTijdblok(n, form.starttijd); onFormChange({ ...form, starttijd, eindtijd }); }}
+              onDelta={(n) => { const [starttijd, eindtijd] = pasPlanningUrenAan(form.starttijd, form.eindtijd, n); onFormChange({ ...form, starttijd, eindtijd }); }} />
           </div>
-          <div className="planning-hours" id="planning-break-hint"><span>{formatUrenGetal(brutoMinuten / 60)} uur, min {PAUZE_MINUTEN} min vaste pauze</span><strong>{formatUren(nettoUren)}</strong></div>
 
           {selectedProject?.soort === "uitleen" && (
             <>

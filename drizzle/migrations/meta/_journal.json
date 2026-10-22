@@ -92,6 +92,13 @@
       "when": 1792320671279,
       "tag": "0012_prevent_verlet_workday_overlap",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792655378963,
+      "tag": "0013_planning_daily_booking_maximum",
+      "breakpoints": true
     }
   ]
 }
