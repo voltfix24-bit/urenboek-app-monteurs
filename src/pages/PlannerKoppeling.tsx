@@ -8,6 +8,7 @@ import { PlannerSyncAuditPanel } from "@/components/PlannerSyncAuditPanel";
 import { PlannerSoftDeletedPanel } from "@/components/PlannerSoftDeletedPanel";
 import { PlannerSyncStatusBar } from "@/components/PlannerSyncStatusBar";
 import { adminProjects, PROJECT_SAFE_COLUMNS } from "@/lib/projectsAdmin";
+import { PageShell } from "@/components/PageShell";
 
 type AnalyseStatus = "exact" | "waarschijnlijk" | "conflict" | "geen_match" | "uitgesloten";
 interface Afwijking { veld: string; urenapp: unknown; planner: unknown }
@@ -602,6 +603,7 @@ export default function PlannerKoppeling() {
   );
 
   return (
+    <PageShell mobileConstrained={false}>
     <div className="max-w-5xl mx-auto p-6 space-y-6 mobile-nav-space">
       <header className="mobile-safe-header mobile-header-wrap flex items-center gap-3">
         <Link2 className="h-6 w-6" style={{ color: "var(--accent)" }} />
@@ -1620,7 +1622,7 @@ export default function PlannerKoppeling() {
       <PlannerSoftDeletedPanel onChange={() => setAuditRefreshKey(k => k + 1)} />
       <PlannerSyncAuditPanel refreshKey={auditRefreshKey} />
     </div>
-
+    </PageShell>
 
   );
 }
