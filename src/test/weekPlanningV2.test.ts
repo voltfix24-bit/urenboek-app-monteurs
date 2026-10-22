@@ -18,7 +18,7 @@ describe("weekPlanningV2 helpers", () => {
     const expected = mode === "geen" ? ["a", "b", "c", "d"] : mode === "ploeg" ? ["a", "c", "b", "d"] : ["b", "d", "a", "c"];
     expect(visible.map((r) => r.id)).toEqual(expected);
     const dates = ["2026-10-19", "2026-10-20"];
-    const cells = bouwCellen(visible.slice(0, 2).map((r) => ({ id: `p-${r.id}`, medewerker_id: r.id, datum: dates[0], project_id: "project", starttijd: "07:00", eindtijd: "16:00", notitie: r.id })), []);
+    const cells = bouwCellen(visible.slice(0, 2).map((r) => ({ id: `p-${r.id}`, medewerker_id: r.id, datum: dates[0], project_id: "project", starttijd: "07:00", eindtijd: "16:00", notitie: r.id, activiteit: null, activiteit_kleur: null, planning_group_id: null, collega_ids: [], external_source: null, sync_locked: false })), []);
     const selected = new Set(visible.slice(0, 2).map((r) => celKey(r.id, dates[0])));
     expect([...selected]).toEqual(expected.slice(0, 2).map((id) => `${id}|2026-10-19`));
     const copied = copyDays(selected, visible, dates, cells);
