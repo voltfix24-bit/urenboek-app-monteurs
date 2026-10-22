@@ -1,8 +1,17 @@
 import { describe, it, expect } from "vitest";
-import { urenTijdblok, pasPlanningUrenAan, boekingsRuimte } from "@/lib/planningHours";
+import { urenTijdblok, pasPlanningUrenAan, boekingsRuimte, magGeplandeDagBoeken } from "@/lib/planningHours";
 import { berekenUren } from "@/lib/weekPlanning";
 
 describe("planninguren en boekingsruimte", () => {
+  it("een geplande dag vandaag mag geboekt worden zonder projectstatus", () => {
+    expect(magGeplandeDagBoeken("2026-10-22", "2026-10-22")).toBe(true);
+  });
+  it("een geplande dag in het verleden mag geboekt worden", () => {
+    expect(magGeplandeDagBoeken("2026-10-21", "2026-10-22")).toBe(true);
+  });
+  it("een geplande dag in de toekomst mag niet geboekt worden", () => {
+    expect(magGeplandeDagBoeken("2026-10-23", "2026-10-22")).toBe(false);
+  });
   it("8 uur behoudt de vaste pauze", () => {
     expect(urenTijdblok(8)).toEqual(["07:00", "16:00"]);
   });

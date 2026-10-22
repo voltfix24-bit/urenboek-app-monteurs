@@ -20,7 +20,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { useActiveMedewerker } from "@/hooks/useActiveMedewerker";
 import { MonteurSwitcher } from "@/components/MonteurSwitcher";
-import { boekingsRuimte } from "@/lib/planningHours";
+import { boekingsRuimte, magGeplandeDagBoeken } from "@/lib/planningHours";
 
 interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; activiteit: string | null; activiteit_kleur: string | null; collega_ids: string[] | null; week_opmerking: string | null; werklocatie?: string | null; contactpersoon?: string | null; contact_telefoon?: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
@@ -190,14 +190,9 @@ export default function Planning() {
       if (data) {
         const projectIds = [...new Set(data.map((d: any) => d.project_id))];
         let projMap = new Map();
-        let statusMap = new Map<string, boolean>();
         if (projectIds.length > 0) {
-          const [{ data: projects }, { data: statuses }] = await Promise.all([
-            supabase.from("projects_monteur" as any).select("id, naam, nummer, straat, postcode, stad, adres").in("id", projectIds),
-            supabase.from("project_planning_status").select("project_id, is_definitief").in("project_id", projectIds),
-          ]);
+          const { data: projects } = await supabase.from("projects_monteur" as any).select("id, naam, nummer, straat, postcode, stad, adres").in("id", projectIds);
           projMap = new Map(projects?.map((p: any) => [p.id, p]) ?? []);
-          (statuses || []).forEach((s: any) => statusMap.set(s.project_id, s.is_definitief));
         }
 
         // Load collega names
@@ -211,7 +206,7 @@ export default function Planning() {
 
         setItems(data.map((d: any) => {
           const proj = projMap.get(d.project_id) || { naam: "Onbekend", nummer: "", straat: null, postcode: null, stad: null, adres: null };
-          return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: statusMap.get(d.project_id) ?? false, project_straat: (proj as any).straat, project_postcode: (proj as any).postcode, project_stad: (proj as any).stad, project_adres: (proj as any).adres, activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, collega_ids: d.collega_ids || null, week_opmerking: d.week_opmerking || null, werklocatie: d.werklocatie ?? ((d.contactpersoon || d.contact_telefoon) ? (proj as any)?.adres ?? null : null), contactpersoon: d.contactpersoon ?? null, contact_telefoon: d.contact_telefoon ?? null };
+          return { id: d.id, datum: d.datum, starttijd: d.starttijd?.slice(0, 5) || "07:00", eindtijd: d.eindtijd?.slice(0, 5) || "16:00", notitie: d.notitie || "", project_naam: (proj as any).naam, project_nummer: (proj as any).nummer, project_id: d.project_id, is_definitief: false, project_straat: (proj as any).straat, project_postcode: (proj as any).postcode, project_stad: (proj as any).stad, project_adres: (proj as any).adres, activiteit: d.activiteit || null, activiteit_kleur: d.activiteit_kleur || null, collega_ids: d.collega_ids || null, week_opmerking: d.week_opmerking || null, werklocatie: d.werklocatie ?? ((d.contactpersoon || d.contact_telefoon) ? (proj as any)?.adres ?? null : null), contactpersoon: d.contactpersoon ?? null, contact_telefoon: d.contact_telefoon ?? null };
         }));
 
         // Cache planning data for offline use
@@ -268,6 +263,10 @@ export default function Planning() {
   }
 
   function openUrenModal(item: PlanningItem, existing?: ExistingBoeking) {
+    if (!magGeplandeDagBoeken(item.datum, today)) {
+      toast.error("Uren boeken kan pas op de geplande dag of daarna.");
+      return;
+    }
     setModalItem(item);
     if (existing) {
       setEditingBoekingId(existing.id);
@@ -293,6 +292,10 @@ export default function Planning() {
 
   const saveUren = async (submitDirect: boolean) => {
     if (!queryProfileId || !modalItem) return;
+    if (!magGeplandeDagBoeken(modalItem.datum, format(new Date(), "yyyy-MM-dd"))) {
+      toast.error("Uren boeken kan pas op de geplande dag of daarna.");
+      return;
+    }
     if (urenForm.uren <= 0 || urenForm.uren > boekbaarMaximum) {
       toast.error(`Maximaal ${boekbaarMaximum} uur boekbaar. Laat de planning aanpassen voor extra uren.`);
       return;
@@ -629,7 +632,7 @@ export default function Planning() {
                         stad: item.project_stad,
                         adres: item.project_adres,
                       });
-                      const magUrenBoeken = item.is_definitief && (!boeking || isManager || boeking.status !== 'goedgekeurd');
+                      const magUrenBoeken = magGeplandeDagBoeken(item.datum, today) && (!boeking || isManager || boeking.status !== 'goedgekeurd');
                       return (
                         <div key={item.id} style={{
                           padding: 12,
@@ -860,8 +863,9 @@ export default function Planning() {
                                 adres: item.project_adres,
                               });
 
-                              const isBewerkbaar = isGeboekt && (isManager || boeking!.status !== "goedgekeurd");
-                              const klikbaar = (!isGeboekt && item.is_definitief) || isBewerkbaar;
+                              const dagBoekbaar = magGeplandeDagBoeken(item.datum, today);
+                              const isBewerkbaar = !!boeking && dagBoekbaar && (isManager || boeking.status !== "goedgekeurd");
+                              const klikbaar = dagBoekbaar && (!isGeboekt || isBewerkbaar);
                               // Kleurschema per status van de boeking
                               const boekingKleur = !isGeboekt ? null : (
                                 boeking!.status === "goedgekeurd" ? { bg: "var(--accent-light)", border: "color-mix(in srgb, var(--accent) 25%, transparent)", fg: "var(--accent)", icon: "check_circle", fill: true } :
@@ -875,15 +879,15 @@ export default function Planning() {
                                   <div
                                     onClick={() => {
                                       if (isBewerkbaar) {
-                                        openUrenModal(item, boeking!);
-                                      } else if (!isGeboekt && item.is_definitief) {
+                                        openUrenModal(item, boeking);
+                                      } else if (!isGeboekt && dagBoekbaar) {
                                         openUrenModal(item);
                                       }
                                     }}
                                     style={{
                                       padding: '14px 16px',
                                       cursor: klikbaar ? 'pointer' : 'default',
-                                      opacity: item.is_definitief ? 1 : 0.5,
+                                      opacity: dagBoekbaar ? 1 : 0.5,
                                     }}>
                                     {/* Top row */}
                                     <div style={{
@@ -1024,7 +1028,7 @@ export default function Planning() {
                                           </span>
                                         </div>
                                         );
-                                      })() : item.is_definitief ? (
+                                      })() : dagBoekbaar ? (
                                         <div style={{
                                           display: 'flex',
                                           alignItems: 'center',
@@ -1079,7 +1083,7 @@ export default function Planning() {
                                             fontFamily: 'Hanken Grotesk',
                                             color: 'var(--text-muted)',
                                           }}>
-                                            Concept
+                                            Vanaf de geplande dag
                                           </span>
                                         </div>
                                       )}
