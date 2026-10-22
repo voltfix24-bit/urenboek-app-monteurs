@@ -185,7 +185,7 @@ export function ActieBalk(props: Props) {
 
       <div className="wp-bar-row">
         <Button variant="outline" className="wp-bar-btn" disabled={busy} onClick={props.onRepeat}>Herhalen…</Button>
-        <UrenKeuze uren={tijd ? berekenUren(...tijd) : null} disabled={busy}
+        <UrenKeuze buttonClassName="wp-bar-btn" uren={tijd ? berekenUren(...tijd) : null} disabled={busy}
           onPreset={(n) => { setUrenDelta(0); setTijd(tijd && berekenUren(...tijd) === n ? null : urenTijdblok(n)); }}
           onDelta={(delta) => { if (tijd) setTijd(pasPlanningUrenAan(...tijd, delta)); else if (heeftInhoud) setUrenDelta((n) => n + delta); else setTijd(urenTijdblok(8 + delta)); }} />
         {!tijd && urenDelta !== 0 && <span className="wp-bar-sub">{urenDelta > 0 ? "+" : ""}{urenDelta} uur per geselecteerde dag</span>}
