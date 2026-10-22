@@ -20,6 +20,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { useActiveMedewerker } from "@/hooks/useActiveMedewerker";
 import { MonteurSwitcher } from "@/components/MonteurSwitcher";
+import { boekingsRuimte } from "@/lib/planningHours";
 
 interface PlanningItem { id: string; datum: string; starttijd: string; eindtijd: string; notitie: string; project_naam: string; project_nummer: string; project_id: string; is_definitief: boolean; project_straat: string | null; project_postcode: string | null; project_stad: string | null; project_adres: string | null; activiteit: string | null; activiteit_kleur: string | null; collega_ids: string[] | null; week_opmerking: string | null; werklocatie?: string | null; contactpersoon?: string | null; contact_telefoon?: string | null; }
 interface BeschikbaarheidItem { id: string; type: string; datum_van: string; datum_tot: string; status: string; }
@@ -50,6 +51,7 @@ export default function Planning() {
   const [collegaMap, setCollegaMap] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
   const [existingBoekingen, setExistingBoekingen] = useState<Map<string, ExistingBoeking>>(new Map());
+  const [dagBoekingen, setDagBoekingen] = useState<Array<ExistingBoeking & { datum: string }>>([]);
   const [showUrenModal, setShowUrenModal] = useState(false);
   const [modalItem, setModalItem] = useState<PlanningItem | null>(null);
   const [editingBoekingId, setEditingBoekingId] = useState<string | null>(null);
@@ -182,6 +184,7 @@ export default function Planning() {
       boekMap.set(`${b.datum}|${b.project_id}`, { id: b.id, uren: Number(b.uren), status: b.status, type: b.type ?? "monteren", beschrijving: b.beschrijving ?? "" });
     });
     setExistingBoekingen(boekMap);
+    setDagBoekingen((boekData ?? []).map((b) => ({ ...b, uren: Number(b.uren), type: b.type ?? "monteren" })));
 
     if (navigator.onLine) {
       if (data) {
@@ -276,13 +279,24 @@ export default function Planning() {
     } else {
       setEditingBoekingId(null);
       setEditingBoekingStatus(null);
-      setUrenForm({ werkzaamheden: "monteren", uren: 8, toelichting: "" });
+      const gepland = items.filter((p) => p.datum === item.datum).reduce((s, p) => s + calcDefaultUren(p.starttijd, p.eindtijd), 0);
+      const geboekt = dagBoekingen.filter((b) => b.datum === item.datum && b.status !== "afgekeurd").reduce((s, b) => s + b.uren, 0);
+      setUrenForm({ werkzaamheden: "monteren", uren: Math.min(calcDefaultUren(item.starttijd, item.eindtijd), boekingsRuimte(gepland, geboekt)), toelichting: "" });
     }
     setShowUrenModal(true);
   }
 
+  const dagMaximum = modalItem ? items.filter((p) => p.datum === modalItem.datum).reduce((s, p) => s + calcDefaultUren(p.starttijd, p.eindtijd), 0) : 0;
+  const overigeDagUren = modalItem ? dagBoekingen.filter((b) => b.datum === modalItem.datum && b.id !== editingBoekingId && b.status !== "afgekeurd").reduce((s, b) => s + b.uren, 0) : 0;
+  const bestaandeDagBoeking = dagBoekingen.find((b) => b.id === editingBoekingId);
+  const boekbaarMaximum = Math.max(boekingsRuimte(dagMaximum, overigeDagUren), bestaandeDagBoeking && bestaandeDagBoeking.status !== "afgekeurd" ? bestaandeDagBoeking.uren : 0);
+
   const saveUren = async (submitDirect: boolean) => {
     if (!queryProfileId || !modalItem) return;
+    if (urenForm.uren <= 0 || urenForm.uren > boekbaarMaximum) {
+      toast.error(`Maximaal ${boekbaarMaximum} uur boekbaar. Laat de planning aanpassen voor extra uren.`);
+      return;
+    }
     const planned = calcDefaultUren(modalItem.starttijd, modalItem.eindtijd);
     const diff = Math.abs(urenForm.uren - planned);
     // Overwerk = dagtotaal over ALLE projecten op deze dag boven de 8u-norm.
@@ -1632,7 +1646,9 @@ export default function Planning() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setUrenForm(f => ({ ...f, uren: Math.min(24, f.uren + 0.5) }))}
+                    aria-label="Meer boekingsuren"
+                    disabled={urenForm.uren >= boekbaarMaximum}
+                    onClick={() => setUrenForm(f => ({ ...f, uren: Math.min(boekbaarMaximum, f.uren + 0.5) }))}
                     style={{
                       width: 48, height: 48,
                       borderRadius: '50%',
@@ -1660,7 +1676,7 @@ export default function Planning() {
                   marginBottom: 20,
                   flexWrap: 'wrap',
                 }}>
-                  {[4, 6, 8, 9, 10].map(h => {
+                  {[4, 6, 8, 9, 10].filter((h) => h <= boekbaarMaximum).map(h => {
                     const active = urenForm.uren === h;
                     return (
                       <button key={h}
@@ -1687,6 +1703,7 @@ export default function Planning() {
                 </div>
 
                 {/* Afwijking / overwerk */}
+                <p className="mb-4 text-center text-sm text-muted-foreground">Maximaal {boekbaarMaximum} uur boekbaar · {dagMaximum} uur gepland op deze dag</p>
                 {(() => {
                   const planned = calcDefaultUren(modalItem.starttijd, modalItem.eindtijd);
                   const delta = urenForm.uren - planned;

@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Weekplanning: tijdkeuzes vervangen door 8 uur / 4 uur / +1 / −1 en gepubliceerde uren als boekingsmaximum afdwingen; bestaande gegevens behouden en testen.
+
 - [x] Lever PDF-kopie van Yazans opgeslagen contract met zijn handtekening; alle zeven pagina’s gecontroleerd, TerreVolt heeft nog niet ondertekend.
 - [x] Voorkom dubbele Verlet-/werkuren via databasecontrole bij boeken, goedkeuren en inkooporders; teruggedraaide databaseproeven geslaagd, ingelogde manager-aanvraag geweigerd en dag teruggelezen; 87 bestaande tests geslaagd. Volledige formulierflow en conflicterende inkooporder niet interactief getest.
 

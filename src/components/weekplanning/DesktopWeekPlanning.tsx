@@ -25,6 +25,7 @@ import {
   celBezet, celKey, celTelt, ELDERS_TYPE, parseWeekParam, telConcepten, TIJDBLOKKEN, type Cel, type PlanWaarden,
 } from "@/lib/weekPlanning";
 import { ActieBalk, doelenVoorCellen, type SelCel, type WijzigKeuze } from "./ActieBalk";
+import { pasPlanningUrenAan } from "@/lib/planningHours";
 import { BewerkPaneel } from "./BewerkPaneel";
 import { PubliceerDialoog } from "./PubliceerDialoog";
 import { PerKlusWeergave } from "./PerKlusWeergave";
@@ -295,10 +296,11 @@ export default function DesktopWeekPlanning() {
     const undo = await capture(doel);
     {
       for (const c of doel) {
+        const tijd = keuze.tijd ?? (keuze.urenDelta ? pasPlanningUrenAan(c.starttijd, c.eindtijd, keuze.urenDelta) : null);
         const waarden: PlanWaarden = {
           project_id: keuze.project_id ?? c.project_id ?? "",
-          starttijd: keuze.tijd?.[0] ?? c.starttijd ?? "07:00",
-          eindtijd: keuze.tijd?.[1] ?? c.eindtijd ?? "16:00",
+          starttijd: tijd?.[0] ?? c.starttijd ?? "07:00",
+          eindtijd: tijd?.[1] ?? c.eindtijd ?? "16:00",
           notitie: keuze.notitie ?? c.notitie ?? "",
           ...(keuze.uitleen ?? {}),
         };

@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { berekenUren, TIJDBLOKKEN, type Afwezigheid, type Cel, type PlanWaarden } from "@/lib/weekPlanning";
+import { berekenUren, type Afwezigheid, type Cel, type PlanWaarden } from "@/lib/weekPlanning";
 import { formatUrenGetal } from "@/lib/formatting";
 import type { WpProject } from "@/hooks/useWeekPlanningData";
 import { projectKleur } from "./wpUtils";
+import { UrenKeuze } from "./UrenKeuze";
+import { urenTijdblok, pasPlanningUrenAan } from "@/lib/planningHours";
 
 interface Props {
   cel: Cel;
@@ -109,17 +111,10 @@ export function BewerkPaneel({ cel, naam, weekNumber, projects, weekProjectIds, 
           </div>
 
           <div>
-            <p className="wp-panel-label">Tijd</p>
-            <div className="wp-presets">
-              {TIJDBLOKKEN.map(([s, e]) => (
-                <button key={s} type="button" className="wp-preset" aria-pressed={start === s && eind === e} disabled={alleenLezen} onClick={() => { setStart(s); setEind(e); }}>{s}–{e}</button>
-              ))}
-            </div>
-            <div className="mt-2 flex items-center gap-2">
-              <Input type="time" step={1800} value={start} onChange={(e) => setStart(e.target.value)} className="h-9 w-28 wp-mono" aria-label="Starttijd" disabled={alleenLezen} />
-              <span className="wp-hint">tot</span>
-              <Input type="time" step={1800} value={eind} onChange={(e) => setEind(e.target.value)} className="h-9 w-28 wp-mono" aria-label="Eindtijd" disabled={alleenLezen} />
-            </div>
+            <p className="wp-panel-label">Uren</p>
+            <UrenKeuze uren={berekenUren(start, eind)} disabled={alleenLezen || busy}
+              onPreset={(n) => { const [s, e] = urenTijdblok(n, start); setStart(s); setEind(e); }}
+              onDelta={(n) => { const [s, e] = pasPlanningUrenAan(start, eind, n); setStart(s); setEind(e); }} />
             <p className="wp-hint mt-1">{tijdFout || `${formatUrenGetal(berekenUren(start, eind))} u netto · 60 min vaste pauze`}</p>
           </div>
 
@@ -172,5 +167,5 @@ export function BewerkPaneel({ cel, naam, weekNumber, projects, weekProjectIds, 
 }
 
 function DAG_INFO(_dag: number) {
-  return "Werkdag 07:00–16:00, pauze altijd 60 minuten.";
+  return "Pauze altijd 60 minuten.";
 }

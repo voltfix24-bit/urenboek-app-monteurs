@@ -11,11 +11,13 @@ import { formatUrenGetal } from "@/lib/formatting";
 import type { WpMedewerker, WpProject } from "@/hooks/useWeekPlanningData";
 import { DAG_KORT, korteNaam, leesRecent, projectKleur } from "./wpUtils";
 import { ProjectZoeker } from "./ProjectZoeker";
+import { UrenKeuze } from "./UrenKeuze";
+import { urenTijdblok, pasPlanningUrenAan } from "@/lib/planningHours";
 
 export interface SelCel { medId: string; datum: string }
 export type UitleenWaarden = { werklocatie: string | null; contactpersoon: string | null; contact_telefoon: string | null };
 /** Velden die bij "Wijzigen" gekozen zijn; ontbrekende velden blijven per dag ongewijzigd. */
-export interface WijzigKeuze { project_id?: string; tijd?: [string, string]; notitie?: string; uitleen?: UitleenWaarden }
+export interface WijzigKeuze { project_id?: string; tijd?: [string, string]; urenDelta?: number; notitie?: string; uitleen?: UitleenWaarden }
 
 /** Bepaalt doelen per losse geselecteerde lege cel (ingevulde cellen tellen niet mee, verlof/ziek wordt overgeslagen). */
 export function doelenVoorCellen(paren: SelCel[], cellen: Map<string, Cel>, medewerkers: WpMedewerker[], beschikbaarheid: BeschikbaarheidBasis[]) {
@@ -98,6 +100,7 @@ export function ActieBalk(props: Props) {
   const ingevuld = selCellen.map((s) => cellen.get(celKey(s.medId, s.datum))).filter((c): c is Cel => celTelt(c));
   const heeftInhoud = ingevuld.length > 0;
   const [tijd, setTijd] = useState<[string, string] | null>(() => (heeftInhoud ? null : TIJDBLOKKEN[0]));
+  const [urenDelta, setUrenDelta] = useState(0);
   const tijdRef = useRef(tijd);
   tijdRef.current = tijd;
   const weekgrensWaarschuwingTekst = useMemo(() => {
@@ -119,12 +122,12 @@ export function ActieBalk(props: Props) {
   const uitleenWaarden = (): UitleenWaarden => ({ werklocatie: werklocatie.trim() || null, contactpersoon: contact.trim() || null, contact_telefoon: telefoon.trim() || null });
   const keuze: WijzigKeuze = {
     ...(projectGekozen && projectId ? { project_id: projectId, ...(isUitleen ? { uitleen: uitleenWaarden() } : {}) } : {}),
-    ...(tijd ? { tijd } : {}),
+    ...(tijd ? { tijd } : urenDelta ? { urenDelta } : {}),
     ...(notitie.trim() ? { notitie } : {}),
   };
   const leegBeschikbaar = selCellen.filter((s) => !celBezet(cellen.get(celKey(s.medId, s.datum))) && !bepaalAfwezigheid(medMap.get(s.medId), s.datum, beschikbaarheid));
   const elders = selCellen.filter((s) => bepaalAfwezigheid(medMap.get(s.medId), s.datum, beschikbaarheid) === "elders");
-  const ietsGekozen = !!(keuze.project_id || keuze.tijd || keuze.notitie);
+  const ietsGekozen = !!(keuze.project_id || keuze.tijd || keuze.urenDelta || keuze.notitie);
 
   // Eén gezamenlijke actieve uitleen van de geselecteerde medewerkers?
   const detProjecten = useMemo(() => {
@@ -181,10 +184,10 @@ export function ActieBalk(props: Props) {
 
       <div className="wp-bar-row">
         <Button variant="outline" className="wp-bar-btn" disabled={busy} onClick={props.onRepeat}>Herhalen…</Button>
-        {TIJDBLOKKEN.map(([s, e]) => (
-          <button key={s} type="button" className="wp-bar-btn is-mono" aria-pressed={tijd?.[0] === s && tijd?.[1] === e} onClick={() => setTijd(tijd?.[0] === s && tijd?.[1] === e ? null : [s, e])}>{s}–{e}</button>
-        ))}
-        <span className="wp-bar-sub">8 u netto per dag (60 min pauze)</span>
+        <UrenKeuze uren={tijd ? berekenUren(...tijd) : null} disabled={busy}
+          onPreset={(n) => { setUrenDelta(0); setTijd(tijd && berekenUren(...tijd) === n ? null : urenTijdblok(n)); }}
+          onDelta={(delta) => { if (tijd) setTijd(pasPlanningUrenAan(...tijd, delta)); else if (heeftInhoud) setUrenDelta((n) => n + delta); else setTijd(urenTijdblok(8 + delta)); }} />
+        {!tijd && urenDelta !== 0 && <span className="wp-bar-sub">{urenDelta > 0 ? "+" : ""}{urenDelta} uur per geselecteerde dag</span>}
         <input className="wp-bar-note" placeholder="Notitie (optioneel)" value={notitie} onChange={(e) => setNotitie(e.target.value)} aria-label="Notitie" />
         {leegBeschikbaar.length > 0 && <button type="button" className="wp-bar-btn" disabled={busy} title="Werkt deze dag(en) voor een andere opdracht" onClick={() => props.onBeschikbaarheid(leegBeschikbaar, false)}>Niet beschikbaar ({leegBeschikbaar.length})</button>}
         {elders.length > 0 && <button type="button" className="wp-bar-btn" disabled={busy} onClick={() => props.onBeschikbaarheid(elders, true)}>Weer beschikbaar ({elders.length})</button>}
