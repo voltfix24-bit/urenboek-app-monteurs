@@ -1,5 +1,7 @@
 # AGENTS.md
 
+- Candidate account invitations reuse the manager-authorized create-user function independently of contract/signature status; never mark a contract signed when inviting an account. Why: paper contracts must not require digital signing or produce a false signature record.
+
 - PlannerKoppeling uses PageShell for desktop sidebar and mobile navigation with a single content mount. Why: opening integration settings must never strand the user or duplicate sync effects.
 
 - Employee contract signing links reuse the manager-only Kandidaten signing flow via an explicit query parameter; stop completion if signature storage, PDF upload or contract update fails. Why: mobile and desktop must produce the same signed document and never report success without persistence.

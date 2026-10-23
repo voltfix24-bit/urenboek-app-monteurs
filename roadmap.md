@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Kandidaten onafhankelijk van digitale contracten voor een account kunnen uitnodigen; 90 gerichte tests geslaagd en manager-browsercontrole met tijdelijk toegevoegde/verwijderde kandidaat zonder contract. Geen uitnodigingsmail verstuurd, geen ondertekenstatus gewijzigd, niets gepubliceerd.
+
 - [x] Vaste vrije dagen alleen als waarschuwing: desktop inplannen, kopiëren, verplaatsen en herhalen blokkeren niet; 31 tests geslaagd, Samirs woensdag via browser als concept ingepland en ongedaan gemaakt; urenboekingslogica en bestaande gegevens ongewijzigd.
 
 - [x] Concept/definitief-blokkade bij uren boeken op zichtbare planning verwijderd; vandaag en verleden toegestaan, toekomst geblokkeerd. 37 tests geslaagd; browser als manager op eigen planning: vandaag en gisteren op niet-definitief project 5 uur opgeslagen en teruggelezen, toekomst in scherm en database geweigerd. Tijdelijke data opgeruimd; teruggedraaide databaseproeven bevestigen urenmaximum en Verlet-regel.

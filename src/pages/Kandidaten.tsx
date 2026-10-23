@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/input";
 import { formatDatumKort, euro } from "@/lib/formatting";
 import { KANDIDAAT_STATUS_CONFIG, CONTRACT_STATUS_CONFIG } from "@/lib/contractStatus";
+import { kanKandidaatUitnodigen } from "@/lib/kandidaatAccount";
 import { generateContractPdf } from "@/lib/contractPdf";
 import { HandtekeningCanvas } from "@/components/HandtekeningCanvas";
 import { toast } from "sonner";
@@ -103,7 +104,7 @@ export default function Kandidaten() {
   }, [focus, kandidaten, loading, clearFocus]);
 
   async function inviteAccount(k: Kandidaat) {
-    if (k.profiel_id) { toast.info("Deze kandidaat heeft al een account"); return; }
+    if (!permissies.magContractenBeheren || !kanKandidaatUitnodigen(k) || invitingId) return;
     setInvitingId(k.id);
     try {
       const { data, error } = await supabase.functions.invoke("create-user", {
@@ -120,7 +121,11 @@ export default function Kandidaten() {
         toast.error(data?.error || "Uitnodigen mislukt");
         return;
       }
-      await supabase.from("kandidaten").update({ profiel_id: data.profile_id }).eq("id", k.id);
+      const { error: linkError } = await supabase.from("kandidaten").update({ profiel_id: data.profile_id }).eq("id", k.id);
+      if (linkError) {
+        toast.error("Account aangemaakt, maar koppelen aan kandidaat mislukt. Verstuur niet opnieuw; controleer de medewerker in Team.");
+        return;
+      }
       toast.success(`Uitnodiging verstuurd naar ${k.email} ✓`);
       fetchKandidaten();
     } catch (err) {
@@ -604,21 +609,16 @@ export default function Kandidaten() {
                         <span className="text-[10px] font-medium" style={{ color: "var(--accent)" }}>
                           ✓ Gecontracteerd
                         </span>
-                        {!k.profiel_id && (
-                          <button
-                            onClick={() => inviteAccount(k)}
-                            disabled={invitingId === k.id}
-                            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg font-medium"
-                            style={{ background: "var(--accent-light)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}
-                          >
-                            <UserPlus className="w-3 h-3" />
-                            {invitingId === k.id ? "Versturen..." : "Account uitnodigen"}
-                          </button>
-                        )}
-                        {k.profiel_id && (
-                          <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>· Account actief</span>
-                        )}
                       </div>
+                    )}
+                    {permissies.magContractenBeheren && kanKandidaatUitnodigen(k) && (
+                      <Button variant="outline" size="sm" onClick={() => inviteAccount(k)} disabled={invitingId !== null} className="h-auto min-h-8 whitespace-normal text-xs">
+                        <UserPlus className="w-3 h-3 shrink-0" />
+                        {invitingId === k.id ? "Versturen..." : "Account uitnodigen"}
+                      </Button>
+                    )}
+                    {k.profiel_id && (
+                      <span className="text-[10px] text-muted-foreground">Account gekoppeld</span>
                     )}
                     {k.status !== "afgewezen" && k.status !== "gecontracteerd" && k.status !== "on_hold" && !wachtOpManager && !heeftCorrectie && (
                       <div className="flex items-center gap-2">
