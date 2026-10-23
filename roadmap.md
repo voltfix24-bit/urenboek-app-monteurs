@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Kandidaten onafhankelijk van digitale contracten voor een account kunnen uitnodigen; schriftelijke afhandeling blijft mogelijk.
+- [x] Kandidaten onafhankelijk van digitale contracten voor een account kunnen uitnodigen; 90 gerichte tests geslaagd en manager-browsercontrole met tijdelijk toegevoegde/verwijderde kandidaat zonder contract. Geen uitnodigingsmail verstuurd, geen ondertekenstatus gewijzigd, niets gepubliceerd.
 
 - [x] Vaste vrije dagen alleen als waarschuwing: desktop inplannen, kopiëren, verplaatsen en herhalen blokkeren niet; 31 tests geslaagd, Samirs woensdag via browser als concept ingepland en ongedaan gemaakt; urenboekingslogica en bestaande gegevens ongewijzigd.
 
