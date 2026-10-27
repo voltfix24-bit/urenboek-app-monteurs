@@ -85,6 +85,8 @@ export default function Kandidaten() {
   const [editFields, setEditFields] = useState<Record<string, string>>({});
   const [resending, setResending] = useState(false);
   const [invitingId, setInvitingId] = useState<string | null>(null);
+  const [wachtwoordKandidaat, setWachtwoordKandidaat] = useState<Kandidaat | null>(null);
+  const [nieuwWachtwoord, setNieuwWachtwoord] = useState("");
 
   const { focus, clear: clearFocus } = useFocusParam();
   useClearFocusOnClose(bewerkKandidaat !== null);
@@ -103,8 +105,12 @@ export default function Kandidaten() {
     }
   }, [focus, kandidaten, loading, clearFocus]);
 
-  async function inviteAccount(k: Kandidaat) {
+  async function inviteAccount(k: Kandidaat, password?: string) {
     if (!permissies.magContractenBeheren || !kanKandidaatUitnodigen(k) || invitingId) return;
+    if (password !== undefined && password.length < 8) {
+      toast.error("Wachtwoord moet minimaal 8 tekens zijn");
+      return;
+    }
     setInvitingId(k.id);
     try {
       const { data, error } = await supabase.functions.invoke("create-user", {
@@ -114,13 +120,14 @@ export default function Kandidaten() {
           role: "monteur",
           telefoon: k.telefoon || "",
           uurtarief: k.afgesproken_tarief || null,
-          invite_only: true,
+          ...(password ? { password, invite_only: false } : { invite_only: true }),
         },
       });
       if (error || !data?.profile_id) {
-        toast.error(data?.error || "Uitnodigen mislukt");
+        toast.error(data?.error || (password ? "Account aanmaken mislukt" : "Uitnodigen mislukt"));
         return;
       }
+      if (password) setWachtwoordKandidaat(null);
       const { error: linkError } = await supabase.from("kandidaten").update({ profiel_id: data.profile_id }).eq("id", k.id);
       if (linkError) {
         toast.error("Account aangemaakt, maar koppelen aan kandidaat mislukt. Verstuur niet opnieuw; controleer de medewerker in Team.");
