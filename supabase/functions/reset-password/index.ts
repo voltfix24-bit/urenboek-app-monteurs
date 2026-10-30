@@ -94,6 +94,14 @@ Deno.serve(async (req) => {
     const { error } = await adminClient.auth.admin.updateUserById(user_id, updateData);
 
     if (error) {
+      const weak = /weak|easy to guess|pwned/i.test(error.message || "") || (error as { code?: string }).code === "weak_password";
+      if (weak) {
+        // Expected validation outcome: return 200 so the client shows a message instead of a runtime error.
+        return new Response(JSON.stringify({ error: "Dit wachtwoord is te zwak of bekend uit datalekken. Kies een ander, uniek wachtwoord.", code: "weak_password" }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       return new Response(JSON.stringify({ error: error.message || "Reset mislukt" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
