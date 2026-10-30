@@ -105,7 +105,27 @@ export default function Kandidaten() {
     }
   }, [focus, kandidaten, loading, clearFocus]);
 
+  async function setBestaandWachtwoord(k: Kandidaat, password: string) {
+    if (!permissies.magContractenBeheren || !k.profiel_id || invitingId) return;
+    if (password.length < 8) { toast.error("Wachtwoord moet minimaal 8 tekens zijn"); return; }
+    setInvitingId(k.id);
+    try {
+      const { data: prof, error: profErr } = await supabase.from("profiles").select("user_id").eq("id", k.profiel_id).maybeSingle();
+      if (profErr || !prof?.user_id) { toast.error("Account niet gevonden"); return; }
+      const { data, error } = await supabase.functions.invoke("reset-password", { body: { user_id: prof.user_id, password } });
+      if (error || data?.error) { toast.error(data?.error || "Wachtwoord instellen mislukt"); return; }
+      setWachtwoordKandidaat(null);
+      toast.success(`Wachtwoord ingesteld voor ${k.email} ✓`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Wachtwoord instellen mislukt");
+    } finally {
+      setInvitingId(null);
+    }
+  }
+
   async function inviteAccount(k: Kandidaat, password?: string) {
+    if (password !== undefined && k.profiel_id) return setBestaandWachtwoord(k, password);
     if (!permissies.magContractenBeheren || !kanKandidaatUitnodigen(k) || invitingId) return;
     if (password !== undefined && password.length < 8) {
       toast.error("Wachtwoord moet minimaal 8 tekens zijn");
@@ -624,10 +644,10 @@ export default function Kandidaten() {
                         {invitingId === k.id ? "Versturen..." : "Account uitnodigen"}
                       </Button>
                     )}
-                    {permissies.magContractenBeheren && kanKandidaatUitnodigen(k) && (
+                    {permissies.magContractenBeheren && (kanKandidaatUitnodigen(k) || !!k.profiel_id) && (
                       <Button variant="outline" size="sm" onClick={() => { setNieuwWachtwoord(""); setWachtwoordKandidaat(k); }} disabled={invitingId !== null} className="h-auto min-h-8 whitespace-normal text-xs">
                         <UserPlus className="w-3 h-3 shrink-0" />
-                        Account met wachtwoord
+                        {k.profiel_id ? "Wachtwoord instellen" : "Account met wachtwoord"}
                       </Button>
                     )}
                     {k.profiel_id && (

@@ -78,7 +78,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const updateData: { password: string; email?: string; email_confirm?: boolean } = { password };
+    // A manager setting the password vouches for the account, so confirm it (invited accounts are unconfirmed otherwise and cannot log in).
+    const updateData: { password: string; email?: string; email_confirm?: boolean } = { password, email_confirm: true };
     if (email) {
       if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return new Response(JSON.stringify({ error: "Ongeldig e-mailadres" }), {
