@@ -113,7 +113,16 @@ export default function Kandidaten() {
       const { data: prof, error: profErr } = await supabase.from("profiles").select("user_id").eq("id", k.profiel_id).maybeSingle();
       if (profErr || !prof?.user_id) { toast.error("Account niet gevonden"); return; }
       const { data, error } = await supabase.functions.invoke("reset-password", { body: { user_id: prof.user_id, password } });
-      if (error || data?.error) { toast.error(data?.error || "Wachtwoord instellen mislukt"); return; }
+      if (error || data?.error) {
+        let msg: string = data?.error || "";
+        try {
+          const ctx = (error as { context?: Response } | null)?.context;
+          if (!msg && ctx) msg = (await ctx.json())?.error || "";
+        } catch { /* ignore unreadable body */ }
+        if (/weak|easy to guess|pwned/i.test(msg)) msg = "Dit wachtwoord is te zwak of bekend uit datalekken. Kies een ander, uniek wachtwoord.";
+        toast.error(msg || "Wachtwoord instellen mislukt");
+        return;
+      }
       setWachtwoordKandidaat(null);
       toast.success(`Wachtwoord ingesteld voor ${k.email} ✓`);
     } catch (err) {
