@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { DEV_MODE, DEV_USERS, DevUser, setDevUser } from "@/hooks/useAuth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { usePasskeyStatus } from "@/hooks/usePasskeyStatus";
+import { classifyPasskeyError, isEchteSessie, PASSKEY_FOUTTEKST } from "@/lib/passkeys";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -131,6 +133,28 @@ function RealLoginForm() {
     if (error) toast.error(error.message);
     else navigate("/");
     setLoading(false);
+  };
+
+  const passkeyStatus = usePasskeyStatus();
+  const [passkeyBezig, setPasskeyBezig] = useState(false);
+  const passkeyRef = useRef(false);
+  const handlePasskey = async () => {
+    if (passkeyRef.current || passkeyStatus !== "beschikbaar") return;
+    passkeyRef.current = true; setPasskeyBezig(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPasskey();
+      if (error || !isEchteSessie(data)) {
+        const soort = error ? classifyPasskeyError(error) : "server";
+        if (soort === "geannuleerd") toast(PASSKEY_FOUTTEKST.geannuleerd);
+        else toast.error(PASSKEY_FOUTTEKST[soort]);
+        return;
+      }
+      navigate("/");
+    } catch (err) {
+      toast.error(PASSKEY_FOUTTEKST[classifyPasskeyError(err)]);
+    } finally {
+      passkeyRef.current = false; setPasskeyBezig(false);
+    }
   };
 
 
@@ -339,22 +363,27 @@ function RealLoginForm() {
           </button>
         </form>
 
-        {/* DIVIDER */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "28px 0" }}>
-          <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-          <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk", whiteSpace: "nowrap" }}>of snelle toegang</span>
-          <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-        </div>
-
-        {/* FACEID */}
-        <div style={{ textAlign: "center" }}>
-          <button type="button" style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 56, height: 56, borderRadius: 16, background: "var(--accent-light)", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 28, color: "var(--accent)" }}>face</span>
+        {passkeyStatus === "beschikbaar" && (
+          <>
+            {/* DIVIDER */}
+            <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "28px 0" }}>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+              <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk", whiteSpace: "nowrap" }}>of snelle toegang</span>
+              <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
             </div>
-            <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>Inloggen met FaceID</span>
-          </button>
-        </div>
+
+            {/* PASSKEY */}
+            <div style={{ textAlign: "center" }}>
+              <button type="button" onClick={handlePasskey} disabled={passkeyBezig} style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 8, opacity: passkeyBezig ? 0.6 : 1 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 16, background: "var(--accent-light)", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 28, color: "var(--accent)" }}>passkey</span>
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", fontFamily: "Hanken Grotesk" }}>{passkeyBezig ? "Bezig..." : "Inloggen met passkey"}</span>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk" }}>Met Face ID, vingerafdruk of toestelcode</span>
+              </button>
+            </div>
+          </>
+        )}
 
         {/* FOOTER */}
         <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 40 }}>
