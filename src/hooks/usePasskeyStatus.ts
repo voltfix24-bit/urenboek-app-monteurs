@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { bepaalPasskeyStatus, browserSupportsPasskeys, fetchPasskeysEnabled, type PasskeyStatus } from "@/lib/passkeys";
+import {
+  bepaalPasskeyStatus, browserSupportsPasskeys, fetchPasskeysEnabled, isPasskeyOmgeving, type PasskeyStatus,
+} from "@/lib/passkeys";
 
 /** Reads the public auth settings once; never opens a WebAuthn ceremony. */
 export function usePasskeyStatus(): PasskeyStatus {
@@ -11,5 +13,5 @@ export function usePasskeyStatus(): PasskeyStatus {
     });
     return () => { actief = false; };
   }, []);
-  return bepaalPasskeyStatus(settings, browserSupportsPasskeys());
+  return bepaalPasskeyStatus(settings, browserSupportsPasskeys(), isPasskeyOmgeving());
 }

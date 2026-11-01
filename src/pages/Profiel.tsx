@@ -1534,7 +1534,7 @@ export default function Profiel() {
 
 
 
-          <PasskeyBeveiliging userId={user?.id} />
+          <PasskeyBeveiliging key={user?.id ?? "geen"} userId={user?.id} />
         </main>
         <BottomNav badges={badges} />
       </div>
