@@ -462,7 +462,7 @@ export default function Kandidaten() {
       const k = kandidaten.find(x => x.id === id);
       updates.notities = (k?.notities ? k.notities + "\n" : "") + tariefForm.notitie.trim();
     }
-    await supabase.from("kandidaten").update(updates).eq("id", id);
+    await supabase.from("kandidaten").update(updates as never).eq("id", id);
     setSaving(false);
     toast.success("Tarief opgeslagen ✓");
     setShowTarief(null);
