@@ -126,24 +126,39 @@ function RealLoginForm() {
     checkManagers();
   }, []);
 
+  // One sign-in action at a time (password or passkey), also on rapid clicks.
+  const [inlog, setInlog] = useState<null | "wachtwoord" | "passkey">(null);
+  const inlogRef = useRef(false);
+  const loading = inlog === "wachtwoord";
+  const passkeyBezig = inlog === "passkey";
+  const claim = (soort: "wachtwoord" | "passkey") => {
+    if (inlogRef.current) return false;
+    inlogRef.current = true; setInlog(soort);
+    return true;
+  };
+  const release = () => { inlogRef.current = false; setInlog(null); };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) toast.error(error.message);
-    else navigate("/");
-    setLoading(false);
+    if (!claim("wachtwoord")) return;
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) toast.error(error.message);
+      else navigate("/");
+    } catch {
+      toast.error("Inloggen mislukt. Probeer het opnieuw.");
+    } finally {
+      release();
+    }
   };
 
   const passkeyStatus = usePasskeyStatus();
-  const [passkeyBezig, setPasskeyBezig] = useState(false);
-  const passkeyRef = useRef(false);
   const handlePasskey = async () => {
-    if (passkeyRef.current || passkeyStatus !== "beschikbaar") return;
-    passkeyRef.current = true; setPasskeyBezig(true);
+    if (passkeyStatus !== "beschikbaar" || !claim("passkey")) return;
     try {
       const { data, error } = await supabase.auth.signInWithPasskey();
       if (error || !isEchteSessie(data)) {
+        if (!error && data?.session) await supabase.auth.signOut({ scope: "local" });
         const soort = error ? classifyPasskeyError(error) : "server";
         if (soort === "geannuleerd") toast(PASSKEY_FOUTTEKST.geannuleerd);
         else toast.error(PASSKEY_FOUTTEKST[soort]);
@@ -151,9 +166,11 @@ function RealLoginForm() {
       }
       navigate("/");
     } catch (err) {
-      toast.error(PASSKEY_FOUTTEKST[classifyPasskeyError(err)]);
+      const soort = classifyPasskeyError(err);
+      if (soort === "geannuleerd") toast(PASSKEY_FOUTTEKST.geannuleerd);
+      else toast.error(PASSKEY_FOUTTEKST[soort]);
     } finally {
-      passkeyRef.current = false; setPasskeyBezig(false);
+      release();
     }
   };
 
