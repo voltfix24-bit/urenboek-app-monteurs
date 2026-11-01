@@ -103,7 +103,7 @@ function DevLoginPicker() {
   );
 }
 
-function RealLoginForm() {
+export function RealLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
