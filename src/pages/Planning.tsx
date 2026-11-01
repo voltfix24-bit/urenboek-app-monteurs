@@ -1,3 +1,4 @@
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { UitleenInfo } from "@/components/planning/UitleenInfo";
 import { HeaderLogo } from "@/components/HeaderLogo";
@@ -328,7 +329,7 @@ export default function Planning() {
       // We zetten dan approved_by terug naar null en de status naar 'ingediend'
       // (manager kan daarna desgewenst opnieuw goedkeuren).
       const wasGoedgekeurd = editingBoekingStatus === "goedgekeurd";
-      const updatePayload: Record<string, unknown> = {
+      const updatePayload: TablesUpdate<"uren_boekingen"> = {
         uren: urenForm.uren,
         type: urenForm.werkzaamheden,
         beschrijving,
@@ -341,7 +342,7 @@ export default function Planning() {
       }
       const { error: updErr } = await supabase
         .from("uren_boekingen")
-        .update(updatePayload as never)
+        .update(updatePayload)
         .eq("id", editingBoekingId);
       if (updErr) {
         toast.error("Kon uren niet aanpassen: " + updErr.message);

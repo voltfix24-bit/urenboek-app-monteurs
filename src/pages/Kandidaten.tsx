@@ -1,3 +1,4 @@
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useFocusParam, useClearFocusOnClose } from "@/hooks/useFocusParam";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -457,12 +458,12 @@ export default function Kandidaten() {
     const tarief = parseFloat(tariefForm.tarief);
     if (isNaN(tarief) || tarief <= 0) { toast.error("Vul een geldig tarief in"); return; }
     setSaving(true);
-    const updates: Record<string, unknown> = { status: "tarief_afgesproken", afgesproken_tarief: tarief };
+    const updates: TablesUpdate<"kandidaten"> = { status: "tarief_afgesproken", afgesproken_tarief: tarief };
     if (tariefForm.notitie.trim()) {
       const k = kandidaten.find(x => x.id === id);
       updates.notities = (k?.notities ? k.notities + "\n" : "") + tariefForm.notitie.trim();
     }
-    await supabase.from("kandidaten").update(updates as never).eq("id", id);
+    await supabase.from("kandidaten").update(updates).eq("id", id);
     setSaving(false);
     toast.success("Tarief opgeslagen ✓");
     setShowTarief(null);
