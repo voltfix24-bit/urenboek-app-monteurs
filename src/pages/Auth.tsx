@@ -3,7 +3,7 @@ import { DEV_MODE, DEV_USERS, DevUser, setDevUser } from "@/hooks/useAuth";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePasskeyStatus } from "@/hooks/usePasskeyStatus";
-import { classifyPasskeyError, isEchteSessie, PASSKEY_FOUTTEKST } from "@/lib/passkeys";
+import { classifyPasskeyError, isEchteSessie, PASSKEY_FOUTTEKST, PASSKEY_ORIGIN } from "@/lib/passkeys";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,7 +106,6 @@ function DevLoginPicker() {
 function RealLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -375,11 +374,16 @@ function RealLoginForm() {
           </div>
 
           {/* LOGIN BUTTON */}
-          <button type="submit" disabled={loading} style={{ width: "100%", height: 60, borderRadius: 16, background: "var(--accent)", border: "none", color: "var(--accent-dark)", fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 16, textTransform: "uppercase", letterSpacing: "0.15em", cursor: "pointer", boxShadow: "0 8px 32px color-mix(in srgb, var(--accent) 25%, transparent)", opacity: loading ? 0.6 : 1 }}>
+          <button type="submit" disabled={inlog !== null} style={{ width: "100%", height: 60, borderRadius: 16, background: "var(--accent)", border: "none", color: "var(--accent-dark)", fontFamily: "Hanken Grotesk", fontWeight: 800, fontSize: 16, textTransform: "uppercase", letterSpacing: "0.15em", cursor: "pointer", boxShadow: "0 8px 32px color-mix(in srgb, var(--accent) 25%, transparent)", opacity: inlog !== null ? 0.6 : 1 }}>
             {loading ? "Bezig..." : "INLOGGEN"}
           </button>
         </form>
 
+        {passkeyStatus === "verkeerde_omgeving" && (
+          <p style={{ textAlign: "center", fontSize: 11, color: "var(--text-muted)", fontFamily: "Hanken Grotesk", marginTop: 24 }}>
+            Inloggen met passkey kan in de <a href={PASSKEY_ORIGIN} target="_top" rel="noopener" style={{ color: "var(--accent)", fontWeight: 700 }}>officiële app</a>.
+          </p>
+        )}
         {passkeyStatus === "beschikbaar" && (
           <>
             {/* DIVIDER */}
@@ -391,7 +395,7 @@ function RealLoginForm() {
 
             {/* PASSKEY */}
             <div style={{ textAlign: "center" }}>
-              <button type="button" onClick={handlePasskey} disabled={passkeyBezig} style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 8, opacity: passkeyBezig ? 0.6 : 1 }}>
+              <button type="button" onClick={handlePasskey} disabled={inlog !== null} aria-label="Inloggen met passkey" style={{ background: "none", border: "none", cursor: "pointer", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 8, opacity: inlog !== null ? 0.6 : 1 }}>
                 <div style={{ width: 56, height: 56, borderRadius: 16, background: "var(--accent-light)", border: "1px solid var(--accent-border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <span className="material-symbols-outlined" style={{ fontSize: 28, color: "var(--accent)" }}>passkey</span>
                 </div>
