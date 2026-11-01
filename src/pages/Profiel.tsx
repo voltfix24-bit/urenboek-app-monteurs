@@ -20,6 +20,7 @@ import { nl } from "date-fns/locale";
 import { BottomNav } from "@/components/BottomNav";
 import { useNavBadges } from "@/hooks/useNavBadges";
 import { triggerInstallPrompt, canShowInstallPrompt } from "@/components/InstallPrompt";
+import { PasskeyBeveiliging } from "@/components/PasskeyBeveiliging";
 
 interface ProfileData { id: string; full_name: string; telefoon: string; adres: string; rijbewijs: boolean; vaste_vrije_dagen: number[]; kvk_nummer?: string | null; btw_nummer?: string | null; iban?: string | null; bedrijfsnaam?: string | null; contactpersoon?: string | null; email?: string | null; uurtarief?: number | null; betalingstermijn?: number; factuuradres?: string | null; geboortedatum?: string | null; account_status?: string; is_onderaannemer?: boolean; }
 interface Certificaat { id: string; type: string; naam: string; vervaldatum: string | null; subtype?: string | null; ggi_gebieden?: string[] | null; bestand_url?: string | null; }
@@ -1533,6 +1534,7 @@ export default function Profiel() {
 
 
 
+          <PasskeyBeveiliging userId={user?.id} />
         </main>
         <BottomNav badges={badges} />
       </div>

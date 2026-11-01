@@ -341,7 +341,7 @@ export default function Planning() {
       }
       const { error: updErr } = await supabase
         .from("uren_boekingen")
-        .update(updatePayload)
+        .update(updatePayload as never)
         .eq("id", editingBoekingId);
       if (updErr) {
         toast.error("Kon uren niet aanpassen: " + updErr.message);
