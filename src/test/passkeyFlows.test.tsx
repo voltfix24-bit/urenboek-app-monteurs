@@ -224,6 +224,8 @@ describe("Profiel → Beveiliging", () => {
     await waitFor(() => expect(h.auth.registerPasskey).toHaveBeenCalledTimes(1));
     actieveUser = "u2";
     rerender(<PasskeyBeveiliging key="u2" userId="u2" />);
+    await screen.findByText("Nog geen passkeys.");
+    await waitFor(() => expect(h.auth.passkey.list).toHaveBeenCalledTimes(2));
     const lijstCalls = h.auth.passkey.list.mock.calls.length;
     await act(async () => reg.resolve({ data: { id: "p1" }, error: null }));
     expect(h.toast.success).not.toHaveBeenCalled();
