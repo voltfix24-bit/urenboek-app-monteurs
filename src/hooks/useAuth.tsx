@@ -67,7 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (DEV_MODE) { setLoading(false); return; }
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      // Keep the same user object when only the token refreshed (e.g. returning to the app),
+      // so forms that depend on `user` don't reload and wipe unsaved input.
+      setUser((prev) => (prev && session?.user && prev.id === session.user.id ? prev : session?.user ?? null));
       if (session?.user) {
         setTimeout(async () => {
           const { data: profileData } = await supabase.from("profiles").select("full_name").eq("user_id", session.user.id).single();

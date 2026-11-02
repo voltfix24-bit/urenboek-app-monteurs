@@ -30,14 +30,28 @@ export default function Onboarding() {
   const [zzpErrors, setZzpErrors] = useState<Record<string, string>>({});
   const [vrijeDagen, setVrijeDagen] = useState<number[]>([]);
 
+  const conceptKey = user ? `onboarding_concept_${user.id}` : null;
+  const [conceptGeladen, setConceptGeladen] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     loadProfile();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  // Save unsaved input so switching apps (or the phone reloading the page) doesn't lose it.
+  useEffect(() => {
+    if (!conceptKey || !conceptGeladen) return;
+    try {
+      sessionStorage.setItem(conceptKey, JSON.stringify({ step, form, zzpForm, vrijeDagen }));
+    } catch { /* storage unavailable */ }
+  }, [conceptKey, conceptGeladen, step, form, zzpForm, vrijeDagen]);
 
   const loadProfile = async () => {
     if (!user) return;
     const { data: profile } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+    let concept: any = null;
+    try { concept = JSON.parse(sessionStorage.getItem(`onboarding_concept_${user.id}`) || "null"); } catch { concept = null; }
     if (profile) {
       setProfileData(profile);
       setForm({
@@ -46,6 +60,7 @@ export default function Onboarding() {
         rijbewijs: (profile as any).rijbewijs || false,
         noodcontact_naam: (profile as any).noodcontact_naam || "",
         noodcontact_tel: (profile as any).noodcontact_tel || "",
+        ...(concept?.form ?? {}),
       });
       setZzpForm({
         bedrijfsnaam: (profile as any).bedrijfsnaam || "",
@@ -54,9 +69,12 @@ export default function Onboarding() {
         iban: (profile as any).iban || "",
         factuuradres: (profile as any).factuuradres || "",
         betalingstermijn: (profile as any).betalingstermijn || 30,
+        ...(concept?.zzpForm ?? {}),
       });
-      setVrijeDagen((profile as any).vaste_vrije_dagen || []);
+      setVrijeDagen(Array.isArray(concept?.vrijeDagen) ? concept.vrijeDagen : (profile as any).vaste_vrije_dagen || []);
+      if (typeof concept?.step === "number") setStep(concept.step);
     }
+    setConceptGeladen(true);
     setLoading(false);
   };
 
