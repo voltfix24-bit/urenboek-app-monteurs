@@ -131,6 +131,7 @@ export default function Onboarding() {
     } as any).eq("id", profileData.id);
     await supabase.functions.invoke("activate-account");
     localStorage.setItem("onboarding_done", "true");
+    if (conceptKey) { try { sessionStorage.removeItem(conceptKey); } catch { /* ignore */ } }
     refetchProfile();
     toast.success("Je profiel is compleet! Welkom bij TerreVolt 🎉");
     navigate("/");
